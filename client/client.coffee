@@ -3,19 +3,18 @@ MainView = Backbone.View.extend
   className: 'container'
   
   events:
-    'click em': 'loadTime'
+    'click h1': 'loadTime'
     
   initialize: ->
-    Meteor.call 'server-time', (err, time) ->
-      Session.set 'time', loadTime
+    @loadTime()
   
   render: ->
-    @$el.html Meteor.ui.render ->
-      "<h1>App loaded at <em>#{Session.get('time')}</em></h1>"
+    Meteor.render ->
+      Template.hello
+        person: "Rodrigo"
+        time: Session.get('time')
     
-    this
-    
-  loadTime: (e) ->
+  loadTime: ->
     Meteor.call 'server-time', (err, time) ->
       Session.set 'time', time
 
@@ -25,9 +24,9 @@ AppRouter = Backbone.Router.extend
     "": "main"
 
   main:  ->
-    $('body').append(new MainView).render().el
+    $('body').append (new MainView).render()
 
 Router = new AppRouter
 
 Meteor.startup ->  
-  Backbone.history.start pushState: true
+  Backbone.history.start pushState: true  
