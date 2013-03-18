@@ -1,0 +1,15 @@
+<template name="profile">
+  {{> header}}
+  {{#each profiles}}
+    <div class="container_12">
+      <div class="grid_9">
+        <div class="user-info">
+          <h3 class="name">{{profile.name_first}} {{profile.name_last}}</h3>
+          <div class="clearfix"></div>
+          <ol class="item-list">
+          </ol>
+        </div>
+      </div>
+    </div>
+  {{/each}}
+</template>
