@@ -1,7 +1,7 @@
 Meteor.Router.add
   '/': ->
     Session.set 'time', 123
-    'hello'
+    'index'
   '/login': 'login'
   '/logout': ->
     Meteor.logout()

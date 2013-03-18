@@ -5,8 +5,8 @@ Template.login.events =
   'submit': (e) ->
     e.preventDefault()
     handleLogin e
-  'keydown': (e) ->
-    if e.which == 13
+  'keypress input': (e) ->
+    if e.which is 13
       e.preventDefault()
       handleLogin e
 
