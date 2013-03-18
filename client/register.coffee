@@ -4,12 +4,18 @@ Template.register.error = ->
 Template.register.events =
   'submit': (e) ->
     e.preventDefault()
-    Accounts.createUser
-      username: $('#username').val()
-      email: $('#email').val()
-      password: $('#password').val()
-    , (err) ->
-      if err
-        Session.set 'error', err.reason
-      else
-        Meteor.Router.to '/'
+    handleRegister e
+  'keydown': (e) ->
+    if e.which == 13
+      e.preventDefault()
+      handleRegister e
+
+handleRegister = (e) ->
+  Accounts.createUser
+    email: $('#email').val()
+    password: $('#password').val()
+  , (err) ->
+    if err
+      Session.set 'error', err.reason
+    else
+      Meteor.Router.to '/'

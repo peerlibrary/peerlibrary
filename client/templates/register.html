@@ -1,9 +1,45 @@
 <template name="register">
-  <p>{{ error }}</p>
-  <form>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="text" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <input type="submit" value="Submit" />
-  </form>
+  <div class="auth-wrapper">
+    <div class="auth-header">
+      <a href="/"><img src="img/logo.png" class="logo" /></a>
+    </div>
+  </div>
+  <div class="form-container">
+    {{#if error}}
+      <h2>{{error}}</h2>
+    {{else}}
+      <h2>Register your PeerLibrary account</h2>
+    {{/if}}
+    <form>
+      <p>
+        <span>
+          <label for="email">Email</label>
+          <input type="text" id="email" name="email" placeholder="Email address" />
+        </span>
+      </p>
+      <p>
+        <span>
+          <label for="name_first">First name</label>
+          <input type="text" id="name_first" name="name_first" placeholder="First name" />
+        </span>
+      </p>
+      <p>
+        <span>
+          <label for="name_last">Last name</label>
+          <input type="text" id="name_last" name="name_last" placeholder="Last name" />
+        </span>
+      </p>
+      <p>
+        <span>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" />
+        </span>
+      </p>
+      <p>
+        <span>
+          <input type="submit" value="Continue" />
+        </span>
+      </p>
+    </form>
+  </div>
 </template>
