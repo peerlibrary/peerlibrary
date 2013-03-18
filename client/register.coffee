@@ -14,6 +14,9 @@ handleRegister = (e) ->
   Accounts.createUser
     email: $('#email').val()
     password: $('#password').val()
+    profile:
+      name_first: $('#name_first').val()
+      name_last: $('#name_last').val()
   , (err) ->
     if err
       Session.set 'error', err.reason
