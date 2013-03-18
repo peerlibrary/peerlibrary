@@ -4,8 +4,15 @@ Template.login.error = ->
 Template.login.events =
   'submit': (e) ->
     e.preventDefault()
-    Meteor.loginWithPassword $('#email').val(), $('#password').val(), (err) ->
-      if err
-        Session.set 'error', err.reason
-      else
-        Meteor.Router.to '/'
+    handleLogin e
+  'keydown': (e) ->
+    if e.which == 13
+      e.preventDefault()
+      handleLogin e
+
+handleLogin = (e) ->
+  Meteor.loginWithPassword $('#email').val(), $('#password').val(), (err) ->
+    if err
+      Session.set 'error', err.reason
+    else
+      Meteor.Router.to '/'

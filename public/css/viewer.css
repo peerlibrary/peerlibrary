@@ -1,0 +1,44 @@
+html,body{height:100%;}
+#viewer {
+	width: 100%;
+	height: 100%;
+	overflow-x: hidden;
+}
+#viewer .window {
+	height: 100%;
+	overflow: hidden;
+}
+#viewer .window iframe {
+	border: 0;
+	height: 100%;
+	width: 100%;
+}
+#viewer .sidebar {
+	width: 460px;
+	max-height: 100%;
+	float: right;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+#viewer .sidebar > div, #viewer .sidebar > ol {
+	margin: 20px;
+}
+#viewer .sidebar .header {
+}
+#viewer .sidebar .logo {
+	height: 25px;
+}
+#viewer .sidebar .viewer-search {
+    text-align: center;
+}
+#viewer .sidebar .viewer-search input {
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+    border-bottom: 1px solid #b8c1c7;
+    background: none;
+	font-weight: 300;
+	font-size: 24px;
+	width: 300px;
+	margin: 0 20px;
+}
