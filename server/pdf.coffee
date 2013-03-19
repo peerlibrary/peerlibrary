@@ -70,4 +70,5 @@ do -> # To not pollute the namespace
   processError = (message, exception) ->
     console.error "PDF Error", message, exception
 
-  PDFJS.getDocument({data: pdfFile, password: ''}).then processPDF, processError
+  # TODO: Uncomment to see how it works
+  #PDFJS.getDocument({data: pdfFile, password: ''}).then processPDF, processError
