@@ -25,6 +25,10 @@ do -> # To not pollute the namespace
               #console.log "beginLayout"
             endLayout: ->
               #console.log "endLayout"
+              if DEBUG
+                # Save the canvas (with rectangles around text segments)
+                png = fs.createWriteStream('debug' + page.pageNumber + '.png')
+                canvasElement.pngStream().pipe(png)
             appendText: (geom) ->
               width = geom.canvasWidth * geom.hScale
               height = geom.fontSize * Math.abs(geom.vScale)
@@ -37,9 +41,8 @@ do -> # To not pollute the namespace
                 return
 
               if DEBUG
+                # Draw a rectangle around the text segment
                 canvasContext.strokeRect(x, y, width, height)
-                png = fs.createWriteStream('debug' + page.pageNumber + '.png')
-                canvasElement.pngStream().pipe(png)
 
               # TODO: Store into the database and find paragrahps
               # TODO: We should just allow user to provide a callback
