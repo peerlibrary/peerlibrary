@@ -8,6 +8,9 @@ do -> # To not pollute the namespace
       Meteor.logout()
       'hello'
     '/register': 'register'
-    '/:username': (username) ->
+    '/p/:publicationId': (publicationId) ->
+      Session.set 'currentPublicationId', publicationId
+      'publication'
+    '/u/:username': (username) ->
       Session.set 'currentProfileUsername', username
       'profile'
