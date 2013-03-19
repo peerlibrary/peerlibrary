@@ -1,4 +1,4 @@
-do () -> # To not pollute the namespace
+do -> # To not pollute the namespace
   require = __meteor_bootstrap__.require
 
   canvas = require 'canvas'
@@ -21,9 +21,9 @@ do () -> # To not pollute the namespace
         page.getTextContent().then (textContent) ->
           appendCounter = 0
           textLayer =
-            beginLayout: () ->
+            beginLayout: ->
               #console.log "beginLayout"
-            endLayout: () ->
+            endLayout: ->
               #console.log "endLayout"
             appendText: (geom) ->
               width = geom.canvasWidth * geom.hScale
@@ -54,7 +54,7 @@ do () -> # To not pollute the namespace
             viewport: viewport
             textLayer: textLayer
 
-          page.render(renderContext).then () ->
+          page.render(renderContext).then ->
             return # Do nothing
           , (error) ->
             console.error "PDF Error", error
