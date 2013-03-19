@@ -6,13 +6,19 @@
   },
   "dependencies": {
     "basePackages": {
-      "router": {}
+      "router": {},
+      "pdf.js": {}
     },
     "packages": {
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
         "tag": "v0.4.3",
         "commit": "0691a6e2c4c249ce7d00cd6dc7ad27e1c7330a31"
+      },
+      "pdf.js": {
+        "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
+        "tag": "v0.7.369.1",
+        "commit": "76d9d1ea6dd42fe6f48e41cc6bc8208943eacccb"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
