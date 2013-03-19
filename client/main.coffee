@@ -7,3 +7,6 @@ Meteor.Router.add
     Meteor.logout()
     'hello'
   '/register': 'register'
+  '/:username': (username) ->
+    Session.set 'currentProfileUsername', username
+    'profile'
