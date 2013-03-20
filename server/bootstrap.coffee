@@ -8,7 +8,8 @@ do -> # To not pollute the namespace
         title: 'Foobar'
         originalUrl: 'https://github.com/mozilla/pdf.js/raw/master/web/compressed.tracemonkey-pldi-09.pdf'
         downloaded: false
+        processed: false
       ]
 
       for publication in publications
-        Publications.insert(publication)
+        Publications.insert publication

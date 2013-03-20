@@ -1,74 +1,93 @@
-do -> # To not pollute the namespace
-  require = __meteor_bootstrap__.require
+PDF =
+  process: (pdfFile, progressCallback) ->
+    require = __meteor_bootstrap__.require
 
-  canvas = require 'canvas'
-  fs = require 'fs'
+    canvas = require 'canvas'
+    fs = require 'fs'
+    future = require 'fibers/future'
 
-  DEBUG = false
-  NOT_WHITESPACE = /\S/
+    DEBUG = false
+    NOT_WHITESPACE = /\S/
 
-  # TODO: Temporary hard-coded for testing, create API for all this
-  pdfFile = new Uint8Array fs.readFileSync '/Users/mitar/Downloads/adida.pdf'
+    processPDF = (finalCallback) -> (pdf) ->
+      counter = pdf.numPages
+      for pageNumber in [1..pdf.numPages]
+        pdf.getPage(pageNumber).then (page) ->
+          # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
+          progressCallback (page.pageNumber - 1) / pdf.numPages
 
-  processPDF = (pdf) ->
-    for pageNumber in [1..pdf.numPages]
-      pdf.getPage(pageNumber).then (page) ->
-        # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
+          page.getAnnotations().then (annotations) ->
+            #console.log "Annotations", annotations
 
-        page.getAnnotations().then (annotations) ->
-          #console.log "Annotations", annotations
+          page.getTextContent().then (textContent) ->
+            appendCounter = 0
+            textLayer =
+              beginLayout: ->
+                #console.log "beginLayout"
 
-        page.getTextContent().then (textContent) ->
-          appendCounter = 0
-          textLayer =
-            beginLayout: ->
-              #console.log "beginLayout"
-            endLayout: ->
-              #console.log "endLayout"
-              if DEBUG
-                # Save the canvas (with rectangles around text segments)
-                png = fs.createWriteStream('debug' + page.pageNumber + '.png')
-                canvasElement.pngStream().pipe(png)
-            appendText: (geom) ->
-              width = geom.canvasWidth * geom.hScale
-              height = geom.fontSize * Math.abs(geom.vScale)
-              x = geom.x
-              y = viewport.height - geom.y
-              text = textContent.bidiTexts[appendCounter].str
-              appendCounter++
+              endLayout: ->
+                #console.log "endLayout"
 
-              if !NOT_WHITESPACE.test(text)
-                return
+                if DEBUG
+                  # Save the canvas (with rectangles around text segments)
+                  png = fs.createWriteStream 'debug' + page.pageNumber + '.png'
+                  canvasElement.pngStream().pipe png
 
-              if DEBUG
-                # Draw a rectangle around the text segment
-                canvasContext.strokeRect(x, y, width, height)
+                # We call finalCallback only after all pages have been processed and thus callbacks called
+                counter--
+                if counter == 0
+                  progressCallback 1.0
+                  finalCallback()
 
-              # TODO: Store into the database and find paragrahps
-              # TODO: We should just allow user to provide a callback
-              console.log(x, y, width, height, text)
+              appendText: (geom) ->
+                width = geom.canvasWidth * geom.hScale
+                height = geom.fontSize * Math.abs geom.vScale
+                x = geom.x
+                y = viewport.height - geom.y
+                text = textContent.bidiTexts[appendCounter].str
+                appendCounter++
 
-          viewport = page.getViewport 1.0
-          canvasElement = new canvas(viewport.width, viewport.height)
-          canvasContext = canvasElement.getContext '2d'
+                if !NOT_WHITESPACE.test text
+                  return
 
-          renderContext =
-            canvasContext: canvasContext
-            viewport: viewport
-            textLayer: textLayer
+                if DEBUG
+                  # Draw a rectangle around the text segment
+                  canvasContext.strokeRect x, y, width, height
 
-          page.render(renderContext).then ->
-            return # Do nothing
-          , (error) ->
-            console.error "PDF Error", error
+                # TODO: Store into the database and find paragrahps
+                # TODO: We should just allow user to provide a callback
+                #console.log x, y, width, height, text
 
-      pdf.getMetadata(pageNumber).then (metadata) ->
-        #console.log "Metadata", metadata
+            viewport = page.getViewport 1.0
+            canvasElement = new canvas viewport.width, viewport.height
+            canvasContext = canvasElement.getContext '2d'
 
-    return # So that we do not return the results of the for-loop
+            renderContext =
+              canvasContext: canvasContext
+              viewport: viewport
+              textLayer: textLayer
 
-  processError = (message, exception) ->
-    console.error "PDF Error", message, exception
+            page.render(renderContext).then ->
+              return # Do nothing
+            , (error) ->
+              console.error "PDF Error", error
 
-  # TODO: Uncomment to see how it works
-  #PDFJS.getDocument({data: pdfFile, password: ''}).then processPDF, processError
+        pdf.getMetadata(pageNumber).then (metadata) ->
+          # TODO: If we will process metadata, too, we have to make sure finalCallback is called after only once after everything is finished
+          #console.log "Metadata", metadata
+
+      return # So that we do not return the results of the for-loop
+
+    processError = (finalCallback) -> (message, exception) ->
+      console.error "PDF Error", message, exception
+      # TODO: We could pass error to "finalCallback"?
+      finalCallback()
+
+    # "finalCallback" has to be called only once to unblock
+    processAll = future.wrap (finalCallback) ->
+      PDFJS.getDocument({data: pdfFile, password: ''}).then processPDF(finalCallback), processError(finalCallback)
+
+    # Blocking
+    processAll().wait()
+
+    return # So that we do not return any results

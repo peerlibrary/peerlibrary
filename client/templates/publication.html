@@ -1,4 +1,6 @@
 <template name="publication">
-  <p>{{ publicationError }}</p>
+  {{#if publicationError }}<p>{{ publicationError }}</p>{{/if}}
   <p>{{ publication.status }}</p>
+  {{#if publication.progress }}<p>Progress: {{ publication.progress }}</p>{{/if}}
+  {{#if publication.url }}<p>URL: {{ publication.url }}</p>{{/if}}
 </template>
