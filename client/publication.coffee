@@ -1,9 +1,17 @@
 GetPublication = new Meteor.Collection 'get-publication'
 
 do -> # To not pollute the namespace
-  Meteor.autorun ->
-    Meteor.subscribe 'get-publication', Session.get 'currentPublicationId'
+  Meteor.startup ->
+    Meteor.autorun ->
+      Session.set 'getPublicationError', undefined
+      Meteor.subscribe 'get-publication', Session.get('currentPublicationId'), {
+        onError: (error) ->
+          # TODO: Currently, error.reason is always empty, a Meteor bug?
+          Session.set 'getPublicationError', error.reason ? "Unknown error"
+      }
 
   Template.publication.publication = ->
-    JSON.stringify GetPublication.findOne()
+    GetPublication.findOne()
 
+  Template.publication.publicationError = ->
+    Session.get 'getPublicationError'
