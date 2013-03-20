@@ -39,9 +39,6 @@ do -> # To not pollute the namespace
   Meteor.publish 'get-publication', (publicationId) ->
     uuid = Meteor.uuid()
 
-    @onStop ->
-      console.log "stopping"
-
     @added 'get-publication', uuid, {status: "Opening publication"}
     @ready()
 
@@ -59,11 +56,9 @@ do -> # To not pollute the namespace
     setProgress = false
 
     if !publication.processed
-      console.log "processing"
       @changed 'get-publication', uuid, {status: "Processing publication"}
 
       publication.process pdfFile, (progress) =>
-        console.log(progress)
         @changed 'get-publication', uuid, {progress: progress}
         setProgress = true
 
@@ -74,8 +69,6 @@ do -> # To not pollute the namespace
     if setProgress
       # We clear the progress
       final.progress = undefined
-
-    console.log final
 
     @changed 'get-publication', uuid, final
 
