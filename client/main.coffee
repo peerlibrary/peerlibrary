@@ -1,4 +1,4 @@
-do -> # To not pollute the namespace
+  do -> # To not pollute the namespace
   Meteor.Router.add
     '/': ->
       Session.set 'time', 123

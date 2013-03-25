@@ -5,6 +5,7 @@
   },
   "packages": {
     "router": {},
-    "pdf.js": {}
+    "pdf.js": {},
+    "jquery-ui": {}
   }
 }
