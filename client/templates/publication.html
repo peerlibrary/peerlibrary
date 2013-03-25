@@ -4,3 +4,36 @@
   {{#if publication.progress }}<p>Progress: {{ publication.progress }}</p>{{/if}}
   {{#if publication.url }}<p>URL: {{ publication.url }}</p>{{/if}}
 </template>
+
+<template name="publicationItem">
+  <li>
+    <div class="article-summary">
+      <div class="article-summary-data">
+        <span class="score-badge">{{score}}</span>
+        <h4 class="title"><a href="viewer-link">{{title}}</a></h4>
+        <div class="clearfix"></div>
+        <span class="authors line">
+          {{#each authors}}
+            <a href="/u/{{username}}">{{name}}</a>
+          {{/each}}
+        </span><br>
+        <span class="date line">{{pubDate}}</span> in
+        <span class="field line"><a href="#">{{field}}</a></span> &raquo;
+        <span class="topics line"><a href="#">{{topics}}</a></span><br>
+        <span class="actions line">
+          <a href="#" class="preview-link">Preview abstract</a> &middot;
+          <a href="#">Full text</a>
+          <i class="icon-external-link"></i>
+        </span>
+      </div>
+      <span class="article-summary-stats">
+        <i class="icon-bookmark"></i> {{bookmarkCount}}
+        <i class="icon-edit"></i> {{commentCount}}
+      </span>
+      <div class="clearfix"></div>
+      <div class="abstract">
+        <p>{{abstract}}</p>
+      </p>
+    </div>
+  </li>
+</template>

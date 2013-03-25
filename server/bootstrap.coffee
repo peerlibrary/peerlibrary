@@ -28,6 +28,7 @@ do -> # To not pollute the namespace
         bookmarkCount: 133
         commentCount: 42
         abstract: 'The muscle contraction, operation of ATP synthase, maintaining the shape of a cell are believed to be secured by motor proteins, which can be modelled using the Brownian ratchet mechanism.'
+        
         originalUrl: 'https://github.com/mozilla/pdf.js/raw/master/web/compressed.tracemonkey-pldi-09.pdf'
         downloaded: false
         processed: false
