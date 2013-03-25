@@ -1,7 +1,3 @@
-class Document
-  constructor: (doc) ->
-    _.extend @, doc
-
 class Publication extends Document
   url: =>
     Storage.url @filename()
@@ -33,9 +29,15 @@ class Publication extends Document
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
-Publications = new Meteor.Collection 'publications', transform: (doc) -> new Publication doc
-
 do -> # To not pollute the namespace
+  Meteor.publish 'publications-by', (username) ->
+    Publications.find
+      author: username
+    ,
+      fields:
+        title: 1
+        author: 1
+
   Meteor.publish 'get-publication', (publicationId) ->
     uuid = Meteor.uuid()
 

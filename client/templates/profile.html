@@ -8,13 +8,17 @@
           <h3 class="name">{{profile.profile.name_first}} {{profile.profile.name_last}}</h3>
           <div class="clearfix"></div>
           <p class="title">{{profile.profile.position}}, {{profile.profile.institution}}</p>
+        </div>
         <div class="topbar">
           <a href="#" class="publications-link active">Publications <hr></a>
           <a href="#" class="reviews-link">Reviews <hr></a>
         </div>
-          <ol class="item-list">
-          </ol>
-        </div>
+        <div class="clearfix"></div>
+        <ol class="item-list">
+          {{#each publications}}
+            <p>{{title}}</p>
+          {{/each}}
+        </ol>
       </div>
     </div>
   {{/if}}

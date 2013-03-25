@@ -1,5 +1,7 @@
 GetPublication = new Meteor.Collection 'get-publication'
 
+class Publication extends Document
+
 do -> # To not pollute the namespace
   Meteor.startup ->
     Meteor.autorun ->

@@ -20,8 +20,6 @@ do -> # To not pollute the namespace
       profile:
         name_first: $('#name_first').val()
         name_last: $('#name_last').val()
-        position: 'Professor of Physics'
-        institution: 'Cornell University'
     , (err) ->
       if err
         Session.set 'error', err.reason
