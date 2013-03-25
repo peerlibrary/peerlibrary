@@ -6,12 +6,17 @@
         <div class="user-info">
           <h1>{{profileError}}</h1>
           <h3 class="name">{{profile.profile.name_first}} {{profile.profile.name_last}}</h3>
-          
           <div class="clearfix"></div>
+          <p class="title">{{profile.profile.position}}, {{profile.profile.institution}}</p>
+        <div class="topbar">
+          <a href="#" class="publications-link active">Publications <hr></a>
+          <a href="#" class="reviews-link">Reviews <hr></a>
+        </div>
           <ol class="item-list">
           </ol>
         </div>
       </div>
     </div>
   {{/if}}
+  {{> search}}
 </template>

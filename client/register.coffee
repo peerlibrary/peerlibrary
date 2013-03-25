@@ -15,6 +15,7 @@ do -> # To not pollute the namespace
     Accounts.createUser
       email: $('#email').val()
       password: $('#password').val()
+      #TODO: handle username conflicts
       username: $('#name_first').val().toLowerCase() + '-' + $('#name_last').val().toLowerCase()
       profile:
         name_first: $('#name_first').val()
