@@ -1,12 +1,14 @@
 {
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
-    "branch": "peerlibrary"
+    "branch": "peerlibrary",
+    "commit": "b046309c3e756c4ebb508d69112b7f3cf9c8b2ac"
   },
   "dependencies": {
     "basePackages": {
       "router": {},
-      "pdf.js": {}
+      "pdf.js": {},
+      "jquery-ui": {}
     },
     "packages": {
       "router": {
@@ -18,6 +20,11 @@
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
         "tag": "v0.7.369.1",
         "commit": "76d9d1ea6dd42fe6f48e41cc6bc8208943eacccb"
+      },
+      "jquery-ui": {
+        "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",
+        "tag": "v1.9.2",
+        "commit": "c437d45edcf1367df8d5ffa8bad2867758030bd2"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
