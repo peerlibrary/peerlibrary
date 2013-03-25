@@ -1,15 +1,17 @@
 <template name="profile">
   {{> header}}
-  {{#each profiles}}
+  {{#if profile}}
     <div class="container_12">
       <div class="grid_9">
         <div class="user-info">
-          <h3 class="name">{{profile.name_first}} {{profile.name_last}}</h3>
+          <h1>{{profileError}}</h1>
+          <h3 class="name">{{profile.profile.name_first}} {{profile.profile.name_last}}</h3>
+          
           <div class="clearfix"></div>
           <ol class="item-list">
           </ol>
         </div>
       </div>
     </div>
-  {{/each}}
+  {{/if}}
 </template>
