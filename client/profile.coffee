@@ -13,4 +13,4 @@ do -> # To not pollute the namespace
 
   Template.profile.publications = ->
     Publications.find
-      author: Session.get 'currentProfileUsername'
+      owner: Session.get 'currentProfileUsername'

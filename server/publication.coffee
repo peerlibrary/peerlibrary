@@ -32,11 +32,19 @@ class Publication extends Document
 do -> # To not pollute the namespace
   Meteor.publish 'publications-by', (username) ->
     Publications.find
-      author: username
+      owner: username
     ,
       fields:
         title: 1
-        author: 1
+        owner: 1
+        authors: 1
+        score: 1
+        pubDate: 1
+        field: 1
+        topics: 1
+        bookmarkCount: 1
+        commentCount: 1
+        abstract: 1
 
   Meteor.publish 'get-publication', (publicationId) ->
     uuid = Meteor.uuid()
