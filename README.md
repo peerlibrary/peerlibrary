@@ -1,9 +1,9 @@
 PeerLibrary
 ===========
 
-Transparent peer review for open access articles.
+Enriching the experience of open access scholarly literature.
 
-The PeerLibrary Project is a project of [Open Access Initiative at Berkeley](http://oa.berkeley.edu/).
+A project of the [Open Access Initiative at Berkeley](http://oa.berkeley.edu/).
 
 Development installation
 ------------------------
