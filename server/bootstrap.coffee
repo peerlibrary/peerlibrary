@@ -21,7 +21,6 @@ do -> # To not pollute the namespace
           name: 'Carl Sagan'
           username: 'carl-sagan'
         ]
-        score: 42
         pubDate: 'June 2012'
         field: 'Astrophysics'
         topics: 'High Energy Astrophysical Phenomena'
