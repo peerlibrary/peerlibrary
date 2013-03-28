@@ -9,10 +9,10 @@ do ->
       if not Session.get 'searchActive'
         searchOn()
     'keydown': (e) ->
-      if not Session.get 'searchActive'
-        char = String.fromCharCode e.which
-        if char.match(/\w/) and not e.ctrlKey
-          searchOn()
+      if (not $(e.target).is 'input') and (not Session.get 'searchActive')
+          char = String.fromCharCode e.which
+          if char.match(/\w/) and not e.ctrlKey
+            searchOn()
     'keyup': (e) ->
       if e.which is 27
         searchOff()
@@ -22,6 +22,7 @@ do ->
         handleRegister e
   
   Template.index.events searchEvents
+  Template.results.events searchEvents
   Template.profile.events searchEvents
   Template.publication.events searchEvents
 

@@ -1,7 +1,7 @@
 do -> # To not pollute the namespace
   Meteor.startup ->
     if Publications.find().count() == 0
-      console.log "Population database with sample data"
+      console.log 'Population database with sample data'
 
       Accounts.createUser
         email: 'cs@cornell.edu'
@@ -22,6 +22,7 @@ do -> # To not pollute the namespace
           username: 'carl-sagan'
         ]
         pubDate: 'June 2012'
+        topics : ['whaling', 'allegory', 'revenge', 'American', 'novel', 'nautical', 'voyage', 'Cape Cod']
         field: 'Astrophysics'
         topics: 'High Energy Astrophysical Phenomena'
         bookmarkCount: 133

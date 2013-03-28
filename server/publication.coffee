@@ -30,6 +30,8 @@ class Publication extends Document
     Publications.update @_id, $set: processed: @processed
 
 do -> # To not pollute the namespace
+  Meteor.publish 'publications', ->
+    Publications.find()
   Meteor.publish 'publications-by', (username) ->
     Publications.find
       owner: username
