@@ -21,3 +21,12 @@ And then run:
     mrt
 
 And open [http://localhost:3000/](http://localhost:3000/).
+
+### Requirements ###
+
+On first run, PeerLibrary compiles and locally installs additional libraries.
+[Cairo](http://cairographics.org/) graphic library is required for this and you
+might have to configure environment properly so that it can be successfully
+compiled. For example, on Mac OS X:
+
+    export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
