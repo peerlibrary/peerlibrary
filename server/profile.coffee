@@ -1,5 +1,5 @@
 do -> # To not pollute the namespace
-  Meteor.publish 'user', (username) ->
+  Meteor.publish 'users', (username) ->
     Meteor.users.find
       username: username
     , 

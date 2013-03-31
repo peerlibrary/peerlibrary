@@ -29,18 +29,24 @@ class Publication extends Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
+  @publicFields: ->
+    fields:
+      created: 1
+      updated: 1
+      authors: 1
+      title: 1
+      comments: 1
+      abstract: 1
+      doi: 1
+      foreignId: 1
+      source: 1
+
 do -> # To not pollute the namespace
-  Meteor.publish 'publications-by', (username) ->
+  Meteor.publish 'publications-by-owner', (username) ->
     Publications.find
       owner: username
     ,
-      fields:
-        created: 1
-        updated: 1
-        authors: 1
-        title: 1
-        comments: 1
-        abstract: 1
-        doi: 1
-        foreignId: 1
-        source: 1
+      Publication.publicFields()
+
+  Meteor.publish 'publications-by-id', (publicationId) ->
+    Publications.find publicationId, Publication.publicFields()

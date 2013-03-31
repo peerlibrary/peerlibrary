@@ -1,8 +1,5 @@
 <template name="publication">
-  {{#if publicationError }}<p>{{ publicationError }}</p>{{/if}}
-  <p>{{ publication.status }}</p>
-  {{#if publication.progress }}<p>Progress: {{ publication.progress }}</p>{{/if}}
-  {{#if publication.url }}<p>URL: {{ publication.url }}</p>{{/if}}
+  <p>URL: {{ publication.url }}</p>
 </template>
 
 <template name="publicationItem">

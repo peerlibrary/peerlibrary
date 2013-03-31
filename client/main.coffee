@@ -1,12 +1,10 @@
 do -> # To not pollute the namespace
   Meteor.Router.add
-    '/': ->
-      Session.set 'time', 123
-      'index'
+    '/': -> 'index'
     '/login': 'login'
     '/logout': ->
       Meteor.logout()
-      'hello'
+      Meteor.Router.to '/'
     '/register': 'register'
     '/p/:publicationId': (publicationId) ->
       Session.set 'currentPublicationId', publicationId
