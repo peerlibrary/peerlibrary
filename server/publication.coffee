@@ -6,10 +6,10 @@ class Publication extends Document
     @_id + '.pdf'
 
   download: =>
-    result = Meteor.http.get @originalUrl, {
+    result = Meteor.http.get @originalUrl,
       timeout: 10000 # ms
       encoding: null # PDFs are binary data
-    }
+
     if result.error
       throw result.error
     else if result.statusCode != 200
