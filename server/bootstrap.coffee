@@ -2,6 +2,8 @@ do -> # To not pollute the namespace
   ARXIV_DATA = 'https://github.com/peerlibrary/peerlibrary-data/raw/master/data.json'
 
   Meteor.startup ->
+    console.log "Starting PeerLibrary"
+
     if Meteor.users.find().count() == 0 and Publications.find().count() == 0
       console.log "Populate database with sample data"
 
@@ -44,9 +46,11 @@ do -> # To not pollute the namespace
 
         Publications.insert publication
 
-      Publications.find().forEach (publication) ->
+    Publications.find({processed: {$ne: true}}).forEach (publication) ->
+      if not publication.downloaded
         console.log "Downloading #{ publication._id } from #{ publication.url() }"
         file = publication.download()
-        # TODO: Process and store text and paragraphs
 
-      console.log "Done"
+      # TODO: Process and store text and paragraphs
+
+    console.log "Done"

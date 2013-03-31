@@ -10,6 +10,7 @@ class Publication extends Publication
     else if result.statusCode != 200
       throw new Meteor.Error 500, "Downloading failed"
 
+    # TODO: This kills fiber after some time so whole PeerLibrary is restarted
     Storage.save @filename(), result.content
 
     @downloaded = true
