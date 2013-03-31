@@ -47,3 +47,5 @@ do -> # To not pollute the namespace
           tags: [publication.source]
 
         Publications.insert publication
+
+      console.log "Done"
