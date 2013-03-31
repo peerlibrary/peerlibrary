@@ -2,7 +2,7 @@ do -> # To not pollute the namespace
   Meteor.startup ->
     Meteor.autorun ->
       console.log Session.get 'currentSearchQuery'
-      Meteor.subscribe 'publications'
+      Meteor.subscribe 'publications-by', 'carl-sagan'
 
       $('.chzn').chosen()
 

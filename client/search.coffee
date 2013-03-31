@@ -24,7 +24,6 @@ do ->
   Template.index.events searchEvents
   Template.results.events searchEvents
   Template.profile.events searchEvents
-  Template.publication.events searchEvents
 
   searchOn = ->
     Session.set 'searchActive', true

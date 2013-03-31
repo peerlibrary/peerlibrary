@@ -1,6 +1,8 @@
 GetPublication = new Meteor.Collection 'get-publication'
 
 class Publication extends Document
+  createdDay = ->
+    moment(@created).format('MMMM Do YYYY')
 
 do -> # To not pollute the namespace
   Meteor.startup ->
@@ -17,3 +19,6 @@ do -> # To not pollute the namespace
 
   Template.publication.publicationError = ->
     Session.get 'getPublicationError'
+
+  Template.publicationItem.displayDay = (time) ->
+      moment(time).format('MMMM Do YYYY')

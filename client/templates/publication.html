@@ -13,12 +13,10 @@
         <div class="clearfix"></div>
         <span class="authors line">
           {{#each authors}}
-            <a href="/u/{{username}}">{{name}}</a>
+            <a href="/u/{{username}}">{{foreNames}} {{lastName}}, </a>
           {{/each}}
         </span><br>
-        <span class="date line">{{pubDate}}</span> in
-        <span class="field line"><a href="#">{{field}}</a></span> &raquo;
-        <span class="topics line"><a href="#">{{topics}}</a></span><br>
+        <span class="date line">{{displayDay created}}</span><br>
         <span class="actions line">
           <a href="#" class="preview-link">Preview abstract</a> &middot;
           <a href="#">Full text</a>
