@@ -16,10 +16,10 @@ do -> # To not pollute the namespace
       email: $('#email').val()
       password: $('#password').val()
       #TODO: handle username conflicts
-      username: $('#name_first').val().toLowerCase() + '-' + $('#name_last').val().toLowerCase()
+      username: $('#firstName').val().toLowerCase() + '-' + $('#lastName').val().toLowerCase()
       profile:
-        name_first: $('#name_first').val()
-        name_last: $('#name_last').val()
+        firstName: $('#firstName').val()
+        lastName: $('#lastName').val()
     , (err) ->
       if err
         Session.set 'error', err.reason
