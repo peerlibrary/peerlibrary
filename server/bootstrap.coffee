@@ -39,7 +39,13 @@ do -> # To not pollute the namespace
         # TODO: Map msc2010, acm1998, and foreignCategories to tags
         _.extend publication,
           tags: [publication.source]
+          # TODO: Just temporary, remove
+          owner: 'carl-sagan'
 
         Publications.insert publication
+
+      Publications.find().forEach (publication) ->
+        console.log "Downloading #{ publication._id } from #{ publication.url() }"
+        publication.download()
 
       console.log "Done"

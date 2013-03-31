@@ -1,7 +1,4 @@
-Storage =
-  url: (filename) ->
-    '/pdf/' + filename
-
+_.extend Storage,
   _pdfPath: ->
     @_storageDirectory + @_path.sep + 'pdf'
 
