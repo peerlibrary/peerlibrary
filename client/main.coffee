@@ -18,6 +18,7 @@ do -> # To not pollute the namespace
       Session.set 'currentSearchQuery', parseQuery this.querystring
       'results'
 
+  # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
   parseQuery = (qs) ->
     query = {}
     for pair in qs.replace('?', '').split '&'
