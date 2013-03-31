@@ -1,6 +1,7 @@
 class Publication extends Publication
   download: =>
-    result = Meteor.http.get @url(),
+    # TODO: Replace with @url()
+    result = Meteor.http.get 'https://github.com/mozilla/pdf.js/raw/master/web/compressed.tracemonkey-pldi-09.pdf',
       timeout: 10000 # ms
       encoding: null # PDFs are binary data
 

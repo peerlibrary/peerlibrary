@@ -46,6 +46,7 @@ do -> # To not pollute the namespace
 
       Publications.find().forEach (publication) ->
         console.log "Downloading #{ publication._id } from #{ publication.url() }"
-        publication.download()
+        file = publication.download()
+        # TODO: Process and store text and paragraphs
 
       console.log "Done"

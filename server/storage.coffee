@@ -1,15 +1,15 @@
-_.extend Storage,
-  _pdfPath: ->
+class Storage extends Storage
+  @_pdfPath: ->
     @_storageDirectory + @_path.sep + 'pdf'
 
-  save: (filename, data) ->
+  @save: (filename, data) ->
     path = @_pdfPath()
     if !@_fs.existsSync path
       @_fs.mkdirSync path
     # TODO: For some reason if file is saved, fiber is restarted, clients reconnects and whole process is restarted and then it succeds because file is already downloaded
     @_fs.writeFileSync path + @_path.sep + filename, data
 
-  open: (filename) ->
+  @open: (filename) ->
     @_fs.readFileSync @_pdfPath() + @_path.sep + filename
 
 do -> # To not pollute the namespace

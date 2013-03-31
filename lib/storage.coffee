@@ -1,3 +1,3 @@
-Storage =
-  url: (filename) ->
+class Storage
+  @url: (filename) ->
     '/pdf/' + filename
