@@ -18,7 +18,6 @@ Storage =
 do -> # To not pollute the namespace
   require = __meteor_bootstrap__.require
 
-  assert = require 'assert'
   fs = require 'fs'
   future = require 'fibers/future'
   path = require 'path'

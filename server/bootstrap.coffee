@@ -1,38 +1,49 @@
+assert = null
+
 do -> # To not pollute the namespace
+  # We want to use assert everywhere on the server side
+  require = __meteor_bootstrap__.require
+  assert = require 'assert'
+
+  ARXIV_DATA = 'https://github.com/peerlibrary/peerlibrary-data/raw/master/data.json'
+
   Meteor.startup ->
-    if Publications.find().count() == 0
-      console.log 'Population database with sample data'
+    if Meteor.users.find().count() == 0 and Publications.find().count() == 0
+      console.log "Populate database with sample data"
+
+      console.log "Populating users"
 
       Accounts.createUser
         email: 'cs@cornell.edu'
         username: 'carl-sagan'
         password: 'hello'
         profile:
-          name_first: 'Carl'
-          name_last: 'Sagan'
+          firstName: 'Carl'
+          lastName: 'Sagan'
           position: 'Professor of Physics'
           institution: 'Cornell University'
 
-      publications = [
-        _id: 'yJWgdtENibW2Z3s5W'
-        title: 'Analytical aspects of Brownian motor effect in randomly flashing ratchets'
-        owner: 'carl-sagan'
-        authors: [
-          name: 'Carl Sagan'
-          username: 'carl-sagan'
-        ]
-        pubDate: 'June 2012'
-        topics : ['whaling', 'allegory', 'revenge', 'American', 'novel', 'nautical', 'voyage', 'Cape Cod']
-        field: 'Astrophysics'
-        topics: 'High Energy Astrophysical Phenomena'
-        bookmarkCount: 133
-        commentCount: 42
-        abstract: 'The muscle contraction, operation of ATP synthase, maintaining the shape of a cell are believed to be secured by motor proteins, which can be modelled using the Brownian ratchet mechanism.'
-        
-        originalUrl: 'https://github.com/mozilla/pdf.js/raw/master/web/compressed.tracemonkey-pldi-09.pdf'
-        downloaded: false
-        processed: false
-      ]
+      console.log "Populating publications"
+
+      console.log "Downloading arXiv data"
+
+      publications = Meteor.http.get ARXIV_DATA,
+        timeout: 10000 # ms
+
+      if publications.error
+        throw publications.error
+      else if publications.statusCode != 200
+        throw new Meteor.Error 500, "Downloading failed"
+
+      publications = JSON.parse(publications.content)
+
+      console.log "Importing arXiv data"
 
       for publication in publications
+        assert.equal publication.source, 'arXiv', "#{ publication.foreignId }: #{ publication.source }"
+
+        # TODO: Map msc2010, acm1998, and foreignCategories to tags
+        _.extend publication,
+          tags: [publication.source]
+
         Publications.insert publication
