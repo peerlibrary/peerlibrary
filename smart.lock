@@ -8,7 +8,8 @@
     "basePackages": {
       "router": {},
       "pdf.js": {},
-      "jquery-ui": {}
+      "jquery-ui": {},
+      "assert": {}
     },
     "packages": {
       "router": {
@@ -25,6 +26,11 @@
         "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",
         "tag": "v1.9.2",
         "commit": "c437d45edcf1367df8d5ffa8bad2867758030bd2"
+      },
+      "assert": {
+        "git": "https://github.com/peerlibrary/meteor-assert.git",
+        "tag": "v0.1.0",
+        "commit": "bd421be4cfe9c396b56e99673773fd9bfd2baee3"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

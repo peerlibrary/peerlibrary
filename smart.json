@@ -6,6 +6,7 @@
   "packages": {
     "router": {},
     "pdf.js": {},
-    "jquery-ui": {}
+    "jquery-ui": {},
+    "assert": {}
   }
 }

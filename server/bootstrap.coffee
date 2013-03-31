@@ -1,10 +1,4 @@
-assert = null
-
 do -> # To not pollute the namespace
-  # We want to use assert everywhere on the server side
-  require = __meteor_bootstrap__.require
-  assert = require 'assert'
-
   ARXIV_DATA = 'https://github.com/peerlibrary/peerlibrary-data/raw/master/data.json'
 
   Meteor.startup ->
