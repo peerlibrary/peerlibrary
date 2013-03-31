@@ -1,7 +1,7 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     console.log Session.get 'currentSearchQuery'
-    Meteor.subscribe 'publications'
+    Meteor.subscribe 'publications-by', 'carl-sagan'
 
     $('.chzn').chosen()
 
@@ -33,14 +33,9 @@ do -> # To not pollute the namespace
     if $(window).width() < 1140
       $('.search-tools').css
         'position':'absolute'
-
-    $(window).resize ->
-      if $(window).width() < 1140
-        $('.search-tools').css
-          'position':'absolute'
-      else
-        $('.search-tools').css
-          'position':'fixed'
+    else
+      $('.search-tools').css
+        'position':'fixed'
 
   Template.results.publications = ->
     Publications.find Session.get 'currentSearchQuery'
