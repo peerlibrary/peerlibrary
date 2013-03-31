@@ -51,6 +51,7 @@ do -> # To not pollute the namespace
         console.log "Downloading #{ publication._id } from #{ publication.url() }"
         file = publication.download()
 
-      # TODO: Process and store text and paragraphs
+      console.log "Processing #{ publication._id }"
+      publication.process file # Nothing wrong if file is not defined, process will open it itself
 
     console.log "Done"

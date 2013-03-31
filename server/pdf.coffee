@@ -45,6 +45,15 @@ PDF =
                 x = geom.x
                 y = viewport.height - geom.y
                 text = textContent.bidiTexts[appendCounter].str
+                direction = textContent.bidiTexts[appendCounter].dir
+
+                if direction == 'ttb' # Vertical text
+                  # We rotate for 90 degrees
+                  # Example: http://blogs.adobe.com/CCJKType/files/2012/07/TaroUTR50SortedList112.pdf
+                  x -= height
+                  y -= width - height
+                  [height, width] = [width, height]
+
                 appendCounter++
 
                 if !NOT_WHITESPACE.test text
@@ -56,7 +65,7 @@ PDF =
 
                 # TODO: Store into the database and find paragrahps
                 # TODO: We should just allow user to provide a callback
-                #console.log x, y, width, height, text
+                #console.log page.pageNumber, x, y, width, height, text, direction
 
             viewport = page.getViewport 1.0
             canvasElement = new canvas viewport.width, viewport.height
