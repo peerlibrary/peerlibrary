@@ -1,9 +1,12 @@
 class Publication extends Publication
   download: =>
-    # TODO: Replace with @url()
-    result = Meteor.http.get 'https://github.com/mozilla/pdf.js/raw/master/web/compressed.tracemonkey-pldi-09.pdf',
+    result = Meteor.http.get @url(),
       timeout: 10000 # ms
       encoding: null # PDFs are binary data
+      headers:
+        # TODO: We set user agent so that arXiv allows us to download PDFs, but we should not misuse this and should switch to S3 for real thing
+        # http://arxiv.org/help/bulk_data_s3, https://github.com/possibilities/meteor-awssum, http://awssum.io/amazon/s3/
+        'User-Agent': 'Wget'
 
     if result.error
       throw result.error
