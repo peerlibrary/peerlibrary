@@ -42,11 +42,14 @@ class Publication extends Publication
       source: 1
 
 do -> # To not pollute the namespace
-  Meteor.publish 'publications-by-owner', (username) ->
+  Meteor.publish 'publications-by-owner', (owner) ->
     Publications.find
-      owner: username
+      owner: owner
     ,
       Publication.publicFields()
 
-  Meteor.publish 'publications-by-id', (publicationId) ->
-    Publications.find publicationId, Publication.publicFields()
+  Meteor.publish 'publications-by-id', (id) ->
+    Publications.find id, Publication.publicFields()
+
+  Meteor.publish 'publications-by-ids', (ids) ->
+    Publications.find {_id: {$in: ids}}, Publication.publicFields()
