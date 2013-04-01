@@ -9,6 +9,15 @@ do -> # To not pollute the namespace
 
   httpGetByLine = (url, lineCallback) ->
     httpGetByLineAsync = (finalCallback) ->
+      finished = false
+      lineCallbackCounter = 0
+      lineCallbackWrapped = (line) ->
+        lineCallbackCounter++
+        lineCallback line
+        lineCallbackCounter--
+        if finished and lineCallbackCounter == 0
+          finalCallback()
+
       req = http.get(url).on(
         'error', (err) -> throw new Error err
       ).on(
@@ -21,10 +30,14 @@ do -> # To not pollute the namespace
               buffer += chunk
               lines = buffer.split '\n'
               for line in lines[0...lines.length-1]
-                fibers(lineCallback).run(line)
+                fibers(lineCallbackWrapped).run(line)
               buffer = lines[lines.length-1]
           ).on(
-            'end', () -> finalCallback()
+            'end', () ->
+              fibers(lineCallbackWrapped).run(buffer) if buffer
+              finished = true
+              if lineCallbackCounter == 0
+                finalCallback()
           ).on(
             'close', () -> throw new Error "Connection closed"
           )
