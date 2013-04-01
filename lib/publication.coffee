@@ -5,7 +5,7 @@ class Publication extends Document
     @_id + '.pdf'
 
   url: =>
-    if @downloaded
+    if @cached
       return Storage.url @filename()
 
     switch @source

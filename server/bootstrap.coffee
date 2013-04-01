@@ -84,11 +84,11 @@ do -> # To not pollute the namespace
         counter++
         console.log "Imported ##{ counter }: #{ id }"
 
-    # Download and process only the first 10 publications
+    # Cacche and process only the first 10 publications
     Publications.find({processed: {$ne: true}}, {limit: 10}).forEach (publication) ->
-      if not publication.downloaded
-        console.log "Downloading #{ publication._id } from #{ publication.url() }"
-        file = publication.download()
+      if not publication.cached
+        console.log "Caching #{ publication._id } from #{ publication.url() }"
+        file = publication.cache()
 
       console.log "Processing #{ publication._id }"
       publication.process file # Nothing wrong if file is not defined, process will open it itself
