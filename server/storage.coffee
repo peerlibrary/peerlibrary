@@ -6,7 +6,6 @@ class Storage extends Storage
     path = @_pdfPath()
     if !@_fs.existsSync path
       @_fs.mkdirSync path
-    # TODO: For some reason if file is saved, fiber is restarted, clients reconnects and whole process is restarted and then it succeds because file is already downloaded
     @_fs.writeFileSync path + @_path.sep + filename, data
 
   @open: (filename) ->
