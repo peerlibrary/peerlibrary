@@ -1,5 +1,37 @@
 do -> # To not pollute the namespace
-  ARXIV_DATA = 'https://github.com/peerlibrary/peerlibrary-data/raw/master/data.json'
+  ARXIV_DATA = 'http://dl.dropbox.com/s/ktlkhbn75y4fh05/data.json'
+
+  require = __meteor_bootstrap__.require
+
+  fibers = require 'fibers'
+  future = require 'fibers/future'
+  http = require 'http'
+
+  httpGetByLine = (url, lineCallback) ->
+    httpGetByLineAsync = (finalCallback) ->
+      req = http.get(url).on(
+        'error', (err) -> throw new Error err
+      ).on(
+        'response', (response) ->
+          console.log "Data size: #{ response.headers['content-length'] / 1024 / 1024 } MB"
+          buffer = ''
+          response.setEncoding 'utf-8'
+          response.on(
+            'data', (chunk) ->
+              buffer += chunk
+              lines = buffer.split '\n'
+              for line in lines[0...lines.length-1]
+                fibers(lineCallback).run(line)
+              buffer = lines[lines.length-1]
+          ).on(
+            'end', () -> finalCallback()
+          ).on(
+            'close', () -> throw new Error "Connection closed"
+          )
+      )
+      req.setTimeout 10000, -> # ms
+        req.abort()
+    future.wrap(httpGetByLineAsync)().wait()
 
   Meteor.startup ->
     console.log "Starting PeerLibrary"
@@ -21,21 +53,12 @@ do -> # To not pollute the namespace
 
       console.log "Populating publications"
 
-      console.log "Downloading arXiv data"
-
-      publications = Meteor.http.get ARXIV_DATA,
-        timeout: 10000 # ms
-
-      if publications.error
-        throw publications.error
-      else if publications.statusCode != 200
-        throw new Meteor.Error 500, "Downloading failed"
-
-      publications = JSON.parse(publications.content)
-
       console.log "Importing arXiv data"
 
-      for publication in publications
+      counter = 0
+      httpGetByLine ARXIV_DATA, (line) ->
+        publication = JSON.parse(line)
+
         assert.equal publication.source, 'arXiv', "#{ publication.foreignId }: #{ publication.source }"
 
         # TODO: Map msc2010, acm1998, and foreignCategories to tags
@@ -44,9 +67,12 @@ do -> # To not pollute the namespace
           # TODO: Just temporary, remove
           owner: 'carl-sagan'
 
-        Publications.insert publication
+        id = Publications.insert publication
+        counter++
+        console.log "Imported ##{ counter }: #{ id }"
 
-    Publications.find({processed: {$ne: true}}).forEach (publication) ->
+    # Download and process only the first 10 publications
+    Publications.find({processed: {$ne: true}}, {limit: 10}).forEach (publication) ->
       if not publication.downloaded
         console.log "Downloading #{ publication._id } from #{ publication.url() }"
         file = publication.download()
