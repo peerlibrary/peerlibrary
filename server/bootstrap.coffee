@@ -33,13 +33,13 @@ do -> # To not pollute the namespace
                 fibers(lineCallbackWrapped).run(line)
               buffer = lines[lines.length-1]
           ).on(
-            'end', () ->
+            'end', ->
               fibers(lineCallbackWrapped).run(buffer) if buffer
               finished = true
               if lineCallbackCounter == 0
                 finalCallback()
           ).on(
-            'close', () -> throw new Error "Connection closed"
+            'close', -> throw new Error "Connection closed"
           )
       )
       req.setTimeout 10000, -> # ms
