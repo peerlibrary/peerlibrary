@@ -21,10 +21,13 @@ do -> # To not pollute the namespace
   Meteor.publish 'search-results', (query) ->
     if _.isString(query)
       # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
-      query = [
+      realQuery = [
         key: "containing"
         value: query
       ]
+    else
+      # TODO: Validate?
+      realQuery = query
 
     # TODO: Do some real seaching
     # TODO: How to influence order of results? Should we have just simply a field?
