@@ -27,9 +27,11 @@ do -> # To not pollute the namespace
       ]
 
     # TODO: Do some real seaching
+    # TODO: How to influence order of results? Should we have just simply a field?
     handle = Publications.find().observeChanges
       added: (id, fields) =>
-        @added 'search-results', id, {}
+        # TODO: Currently, we are adding whole query so that results can be identified if there are multiple serch queries going on at the same time, we should probably allow client to supply some query ID or something?
+        @added 'search-results', id, {query: query}
       removed: (id) =>
         @removed 'search-results', id
 
