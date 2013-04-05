@@ -4,6 +4,7 @@ do -> # To not pollute the namespace
       ids = SearchResults.find().map (result) -> result._id
       Meteor.subscribe 'publications-by-ids', ids
 
+  Template.results.rendered = ->
     $('.chzn').chosen()
 
     $('#score-range').slider
