@@ -4,6 +4,3 @@ do -> # To not pollute the namespace
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
-
-  Template.publicationItem.displayDay = (time) ->
-      moment(time).format 'MMMM Do YYYY'
