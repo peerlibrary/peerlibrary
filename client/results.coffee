@@ -1,7 +1,8 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
-    console.log Session.get 'currentSearchQuery'
-    Meteor.subscribe 'publications-by', 'carl-sagan'
+    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), ->
+      ids = SearchResults.find().map (result) -> result._id
+      Meteor.subscribe 'publications-by-ids', ids
 
     $('.chzn').chosen()
 
@@ -38,4 +39,4 @@ do -> # To not pollute the namespace
         'position':'fixed'
 
   Template.results.publications = ->
-    Publications.find Session.get 'currentSearchQuery'
+    Publications.find()
