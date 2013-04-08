@@ -1,8 +1,9 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
+    Session.set 'lastResultSubscribed', 0
     Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), ->
-      ids = SearchResults.find().map (result) -> result._id
-      Meteor.subscribe 'publications-by-ids', ids
+      Session.set 'resultIds', SearchResults.find().map (result) -> result._id
+      subscribeToNext(25)
 
   Template.results.rendered = ->
     $('.chzn').chosen()
@@ -38,6 +39,18 @@ do -> # To not pollute the namespace
     else
       $('.search-tools').css
         'position':'fixed'
+
+  Template.results.created = ->
+    # infinite scrolling
+    $(window).on 'scroll', ->
+      if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
+        subscribeToNext(25)
+
+  subscribeToNext = (numResults) ->
+    next = Session.get('lastResultSubscribed') + numResults
+    Session.set 'lastResultSubscribed', next
+    console.log next
+    Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
 
   Template.results.publications = ->
     Publications.find()
