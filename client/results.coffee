@@ -1,8 +1,11 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
-    console.log Session.get 'currentSearchQuery'
-    Meteor.subscribe 'publications-by', 'carl-sagan'
+    Session.set 'lastResultSubscribed', 0
+    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), ->
+      Session.set 'resultIds', SearchResults.find().map (result) -> result._id
+      subscribeToNext(25)
 
+  Template.results.rendered = ->
     $('.chzn').chosen()
 
     $('#score-range').slider
@@ -31,11 +34,24 @@ do -> # To not pollute the namespace
 
     # adjust positioning of sidebar
     if $(window).width() < 1140
-      $('.search-tools').css
-        'position':'absolute'
-    else
-      $('.search-tools').css
-        'position':'fixed'
+      $(".search-tools").css position: "absolute"
+    $(window).resize ->
+      if $(window).width() < 1140
+        $(".search-tools").css position: "absolute"
+      else
+        $(".search-tools").css position: "fixed"
+
+  Template.results.created = ->
+    # infinite scrolling
+    $(window).on 'scroll', ->
+      if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
+        subscribeToNext(25)
+
+  subscribeToNext = (numResults) ->
+    next = Session.get('lastResultSubscribed') + numResults
+    Session.set 'lastResultSubscribed', next
+    console.log next
+    Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
 
   Template.results.publications = ->
-    Publications.find Session.get 'currentSearchQuery'
+    Publications.find()

@@ -11,3 +11,6 @@ class Publication extends Document
     switch @source
       when 'arXiv' then "http://arxiv.org/pdf/#{ @foreignId }"
       else assert false, @source
+      
+  createdDay = =>
+    moment(@created).format 'MMMM Do YYYY'

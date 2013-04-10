@@ -9,17 +9,18 @@ do ->
       if not Session.get 'searchActive'
         searchOn()
     'keydown': (e) ->
-      if (not $(e.target).is 'input') and (not Session.get 'searchActive')
-          char = String.fromCharCode e.which
-          if char.match(/\w/) and not e.ctrlKey
-            searchOn()
+      if ((not $(e.target).is 'input') or ($(e.target).is '.search-input')) and (not Session.get 'searchActive')
+        char = String.fromCharCode e.which
+        if char.match(/\w/) and not e.ctrlKey
+          searchOn()
     'keyup': (e) ->
       if e.which is 27
         searchOff()
     'keypress input': (e) ->
       if e.which is 13
         e.preventDefault()
-        handleRegister e
+        Meteor.Router.to '/search'
+        searchOff()
   
   Template.index.events searchEvents
   Template.results.events searchEvents
