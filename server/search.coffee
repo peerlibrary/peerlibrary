@@ -13,7 +13,7 @@ do -> # To not pollute the namespace
           value: "#{ publication.authors[0].lastName } et al."
         ]
       proposals.push [
-        key: "containing"
+        key: ""
         value: query
       ]
       proposals
