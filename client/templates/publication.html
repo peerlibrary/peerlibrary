@@ -1,5 +1,94 @@
 <template name="publication">
-  <p>URL: {{ publication.url }}</p>
+  <div id="viewer">
+    <div class="sidebar">
+      <div class="header">
+        <a href="/"><img src="/img/logo.png" class="logo" /></a>
+      </div>
+      <div class="menubar">
+        <ul class="nav">
+          <li>
+            <a href="#" class="details-link active">Details</a>
+          </li>
+          <li>
+            <a href="#" class="discussion-link">Discussion [50]</a>
+          </li>
+        </ul>
+      </div>
+      <div class="clearfix"></div>
+      <div class="wrap">
+        <div class="details">
+          <div class="title-wrap">
+            <h4 class="title">{{publication.title}}</h4>
+            <span class="authors">
+              {{#each publication.authors}}
+                <a href="/u/{{username}}">{{foreNames}} {{lastName}}, </a>
+              {{/each}}
+            </span>
+            <div class="clearfix"></div>
+          </div>
+          <div class="btn-wrap">
+            <a href="#" class="btn">
+              <i class="icon-plus-sign-alt"></i> Add to library 
+            </a>
+            <a href="#" class="btn">
+              <i class="icon-download-alt"></i> Download PDF 
+            </a>
+          </div>
+          <div class="publication-details">
+            <p>
+              <b>Keywords: </b>
+              {{#each publication.keywords}}
+                <a href="{{slug}}">{{name}}, </a>
+              {{/each}}
+            </p>
+            <p>
+              <b>Published in: </b>
+              <a href="#" class="journal-link">{{publication.source}}</a>
+            </p>
+            <p class="pub-info">
+              <b>Publisher:</b> Scientific Research Publishing
+              <b>ISSN/EISSN:</b> 10994300
+              <b>Year:</b> 2009
+              <b>Volume:</b> 6
+              <b>Issue:</b> 1
+              <b>Pages:</b> 76 - 86
+              <b>DOI:</b> 10.3390/e6010074
+            </p>
+            <div class="citations-list">
+              <h2>Citations</h2>
+              <span class="count-badge">22</span>
+              <div class="clearfix"></div>
+              <ol class="pub-list">
+                <li>
+                  <a href="#">Simple word problems in universal algebras</a> - Knuth, Bendix - 1970
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="discussion">
+          <div class="threads-wrap">
+            <h4>Filter discussions by thread [50]</h4>
+            <ol class="thread-list">
+              <li class="thread-item">
+                <p class="thread-preview">
+                  <span class="paragraph-ref">p 5</span>
+                  <b>Method-based dynamic compilers, our dynamic compiler operates at the granularity of individual loops.</b>
+                </p>
+                <p class="last-activity">
+                  4:45 pm by <a href="">Tony Chen</a>
+                </p>
+                <i class="icon-chevron-right"></i>
+                <div class="clearfix"></div>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="window">
+      <iframe src="http://mozilla.github.com/pdf.js/web/viewer.html"></iframe>
+    </div>
+  </div>
 </template>
 
 <template name="publicationItem">

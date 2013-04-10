@@ -1,3 +1,5 @@
+@import url('chosen.css');
+
 html,
 button,
 input,
@@ -56,7 +58,7 @@ textarea {
         ============================*/
     
 a {
-    color: #87939c;
+    color: #30507c;
     text-decoration: none;
 }
 
@@ -65,7 +67,7 @@ a:hover {
 }
 
 a:visited {
-    color: #667d8d;
+    color: #30507c;
 }
     
 p {
@@ -85,6 +87,37 @@ input { font-family: 'Source Sans Pro', sans-serif; }
 /* ===========================
 		ui-styles
 	=============================== */
+	
+/* custom scrollbars*/
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment {
+    display: none;
+    height: 0;
+}
+
+::-webkit-scrollbar-button:vertical:increment {
+    background-color: #fff;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: #eee;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    height: 50px;
+    background-color: #adadad;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+    width: 50px;
+    background-color: #adadad;
+}
+	
 input:focus {
 	outline: none;
 }	
@@ -144,26 +177,70 @@ input:focus {
 	user-select: none;
 }
 
+.count-badge {
+	font-size: 0.7em;
+	font-weight: 600;
+	color: white;
+	background: #7d8b9b;
+	display: inline-block;
+	padding: 6px;
+	margin-left: 5px;
+	
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
+	border-radius: 20px;
+}
+
+button.btn-blue {
+    display: block ;
+    font-size: 1em;
+    font-weight: 400;
+    padding: 10px 20px;
+    height: 36px;
+    background: #2884da;
+    color: white;
+    border: 1px solid #1d5b95;
+    
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    
+    -webkit-transition: 0.2s;
+    -moz-transition: 0.2s;
+    transition: 0.2s;
+}
+
+button.btn-blue:hover {
+    background: #277bc9;
+}
+
+button.btn-blue:active {  
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
 /* =============================
         ghp
-    =============================*/
+   =============================*/
 
-#home {
+body#home {
     min-height: 600px;
-    height: 100%;
+    height: auto;
+    position: relative;
     
   background: url('/img/graph_bg.jpg') no-repeat center center; 
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='.myBackground.jpg', sizingMethod='scale');
-    -ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='myBackground.jpg', sizingMethod='scale')"
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/img/graph_bg.jpg', sizingMethod='scale');
+    -ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/img/graph_bg.jpg', sizingMethod='scale')"
 }
 
 /* ===============================
         Register / Sign up
-        ============================*/
+   ============================*/
 
 .auth-wrapper {
     width: 100%;
@@ -356,7 +433,7 @@ header .menu ul.nav li a:hover {
     text-align: center;
     margin-right: 20px;
     padding: 5px 20px;
-    min-width: 70px;
+    min-width: 100px;
     text-decoration: none;
     display: block;
     float: left;
@@ -455,10 +532,14 @@ ol.item-list .abstract, .article-summary .abstract, .review-list .abstract {
 		position: relative;
 }
 
+/* article details */
+.details {
+	
+}
+
 /* review list */
 .review-list {
     padding: 20px 0;
-    display: none;
 }
 
 .review-list li {
