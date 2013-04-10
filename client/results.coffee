@@ -34,11 +34,12 @@ do -> # To not pollute the namespace
 
     # adjust positioning of sidebar
     if $(window).width() < 1140
-      $('.search-tools').css
-        'position':'absolute'
-    else
-      $('.search-tools').css
-        'position':'fixed'
+      $(".search-tools").css position: "absolute"
+    $(window).resize ->
+      if $(window).width() < 1140
+        $(".search-tools").css position: "absolute"
+      else
+        $(".search-tools").css position: "fixed"
 
   Template.results.created = ->
     # infinite scrolling
