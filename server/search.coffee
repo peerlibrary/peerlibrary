@@ -34,9 +34,9 @@ do -> # To not pollute the namespace
     handle = Publications.find({}, {limit: 1000}).observeChanges
       added: (id, fields) =>
         # TODO: Currently, we are adding whole query so that results can be identified if there are multiple serch queries going on at the same time, we should probably allow client to supply some query ID or something?
-        @added 'search-results', id, {query: query}
+        @added 'SearchResults', id, {query: query}
       removed: (id) =>
-        @removed 'search-results', id
+        @removed 'SearchResults', id
 
     @ready()
 

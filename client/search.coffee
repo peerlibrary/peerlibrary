@@ -1,3 +1,5 @@
+SearchResults = new Meteor.Collection 'SearchResults', transform: (doc) -> new SearchResult doc
+
 do ->
   searchEvents = 
     'click .search-link': (e) ->
