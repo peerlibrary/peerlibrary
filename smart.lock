@@ -14,8 +14,8 @@
     "packages": {
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
-        "tag": "v0.4.3",
-        "commit": "0691a6e2c4c249ce7d00cd6dc7ad27e1c7330a31"
+        "tag": "v0.5.0",
+        "commit": "b1ee74c816d1fc63b713139158075feb8a0c6d26"
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
