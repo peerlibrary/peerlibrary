@@ -1,10 +1,10 @@
 $(document).ready(function(){
-	
+
 	//combine slide and fade toggle
 	$.fn.slideFadeToggle  = function(speed, easing, callback) {
 		return this.animate({opacity: 'toggle', height: 'toggle'}, speed, easing, callback);
 	};
-	
+
 	$('.preview-link').click(function(){
 		$(this).parent().parent().siblings('.abstract').slideFadeToggle();
 	});
@@ -29,7 +29,7 @@ $(document).ready(function(){
 		$('.full-text-link').removeClass('active');
 		$('.discussion-link').removeClass('active');
 	});
-	
+
 	$('.discussion-link').click(function(){
 		$('.item-list').hide();
 		$('.review-list').hide();
