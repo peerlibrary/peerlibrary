@@ -7,6 +7,10 @@
     "router": {},
     "pdf.js": {},
     "jquery-ui": {},
-    "assert": {}
+    "assert": {},
+    "aws-sdk": {},
+    "tar": {},
+    "blocking": {},
+    "moment": {}
   }
 }

@@ -1,30 +1,13 @@
 class Publication extends Publication
-  cache: =>
-    result = Meteor.http.get @url(),
-      timeout: 10000 # ms
-      encoding: null # PDFs are binary data
-      headers:
-        # TODO: We set user agent so that arXiv allows us to cache PDFs, but we should not misuse this and should switch to S3 for real thing
-        # http://arxiv.org/help/bulk_data_s3, https://github.com/possibilities/meteor-awssum, http://awssum.io/amazon/s3/
-        'User-Agent': 'Wget'
+  checkCache: =>
+    if Storage.exists @filename()
+      @cached = true
+      Publications.update @_id, $set: cached: @cached
 
-    if result.error
-      throw result.error
-    else if result.statusCode != 200
-      throw new Meteor.Error 500, "Caching failed"
-
-    # TODO: This kills fiber after some time so whole PeerLibrary is restarted
-    Storage.save @filename(), result.content
-
-    @cached = true
-    Publications.update @_id, $set: cached: @cached
-
-    result.content
-
-  process: (pdfFile, progressCallback) =>
-    pdfFile ?= Storage.open @filename()
+  process: (pdf, progressCallback) =>
+    pdf ?= Storage.open @filename()
     progressCallback ?= ->
-    PDF.process pdfFile, progressCallback
+    PDF.process pdf, progressCallback
 
     @processed = true
     Publications.update @_id, $set: processed: @processed

@@ -91,7 +91,13 @@ do -> # To not pollute the namespace
           )
 
         processTar file.Key, (path, pdf) ->
-          console.log "Processing PDF: #{ path }"
+          path = path.split /\/|\\/
+          filename = path[path.length - 1]
+          console.log "Processing PDF: #{ filename }"
+
+          Storage.save 'arxiv' + Storage._path.sep + filename, pdf
 
         # TODO: For now
         break
+
+      console.log "Done"

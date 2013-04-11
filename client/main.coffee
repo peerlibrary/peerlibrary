@@ -15,6 +15,9 @@ do -> # To not pollute the namespace
     '/search': ->
       Session.set 'currentSearchQuery', parseQuery this.querystring
       'results'
+    '/admin': ->
+      Meteor.subscribe 'arxiv-pdfs'
+      'admin'
 
   # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
   parseQuery = (qs) ->

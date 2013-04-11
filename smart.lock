@@ -9,7 +9,11 @@
       "router": {},
       "pdf.js": {},
       "jquery-ui": {},
-      "assert": {}
+      "assert": {},
+      "aws-sdk": {},
+      "tar": {},
+      "blocking": {},
+      "moment": {}
     },
     "packages": {
       "router": {
@@ -31,6 +35,26 @@
         "git": "https://github.com/peerlibrary/meteor-assert.git",
         "tag": "v0.1.0",
         "commit": "bd421be4cfe9c396b56e99673773fd9bfd2baee3"
+      },
+      "aws-sdk": {
+        "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
+        "tag": "v0.1.1",
+        "commit": "af7630600f2f0063acbe87184f6e01981081b306"
+      },
+      "tar": {
+        "git": "https://github.com/peerlibrary/meteor-tar.git",
+        "tag": "v0.1.0",
+        "commit": "a47a146b8fdb4e98bcd89612473914c685034665"
+      },
+      "blocking": {
+        "git": "https://github.com/peerlibrary/meteor-blocking.git",
+        "tag": "v0.1.2",
+        "commit": "7c1e5e0c8bcd72fbea777a74265e4af6b090e273"
+      },
+      "moment": {
+        "git": "https://github.com/possibilities/meteor-moment.git",
+        "tag": "v1.7.0",
+        "commit": "c64b6ec0e714b9556f4b6643d430b868ba69d3d7"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

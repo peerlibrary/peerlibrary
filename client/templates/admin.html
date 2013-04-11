@@ -1,0 +1,17 @@
+<template name="admin">
+  {{> header}}
+  {{> arXivRefresh }}
+  <ul>
+    {{#each arXivPDFs}}
+      {{> arXivPDF}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="arXivPDF">
+  <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
+</template>
+
+<template name="arXivRefresh">
+  <button>Refresh arXiv PDFs</button>
+</template>

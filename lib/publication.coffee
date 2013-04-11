@@ -23,12 +23,8 @@ class Publication extends Document
     @_id + '.pdf'
 
   url: =>
-    if @cached
-      return Storage.url @filename()
+    console.warn "PDF #{ @_id } not cached" if not @cached
+    Storage.url @filename()
 
-    switch @source
-      when 'arXiv' then "http://arxiv.org/pdf/#{ @foreignId }"
-      else assert false, @source
-      
   createdDay = =>
     moment(@created).format 'MMMM Do YYYY'

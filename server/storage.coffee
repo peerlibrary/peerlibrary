@@ -2,11 +2,20 @@ class Storage extends Storage
   @_pdfPath: ->
     @_storageDirectory + @_path.sep + 'pdf'
 
+  @_assurePath: (path) ->
+    path = path.split @_path.sep
+    for segment, i in path[1...path.length-1]
+      p = path[0..i+1].join @_path.sep
+      if !@_fs.existsSync p
+        @_fs.mkdirSync p
+
   @save: (filename, data) ->
-    path = @_pdfPath()
-    if !@_fs.existsSync path
-      @_fs.mkdirSync path
-    @_fs.writeFileSync path + @_path.sep + filename, data
+    filename = @_pdfPath() + @_path.sep + filename
+    @_assurePath filename
+    @_fs.writeFileSync filename, data
+
+  @exists: (filename) ->
+    @_fs.existsSync @_pdfPath() + @_path.sep + filename
 
   @open: (filename) ->
     @_fs.readFileSync @_pdfPath() + @_path.sep + filename
