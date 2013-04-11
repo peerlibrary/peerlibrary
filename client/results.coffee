@@ -50,6 +50,7 @@ do -> # To not pollute the namespace
   subscribeToNext = (numResults) ->
     next = Session.get('lastResultSubscribed') + numResults
     Session.set 'lastResultSubscribed', next
+    # TODO: Remove debug
     console.log next
     Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
 
