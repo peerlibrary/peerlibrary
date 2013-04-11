@@ -45,7 +45,7 @@ do -> # To not pollute the namespace
           eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
           size: file.Size
 
-        if ArXivPDFs.find(fileObj).count() != 0
+        if ArXivPDFs.find(fileObj, limit: 1).count() != 0
           continue
 
         processPDF = (fun, props, pdf) ->
@@ -230,3 +230,10 @@ do -> # To not pollute the namespace
         #if publication.msc2010?
         # We check if we really converted without "(primary)" and similar strings
         #assert.equal (cls for cls in publication.msc2010 when cls.match(/[()]/)).length, 0, "#{ publication.foreignId }: #{ publication.msc2010 }"
+
+        # TODO: Upsert would be better
+        if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+          id = Publications.insert publication
+          console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+
+      console.log "Done"
