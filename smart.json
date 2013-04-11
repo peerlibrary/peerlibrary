@@ -11,6 +11,8 @@
     "aws-sdk": {},
     "tar": {},
     "blocking": {},
-    "moment": {}
+    "moment": {},
+    "xml2js": {},
+    "util": {}
   }
 }

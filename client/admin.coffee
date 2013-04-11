@@ -3,5 +3,7 @@ do -> # To not pollute the namespace
     ArXivPDFs.find()
 
   Template.arXivRefresh.events
-    'click button': (e) ->
+    'click button.arxiv-pdfs': (e) ->
       Meteor.call 'refresh-arxhiv-pdfs'
+    'click button.arxiv-meta': (e) ->
+      Meteor.call 'refresh-arxhiv-meta'

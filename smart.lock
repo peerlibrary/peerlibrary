@@ -13,7 +13,9 @@
       "aws-sdk": {},
       "tar": {},
       "blocking": {},
-      "moment": {}
+      "moment": {},
+      "xml2js": {},
+      "util": {}
     },
     "packages": {
       "router": {
@@ -55,6 +57,16 @@
         "git": "https://github.com/possibilities/meteor-moment.git",
         "tag": "v1.7.0",
         "commit": "c64b6ec0e714b9556f4b6643d430b868ba69d3d7"
+      },
+      "xml2js": {
+        "git": "https://github.com/peerlibrary/meteor-xml2js.git",
+        "tag": "v0.1.0",
+        "commit": "d4410a007f835daf0cd3493236a31ab28688c025"
+      },
+      "util": {
+        "git": "https://github.com/peerlibrary/meteor-util.git",
+        "tag": "v0.1.0",
+        "commit": "cea4bec87db003bf083ad825571c1396ea7fae92"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
