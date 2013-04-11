@@ -6,6 +6,12 @@ do -> # To not pollute the namespace
   else
     console.warn "AWS settings missing, arXiv PDF processing will not work"
 
+  # It seems there are no subject classes
+  ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
+
+  # It seems there are no versions in PDFs
+  ARXIV_NEW_ID_REGEX = /(?:\/|\\)([\d.]+)\.pdf$/i
+
   Meteor.methods
     'refresh-arxhiv-pdfs': ->
       console.log "Refreshing arXiv PDFs"
@@ -30,11 +36,11 @@ do -> # To not pollute the namespace
           continue
 
         processPDF = (fun, props, pdf) ->
-          match = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i.exec props.path
+          match = ARXIV_OLD_ID_REGEX.exec props.path
           if match
             id = match[1] + '/' + match[2]
           else
-            match = /(?:\/|\\)([\d.]+)\.pdf$/i.exec props.path
+            match = ARXIV_NEW_ID_REGEX.exec props.path
             if match
               id = match[1]
             else
@@ -105,8 +111,5 @@ do -> # To not pollute the namespace
           console.log "Processing PDF: #{ id }"
 
           Storage.save 'arxiv' + Storage._path.sep + id + '.pdf', pdf
-
-        # TODO: For now
-        break
 
       console.log "Done"
