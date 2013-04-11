@@ -30,13 +30,24 @@ do -> # To not pollute the namespace
           continue
 
         processPDF = (fun, props, pdf) ->
+          match = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i.exec props.path
+          if match
+            id = match[1] + '/' + match[2]
+          else
+            match = /(?:\/|\\)([\d.]+)\.pdf$/i.exec props.path
+            if match
+              id = match[1]
+            else
+              throw new Error "Invalid filename #{ props.path }"
+
           ArXivPDFs.update fileObj._id,
             $addToSet:
               PDFs:
+                id: id
                 path: props.path
                 size: props.size
                 mtime: moment.utc(props.mtime).toDate()
-          fun props.path, pdf
+          fun id, pdf
 
         processTar = blocking (key, fun, cb) ->
           finished = false
@@ -90,12 +101,10 @@ do -> # To not pollute the namespace
               blocking.Fiber(finalCallback).run()
           )
 
-        processTar file.Key, (path, pdf) ->
-          path = path.split /\/|\\/
-          filename = path[path.length - 1]
-          console.log "Processing PDF: #{ filename }"
+        processTar file.Key, (id, pdf) ->
+          console.log "Processing PDF: #{ id }"
 
-          Storage.save 'arxiv' + Storage._path.sep + filename, pdf
+          Storage.save 'arxiv' + Storage._path.sep + id + '.pdf', pdf
 
         # TODO: For now
         break

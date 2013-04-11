@@ -8,6 +8,7 @@ class ArXivPDF extends Document
   # processingStart: timestamp when processing started
   # processingEnd: timestamp when precessing ended
   # PDFs: a list of processed PDFs in this file:
+  #   id
   #   path
   #   size
   #   mtime
