@@ -7,6 +7,14 @@ do -> # To not pollute the namespace
 
   publicationEvents = 
     #TODO: click .details-link, .discussion-link
+    'click .details-link': (e) ->
+      e.preventDefault()
+      $('.discussion').hide()
+      $('.details').fadeIn 250
+    'click .discussion-link': (e) ->
+      e.preventDefault()
+      $('.details').hide()
+      $('.discussion').fadeIn 250
     'click .journal-link': (e) ->
       $('.pub-info').slideToggle 'fast'
     'click .thread-item': (e) ->
@@ -33,6 +41,7 @@ do -> # To not pollute the namespace
       $('.edit-options').fadeIn 200
     'click .save-link': (e) ->
       e.preventDefault()
+      Session.set 'tempSummary', $('.paragraph-summary').text()
       $('.paragraph-summary').removeClass 'active'
       $('div[contentEditable="true"]').blur()
       $('.save-options').hide()
@@ -45,6 +54,8 @@ do -> # To not pollute the namespace
   Template.publication.events publicationEvents
 
   Template.publication.rendered = ->
+    $('.discussion').hide()
+
     #select end of contenteditable true entity
     setEndOfContenteditable = (contentEditableElement) ->
       if document.createRange #Firefox, Chrome, Opera, Safari, IE 9+
