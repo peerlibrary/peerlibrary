@@ -14,6 +14,7 @@
     "moment": {},
     "xml2js": {},
     "util": {},
-    "dimsum": {}
+    "dimsum": {},
+    "connect": {}
   }
 }

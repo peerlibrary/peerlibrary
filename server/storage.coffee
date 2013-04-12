@@ -1,7 +1,4 @@
 class Storage extends Storage
-  @_pdfPath: ->
-    @_storageDirectory + @_path.sep + 'pdf'
-
   @_assurePath: (path) ->
     path = path.split @_path.sep
     for segment, i in path[1...path.length-1]
@@ -10,15 +7,15 @@ class Storage extends Storage
         @_fs.mkdirSync p
 
   @save: (filename, data) ->
-    filename = @_pdfPath() + @_path.sep + filename
+    filename = @_storageDirectory + @_path.sep + filename
     @_assurePath filename
     @_fs.writeFileSync filename, data
 
   @exists: (filename) ->
-    @_fs.existsSync @_pdfPath() + @_path.sep + filename
+    @_fs.existsSync @_storageDirectory + @_path.sep + filename
 
   @open: (filename) ->
-    @_fs.readFileSync @_pdfPath() + @_path.sep + filename
+    @_fs.readFileSync @_storageDirectory + @_path.sep + filename
 
 do -> # To not pollute the namespace
   require = __meteor_bootstrap__.require
@@ -30,14 +27,20 @@ do -> # To not pollute the namespace
   # Find .meteor directory
   directoryPath = process.mainModule.filename.split path.sep
   while directoryPath.length > 0
-    directory = directoryPath.pop()
-    if directory == '.meteor'
+    if directoryPath[directoryPath.length - 1] == '.meteor'
       break
+    directoryPath.pop()
 
   assert directoryPath.length > 0
 
-  directoryPath.push 'public'
+  directoryPath.push 'pdf'
   Storage._storageDirectory = directoryPath.join path.sep
   Storage._fs = fs
   Storage._future = future
   Storage._path = path
+
+  # TODO: What about security? If ../.. are passed in?
+  # TODO: Currently, if there is no file, processing is passed further and Meteor return 200 content, we should return 404 for this files
+  # TODO: Add CORS headers
+  # TODO: We have redirect == false because directory redirects do not take prefix into the account
+  __meteor_bootstrap__.app.use('/pdf', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
