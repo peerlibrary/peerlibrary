@@ -8,7 +8,7 @@ do -> # To not pollute the namespace
 
   # It seems there are no subject classes
   ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
-  # It seems there are no versions in PDFs
+  # It seems there are no versions in PDF filenames
   ARXIV_NEW_ID_REGEX = /(?:\/|\\)([\d.]+)\.pdf$/i
   # From http://export.arxiv.org/oai2?verb=Identify
   ARXIV_EARLIEST_DATESTAMP = moment.utc('2007-05-23')
@@ -36,12 +36,12 @@ do -> # To not pollute the namespace
     moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
   Meteor.methods
-    'refresh-arxhiv-pdfs': ->
+    'sync-arxhiv-pdf-cache': ->
       if not Meteor.settings.AWS
         console.error "AWS settings missing"
         throw new Meteor.Error 500, "AWS settings missing"
 
-      console.log "Refreshing arXiv PDFs"
+      console.log "Syncing arXiv PDF cache"
 
       s3 = new AWS.S3()
 
@@ -140,35 +140,8 @@ do -> # To not pollute the namespace
 
       console.log "Done"
 
-    'process-pdfs': ->
-      console.log "Processing pending PDFs"
-
-      Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
-        try
-          publication.process()
-        catch error
-          console.error error
-
-      console.log "Done"
-
-    'refresh-pdfs-cache': ->
-      console.log "Refreshing PDFs cache"
-
-      count = 0
-
-      Publications.find(cached: {$ne: true}).forEach (publication) ->
-        try
-          publication.checkCache()
-          count++ if publication.cached
-        catch error
-          console.error error
-
-      console.log "Done"
-
-      Meteor.call 'process-pdfs' if count > 0
-
-    'refresh-arxhiv-meta': ->
-      console.log "Refreshing arXiv metadata"
+    'sync-arxhiv-metadata': ->
+      console.log "Syncing arXiv metadata"
 
       # TODO: URL hardcoded - not good
       # TODO: Traverse result pages
@@ -282,7 +255,34 @@ do -> # To not pollute the namespace
 
       console.log "Done"
 
-      Meteor.call 'refresh-pdfs-cache' if count > 0
+      Meteor.call 'sync-local-pdf-cache' if count > 0
+
+    'sync-local-pdf-cache': ->
+      console.log "Syncing local PDF cache"
+
+      count = 0
+
+      Publications.find(cached: {$ne: true}).forEach (publication) ->
+        try
+          publication.checkCache()
+          count++ if publication.cached
+        catch error
+          console.error error
+
+      console.log "Done"
+
+      Meteor.call 'process-pdfs' if count > 0
+
+    'process-pdfs': ->
+      console.log "Processing pending PDFs"
+
+      Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+        try
+          publication.process()
+        catch error
+          console.error error
+
+      console.log "Done"
 
     'dummy-comments': ->
       console.log "Generating dummy comments"

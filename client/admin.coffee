@@ -5,13 +5,13 @@ do -> # To not pollute the namespace
         processingStart: -1
       limit: 5
 
-  Template.arXivRefresh.events
-    'click button.arxiv-pdfs': (e) ->
-      Meteor.call 'refresh-arxhiv-pdfs'
-    'click button.arxiv-meta': (e) ->
-      Meteor.call 'refresh-arxhiv-meta'
-    'click button.pdfs-cache': (e) ->
-      Meteor.call 'refresh-pdfs-cache'
+  Template.adminButtons.events
+    'click button.sync-arxhiv-pdf-cache': (e) ->
+      Meteor.call 'sync-arxhiv-pdf-cache'
+    'click button.sync-arxhiv-metadata': (e) ->
+      Meteor.call 'sync-arxhiv-metadata'
+    'click button.sync-local-pdf-cache': (e) ->
+      Meteor.call 'sync-local-pdf-cache'
     'click button.process-pdfs': (e) ->
       Meteor.call 'process-pdfs'
     'click button.dummy-comments': (e) ->
