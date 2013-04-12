@@ -53,7 +53,7 @@ do -> # To not pollute the namespace
           position: 'Professor of Architecture'
           institution: 'University of Brasilia'
 
-      console.log "Created user with username \'#{ INITIAL_USERNAME }\' and password \'#{ INITIAL_PASSWORD }\'"
+      console.log "Created users with password \'#{ INITIAL_PASSWORD }\'"
 
       console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
