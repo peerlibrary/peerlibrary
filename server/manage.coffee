@@ -27,6 +27,10 @@ do -> # To not pollute the namespace
 
   Meteor.methods
     'refresh-arxhiv-pdfs': ->
+      if not Meteor.settings.AWS
+        console.error "AWS settings missing"
+        throw new Meteor.Error 500, "AWS settings missing"
+
       console.log "Refreshing arXiv PDFs"
 
       s3 = new AWS.S3()
@@ -57,6 +61,7 @@ do -> # To not pollute the namespace
             if match
               id = match[1]
             else
+              console.error "Invalid filename #{ props.path }"
               throw new Meteor.Error 500, "Invalid filename #{ props.path }"
 
           ArXivPDFs.update fileObj._id,
@@ -139,8 +144,10 @@ do -> # To not pollute the namespace
         timeout: 60000 # ms
 
       if page.statusCode and page.statusCode != 200
+        console.error "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
         throw new Meteor.Error 500, "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
       else if page.error
+        console.error page.error
         throw page.error
 
       page = blocking(xml2js.parseString) page.content
