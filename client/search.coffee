@@ -21,7 +21,7 @@ do ->
     'keypress input': (e) ->
       if e.which is 13
         e.preventDefault()
-        Meteor.Router.to '/search'
+        Meteor.Router.to '/search?q='
         searchOff()
   
   Template.index.events searchEvents

@@ -93,7 +93,7 @@
             </a>
             <div class="thread-content">
               <div class="summary-wrap">
-                <h4>Summary of Paragraph 3</h4>
+                <h4>Summary of Paragraph {{paragraphNumber}}</h4>
                 <span class="edit-options">
                   <a href="#" class="edit-link">
                     <i class="icon-edit"></i> Edit
@@ -108,7 +108,7 @@
                   </a>
                 </span>
                 <div class="paragraph-summary" id="summary" contenteditable="true">
-                  Compilers for statically typed languages rely on type information to generate efficient machine code. In a dynamically typed pro-gramming language such as JavaScript, the types of expressionsmay vary at runtime. This means that the compiler can no longereasily transform operations into machine instructions that operateon one specific type.
+                  {{summary.body}}
                 </div>
               </div>
               <div class="thread-wrap">
@@ -120,24 +120,26 @@
                 </div>
                 <div class="all-comments">
                   <ol class="comments-list">
+                    {{#each comments}}
                     <li class="single-comment">
                       <div class="profile-picture">
                         <img src="http://placehold.it/40x40">
                       </div>
                       <div class="comment-content">
                         <span class="name">
-                          <b>Rodrigo Ochigame</b>
+                          <b>{{author.username}}</b>
                         </span>
                         <br>
                         <span class="msg">
-                          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Institutionem. Arbitror pluribus multo meo vide, putavisset afficit maledici nondum modus accurate extremum, nam vestrae adquiescere vituperata decore pauca iucunde, quaeri motus tenebo numeranda omnis, dicent illam bonorum oratio negarent, vide mihi stoicis sensum percurri latinam l omittantur
+                          {{body}}
                         </span>
                         <br>
                         <span class="time-stamp">
-                          Today 5:33 pm
+                          {{displayTimeAgo created}}
                         </span>
                       </div>
                     </li>
+                    {{/each}}
                   </ol>
                 </div>
               </div>

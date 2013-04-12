@@ -1,9 +1,25 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), 0
+    Meteor.subscribe 'summaries-by-publication-and-paragraph', Session.get('currentPublicationId'), 0
+    Session.set 'currentDiscussionParagraph', 0
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
+
+  Template.publication.summary = ->
+    Summaries.findOne
+      publication: Session.get 'currentPublicationId'
+      paragraph: Session.get 'currentDiscussionParagraph'
+
+  Template.publication.comments = ->
+    Comments.find
+      publication: Session.get 'currentPublicationId'
+      paragraph: Session.get 'currentDiscussionParagraph'
+
+  Template.publication.paragraphNumber = ->
+    Session.get 'currentDiscussionParagraph'
 
   publicationEvents = 
     #TODO: click .details-link, .discussion-link
@@ -106,3 +122,6 @@ do -> # To not pollute the namespace
 
   Template.publicationItem.displayDay = (time) ->
     moment(time).format 'MMMM Do YYYY'
+
+  Template.publication.displayTimeAgo = (time) ->
+    moment(time).fromNow()

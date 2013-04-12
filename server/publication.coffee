@@ -53,6 +53,7 @@ class Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      paragraphs: 1
 
 do -> # To not pollute the namespace
   Meteor.publish 'publications-by-owner', (owner) ->
