@@ -37,6 +37,8 @@ do -> # To not pollute the namespace
 
   Meteor.methods
     'sync-arxhiv-pdf-cache': ->
+      @unblock()
+
       if not Meteor.settings.AWS
         console.error "AWS settings missing"
         throw new Meteor.Error 500, "AWS settings missing"
@@ -141,6 +143,8 @@ do -> # To not pollute the namespace
       console.log "Done"
 
     'sync-arxhiv-metadata': ->
+      @unblock()
+
       console.log "Syncing arXiv metadata"
 
       # TODO: URL hardcoded - not good
@@ -261,6 +265,8 @@ do -> # To not pollute the namespace
       Meteor.call 'sync-local-pdf-cache' if count > 0
 
     'sync-local-pdf-cache': ->
+      @unblock()
+
       console.log "Syncing local PDF cache"
 
       count = 0
@@ -277,6 +283,8 @@ do -> # To not pollute the namespace
       Meteor.call 'process-pdfs' if count > 0
 
     'process-pdfs': ->
+      @unblock()
+
       console.log "Processing pending PDFs"
 
       Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
@@ -288,6 +296,8 @@ do -> # To not pollute the namespace
       console.log "Done"
 
     'dummy-comments': ->
+      @unblock()
+
       console.log "Generating dummy comments"
 
       Publications.find(cached: true, processed: true, paragraphs: null).forEach (publication) ->
@@ -312,6 +322,8 @@ do -> # To not pollute the namespace
       console.log "Done"
 
     'dummy-summaries': ->
+      @unblock()
+
       console.log "Generating dummy summaries"
 
       Publications.find(cached: true, processed: true, paragraphs: $ne: null).forEach (publication) ->
