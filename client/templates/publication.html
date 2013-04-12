@@ -10,7 +10,8 @@
             <a href="#" class="details-link active">Details</a>
           </li>
           <li>
-            <a href="#" class="discussion-link">Discussion [50]</a>
+            <!--<a href="#" class="discussion-link">Discussion [50]</a>-->
+            <a href="#" class="thread-link">Discussion</a>
           </li>
         </ul>
       </div>
@@ -71,6 +72,7 @@
           </div>
         </div>
         <div class="discussion">
+          <!--
           <div class="threads-wrap">
             <h4>Filter discussions by thread [50]</h4>
             <ol class="thread-list">
@@ -87,9 +89,15 @@
               </li>
             </ol>
           </div>
+          -->
           <div class="single-thread">
+            <!--
             <a href="#" class="all-discussions">
               <i class="icon-circle-arrow-left"></i> All Discussions
+            </a>
+            -->
+            <a href="#" class="details-link">
+              <i class="icon-circle-arrow-left"></i> Details
             </a>
             <div class="thread-content">
               <div class="summary-wrap">
@@ -127,7 +135,7 @@
                       </div>
                       <div class="comment-content">
                         <span class="name">
-                          <b>{{author.username}}</b>
+                          <a href="/u/{{author.username}}"><b>{{author.fullName}}</b></a>
                         </span>
                         <br>
                         <span class="msg">
