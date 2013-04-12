@@ -78,9 +78,7 @@ do -> # To not pollute the namespace
           counter = 0
 
           finalCallback = ->
-            ArXivPDFs.update fileObj._id,
-              $set:
-                processingEnd: moment.utc().toDate()
+            ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
             cb null
 
           processPDFWrapped = (args) ->
@@ -283,8 +281,11 @@ do -> # To not pollute the namespace
         username: 'FooBar'
         id: 'abcde'
 
-      Publications.find(cached: true, processed: true).forEach (publication) ->
-        for commentId in [0..10]
+      Publications.find(cached: true, processed: true, paragraphs: null).forEach (publication) ->
+        publication.paragraphs = (page: 1, left: 0, top: 50 * i, width: 100, height: 50 for i in [0..10])
+        Publications.update publication._id, $set: paragraphs: publication.paragraphs
+
+        for paragraph in [0...publication.paragraphs.length]
           for comment in [0..10]
             Comments.insert
               created: moment.utc().toDate() # TODO: Randomize
@@ -292,6 +293,6 @@ do -> # To not pollute the namespace
               body: "Some random text"
               parent: null # TODO: Randomize
               publication: publication._id
-              context: commentId
+              paragraph: paragraph
 
       console.log "Done"

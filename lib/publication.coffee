@@ -20,6 +20,12 @@ class Publication extends Document
   # source: a string identifying where was this publication fetched from
   # cached: do we have a locally stored PDF?
   # processed: has PDF been processed (file checked, text extracted, parapraphs detected, etc.)
+  # paragraphs: list of paragraphs of the publication, paragraphs are indexed by their position in list, zero-based
+  #   page: one-based
+  #   left: left coordinate
+  #   top: top coordinate
+  #   width: width of the paragraph
+  #   height: height of the paragraph
 
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'

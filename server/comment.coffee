@@ -1,5 +1,5 @@
 do -> # To not pollute the namespace
-  Meteor.publish 'comments-by-publication-and-context', (publication, context) ->
+  Meteor.publish 'comments-by-publication-and-paragraph', (publication, paragraph) ->
     Comments.find
       publication: publication
-      context: context
+      paragraph: paragraph

@@ -8,4 +8,4 @@ class Comment extends Document
   # body: comment's body
   # parent: parent's comment id or null if top-level, only one level of nesting is allowed
   # publication: publication's id
-  # context: context's id, for now, paragraph's id
+  # paragraph: paragraph's id (index in list of paragraphs)
