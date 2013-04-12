@@ -1,5 +1,5 @@
 do -> # To not pollute the namespace
-  INITIAL_PASSWORD = ''
+  INITIAL_PASSWORD = 'hello'
 
   Meteor.startup ->
     console.log "Starting PeerLibrary"
