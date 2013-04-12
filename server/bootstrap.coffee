@@ -20,6 +20,6 @@ do -> # To not pollute the namespace
 
       console.log "Created user with username #{ INITIAL_USERNAME } and password #{ INITIAL_PASSWORD }"
 
-      console.log "You probably want to populate the database with sample publications, you can do that in the admin interface at /admin"
+      console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
     console.log "Done"

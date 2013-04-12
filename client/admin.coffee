@@ -7,3 +7,7 @@ do -> # To not pollute the namespace
       Meteor.call 'refresh-arxhiv-pdfs'
     'click button.arxiv-meta': (e) ->
       Meteor.call 'refresh-arxhiv-meta'
+    'click button.pdfs-cache': (e) ->
+      Meteor.call 'refresh-pdfs-cache'
+    'click button.process-pdfs': (e) ->
+      Meteor.call 'process-pdfs'

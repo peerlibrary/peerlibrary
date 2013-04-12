@@ -4,7 +4,7 @@ do -> # To not pollute the namespace
   Meteor.methods
     'search-propose': (query) ->
       # TODO: For now we just ignore query, we should do something smart with it
-      proposals = Publications.find({}, limit: SEARCH_PROPOSE_LIMIT - 1).map (publication) ->
+      proposals = Publications.find({cached: true, processed: true}, limit: SEARCH_PROPOSE_LIMIT - 1).map (publication) ->
         [
           key: "publication titled"
           value: publication.title
@@ -31,7 +31,7 @@ do -> # To not pollute the namespace
 
     # TODO: Do some real seaching
     # TODO: How to influence order of results? Should we have just simply a field?
-    handle = Publications.find({}, {limit: 1000}).observeChanges
+    handle = Publications.find({cached: true, processed: true}, {limit: 1000}).observeChanges
       added: (id, fields) =>
         # TODO: Currently, we are adding whole query so that results can be identified if there are multiple serch queries going on at the same time, we should probably allow client to supply some query ID or something?
         @added 'SearchResults', id, {query: query}

@@ -18,12 +18,19 @@ class Publication extends Document
   # foreignCategories: categories metadata provided by the source
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
+  # cached: do we have a locally stored PDF?
+  # processed: has PDF been processed (file checked, text extracted, parapraphs detected, etc.)
+
+  @_arXivFilename: (arXivId) ->
+    'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
-    @_id + '.pdf'
+    switch @source
+      when 'arXiv' then Publication._arXivFilename @foreignId
+      else @_id + '.pdf'
 
-  url: =>
-    console.warn "PDF #{ @_id } not cached" if not @cached
+  url: (ignore) =>
+    console.warn "PDF #{ @_id } not cached" if not @cached and not ignore
     Storage.url @filename()
 
   createdDay = =>

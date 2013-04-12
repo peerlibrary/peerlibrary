@@ -11,8 +11,22 @@ PDF =
 
     processPDF = (finalCallback) -> (pdf) ->
       counter = pdf.numPages
+      finalError = null
+
       for pageNumber in [1..pdf.numPages]
+        if finalError
+          # We call finalCallback only after all pages have been processed and thus callbacks called
+          counter--
+          finalCallback finalError if counter == 0
+          return
+
         pdf.getPage(pageNumber).then (page) ->
+          if finalError
+            # We call finalCallback only after all pages have been processed and thus callbacks called
+            counter--
+            finalCallback finalError if counter == 0
+            return
+
           # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
           progressCallback (page.pageNumber - 1) / pdf.numPages
 
@@ -37,7 +51,7 @@ PDF =
                 counter--
                 if counter == 0
                   progressCallback 1.0
-                  finalCallback()
+                  finalCallback finalError
 
               appendText: (geom) ->
                 width = geom.canvasWidth * geom.hScale
@@ -79,7 +93,11 @@ PDF =
             page.render(renderContext).then ->
               return # Do nothing
             , (error) ->
-              console.error "PDF Error", error
+              finalError = error: "PDF Error page #{ page.pageNumber }", message: error
+
+              # We call finalCallback only after all pages have been processed and thus callbacks called
+              counter--
+              finalCallback finalError if counter == 0
 
         pdf.getMetadata(pageNumber).then (metadata) ->
           # TODO: If we will process metadata, too, we have to make sure finalCallback is called after only once after everything is finished
@@ -88,9 +106,7 @@ PDF =
       return # So that we do not return the results of the for-loop
 
     processError = (finalCallback) -> (message, exception) ->
-      console.error "PDF Error", message, exception
-      # TODO: We could pass error to "finalCallback"?
-      finalCallback()
+      finalCallback error: "PDF Error", message: message, exception: exception
 
     # "finalCallback" has to be called only once to unblock
     processAll = future.wrap (finalCallback) ->

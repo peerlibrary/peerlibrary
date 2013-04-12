@@ -1,8 +1,10 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     Session.set 'lastResultSubscribed', 0
-    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), ->
-      Session.set 'resultIds', SearchResults.find().map (result) -> result._id
+    Session.set 'resultIds', []
+    query = Session.get('currentSearchQuery')
+    Meteor.subscribe 'search-results', query, ->
+      Session.set 'resultIds', SearchResults.find(query: query).map (result) -> result._id
       subscribeToNext(25)
 
   Template.results.rendered = ->
@@ -53,4 +55,8 @@ do -> # To not pollute the namespace
     Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
 
   Template.results.publications = ->
-    Publications.find()
+    Publications.find
+      _id:
+        $in: Session.get 'resultIds'
+    ,
+      limit: Session.get 'lastResultSubscribed'

@@ -1,12 +1,42 @@
 class Publication extends Publication
   checkCache: =>
+    if @cached
+      return
+
     if Storage.exists @filename()
       @cached = true
       Publications.update @_id, $set: cached: @cached
+      return
+
+    console.log "Caching PDF for #{ @_id } from the central server"
+
+    pdf = Meteor.http.get 'http://stage.peerlibrary.org' + @url(true),
+      timeout: 10000 # ms
+      encoding: null # PDFs are binary data
+
+    if pdf.statusCode and pdf.statusCode == 404
+      console.warn "Not found"
+      return
+    else if pdf.statusCode and pdf.statusCode != 200
+      console.error "Caching PDF failed: #{ pdf.statusCode }", pdf.content
+      throw new Meteor.Error 500, "Caching PDF failed: #{ pdf.statusCode }", pdf.content
+    else if pdf.error
+      console.error pdf.error
+      throw pdf.error
+
+    Storage.save @filename(), pdf.content
+
+    @cached = true
+    Publications.update @_id, $set: cached: @cached
+
+    pdf.content
 
   process: (pdf, progressCallback) =>
     pdf ?= Storage.open @filename()
     progressCallback ?= ->
+
+    console.log "Processing PDF for #{ @_id }"
+
     PDF.process pdf, progressCallback
 
     @processed = true

@@ -18,6 +18,7 @@ do -> # To not pollute the namespace
     '/admin': ->
       Meteor.subscribe 'arxiv-pdfs'
       'admin'
+    '*': 'notfound'
 
   # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
   parseQuery = (qs) ->

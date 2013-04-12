@@ -4,7 +4,7 @@ do -> # To not pollute the namespace
       accessKeyId: Meteor.settings.AWS.accessKeyId
       secretAccessKey: Meteor.settings.AWS.secretAccessKey
   else
-    console.warn "AWS settings missing, arXiv PDF processing will not work"
+    console.warn "AWS settings missing, arXiv PDF caching will not work"
 
   # It seems there are no subject classes
   ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
@@ -126,21 +126,50 @@ do -> # To not pollute the namespace
           )
 
         processTar file.Key, (id, pdf) ->
-          console.log "Processing PDF: #{ id }"
+          console.log "Storing PDF: #{ id }"
 
-          Storage.save 'arxiv' + Storage._path.sep + id + '.pdf', pdf
+          Storage.save Publication._arXivFilename(id), pdf
 
       console.log "Done"
+
+  Meteor.methods
+    'process-pdfs': ->
+      console.log "Processing pending PDFs"
+
+      Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+        try
+          publication.process()
+        catch error
+          console.error error
+
+      console.log "Done"
+
+  Meteor.methods
+    'refresh-pdfs-cache': ->
+      console.log "Refreshing PDFs cache"
+
+      count = 0
+
+      Publications.find(cached: {$ne: true}).forEach (publication) ->
+        try
+          publication.checkCache()
+          count++ if publication.cached
+        catch error
+          console.error error
+
+      console.log "Done"
+
+      Meteor.call 'process-pdfs' if count > 0
 
   Meteor.methods
     'refresh-arxhiv-meta': ->
       console.log "Refreshing arXiv metadata"
 
-      # TODO: Hardcoded
+      # TODO: URL hardcoded - not good
       # TODO: Traverse result pages
       # TODO: Store last fetch timestamp
 
-      page = Meteor.http.get "http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw",
+      page = Meteor.http.get 'http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw',
         timeout: 60000 # ms
 
       if page.statusCode and page.statusCode != 200
@@ -151,6 +180,8 @@ do -> # To not pollute the namespace
         throw page.error
 
       page = blocking(xml2js.parseString) page.content
+
+      count = 0
 
       for recordEntry in page['OAI-PMH'].ListRecords[0].record
         record = recordEntry.metadata?[0].arXivRaw?[0]
@@ -242,5 +273,8 @@ do -> # To not pollute the namespace
         if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
           id = Publications.insert publication
           console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+          count++
 
       console.log "Done"
+
+      Meteor.call 'refresh-pdfs-cache' if count > 0
