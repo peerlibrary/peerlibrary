@@ -66,6 +66,12 @@ do -> # To not pollute the namespace
       $(this).addClass 'active'
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
+    'click .thread-link': (e) ->
+      e.preventDefault()
+      $('.details').hide()
+      $('.threads-wrap').hide()
+      $('.discussion').fadeIn 250
+      $('.single-thread').fadeIn()
 
   Template.publication.events publicationEvents
 
