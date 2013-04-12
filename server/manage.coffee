@@ -29,6 +29,7 @@ do -> # To not pollute the namespace
     user = Random.choice Meteor.users.find().fetch()
 
     username: user.username
+    fullName: user.profile.firstName + ' ' + user.profile.lastName
     id: user._id
 
   randomTimestamp = ->
