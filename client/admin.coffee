@@ -13,3 +13,5 @@ do -> # To not pollute the namespace
       Meteor.call 'process-pdfs'
     'click button.dummy-comments': (e) ->
       Meteor.call 'dummy-comments'
+    'click button.dummy-summaries': (e) ->
+      Meteor.call 'dummy-summaries'

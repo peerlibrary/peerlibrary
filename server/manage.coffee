@@ -25,6 +25,10 @@ do -> # To not pollute the namespace
     '''{\\AA}''': 'Å', '''{\\aa}''': 'å', '''{\\ae}''': 'æ', '''{\\AE}''': 'Æ', '''{\\L}''': 'Ł', '''{\\l}''': 'ł'
     '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
+  randomUser = ->
+    username: 'FooBar'
+    id: 'abcde'
+
   Meteor.methods
     'refresh-arxhiv-pdfs': ->
       if not Meteor.settings.AWS
@@ -277,10 +281,6 @@ do -> # To not pollute the namespace
     'dummy-comments': ->
       console.log "Generating dummy comments"
 
-      randomUser = ->
-        username: 'FooBar'
-        id: 'abcde'
-
       Publications.find(cached: true, processed: true, paragraphs: null).forEach (publication) ->
         publication.paragraphs = (page: 1, left: 0, top: 50 * i, width: 100, height: 50 for i in [0..10])
         Publications.update publication._id, $set: paragraphs: publication.paragraphs
@@ -294,5 +294,19 @@ do -> # To not pollute the namespace
               parent: null # TODO: Randomize
               publication: publication._id
               paragraph: paragraph
+
+      console.log "Done"
+
+    'dummy-summaries': ->
+      console.log "Generating dummy summaries"
+
+      Publications.find(cached: true, processed: true, paragraphs: $ne: null).forEach (publication) ->
+        for paragraph in [0...publication.paragraphs.length]
+          Summaries.insert
+            created: moment.utc().toDate() # TODO: Randomize
+            author: randomUser()
+            body: "Some random summary"
+            publication: publication._id
+            paragraph: paragraph
 
       console.log "Done"

@@ -5,5 +5,5 @@ do -> # To not pollute the namespace
       context: paragraph
     ,
       sort:
-        updated: -1
+        created: -1
       limit: 1
