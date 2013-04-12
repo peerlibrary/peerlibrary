@@ -132,7 +132,6 @@ do -> # To not pollute the namespace
 
       console.log "Done"
 
-  Meteor.methods
     'process-pdfs': ->
       console.log "Processing pending PDFs"
 
@@ -144,7 +143,6 @@ do -> # To not pollute the namespace
 
       console.log "Done"
 
-  Meteor.methods
     'refresh-pdfs-cache': ->
       console.log "Refreshing PDFs cache"
 
@@ -161,7 +159,6 @@ do -> # To not pollute the namespace
 
       Meteor.call 'process-pdfs' if count > 0
 
-  Meteor.methods
     'refresh-arxhiv-meta': ->
       console.log "Refreshing arXiv metadata"
 
