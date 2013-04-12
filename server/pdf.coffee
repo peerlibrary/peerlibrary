@@ -11,22 +11,8 @@ PDF =
 
     processPDF = (finalCallback) -> (pdf) ->
       counter = pdf.numPages
-      finalError = null
-
       for pageNumber in [1..pdf.numPages]
-        if finalError
-          # We call finalCallback only after all pages have been processed and thus callbacks called
-          counter--
-          finalCallback finalError if counter == 0
-          return
-
         pdf.getPage(pageNumber).then (page) ->
-          if finalError
-            # We call finalCallback only after all pages have been processed and thus callbacks called
-            counter--
-            finalCallback finalError if counter == 0
-            return
-
           # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
           progressCallback (page.pageNumber - 1) / pdf.numPages
 
@@ -51,7 +37,7 @@ PDF =
                 counter--
                 if counter == 0
                   progressCallback 1.0
-                  finalCallback finalError
+                  finalCallback()
 
               appendText: (geom) ->
                 width = geom.canvasWidth * geom.hScale
@@ -93,11 +79,8 @@ PDF =
             page.render(renderContext).then ->
               return # Do nothing
             , (error) ->
-              finalError = error: "PDF Error page #{ page.pageNumber }", message: error
-
-              # We call finalCallback only after all pages have been processed and thus callbacks called
-              counter--
-              finalCallback finalError if counter == 0
+              # TODO: This exception is not nicely displayed in the console, future.wrap seems to remove payload
+              throw new Error error
 
         pdf.getMetadata(pageNumber).then (metadata) ->
           # TODO: If we will process metadata, too, we have to make sure finalCallback is called after only once after everything is finished
@@ -106,7 +89,10 @@ PDF =
       return # So that we do not return the results of the for-loop
 
     processError = (finalCallback) -> (message, exception) ->
-      finalCallback error: "PDF Error", message: message, exception: exception
+      # TODO: This exception is not nicely displayed in the console, future.wrap seems to remove payload
+      error = new Error message
+      error.exception = exception
+      throw error
 
     # "finalCallback" has to be called only once to unblock
     processAll = future.wrap (finalCallback) ->
