@@ -16,7 +16,8 @@
       "moment": {},
       "xml2js": {},
       "util": {},
-      "dimsum": {}
+      "dimsum": {},
+      "connect": {}
     },
     "packages": {
       "router": {
@@ -73,6 +74,11 @@
         "git": "https://github.com/peerlibrary/meteor-dimsum.git",
         "tag": "v0.1.1",
         "commit": "4a57fafe54dbfb2df4e3e4c111dee354aad89e07"
+      },
+      "connect": {
+        "git": "https://github.com/peerlibrary/meteor-connect.git",
+        "tag": "v0.1.0",
+        "commit": "ff116f1df4ebed84262047460230b72afbbe34b9"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
