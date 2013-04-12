@@ -13,6 +13,7 @@
     "blocking": {},
     "moment": {},
     "xml2js": {},
-    "util": {}
+    "util": {},
+    "dimsum": {}
   }
 }

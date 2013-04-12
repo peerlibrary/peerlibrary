@@ -26,8 +26,14 @@ do -> # To not pollute the namespace
     '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
   randomUser = ->
-    username: 'FooBar'
-    id: 'abcde'
+    user = Random.choice Meteor.users.find().fetch()
+
+    username: user.username
+    fullName: user.profile.firstName + ' ' + user.profile.lastName
+    id: user._id
+
+  randomTimestamp = ->
+    moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
   Meteor.methods
     'refresh-arxhiv-pdfs': ->
@@ -282,18 +288,23 @@ do -> # To not pollute the namespace
       console.log "Generating dummy comments"
 
       Publications.find(cached: true, processed: true, paragraphs: null).forEach (publication) ->
-        publication.paragraphs = (page: 1, left: 0, top: 50 * i, width: 100, height: 50 for i in [0..10])
+        publication.paragraphs = (page: 1, left: 0, top: 50 * i, width: 100, height: 50 for i in [0..Random.fraction() * 10 + 10])
         Publications.update publication._id, $set: paragraphs: publication.paragraphs
 
         for paragraph in [0...publication.paragraphs.length]
-          for comment in [0..10]
-            Comments.insert
-              created: moment.utc().toDate() # TODO: Randomize
+          comments = []
+          for comment in [0...Random.fraction() * 20]
+            comments.push(Comments.insert
+              created: randomTimestamp()
               author: randomUser()
-              body: "Some random text"
-              parent: null # TODO: Randomize
+              body: dimsum(1 + Random.fraction() * 2).replace /\r/g, '' # There are some \ between paragraphs
+              # 10 % of comments are top-level
+              parent: if Random.fraction() < 0.1 then null else Random.choice comments
               publication: publication._id
               paragraph: paragraph
+            )
+
+        return # So that for loop does not return anything
 
       console.log "Done"
 
@@ -303,10 +314,12 @@ do -> # To not pollute the namespace
       Publications.find(cached: true, processed: true, paragraphs: $ne: null).forEach (publication) ->
         for paragraph in [0...publication.paragraphs.length]
           Summaries.insert
-            created: moment.utc().toDate() # TODO: Randomize
+            created: randomTimestamp()
             author: randomUser()
-            body: "Some random summary"
+            body: dimsum(1 + Random.fraction() * 3).replace /\r/g, '' # There are some \ between paragraphs
             publication: publication._id
             paragraph: paragraph
+
+        return # So that for loop does not return anything
 
       console.log "Done"

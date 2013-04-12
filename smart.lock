@@ -15,7 +15,8 @@
       "blocking": {},
       "moment": {},
       "xml2js": {},
-      "util": {}
+      "util": {},
+      "dimsum": {}
     },
     "packages": {
       "router": {
@@ -60,13 +61,18 @@
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
-        "tag": "v0.1.0",
-        "commit": "d4410a007f835daf0cd3493236a31ab28688c025"
+        "tag": "v0.1.1",
+        "commit": "840200ff723549d9b22b418cb7c19fc6ced8f18f"
       },
       "util": {
         "git": "https://github.com/peerlibrary/meteor-util.git",
         "tag": "v0.1.0",
         "commit": "cea4bec87db003bf083ad825571c1396ea7fae92"
+      },
+      "dimsum": {
+        "git": "https://github.com/peerlibrary/meteor-dimsum.git",
+        "tag": "v0.1.1",
+        "commit": "4a57fafe54dbfb2df4e3e4c111dee354aad89e07"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

@@ -4,6 +4,7 @@ class Summary extends Document
   # created: timestamp of this version
   # author:
   #   username: author's username
+  #   fullName: authors' full name
   #   id: author's id
   # body: summary's body
   # publication: publication's id
