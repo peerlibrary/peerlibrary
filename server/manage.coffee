@@ -275,3 +275,23 @@ do -> # To not pollute the namespace
       console.log "Done"
 
       Meteor.call 'refresh-pdfs-cache' if count > 0
+
+    'dummy-comments': ->
+      console.log "Generating dummy comments"
+
+      randomUser = ->
+        username: 'FooBar'
+        id: 'abcde'
+
+      Publications.find(cached: true, processed: true).forEach (publication) ->
+        for commentId in [0..10]
+          for comment in [0..10]
+            Comments.insert
+              created: moment.utc().toDate() # TODO: Randomize
+              author: randomUser()
+              body: "Some random text"
+              parent: null # TODO: Randomize
+              publication: publication._id
+              context: commentId
+
+      console.log "Done"
