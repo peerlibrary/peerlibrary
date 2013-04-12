@@ -1,6 +1,9 @@
 do -> # To not pollute the namespace
   Template.admin.arXivPDFs = ->
-    ArXivPDFs.find()
+    ArXivPDFs.find {},
+      sort:
+        processingStart: -1
+      limit: 5
 
   Template.arXivRefresh.events
     'click button.arxiv-pdfs': (e) ->
