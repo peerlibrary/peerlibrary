@@ -16,6 +16,7 @@ do -> # To not pollute the namespace
           lastName: 'Sagan'
           position: 'Professor of Astronomy'
           institution: 'Cornell University'
+
       Accounts.createUser
         email: 'rf@caltech.edu'
         username: 'richard-feynman'
@@ -25,6 +26,7 @@ do -> # To not pollute the namespace
           lastName: 'Feynman'
           position: 'Professor of Physics'
           institution: 'Caltech'
+
       Accounts.createUser
         email: 'mf@ens.fr'
         username: 'michel-foucault'
@@ -34,6 +36,7 @@ do -> # To not pollute the namespace
           lastName: 'Foucault'
           position: 'Professor of Philosophy'
           institution: 'Ecole Normale Superieure'
+
       Accounts.createUser
         email: 'jh@uni-frankfurt.de'
         username: 'jurgen-habermas'
@@ -43,6 +46,7 @@ do -> # To not pollute the namespace
           lastName: 'Habermas'
           position: 'Professor of Sociology'
           institution: 'Goethe University Frankfurt am Main'
+
       Accounts.createUser
         email: 'on@unb.br'
         username: 'oscar-niemeyer'
@@ -53,7 +57,7 @@ do -> # To not pollute the namespace
           position: 'Professor of Architecture'
           institution: 'University of Brasilia'
 
-      console.log "Created users with password \'#{ INITIAL_PASSWORD }\'"
+      console.log "Created users 'carl-sagan', 'richard-feynman', 'michel-foucault', 'jurgen-habermas', and 'oscar-niemeyer' with password '#{ INITIAL_PASSWORD }'"
 
       console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
