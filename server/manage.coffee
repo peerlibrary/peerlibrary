@@ -165,6 +165,7 @@ do -> # To not pollute the namespace
         record = recordEntry.metadata?[0].arXivRaw?[0]
 
         if not record?
+          # Using inspect because records can be heavily nested
           console.warn "Empty record metadata, skipping", util.inspect recordEntry, false, null
           continue
 
@@ -208,6 +209,7 @@ do -> # To not pollute the namespace
           lastName: lastName
 
         if bad
+          # Using inspect because records can be heavily nested
           console.warn "Could not parse authors, skipping", authors, util.inspect record, false, null
           continue
 
@@ -219,6 +221,7 @@ do -> # To not pollute the namespace
         authors = (author for author in authors when not (/collaboration/i.test(author.foreNames) or /collaboration/i.test(author.lastName)))
 
         if authors.length == 0
+          # Using inspect because records can be heavily nested
           console.warn "Empty authors list, skipping", util.inspect record, false, null
           continue
 

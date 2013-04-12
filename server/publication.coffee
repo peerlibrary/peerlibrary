@@ -35,7 +35,7 @@ class Publication extends Publication
     pdf ?= Storage.open @filename()
     progressCallback ?= ->
 
-    console.log "Processing PDF for #{ @_id }"
+    console.log "Processing PDF for #{ @_id }: #{ @filename() }"
 
     PDF.process pdf, progressCallback
 

@@ -78,9 +78,10 @@ PDF =
 
             page.render(renderContext).then ->
               return # Do nothing
-            , (error) ->
-              # TODO: This exception is not nicely displayed in the console, future.wrap seems to remove payload
-              throw new Error error
+            , (err) ->
+              error = new Error "PDF page #{ page.pageNumber } rendering error: #{ err.message or err }"
+              _.extend error, _.omit err, 'message' if _.isObject err
+              throw error
 
         pdf.getMetadata(pageNumber).then (metadata) ->
           # TODO: If we will process metadata, too, we have to make sure finalCallback is called after only once after everything is finished
@@ -89,9 +90,8 @@ PDF =
       return # So that we do not return the results of the for-loop
 
     processError = (finalCallback) -> (message, exception) ->
-      # TODO: This exception is not nicely displayed in the console, future.wrap seems to remove payload
-      error = new Error message
-      error.exception = exception
+      error = new Error "PDF processing error: #{ message or exception?.message or exception }"
+      _.extend error, _.omit exception, 'message' if _.isObject exception
       throw error
 
     # "finalCallback" has to be called only once to unblock
