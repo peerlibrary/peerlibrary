@@ -29,14 +29,16 @@ do -> # To not pollute the namespace
       # TODO: Validate?
       realQuery = query
 
+    queryId = Meteor.uuid()
+
     # TODO: Do some real seaching
     # TODO: How to influence order of results? Should we have just simply a field?
-    handle = Publications.find({cached: true, processed: true}, {limit: 1000}).observeChanges
+    handle = Publications.find({cached: true, processed: true}, {limit: 100}).observeChanges
       added: (id, fields) =>
         # TODO: Currently, we are adding whole query so that results can be identified if there are multiple serch queries going on at the same time, we should probably allow client to supply some query ID or something?
-        @added 'SearchResults', id, {query: query}
+        @added 'SearchResults', queryId + '-' + id, {publicationId: id, query: query}
       removed: (id) =>
-        @removed 'SearchResults', id
+        @removed 'SearchResults', queryId + '-' + id
 
     @ready()
 

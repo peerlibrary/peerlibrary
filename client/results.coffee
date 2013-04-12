@@ -4,7 +4,7 @@ do -> # To not pollute the namespace
     Session.set 'resultIds', []
     query = Session.get('currentSearchQuery')
     Meteor.subscribe 'search-results', query, ->
-      Session.set 'resultIds', SearchResults.find(query: query).map (result) -> result._id
+      Session.set 'resultIds', SearchResults.find(query: query).map (result) -> result.publicationId
       subscribeToNext(25)
 
   Template.results.rendered = ->
