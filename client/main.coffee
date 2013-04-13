@@ -1,6 +1,8 @@
 do -> # To not pollute the namespace
   Meteor.Router.add
-    '/': -> 'index'
+    '/': ->
+      Session.set 'currentSearchQuery', {}
+      'index'
     '/login': 'login'
     '/logout': ->
       Meteor.logout()

@@ -35,6 +35,10 @@ do ->
     $('.search-input').animate
       width: '1000px'
       , 250
+    $('#home .search-bar').animate
+      'margin-top': '20px'
+      , 250
+    $('#home .item-list').fadeIn()
 
   searchOff = ->
     Session.set 'searchActive', false
@@ -44,5 +48,9 @@ do ->
     $('.search-input').animate
       width: '630px'
       , 250
+    $('#home .search-bar').animate
+      'margin-top': '20%'
+      , 250
+    $('#home .item-list').hide()
 
   return

@@ -669,7 +669,7 @@ ol.discussion ol li {
 
 .search-bar {
     position: relative;
-    top: 30%;
+    top: 50px;
     width:100%;
     text-align: center;
 }
@@ -887,13 +887,14 @@ footer .oa_logo img {
 
 #home .wrap {
     height: 100%;
-		position: relative;
+	position: relative;
 }
 
 #home .search-bar {
     position: relative;
+    top: 0px;
     margin: auto;
-		margin-top: 20%;
+    margin-top: 20%;
     text-align: center;
     z-index: 9999;
 }
@@ -903,6 +904,14 @@ footer .oa_logo img {
 	font-weight: 300;
 }
 
+#home .item-list {
+    display: none;
+    z-index: 9999;
+}
+
+#home .search {
+    background: none;
+}
 
 /* ============================= */
 /* ! Layout for mobile version   */

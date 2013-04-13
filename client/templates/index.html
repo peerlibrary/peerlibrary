@@ -8,17 +8,14 @@
             <i class="search-icon icon-search icon-3x"></i>
             <input type="text" placeholder="Search 1,234,567 scholarly articles" class="search-input"></input>
           </div>
+          <div class="clearfix"></div>
+          <ol class="item-list">
+            {{#each publications}}
+              {{> publicationItem}}
+            {{/each}}
+          </ol>
         </form>
       </div>
     </section>
-    <div class="search">
-      <div class="container_12 wrap">
-        <div class="grid_12">
-          <div class="logo">
-            <a href="/"><img alt="PeerLibrary" src="img/logo.png" /></a>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
