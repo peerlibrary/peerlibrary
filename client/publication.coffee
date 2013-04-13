@@ -1,9 +1,8 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-    Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), 0
-    Meteor.subscribe 'summaries-by-publication-and-paragraph', Session.get('currentPublicationId'), 0
-    Session.set 'currentDiscussionParagraph', 0
+    Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
+    Meteor.subscribe 'summaries-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
@@ -68,16 +67,18 @@ do -> # To not pollute the namespace
       $('.save-options').fadeIn 200
     'click .thread-link': (e) ->
       e.preventDefault()
+      Session.set 'currentDiscussionParagraph', e.toElement.id
       $('.details').hide()
       $('.threads-wrap').hide()
       $('.discussion').fadeIn 250
       $('.single-thread').fadeIn()
+    'click .comment-submit': (e) ->
+      e.preventDefault()
+      postComment e
 
   Template.publication.events publicationEvents
 
-  Template.publication.rendered = ->
-    $('.discussion').hide()
-
+  Template.publication.created = ->
     #select end of contenteditable true entity
     setEndOfContenteditable = (contentEditableElement) ->
       if document.createRange #Firefox, Chrome, Opera, Safari, IE 9+
@@ -131,3 +132,20 @@ do -> # To not pollute the namespace
 
   Template.publication.displayTimeAgo = (time) ->
     moment(time).fromNow()
+
+  postComment = (e) ->
+    if Meteor.user()
+      Comments.insert
+        created: new Date()
+        author:
+          username: Meteor.user().username
+          fullName: Meteor.user().profile.firstName + ' ' + Meteor.user().profile.lastName
+          id: Meteor.user()._id
+        body: $('.comment-input').val()
+        parent: null
+        publication: Session.get 'currentPublicationId'
+        paragraph: Session.get 'currentDiscussionParagraph'
+      , ->
+        $('.comment-input').val ''
+    else
+      Meteor.Router.to('/login')
