@@ -24,6 +24,8 @@ do -> # To not pollute the namespace
     #TODO: click .details-link, .discussion-link
     'click .details-link': (e) ->
       e.preventDefault()
+      Session.set 'displayDiscussion', false
+      Session.set 'currentDiscussionParagraph', null
       $('.discussion').hide()
       $('.details').fadeIn 250
     'click .discussion-link': (e) ->
@@ -67,16 +69,19 @@ do -> # To not pollute the namespace
       $('.save-options').fadeIn 200
     'click .thread-link': (e) ->
       e.preventDefault()
-      Session.set 'currentDiscussionParagraph', e.toElement.id
-      $('.details').hide()
-      $('.threads-wrap').hide()
-      $('.discussion').fadeIn 250
-      $('.single-thread').fadeIn()
+      Session.set 'displayDiscussion', true
+      Session.set 'currentDiscussionParagraph', $(e.toElement).data('id')
     'click .comment-submit': (e) ->
       e.preventDefault()
       postComment e
 
   Template.publication.events publicationEvents
+
+  Template.publication.rendered = ->
+    if Session.get 'displayDiscussion'
+      $('.details').hide()
+      $('.discussion').fadeIn()
+      $('.single-thread').fadeIn()
 
   Template.publication.created = ->
     #select end of contenteditable true entity
@@ -127,8 +132,7 @@ do -> # To not pollute the namespace
 
     $('.comment-input').css('overflow', 'hidden').autogrow()
 
-  Template.publicationItem.displayDay = (time) ->
-    moment(time).format 'MMMM Do YYYY'
+  Template.publication.preserve ['iframe']
 
   Template.publication.displayTimeAgo = (time) ->
     moment(time).fromNow()
@@ -149,3 +153,6 @@ do -> # To not pollute the namespace
         $('.comment-input').val ''
     else
       Meteor.Router.to('/login')
+
+  Template.publicationItem.displayDay = (time) ->
+    moment(time).format 'MMMM Do YYYY'
