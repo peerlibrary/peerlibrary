@@ -11,8 +11,11 @@ PDF =
 
     processPDF = (finalCallback) -> (pdf) ->
       counter = pdf.numPages
+      terminate = false
       for pageNumber in [1..pdf.numPages]
         pdf.getPage(pageNumber).then (page) ->
+          return if terminate
+
           # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
           progressCallback (page.pageNumber - 1) / pdf.numPages
 
@@ -23,9 +26,13 @@ PDF =
             appendCounter = 0
             textLayer =
               beginLayout: ->
+                return if terminate
+
                 #console.log "beginLayout"
 
               endLayout: ->
+                return if terminate
+
                 #console.log "endLayout"
 
                 if DEBUG
@@ -40,6 +47,8 @@ PDF =
                   finalCallback()
 
               appendText: (geom) ->
+                return if terminate
+
                 width = geom.canvasWidth * geom.hScale
                 height = geom.fontSize * Math.abs geom.vScale
                 x = geom.x
@@ -81,6 +90,7 @@ PDF =
             , (err) ->
               error = new Error "PDF page #{ page.pageNumber } rendering error: #{ err.message or err }"
               _.extend error, _.omit err, 'message' if _.isObject err
+              terminate = true
               throw error
 
         #pdf.getMetadata(pageNumber).then (metadata) ->
