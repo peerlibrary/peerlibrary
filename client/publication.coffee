@@ -1,8 +1,8 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-    Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
     Meteor.subscribe 'summaries-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
+    Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
