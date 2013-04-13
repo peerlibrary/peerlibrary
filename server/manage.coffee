@@ -174,8 +174,8 @@ do -> # To not pollute the namespace
           continue
 
         # TODO: Really process versions
-        created = moment.utc(record.version[0].date).toDate()
-        updated = moment.utc(record.version[record.version.length - 1].date).toDate()
+        created = moment.utc(record.version[0].date[0]).toDate()
+        updated = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
 
         authors = record.authors[0]
 
