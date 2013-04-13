@@ -1,6 +1,6 @@
 <template name="admin">
   {{> header}}
-  {{> arXivRefresh }}
+  {{> adminButtons }}
   <ul>
     {{#each arXivPDFs}}
       {{> arXivPDF}}
@@ -12,10 +12,10 @@
   <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
 </template>
 
-<template name="arXivRefresh">
-  <button class="arxiv-pdfs">Refresh arXiv PDFs</button>
-  <button class="arxiv-meta">Refresh arXiv metadata</button>
-  <button class="pdfs-cache">Refresh PDFs cache</button>
+<template name="adminButtons">
+  <button class="sync-arxhiv-pdf-cache">Sync arXiv PDF cache</button>
+  <button class="sync-arxhiv-metadata">Sync arXiv metadata</button>
+  <button class="sync-local-pdf-cache">Sync local PDF cache</button>
   <button class="process-pdfs">Process pending PDFs</button>
   <button class="dummy-comments">Generate dummy comments</button>
   <button class="dummy-summaries">Generate dummy summaries</button>
