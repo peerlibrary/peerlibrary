@@ -16,7 +16,7 @@ PDF =
           # pageNumber is not necessary current page number once promise is resolved, use page.pageNumber instead
           progressCallback (page.pageNumber - 1) / pdf.numPages
 
-          page.getAnnotations().then (annotations) ->
+          #page.getAnnotations().then (annotations) ->
             #console.log "Annotations", annotations
 
           page.getTextContent().then (textContent) ->
@@ -83,7 +83,7 @@ PDF =
               _.extend error, _.omit err, 'message' if _.isObject err
               throw error
 
-        pdf.getMetadata(pageNumber).then (metadata) ->
+        #pdf.getMetadata(pageNumber).then (metadata) ->
           # TODO: If we will process metadata, too, we have to make sure finalCallback is called after only once after everything is finished
           #console.log "Metadata", metadata
 
