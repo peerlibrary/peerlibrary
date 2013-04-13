@@ -65,7 +65,7 @@ PDF =
 
                 # TODO: Store into the database and find paragrahps
                 # TODO: We should just allow user to provide a callback
-                #console.log page.pageNumber, x, y, width, height, text, direction
+                #console.log page.pageNumber, x, y, width, height, direction, text
 
             viewport = page.getViewport 1.0
             canvasElement = new canvas viewport.width, viewport.height
