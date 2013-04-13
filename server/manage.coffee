@@ -4,7 +4,7 @@ do -> # To not pollute the namespace
       accessKeyId: Meteor.settings.AWS.accessKeyId
       secretAccessKey: Meteor.settings.AWS.secretAccessKey
   else
-    console.warn "AWS settings missing, arXiv PDF caching will not work"
+    console.warn "AWS settings missing, syncing arXiv PDF cache will not work"
 
   # It seems there are no subject classes
   ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
