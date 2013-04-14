@@ -53,6 +53,9 @@ do -> # To not pollute the namespace
         RequestPayer: 'requester'
 
       for file in list.Contents
+        if not /\.tar$/.test file.Key
+          continue
+
         lastModified = moment.utc file.LastModified
 
         fileObj =
