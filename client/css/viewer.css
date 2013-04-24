@@ -229,24 +229,24 @@ span.paragraph-ref {
 	padding: 30px 0;
 }
 
-.summary-wrap {
+.notes-wrap {
 	margin-bottom: 20px;
 }
 
-.summary-wrap .edit-options, .summary-wrap .save-options {
+.notes-wrap .edit-options, .notes-wrap .save-options {
 	float: right;
 }
 
-.summary-wrap .edit-options a, .summary-wrap .save-options a {
+.notes-wrap .edit-options a, .notes-wrap .save-options a {
 	text-decoration:none;
 	margin-left: 20px;
 }
 
-.summary-wrap .save-options {
+.notes-wrap .save-options {
 	display: none;
 }
 
-.paragraph-summary {
+.paragraph-notes {
 	line-height: 24px;
 	outline: none;
 
@@ -257,7 +257,7 @@ span.paragraph-ref {
 	transition: 0.2s;
 }
 
-.paragraph-summary:hover, .paragraph-summary:focus, .paragraph-summary.active {
+.paragraph-notes:hover, .paragraph-notes:focus, .paragraph-notes.active {
 	background: #eff5f7;
 }
 

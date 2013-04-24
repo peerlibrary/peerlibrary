@@ -1,6 +1,6 @@
 do -> # To not pollute the namespace
-  Meteor.publish 'summaries-by-publication-and-paragraph', (publication, paragraph) ->
-    Summaries.find
+  Meteor.publish 'notes-by-publication-and-paragraph', (publication, paragraph) ->
+    Notes.find
       publication: publication
       paragraph: paragraph
     ,

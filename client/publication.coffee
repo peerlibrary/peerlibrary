@@ -1,14 +1,14 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-    Meteor.subscribe 'summaries-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
+    Meteor.subscribe 'notes-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
     Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
 
-  Template.publication.summary = ->
-    Summaries.findOne
+  Template.publication.notes = ->
+    Notes.findOne
       publication: Session.get 'currentPublicationId'
       paragraph: Session.get 'currentDiscussionParagraph'
 
@@ -44,26 +44,26 @@ do -> # To not pollute the namespace
       $('.threads-wrap').fadeIn()
     'click .edit-link': (e) ->
       e.preventDefault()
-      Session.set 'tempSummary', $('.paragraph-summary').text()
-      placeCaretAtEnd document.getElementById 'summary'
-      $('.paragraph-summary').addClass 'active'
+      Session.set 'tempNotes', $('.paragraph-notes').text()
+      placeCaretAtEnd document.getElementById 'notes'
+      $('.paragraph-notes').addClass 'active'
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
     'click .cancel-link': (e) ->
       e.preventDefault()
-      $('.paragraph-summary').html Session.get 'tempSummary'
-      $('.paragraph-summary').removeClass 'active'
+      $('.paragraph-notes').html Session.get 'tempNotes'
+      $('.paragraph-notes').removeClass 'active'
       $('div[contentEditable="true"]').blur()
       $('.save-options').hide()
       $('.edit-options').fadeIn 200
     'click .save-link': (e) ->
       e.preventDefault()
-      Session.set 'tempSummary', $('.paragraph-summary').text()
-      $('.paragraph-summary').removeClass 'active'
+      Session.set 'tempNotes', $('.paragraph-notes').text()
+      $('.paragraph-notes').removeClass 'active'
       $('div[contentEditable="true"]').blur()
       $('.save-options').hide()
       $('.edit-options').fadeIn 200
-    'focus .paragraph-summary': (e) ->
+    'focus .paragraph-notes': (e) ->
       $(this).addClass 'active'
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
@@ -102,7 +102,7 @@ do -> # To not pollute the namespace
     $ ->
       # WebKit contentEditable focus bug workaround:
       if /AppleWebKit\/([\d.]+)/.exec navigator.userAgent
-        editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo '.paragraph-summary'
+        editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo '.paragraph-notes'
         $('[contenteditable]').blur ->
           editableFix[0].setSelectionRange 0, 0
           editableFix.blur()
@@ -122,12 +122,12 @@ do -> # To not pollute the namespace
         textRange.collapse false
         textRange.select()
 
-    $('.paragraph-summary').focus ->
+    $('.paragraph-notes').focus ->
       $(this).addClass 'active'
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
 
-    $('.paragraph-summary').blur ->
+    $('.paragraph-notes').blur ->
       $(this).removeClass 'active'
 
     $('.comment-input').css('overflow', 'hidden').autogrow()

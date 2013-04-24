@@ -324,14 +324,14 @@ do -> # To not pollute the namespace
 
       console.log "Done"
 
-    'dummy-summaries': ->
+    'dummy-notes': ->
       @unblock()
 
-      console.log "Generating dummy summaries"
+      console.log "Generating dummy notes"
 
       Publications.find(cached: true, processed: true, paragraphs: $ne: null).forEach (publication) ->
         for paragraph in [0...publication.paragraphs.length]
-          Summaries.insert
+          Notes.insert
             created: randomTimestamp()
             author: randomUser()
             body: dimsum(1 + Random.fraction() * 3).replace /\r/g, '' # There are some \ between paragraphs
