@@ -1,12 +1,4 @@
 do -> # To not pollute the namespace
-  Deps.autorun ->
-    Session.set 'lastResultSubscribed', 0
-    Session.set 'resultIds', []
-    query = Session.get('currentSearchQuery')
-    Meteor.subscribe 'search-results', query, ->
-      Session.set 'resultIds', SearchResults.find(query: query).map (result) -> result.publicationId
-      subscribeToNext(25)
-
   Template.index.created = ->
     Session.set 'searchActive', false
 
@@ -14,15 +6,12 @@ do -> # To not pollute the namespace
     $('.search-input').focus()
 
   Template.index.publications = ->
+    if not Session.get 'currentSearchQuery'
+      return
+
     Publications.find
-      _id:
-        $in: Session.get 'resultIds'
+      'searchResult.query': Session.get 'currentSearchQuery'
     ,
-      limit: Session.get 'lastResultSubscribed'
-
-  Template.index.preserve ['header', '.search-bar', 'input']
-
-  subscribeToNext = (numResults) ->
-    next = Session.get('lastResultSubscribed') + numResults
-    Session.set 'lastResultSubscribed', next
-    Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
+      sort:
+        'searchResult.order': 1
+      limit: Session.get 'currentSearchLimit'

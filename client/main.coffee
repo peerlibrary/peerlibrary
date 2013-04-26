@@ -1,7 +1,8 @@
 do -> # To not pollute the namespace
   Meteor.Router.add
     '/': ->
-      Session.set 'currentSearchQuery', {}
+      Session.set 'currentSearchQuery', null
+      Session.set 'currentSearchLimit', 25
       'index'
     '/login': 'login'
     '/logout': ->
@@ -15,7 +16,8 @@ do -> # To not pollute the namespace
       Session.set 'currentProfileUsername', username
       'profile'
     '/search': ->
-      Session.set 'currentSearchQuery', parseQuery this.querystring
+      Session.set 'currentSearchQuery', parseQuery(this.querystring).q
+      Session.set 'currentSearchLimit', 25
       'results'
     '/admin': ->
       Meteor.subscribe 'arxiv-pdfs'

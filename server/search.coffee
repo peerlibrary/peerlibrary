@@ -1,7 +1,15 @@
 do -> # To not pollute the namespace
   SEARCH_PROPOSE_LIMIT = 10
+  SEARCH_RESULTS_FIELDS = [
+    'title'
+    'authors'
+    'created'
+    'updated'
+  ]
 
   Meteor.methods
+    # "key" is parsed user-provided string serving as keyword
+    # "filter" is internal filter field so that "value" can be mapped to filters
     'search-propose': (query) ->
       # TODO: For now we just ignore query, we should do something smart with it
       proposals = Publications.find({cached: true, processed: true}, limit: SEARCH_PROPOSE_LIMIT - 1).map (publication) ->
@@ -21,7 +29,10 @@ do -> # To not pollute the namespace
       ]
       proposals
 
-  Meteor.publish 'search-results', (query) ->
+  Meteor.publish 'search-results', (query, limit) ->
+    if not query
+      return
+
     if _.isString(query)
       # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
       realQuery = [
@@ -33,16 +44,31 @@ do -> # To not pollute the namespace
       # TODO: Validate?
       realQuery = query
 
-    queryId = Meteor.uuid()
-
     # TODO: Do some real seaching
     # TODO: How to influence order of results? Should we have just simply a field?
-    handle = Publications.find({cached: true, processed: true}, {limit: 100}).observeChanges
+    # TODO: Escape query in regexp
+    # TODO: Make sure that searchResult field cannot be stored on the server by accident
+    handle = Publications.find({cached: true, processed: true, title: new RegExp(query, 'i')},
+      limit: limit
+      fields: _.pick Publication.publicFields().fields, SEARCH_RESULTS_FIELDS
+    ).observeChanges
       added: (id, fields) =>
-        # TODO: Currently, we are adding whole query so that results can be identified if there are multiple serch queries going on at the same time, we should probably allow client to supply some query ID or something?
-        @added 'SearchResults', queryId + '-' + id, {publicationId: id, query: query}
+        # TODO: Check if for second query with same id, is searchResult field updated or is the old one kept on the client?
+        fields.searchResult =
+          query: query
+          # TODO: Implement
+          order: 1
+
+        @added 'Publications', id, fields
+
+      changed: (id, fields) =>
+        # TODO: Maybe order changed now?
+        # We just pass on the changes
+        @changed 'Publications', id, fields
+
       removed: (id) =>
-        @removed 'SearchResults', queryId + '-' + id
+        # We remove from the search results and leave to some other publish function to remove whole document
+        @changed 'Publications', id, searchResult: undefined
 
     @ready()
 

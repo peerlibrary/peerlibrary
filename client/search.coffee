@@ -1,5 +1,3 @@
-SearchResults = new Meteor.Collection 'SearchResults', transform: (doc) -> new SearchResult doc
-
 do ->
   searchEvents = 
     'click .search-link': (e) ->
@@ -18,18 +16,22 @@ do ->
     'keyup': (e) ->
       if e.which is 27
         searchOff()
+      if $('.search-input').val()
+        Session.set 'currentSearchQuery', $('.search-input').val()
     'keypress input': (e) ->
       if e.which is 13
         e.preventDefault()
-        Meteor.Router.to '/search?q='
-        searchOff()
-  
+        if $('.search-input').val()
+          Meteor.Router.to '/search?q=' + $('.search-input').val()
+          searchOff()
+
   Template.index.events searchEvents
   Template.results.events searchEvents
   Template.profile.events searchEvents
 
   searchOn = ->
     Session.set 'searchActive', true
+    $('#home .item-list').hide()
     $('.search').fadeIn 250
     $('.search-input').focus()
     $('.search-input').animate
@@ -42,6 +44,8 @@ do ->
 
   searchOff = ->
     Session.set 'searchActive', false
+    Session.set 'currentSearchQuery', null
+    Session.set 'currentSearchLimit', 25
     $('.search').fadeOut 250
     $('.search-input').focus()
     $('.search-input').val ''

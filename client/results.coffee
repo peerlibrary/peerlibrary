@@ -1,11 +1,6 @@
 do -> # To not pollute the namespace
   Deps.autorun ->
-    Session.set 'lastResultSubscribed', 0
-    Session.set 'resultIds', []
-    query = Session.get('currentSearchQuery')
-    Meteor.subscribe 'search-results', query, ->
-      Session.set 'resultIds', SearchResults.find(query: query).map (result) -> result.publicationId
-      subscribeToNext(25)
+    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit')
 
   Template.results.rendered = ->
     $('.chzn').chosen()
@@ -19,8 +14,8 @@ do -> # To not pollute the namespace
       slide: (event, ui) ->
         $('#score').val(ui.values[ 0 ] + ' - ' + ui.values[ 1 ])
 
-    $('#score').val($('#score-range').slider('values', 0 ) +
-      ' - ' + $('#score-range').slider('values', 1 ))
+    $('#score').val($('#score-range').slider('values', 0) +
+      ' - ' + $('#score-range').slider('values', 1))
 
     $('#date-range').slider
       range: true
@@ -44,19 +39,18 @@ do -> # To not pollute the namespace
         $(".search-tools").css position: "fixed"
 
   Template.results.created = ->
-    # infinite scrolling
+    # Infinite scrolling
     $(window).on 'scroll', ->
       if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
-        subscribeToNext(25)
+        subscribeToNext 25
 
   subscribeToNext = (numResults) ->
-    next = Session.get('lastResultSubscribed') + numResults
-    Session.set 'lastResultSubscribed', next
-    Meteor.subscribe 'publications-by-ids', Session.get('resultIds').slice 0, next
+    Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
 
   Template.results.publications = ->
     Publications.find
-      _id:
-        $in: Session.get 'resultIds'
+      'searchResult.query': Session.get 'currentSearchQuery'
     ,
-      limit: Session.get 'lastResultSubscribed'
+      sort:
+        'searchResult.order': 1
+      limit: Session.get 'currentSearchLimit'

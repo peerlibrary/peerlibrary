@@ -26,6 +26,9 @@ class Publication extends Document
   #   top: top coordinate
   #   width: width of the paragraph
   #   height: height of the paragraph
+  # searchResult (client only): the last search query this publication is a result for, if any
+  #   query: query object or string as provided by the client
+  #   order: order of the result in the search query, lower number means higher
 
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'

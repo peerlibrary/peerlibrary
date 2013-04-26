@@ -513,9 +513,9 @@ ol.item-list span.stats span, span.article-summary-stats span {
 
 ol.item-list .item-content h4.title, .article-summary-data h4.title {
     margin-bottom: 10px;
-		line-height: 25px;
-		float: left;
-		display: inline-block;
+    line-height: 25px;
+    float: left;
+    display: inline-block;
 }
 
 ol.item-list .item-content h4.title {
@@ -529,7 +529,7 @@ ol.item-list .item-content h4.title {
 ol.item-list .abstract, .article-summary .abstract, .review-list .abstract {
     display: none;
     padding: 0 20px;
-		position: relative;
+    position: relative;
 }
 
 /* article details */
@@ -902,11 +902,6 @@ footer .oa_logo img {
 #home .search-bar input {
 	padding: 5px 10px;
 	font-weight: 300;
-}
-
-#home .item-list {
-    display: none;
-    z-index: 9999;
 }
 
 #home .search {
