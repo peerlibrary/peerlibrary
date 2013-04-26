@@ -34,7 +34,7 @@ compiled. For example, on Mac OS X:
 Contributing
 ------------
 
-PeerLibrary is currently in active development where we are trying to create
+PeerLibrary is currently in an active development where we are trying to create
 basic architecture. Major code refactoring and rewrites are thus common. Clear
 roadmap has not yet been established. Nevertheless you are invited to join the
 development but please understand that things might be changing under your feet
@@ -42,9 +42,9 @@ so it is probably useful to discuss planned contributions in advance. Open [a
 GitHub issue](https://github.com/peerlibrary/peerlibrary/issues/new) or join us
 on IRC at #rawpotato @ [Freenode](http://freenode.net/).
 
-For ideas what to contribute you can check:
-* [list of open issues](https://github.com/peerlibrary/peerlibrary/issues?state=open)
-* `TODO` comments in the code: there are quite some of them which are of "here is a
+For ideas what to contribute you can:
+* check [list of open issues](https://github.com/peerlibrary/peerlibrary/issues?state=open)
+* check `TODO` comments in the code: there are quite some of them which are of "here is a
   dirty hack, do a real implementation" kind, those are a good start to contribute;
   while some other have to wait for other things to be done first
 * while reading the code if you do not understand anything, feel free to ask and then
@@ -52,10 +52,13 @@ For ideas what to contribute you can check:
 * check [our ideas for possible features](https://github.com/peerlibrary/peerlibrary/wiki/Features);
   this list is really just brainstorming and we have not yet decided which features we
   really want and when, but it is a good start to get you thinking about possible ways
-  to contribute, especially if there is some features you would really like to have;
+  to contribute, especially if there is some feature you would really like to have;
   feel free to add additional ideas
 * if you have your favorite open access journal or repository not yet integrated into
-  PeerLibrary, add support for it
+  PeerLibrary, add support for it; this goes especially for possible non-English open
+  access journals or repositories we might not even know about
+* advocate at your local university to open its publications to be able to integrate
+  into PeerLibrary
 
 In particular, we are currently searching for help with:
 * natural language parsing of search queries (we want search to be similar to Facebook Graph Search)
@@ -63,3 +66,5 @@ In particular, we are currently searching for help with:
 * full-text search and ranking of results, especially how to rank weight different filters,
   content vs. title and so on; if you want to try out your own idea how to help people find
   relevant publications, PeerLibrary could be a playground you searched for
+* integrating Meteor with [ConcurrenTree](https://github.com/campadrenalin/ConcurrenTree)-like
+  approach for rich-text real-time collaborative editor
