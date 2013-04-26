@@ -153,8 +153,6 @@ do -> # To not pollute the namespace
 
     $('.comment-input').css('overflow', 'hidden').autogrow()
 
-  Template.publication.preserve ['.display']
-
   Template.publication.displayTimeAgo = (time) ->
     moment(time).fromNow()
 
