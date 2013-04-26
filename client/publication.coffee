@@ -89,9 +89,10 @@ do -> # To not pollute the namespace
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
     'click .thread-link': (e) ->
+      e = $.Event 'click', e
       e.preventDefault()
       Session.set 'displayDiscussion', true
-      Session.set 'currentDiscussionParagraph', $(e.toElement).data('id')
+      Session.set 'currentDiscussionParagraph', $(e.target).data('id')
     'click .comment-submit': (e) ->
       e.preventDefault()
       postComment e
