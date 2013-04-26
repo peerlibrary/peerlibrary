@@ -7,13 +7,16 @@ do -> # To not pollute the namespace
       proposals = Publications.find({cached: true, processed: true}, limit: SEARCH_PROPOSE_LIMIT - 1).map (publication) ->
         [
           key: "publication titled"
+          filter: "title"
           value: publication.title
         ,
           key: "by"
+          filter: "authors"
           value: "#{ publication.authors[0].lastName } et al."
         ]
       proposals.push [
         key: ""
+        filter: "contains"
         value: query
       ]
       proposals
@@ -22,7 +25,8 @@ do -> # To not pollute the namespace
     if _.isString(query)
       # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
       realQuery = [
-        key: "containing"
+        key: ""
+        filter: "contains"
         value: query
       ]
     else
