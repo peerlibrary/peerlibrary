@@ -4,6 +4,27 @@ do -> # To not pollute the namespace
     Meteor.subscribe 'notes-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
     Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
 
+  Deps.autorun ->
+    publication = Publications.findOne Session.get 'currentPublicationId'
+
+    return unless publication
+
+    PDFJS.getDocument(publication.url()).then (pdf) ->
+      pdf.getPage(1).then (page) ->
+        scale = 1.5
+        viewport = page.getViewport scale
+
+        canvas = $('#display-canvas').get(0)
+        context = canvas.getContext '2d'
+        canvas.height = viewport.height
+        canvas.width = viewport.width
+
+        renderContext =
+          canvasContext: context
+          viewport: viewport
+
+        page.render renderContext
+
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
 
@@ -132,7 +153,7 @@ do -> # To not pollute the namespace
 
     $('.comment-input').css('overflow', 'hidden').autogrow()
 
-  Template.publication.preserve ['iframe']
+  Template.publication.preserve ['.display']
 
   Template.publication.displayTimeAgo = (time) ->
     moment(time).fromNow()
