@@ -11,13 +11,16 @@ html, body {
 
 #viewer .display {
 	height: 100%;
-	overflow: hidden;
 }
 
-#display-canvas {
-	border: 0;
-	height: 100%;
-	width: 100%;
+#viewer .display-page {
+	border: 1px solid #b8c1c7;
+    position: relative;
+}
+
+#viewer .display-page .paragraph {
+    border: 1px solid red;
+    position: absolute;
 }
 
 #viewer .sidebar {

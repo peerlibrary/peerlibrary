@@ -10,20 +10,33 @@ do -> # To not pollute the namespace
     return unless publication
 
     PDFJS.getDocument(publication.url()).then (pdf) ->
-      pdf.getPage(1).then (page) ->
-        scale = 1.5
-        viewport = page.getViewport scale
+      for pageNumber in [1..pdf.numPages]
+        canvas = $('<canvas/>').addClass('display-canvas')
+        pageDisplay = $('<div/>').addClass('display-page').append(canvas).appendTo('#viewer .display')
+        do (canvas, pageDisplay) ->
+          pdf.getPage(pageNumber).then (page) ->
+            scale = 0.75
+            viewport = page.getViewport scale
 
-        canvas = $('#display-canvas').get(0)
-        context = canvas.getContext '2d'
-        canvas.height = viewport.height
-        canvas.width = viewport.width
+            canvas.attr
+              height: viewport.height
+              width: viewport.width
 
-        renderContext =
-          canvasContext: context
-          viewport: viewport
+            renderContext =
+              canvasContext: canvas.get(0).getContext '2d'
+              viewport: viewport
 
-        page.render renderContext
+            page.render(renderContext).then ->
+              for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
+                do (i) ->
+                  $('<div/>').addClass('paragraph').css(
+                    left: paragraph.left * scale + 'px'
+                    top: paragraph.top * scale + 'px'
+                    width: paragraph.width * scale + 'px'
+                    height: paragraph.height * scale + 'px'
+                  ).appendTo(pageDisplay).click (e) ->
+                    Session.set 'currentDiscussionParagraph', i
+                    Session.set 'displayDiscussion', true
 
   Template.publication.publication = ->
     Publications.findOne Session.get 'currentPublicationId'
@@ -88,11 +101,6 @@ do -> # To not pollute the namespace
       $(this).addClass 'active'
       $('.edit-options').hide()
       $('.save-options').fadeIn 200
-    'click .thread-link': (e) ->
-      e = $.Event 'click', e
-      e.preventDefault()
-      Session.set 'displayDiscussion', true
-      Session.set 'currentDiscussionParagraph', $(e.target).data('id')
     'click .comment-submit': (e) ->
       e.preventDefault()
       postComment e
