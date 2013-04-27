@@ -34,7 +34,7 @@ compiled. For example, on Mac OS X:
 Contributing
 ------------
 
-PeerLibrary is currently in an active development where we are trying to create
+PeerLibrary is currently in an active development where we are creating
 basic architecture. Major code refactoring and rewrites are thus common. Clear
 roadmap has not yet been established. Nevertheless you are invited to join the
 development but please understand that things might be changing under your feet
@@ -56,7 +56,9 @@ For ideas what to contribute you can:
   feel free to add additional ideas
 * if you have your favorite open access journal or repository not yet integrated into
   PeerLibrary, add support for it; this goes especially for possible non-English open
-  access journals or repositories we might not even know about
+  access journals or repositories we might not even know about; you can just
+  [open an issue for it](https://github.com/peerlibrary/peerlibrary/issues/new) to let
+  us know
 * advocate at your local university to open its publications to be able to integrate
   into PeerLibrary
 
