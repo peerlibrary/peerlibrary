@@ -278,7 +278,7 @@ Meteor.methods
         publication.checkCache()
         count++ if publication.cached
       catch error
-        console.error error
+        console.error "#{ error }"
 
     console.log "Done"
 
