@@ -1,4 +1,4 @@
-Publications = new Meteor.Collection 'Publications', transform: (doc) -> new Publication doc
+Publications = new Meteor.Collection 'Publications', transform: (doc) => new @Publication doc
 
 class Publication extends @Document
   # created: timestamp when the publication was published

@@ -1,4 +1,4 @@
-Comments = new Meteor.Collection 'Comments', transform: (doc) -> new Comment doc
+Comments = new Meteor.Collection 'Comments', transform: (doc) => new @Comment doc
 
 class Comment extends @Document
   # created: creation timestamp
