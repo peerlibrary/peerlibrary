@@ -1,6 +1,6 @@
 Publications = new Meteor.Collection 'Publications', transform: (doc) -> new Publication doc
 
-class Publication extends Document
+class Publication extends @Document
   # created: timestamp when the publication was published
   # updated: timestamp when the publication (or its metadata) was last updated
   # authors: a list of authors, each author:
@@ -44,3 +44,6 @@ class Publication extends Document
 
   createdDay = =>
     moment(@created).format 'MMMM Do YYYY'
+
+@Publications = Publications
+@Publication = Publication

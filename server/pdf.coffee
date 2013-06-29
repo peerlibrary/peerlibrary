@@ -1,10 +1,8 @@
 PDF =
   process: (pdfFile, progressCallback) ->
-    require = __meteor_bootstrap__.require
-
-    canvas = require 'canvas'
-    fs = require 'fs'
-    future = require 'fibers/future'
+    canvas = Npm.require 'canvas'
+    fs = Npm.require 'fs'
+    future = Npm.require 'fibers/future'
 
     DEBUG = false
     NOT_WHITESPACE = /\S/
@@ -112,3 +110,5 @@ PDF =
     processAll().wait()
 
     return # So that we do not return any results
+
+@PDF = PDF

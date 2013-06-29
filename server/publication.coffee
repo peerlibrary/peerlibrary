@@ -1,4 +1,4 @@
-class Publication extends Publication
+class Publication extends @Publication
   checkCache: =>
     if @cached
       return
@@ -56,15 +56,16 @@ class Publication extends Publication
       paragraphs: 1
       cached: 1
 
-do -> # To not pollute the namespace
-  Meteor.publish 'publications-by-owner', (owner) ->
-    Publications.find
-      owner: owner
-    ,
-      Publication.publicFields()
+Meteor.publish 'publications-by-owner', (owner) ->
+  Publications.find
+    owner: owner
+  ,
+    Publication.publicFields()
 
-  Meteor.publish 'publications-by-id', (id) ->
-    Publications.find id, Publication.publicFields()
+Meteor.publish 'publications-by-id', (id) ->
+  Publications.find id, Publication.publicFields()
 
-  Meteor.publish 'publications-by-ids', (ids) ->
-    Publications.find {_id: {$in: ids}}, Publication.publicFields()
+Meteor.publish 'publications-by-ids', (ids) ->
+  Publications.find {_id: {$in: ids}}, Publication.publicFields()
+
+@Publication = Publication

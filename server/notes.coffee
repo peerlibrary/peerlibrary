@@ -1,9 +1,8 @@
-do -> # To not pollute the namespace
-  Meteor.publish 'notes-by-publication-and-paragraph', (publication, paragraph) ->
-    Notes.find
-      publication: publication
-      paragraph: paragraph
-    ,
-      sort:
-        created: -1
-      limit: 1
+Meteor.publish 'notes-by-publication-and-paragraph', (publication, paragraph) ->
+  Notes.find
+    publication: publication
+    paragraph: paragraph
+  ,
+    sort:
+      created: -1
+    limit: 1
