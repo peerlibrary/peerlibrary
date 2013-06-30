@@ -5,21 +5,22 @@
       <div class="display">
         <div class="annotations">
           <ul class="annotations-list">
-            <li>
-              <div class="text" contenteditable="true">
-                test comment
-              </div>
-            </li>
-            <li>
-              <div class="text" contenteditable="true">
-                test comment 2
-              </div>
-            </li>
+            {{> publicationAnnotations}}
           </ul>
         </div>
       </div>
     {{/constant}}
   </div>
+</template>
+
+<template name="publicationAnnotations">
+  {{#each annotations}}
+    <li>
+      <div class="text" contenteditable="true">
+        {{body}}
+      </div>
+    </li>
+  {{/each}}
 </template>
 
 <template name="publicationItem">

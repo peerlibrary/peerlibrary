@@ -65,10 +65,6 @@ Deps.autorun ->
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
-Template.publication.annotations = ->
-  Annotations.find
-    publication: Session.get 'currentPublicationId'
-
 Template.publication.comments = ->
   Comments.find
     publication: Session.get 'currentPublicationId'
@@ -209,3 +205,7 @@ Template.publicationItem.events =
     Meteor.subscribe 'publications-by-id', @_id, ->
       Deps.afterFlush ->
         $(template.find('.abstract')).slideToggle(200)
+
+Template.publicationAnnotations.annotations = ->
+  Annotations.find
+    publication: Session.get 'currentPublicationId'

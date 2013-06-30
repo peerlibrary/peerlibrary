@@ -329,7 +329,7 @@ Meteor.methods
         comments.push(Comments.insert
           created: randomTimestamp()
           author: randomUser()
-          body: dimsum(1 + Random.fraction() * 2).replace /\r/g, '' # There are some \r between paragraphs
+          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \r between paragraphs
           # 10 % of comments are top-level
           parent: if Random.fraction() < 0.1 then null else Random.choice comments
           publication: publication._id
@@ -349,7 +349,7 @@ Meteor.methods
         Annotations.insert
           created: randomTimestamp()
           author: randomUser()
-          body: dimsum(1 + Random.fraction() * 3).replace /\r/g, '' # There are some \ between paragraphs
+          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \ between paragraphs
           publication: publication._id
           location:
             page: 1
