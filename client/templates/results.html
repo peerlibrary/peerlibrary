@@ -12,6 +12,18 @@
       <h3>Refine Search</h3>
       <form action="/" method="GET">
         <span class="filter">
+          <label for="title">Title contains</label>
+          <input type="text" id="title" />
+        </span>
+        <span class="filter">
+          <label for="abstract">Abstract contains</label>
+          <input type="text" id="abstract" />
+        </span>
+        <span class="filter">
+          <label for="author">Author(s)</label>
+          <input type="text" id="author" />
+        </span>
+        <span class="filter">
           <label for="topics">Topics</label>
           <select type="text" id="topics" data-placeholder="Select topic(s)" multiple class="chzn">
             <option value=""></option>
@@ -31,6 +43,7 @@
         <span class="filter">
           <label for="journal">Published in</label>
           <select type="text" id="journal" data-placeholder="Select journal(s)" multiple class="chzn">
+            <option value=""></option>
             <option>PLOS Biology</option>
             <option>Theory of Computing</option>
             <option>Science and Technology of Advanced Materials</option>
@@ -40,18 +53,6 @@
             <option>Culture Machine</option>
             <option>European Political Economy Review</option>
           </select>
-        </span>
-        <span class="filter">
-          <label for="title">Title contains</label>
-          <input type="text" id="title" />
-        </span>
-        <span class="filter">
-          <label for="abstract">Abstract contains</label>
-          <input type="text" id="abstract" />
-        </span>
-        <span class="filter">
-          <label for="author">Author contains</label>
-          <input type="text" id="author" />
         </span>
         <span class="filter">
           <label for="pub-date" class="label-slider">Publication year</label>

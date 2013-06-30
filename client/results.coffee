@@ -47,7 +47,7 @@ Template.results.created = ->
   # Infinite scrolling
   $(window).on 'scroll', ->
     if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
-      subscribeToNext 25
+      subscribeToNext 10
 
 subscribeToNext = (numResults) ->
   Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults

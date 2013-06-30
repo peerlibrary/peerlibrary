@@ -11,9 +11,9 @@ Template.header.events =
   'blur .search-input': ->
     searchOff()
 
-  'keyup': (e) ->
-    if $('.search-input').is(':focus')
-      Session.set 'currentSearchQuery', $('.search-input').val()
+  'keyup .search-input': (e) ->
+    Session.set 'currentSearchQuery', $('.search-input').val()
+    $('#title').val $('.search-input').val()
 
   'submit #search': (e) ->
     e.preventDefault()
