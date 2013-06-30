@@ -1,7 +1,7 @@
 Deps.autorun ->
   Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-  Meteor.subscribe 'notes-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
-  Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
+  Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+  Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
   publication = Publications.findOne Session.get 'currentPublicationId'
@@ -125,38 +125,19 @@ Deps.autorun ->
               textLayer: textLayer
 
             page.render(renderContext).then ->
-
               $textLayerDiv.children().each ->
                 $(this).data("cachedOffset", $(this).position())
                 $(this).data("cachedWidth", $(this).width())
                 $(this).data("cachedHeight", $(this).height())
 
-              for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
-                do (i) ->
-                  $('<div/>').addClass('paragraph').css(
-                    left: paragraph.left * scale + 'px'
-                    top: paragraph.top * scale + 'px'
-                    width: paragraph.width * scale + 'px'
-                    height: paragraph.height * scale + 'px'
-                  ).appendTo($pageDisplay).click (e) ->
-                    Session.set 'currentDiscussionParagraph', i
-                    Session.set 'displayDiscussion', true
-
+# TODO: Destroy/clear pdf.js structures/memory on autorun cycle/stop
+-
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
-
-Template.publication.notes = ->
-  Notes.findOne
-    publication: Session.get 'currentPublicationId'
-    paragraph: Session.get 'currentDiscussionParagraph'
 
 Template.publication.comments = ->
   Comments.find
     publication: Session.get 'currentPublicationId'
-    paragraph: Session.get 'currentDiscussionParagraph'
-
-Template.publication.paragraphNumber = ->
-  Session.get 'currentDiscussionParagraph'
 
 publicationEvents =
   #TODO: click .details-link, .discussion-link
@@ -280,7 +261,6 @@ postComment = (e) ->
       body: $('.comment-input').val()
       parent: null
       publication: Session.get 'currentPublicationId'
-      paragraph: Session.get 'currentDiscussionParagraph'
     , ->
       $('.comment-input').val ''
   else
@@ -294,4 +274,19 @@ Template.publicationItem.events =
     e.preventDefault()
     Meteor.subscribe 'publications-by-id', @_id, ->
       Deps.afterFlush ->
-        $(template.find('.abstract')).slideToggle(200)
+        $(template.find '.abstract').slideToggle(200)
+
+Template.publicationAnnotations.annotations = ->
+  Annotations.find
+    publication: Session.get 'currentPublicationId'
+
+updateAnnotation = (id, template) ->
+  Annotations.update id, $set: body: $(template.find '.text').text(), ->
+    Deps.afterFlush ->
+      $(template.find '.text').focus()
+
+updateAnnotation = _.debounce updateAnnotation, 5000
+
+Template.publicationAnnotations.events =
+  'keyup .text': (e, template) ->
+    updateAnnotation @_id, template
