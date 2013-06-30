@@ -87,16 +87,21 @@ Meteor.methods
               mtime: moment.utc(props.mtime).toDate()
         fun id, pdf
 
+      finishPDF = ->
+        ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
+
+      Meteor.bindEnvironment processPDF, ((e) -> throw e), this
+      Meteor.bindEnvironment finishPDF, ((e) -> throw e), this
+
       processTar = blocking (key, fun, cb) ->
         finished = false
         counter = 0
 
         finalCallback = ->
-          ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
+          finishPDF()
           cb null
 
-        processPDFWrapped = (args) ->
-          [fun, props, pdf] = args
+        processPDFWrapped = (fun, props, pdf) ->
           counter++
           processPDF fun, props, pdf
           counter--
@@ -128,19 +133,18 @@ Meteor.methods
             offset += chunk.length
           entry.on 'end', ->
             assert.equal offset, entry.props.size, "#{ offset }, #{ entry.props.size }"
-            # At this point it seems we are not in the Fiber anymore, but we have to be
-            blocking.Fiber(processPDFWrapped).run([fun, entry.props, buffer])
+            processPDFWrapped fun, entry.props, buffer
 
         ).on('end', ->
           finished = true
           if counter == 0
-            blocking.Fiber(finalCallback).run()
+            finalCallback()
         )
 
       processTar file.Key, (id, pdf) ->
         console.log "Storing PDF: #{ id }"
 
-        Storage.save Publication._arXivFilename(id), pdf
+        Storage.save (Publication._filenamePrefix() + Publication._arXivFilename(id)), pdf
 
     console.log "Done"
 
@@ -290,8 +294,25 @@ Meteor.methods
     console.log "Processing pending PDFs"
 
     Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+      initCallback = (numberOfPages) ->
+        publication.numberOfPages = numberOfPages
+
+      textCallback = (pageNumber, x, y, width, height, direction, text) ->
+
+      pageImageCallback = (pageNumber, canvasElement) ->
+        thumbnailCanvas = new PDFJS.canvas 95, 125
+        thumbnailContext = thumbnailCanvas.getContext '2d'
+
+        # TODO: Do better image resizing, antialias doesn't really help
+        thumbnailContext.antialias = 'subpixel'
+
+        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
+
+        Storage.save publication.thumbnail(pageNumber), thumbnailCanvas.toBuffer()
+
       try
-        publication.process()
+        publication.process null, initCallback, textCallback, pageImageCallback
+        Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
         console.error error
 

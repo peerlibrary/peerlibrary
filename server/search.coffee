@@ -1,17 +1,16 @@
-SEARCH_PROPOSE_LIMIT = 10
-SEARCH_RESULTS_FIELDS = [
-  'title'
-  'authors'
-  'created'
-  'updated'
-]
+SEARCH_PROPOSE_LIMIT = 4
 
 Meteor.methods
   # "key" is parsed user-provided string serving as keyword
   # "filter" is internal filter field so that "value" can be mapped to filters
   'search-propose': (query) ->
     # TODO: For now we just ignore query, we should do something smart with it
-    proposals = Publications.find({cached: true, processed: true}, limit: SEARCH_PROPOSE_LIMIT - 1).map (publication) ->
+    proposals = Publications.find(
+      cached: true,
+      processed: true
+    ,
+      limit: SEARCH_PROPOSE_LIMIT - 1
+    ).map (publication) ->
       [
         key: "publication titled"
         filter: "title"
@@ -47,9 +46,13 @@ Meteor.publish 'search-results', (query, limit) ->
   # TODO: How to influence order of results? Should we have just simply a field?
   # TODO: Escape query in regexp
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
-  handle = Publications.find({cached: true, processed: true, title: new RegExp(query, 'i')},
+  handle = Publications.find(
+    title: new RegExp(query, 'i')
+    cached: true
+    processed: true
+  ,
     limit: limit
-    fields: _.pick Publication.publicFields().fields, SEARCH_RESULTS_FIELDS
+    fields: _.pick Publication.publicFields().fields, Publication.publicSearchResultFields()
   ).observeChanges
     added: (id, fields) =>
       # TODO: Check if for second query with same id, is searchResult field updated or is the old one kept on the client?

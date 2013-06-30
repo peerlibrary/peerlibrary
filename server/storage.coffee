@@ -18,7 +18,6 @@ class Storage extends @Storage
     @_fs.readFileSync @_storageDirectory + @_path.sep + filename
 
 fs = Npm.require 'fs'
-future = Npm.require 'fibers/future'
 path = Npm.require 'path'
 
 # Find .meteor directory
@@ -30,16 +29,15 @@ while directoryPath.length > 0
 
 assert directoryPath.length > 0
 
-directoryPath.push 'pdf'
+directoryPath.push 'storage'
 Storage._storageDirectory = directoryPath.join path.sep
 Storage._fs = fs
-Storage._future = future
 Storage._path = path
 
 # TODO: What about security? If ../.. are passed in?
 # TODO: Currently, if there is no file, processing is passed further and Meteor return 200 content, we should return 404 for this files
 # TODO: Add CORS headers
 # TODO: We have redirect == false because directory redirects do not take prefix into the account
-__meteor_bootstrap__.app.use('/pdf', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
+__meteor_bootstrap__.app.use('/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
 
 @Storage = Storage

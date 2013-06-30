@@ -1,6 +1,6 @@
-Deps.autorun ->
-  Meteor.subscribe 'users', Session.get 'currentProfileUsername'
-  Meteor.subscribe 'publications-by-owner', Session.get 'currentProfileUsername'
+#Deps.autorun ->
+#  Meteor.subscribe 'users', Session.get 'currentProfileUsername'
+#  Meteor.subscribe 'publications-by-owner', Session.get 'currentProfileUsername'
 
 Template.profile.profile = ->
   Meteor.users.findOne

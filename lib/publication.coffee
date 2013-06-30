@@ -26,23 +26,38 @@ class Publication extends @Document
   #   top: top coordinate
   #   width: width of the paragraph
   #   height: height of the paragraph
+  # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   query: query object or string as provided by the client
   #   order: order of the result in the search query, lower number means higher
+
+  @_filenamePrefix: ->
+    'pdf' + Storage._path.sep
 
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
-    switch @source
+    Publication._filenamePrefix() + switch @source
       when 'arXiv' then Publication._arXivFilename @foreignId
-      else @_id + '.pdf'
+      else throw new Meteor.Error 500, "Unsupported source"
 
-  url: (ignore) =>
-    console.warn "PDF #{ @_id } not cached" if not @cached and not ignore
+  url: =>
     Storage.url @filename()
 
-  createdDay = =>
+  thumbnail: (page) =>
+    if page < 1 or page > @numberOfPages
+      throw new Meteor.Error 500, "Page out of bounds: #{ page }/#{ @numberOfPages }"
+
+    'thumbnail' + Storage._path.sep + @_id + Storage._path.sep + page + '-125x95.png'
+
+  thumbnailUrl: (page) =>
+    Storage.url @thumbnail page
+
+  thumbnailUrls: =>
+    @thumbnailUrl page for page in [1..@numberOfPages]
+
+  createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
 
 @Publications = Publications
