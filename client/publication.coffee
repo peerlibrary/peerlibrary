@@ -10,32 +10,60 @@ Deps.autorun ->
 
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
-      canvas = $('<canvas/>').addClass('display-canvas')
-      pageDisplay = $('<div/>').addClass('display-page').append(canvas).appendTo('#viewer .display')
-      do (canvas, pageDisplay) ->
+      $canvas = $('<canvas/>').addClass('display-canvas')
+      $pageDisplay = $('<div/>').addClass('display-page').append($canvas).appendTo('#viewer .display')
+
+      do ($canvas, $pageDisplay) ->
         pdf.getPage(pageNumber).then (page) ->
           scale = 0.75
           viewport = page.getViewport scale
+          context = $canvas.get(0).getContext '2d'
 
-          canvas.attr
+          $canvas.attr
             height: viewport.height
             width: viewport.width
 
-          renderContext =
-            canvasContext: canvas.get(0).getContext '2d'
-            viewport: viewport
+          $textLayerDiv = $('<div/>')
+            .addClass('display-text')
+            .css("height", viewport.height + "px")
+            .css("width", viewport.width + "px")
+            .appendTo($pageDisplay)
 
-          page.render(renderContext).then ->
-            for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
-              do (i) ->
-                $('<div/>').addClass('paragraph').css(
-                  left: paragraph.left * scale + 'px'
-                  top: paragraph.top * scale + 'px'
-                  width: paragraph.width * scale + 'px'
-                  height: paragraph.height * scale + 'px'
-                ).appendTo(pageDisplay).click (e) ->
-                  Session.set 'currentDiscussionParagraph', i
-                  Session.set 'displayDiscussion', true
+          outputScale = getOutputScale();
+          if outputScale.scaled 
+            cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
+            CustomStyle.setProp 'transform', canvas, cssScale
+            CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
+            if $textLayerDiv.get(0)
+              CustomStyle.setProp 'transform', $textLayerDiv.get(0), cssScale
+              CustomStyle.setProp 'transformOrigin', $textLayerDiv.get(0), '0% 0%'
+          
+          context._scaleX = outputScale.sx
+          context._scaleY = outputScale.sy
+          if outputScale.scaled
+            context.scale outputScale.sx, outputScale.sy
+
+          page.getTextContent().then (textContent) -> 
+
+            textLayer = new TextLayerBuilder $textLayerDiv.get(0), page.number - 1
+            textLayer.setTextContent textContent
+
+            renderContext =
+              canvasContext: context
+              viewport: viewport
+              textLayer: textLayer
+
+            page.render(renderContext).then ->
+              for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
+                do (i) ->
+                  $('<div/>').addClass('paragraph').css(
+                    left: paragraph.left * scale + 'px'
+                    top: paragraph.top * scale + 'px'
+                    width: paragraph.width * scale + 'px'
+                    height: paragraph.height * scale + 'px'
+                  ).appendTo($pageDisplay).click (e) ->
+                    Session.set 'currentDiscussionParagraph', i
+                    Session.set 'displayDiscussion', true
 
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
