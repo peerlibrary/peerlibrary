@@ -1,4 +1,4 @@
-searchEvents =
+Template.header.events =
   'click .top-menu .search': (e) ->
     searchOn()
 
@@ -15,7 +15,8 @@ searchEvents =
     if $('.search-input').is(':focus')
       Session.set 'currentSearchQuery', $('.search-input').val()
 
-Template.header.events searchEvents
+  'submit #search': (e) ->
+    e.preventDefault()
 
 searchOn = ->
   Session.set 'searchActive', true
