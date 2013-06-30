@@ -1,5 +1,46 @@
 @import vars
 
+/* meta menu */
+.meta-menu
+  position: fixed
+  cursor: pointer
+  width: 28px
+  height: 22px
+  left: 20px
+  padding: 10px
+  background: #cececf
+  border-radius: 2px
+  z-index: 100
+  transition: 0.2s
+  overflow: hidden
+
+.meta-menu a
+  color: white
+
+.meta-menu:hover
+  background: rgba(46,46,44,0.5)
+  width: 300px
+  min-height: 420px
+
+.meta-menu i.icon-menu
+  font-size: 20px
+  color: white
+
+.meta-menu .meta-description
+  display: none
+  color: white
+  padding: 5px
+
+.meta-menu:hover .meta-description
+  display: block
+
+.meta-menu .meta-description .authors span:after
+  content: ','
+
+.meta-menu .meta-description .authors span:last-child:after
+  content: ''
+
+/* annotations */
 .annotations
   position: absolute
   z-index: 100

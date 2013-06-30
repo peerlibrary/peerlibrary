@@ -2,11 +2,11 @@
 
  @font-face {
   font-family: 'glyph';
-  src: url('/font/glyph.eot?90010554');
-  src: url('/font/glyph.eot?90010554#iefix') format('embedded-opentype'),
-       url('/font/glyph.woff?90010554') format('woff'),
-       url('/font/glyph.ttf?90010554') format('truetype'),
-       url('/font/glyph.svg?90010554#glyph') format('svg');
+  src: url('/font/glyph.eot?33702742');
+  src: url('/font/glyph.eot?33702742#iefix') format('embedded-opentype'),
+       url('/font/glyph.woff?33702742') format('woff'),
+       url('/font/glyph.ttf?33702742') format('truetype'),
+       url('/font/glyph.svg?33702742#glyph') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -16,42 +16,42 @@
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   @font-face {
     font-family: 'glyph';
-    src: url('../font/glyph.svg?90010554#glyph') format('svg');
+    src: url('../font/glyph.svg?33702742#glyph') format('svg');
   }
 }
 */
-
+ 
  [class^="icon-"]:before, [class*=" icon-"]:before {
   font-family: "glyph";
   font-style: normal;
   font-weight: normal;
   speak: none;
-
+ 
   display: inline-block;
   text-decoration: inherit;
   width: 1em;
   margin-right: .2em;
   text-align: center;
   /* opacity: .8; */
-
+ 
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
   text-transform: none;
-
+     
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
-
-  /* Animation center compensation - magrins should be symmetric */
+ 
+  /* Animation center compensation - margins should be symmetric */
   /* remove if not needed */
   margin-left: .2em;
-
+ 
   /* you can be more comfortable with increased icons size */
   /* font-size: 120%; */
-
+ 
   /* Uncomment for 3D effect */
   /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
 }
-
+ 
 .icon-home:before { content: '\2302'; } /* '⌂' */
 .icon-star:before { content: '\2605'; } /* '★' */
 .icon-star-empty:before { content: '\2606'; } /* '☆' */
@@ -75,6 +75,7 @@
 .icon-rss:before { content: '\f09e'; } /* '' */
 .icon-filter:before { content: '\f0b0'; } /* '' */
 .icon-beaker:before { content: '\f0c3'; } /* '' */
+.icon-menu:before { content: '\e801'; } /* '' */
 .icon-upload-cloud:before { content: '\f0ee'; } /* '' */
 .icon-doc:before { content: '\f0f6'; } /* '' */
 .icon-circle-empty:before { content: '\f10c'; } /* '' */
