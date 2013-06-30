@@ -27,8 +27,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.291.3",
-        "commit": "58e50c61a86a38a81ec62ee751d8cf7b54272823"
+        "tag": "v0.8.291.4",
+        "commit": "15f6cc222f6af13ef504812416d4305302e0a6c2"
       },
       "jquery-ui": {
         "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",

@@ -144,7 +144,7 @@ Meteor.methods
       processTar file.Key, (id, pdf) ->
         console.log "Storing PDF: #{ id }"
 
-        Storage.save Publication._arXivFilename(id), pdf
+        Storage.save (Publication._filenamePrefix() + Publication._arXivFilename(id)), pdf
 
     console.log "Done"
 
