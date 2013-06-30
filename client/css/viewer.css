@@ -351,8 +351,6 @@ span.paragraph-ref {
     line-height: 1;
     white-space: pre;
     cursor: text;
-	padding-bottom: 100px;
-	padding-right: 100px;
 }
 
 #viewer .display-text .highlight {

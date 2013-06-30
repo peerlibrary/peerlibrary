@@ -29,6 +29,69 @@ Deps.autorun ->
             .css("width", viewport.width + "px")
             .appendTo($pageDisplay)
 
+          $pageDisplay.css("position","relative");
+
+          $closestTextDiv = null
+          closestDistance = Number.MAX_VALUE;
+
+          $textLayerDiv.mousemove (e) ->
+            layerOffset = $(this).offset()
+            relX = e.pageX - layerOffset.left
+            relY = e.pageY - layerOffset.top
+
+            closestDistance = Number.MAX_VALUE;
+            $textLayerDiv.children().each ->
+              textDivOffset = $(this).data("cachedOffset")
+              textDivWidth = $(this).data("cachedWidth")
+              textDivHeight = $(this).data("cachedHeight")
+
+              distXLeft = relX - textDivOffset.left
+              distXRight = relX - (textDivOffset.left + textDivWidth)
+              distXCenter = relX - (textDivOffset.left + textDivWidth/2.0)
+
+              distYTop = relY - textDivOffset.top
+              distYBottom = relY - (textDivOffset.top + textDivHeight)
+              distYCenter = relY - (textDivOffset.top + textDivHeight/2.0)
+
+
+              distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
+              if relX > textDivOffset.left and relX < textDivOffset.left + textDivWidth
+                distX = 0
+
+              distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
+              if relY > textDivOffset.top and relY < textDivOffset.top + textDivHeight
+                distY = 0
+              # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
+
+              dist = Math.sqrt(distX*distX + distY*distY)
+
+              if (dist < closestDistance) 
+                closestDistance = dist
+                $closestTextDiv = $(this)
+
+              $(this).css("color","rgba(0,0,0,0)")
+              $(this).css("background-color","rgba(0,0,0,0)")
+              # $(this).css("color","rgba(0,0,0,#{ Math.max(1.0-dist/100,0) })")
+
+            # $closestTextDiv.css("color","rgba(0,0,0,1.0)")
+            return if $closestTextDiv is null
+            $closestTextDiv.css("background-color","rgba(255,0,0,0.3)")
+            $(this).data("closestTextDiv",$closestTextDiv)
+
+
+          $startTextDiv = null
+          $endTextDiv = null
+
+          $textLayerDiv
+            .mousedown (e) ->
+              e.preventDefault()
+              return if not $closestTextDiv
+              $startTextDiv = $closestTextDiv
+            .mouseup (e) ->
+              return if not $closestTextDiv
+              $endTextDiv = $closestTextDiv
+
+
           # outputScale = getOutputScale();
           # if outputScale.scaled 
           #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
@@ -58,6 +121,12 @@ Deps.autorun ->
               textLayer: textLayer
 
             page.render(renderContext).then ->
+
+              $textLayerDiv.children().each ->
+                $(this).data("cachedOffset", $(this).position())
+                $(this).data("cachedWidth", $(this).width())
+                $(this).data("cachedHeight", $(this).height())
+
               for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
                 do (i) ->
                   $('<div/>').addClass('paragraph').css(

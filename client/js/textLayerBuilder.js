@@ -131,7 +131,7 @@ this.TextLayerBuilder = function textLayerBuilder(options) {
     textDiv.style.fontSize = fontHeight + 'px';
     textDiv.style.fontFamily = geom.fontFamily;
     textDiv.style.left = geom.x + 'px';
-    textDiv.style.top = (geom.y - fontHeight) + 'px';
+    textDiv.style.top = (geom.y - fontHeight*0.9) + 'px';
 
     // The content of the div is set in the `setTextContent` function.
 
