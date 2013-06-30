@@ -50,12 +50,15 @@ Meteor.publish 'publications-by-owner', (owner) ->
   Publications.find
     owner: owner
   ,
-    Publication.publicFields()
+    limit: 5
+    fields: Publication.publicFields().fields
 
 Meteor.publish 'publications-by-id', (id) ->
   Publications.find id, Publication.publicFields()
 
 Meteor.publish 'publications-by-ids', (ids) ->
-  Publications.find {_id: {$in: ids}}, Publication.publicFields()
+  Publications.find {_id: {$in: ids}},
+    limit: 5
+    fields: Publication.publicFields().fields
 
 @Publication = Publication

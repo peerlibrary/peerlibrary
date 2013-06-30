@@ -23,6 +23,10 @@ Deps.autorun ->
             height: viewport.height
             width: viewport.width
 
+          $pageDisplay.attr
+            height: viewport.height
+            width: viewport.width
+
           $textLayerDiv = $('<div/>')
             .addClass('display-text')
             .css("height", viewport.height + "px")
@@ -30,20 +34,20 @@ Deps.autorun ->
             .appendTo($pageDisplay)
 
           outputScale = getOutputScale();
-          if outputScale.scaled 
+          if outputScale.scaled
             cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
             CustomStyle.setProp 'transform', canvas, cssScale
             CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
             if $textLayerDiv.get(0)
               CustomStyle.setProp 'transform', $textLayerDiv.get(0), cssScale
               CustomStyle.setProp 'transformOrigin', $textLayerDiv.get(0), '0% 0%'
-          
+
           context._scaleX = outputScale.sx
           context._scaleY = outputScale.sy
           if outputScale.scaled
             context.scale outputScale.sx, outputScale.sy
 
-          page.getTextContent().then (textContent) -> 
+          page.getTextContent().then (textContent) ->
 
             textLayer = new TextLayerBuilder $textLayerDiv.get(0), page.number - 1
             textLayer.setTextContent textContent
