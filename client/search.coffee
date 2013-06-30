@@ -15,10 +15,7 @@ searchEvents =
     if $('.search-input').is(':focus')
       Session.set 'currentSearchQuery', $('.search-input').val()
 
-Template.index.events searchEvents
-Template.results.events searchEvents
-Template.profile.events searchEvents
-Template.publication.events searchEvents
+Template.header.events searchEvents
 
 searchOn = ->
   Session.set 'searchActive', true

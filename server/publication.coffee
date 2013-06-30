@@ -3,23 +3,19 @@ class Publication extends @Publication
     if @cached
       return
 
-    if Storage.exists @filename()
-      @cached = true
-      Publications.update @_id, $set: cached: @cached
-      return
+    if not Storage.exists @filename()
+      console.log "Caching PDF for #{ @_id } from the central server"
 
-    console.log "Caching PDF for #{ @_id } from the central server"
+      pdf = Meteor.http.get 'http://stage.peerlibrary.org' + @url(),
+        timeout: 10000 # ms
+        encoding: null # PDFs are binary data
 
-    pdf = Meteor.http.get 'http://stage.peerlibrary.org' + @url(true),
-      timeout: 10000 # ms
-      encoding: null # PDFs are binary data
-
-    Storage.save @filename(), pdf.content
+      Storage.save @filename(), pdf.content
 
     @cached = true
     Publications.update @_id, $set: cached: @cached
 
-    pdf.content
+    pdf?.content
 
   process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
     pdf ?= Storage.open @filename()
@@ -35,39 +31,58 @@ class Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
+  @publicSearchResultFields: ->
+    [
+      'created'
+      'updated'
+      'authors'
+      'title'
+      'numberOfPages'
+    ]
+
   @publicFields: ->
     fields:
       created: 1
       updated: 1
       authors: 1
       title: 1
-      comments: 1
+      numberOfPages: 1
       abstract: 1
       doi: 1
       foreignId: 1
       source: 1
-      paragraphs: 1
-      cached: 1
-      processed: 1
-      numberOfPages: 1
 
 Meteor.publish 'publications-by-owner', (owner) ->
+  if not owner
+    return
+
   Publications.find
     owner: owner
+    cached: true
     processed: true
   ,
-    limit: 5
-    fields: Publication.publicFields().fields
+    Publication.publicFields()
 
 Meteor.publish 'publications-by-id', (id) ->
   if not id
     return
 
-  Publications.find id, Publication.publicFields()
+  Publications.find
+    _id: id
+    cached: true
+    processed: true
+  ,
+    Publication.publicFields()
 
 Meteor.publish 'publications-by-ids', (ids) ->
-  Publications.find {_id: {$in: ids}},
-    limit: 5
-    fields: Publication.publicFields().fields
+  if not ids
+    return
+
+  Publications.find
+    _id: {$in: ids}
+    cached: true
+    processed: true
+  ,
+    Publication.publicFields()
 
 @Publication = Publication

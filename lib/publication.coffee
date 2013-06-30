@@ -42,9 +42,7 @@ class Publication extends @Document
       when 'arXiv' then Publication._arXivFilename @foreignId
       else throw new Meteor.Error 500, "Unsupported source"
 
-  url: (ignore) =>
-    console.warn "PDF #{ @_id } not cached" if not @cached and not ignore
-
+  url: =>
     Storage.url @filename()
 
   thumbnail: (page) =>
@@ -53,9 +51,7 @@ class Publication extends @Document
 
     'thumbnail' + Storage._path.sep + @_id + Storage._path.sep + page + '-125x95.png'
 
-  thumbnailUrl: (page, ignore) =>
-    console.warn "PDF #{ @_id } not processed" if not @processed and not ignore
-
+  thumbnailUrl: (page) =>
     Storage.url @thumbnail page
 
   thumbnailUrls: () =>

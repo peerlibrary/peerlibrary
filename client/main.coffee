@@ -9,13 +9,17 @@ Meteor.Router.add
     Meteor.Router.to '/'
   '/register': 'register'
   '/p/:publicationId': (publicationId) ->
+    Session.set 'currentSearchQuery', null
+    Session.set 'currentSearchLimit', null
     Session.set 'currentPublicationId', publicationId
     'publication'
   '/u/:username': (username) ->
     Session.set 'currentProfileUsername', username
     'profile'
   '/admin': ->
-    Meteor.subscribe 'arxiv-pdfs'
+    Session.set 'currentSearchQuery', null
+    Session.set 'currentSearchLimit', null
+    #Meteor.subscribe 'arxiv-pdfs'
     'admin'
   '*': 'notfound'
 
