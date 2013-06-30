@@ -1,21 +1,7 @@
 <template name="publication">
+  {{> header}}
   <div id="viewer">
     <div class="sidebar">
-      <div class="header">
-        <a href="/"><img src="/img/logo.png" class="logo" /></a>
-      </div>
-      <!--
-      <div class="menubar">
-        <ul class="nav">
-          <li>
-            <a href="#" class="details-link active">Details</a>
-          </li>
-          <li>
-            <a href="#" class="discussion-link">Discussion [50]</a>
-          </li>
-        </ul>
-      </div>
-      -->
       <div class="clearfix"></div>
       <div class="wrap">
         <div class="details">
@@ -30,46 +16,17 @@
           </div>
           <div class="btn-wrap">
             <a href="#" class="btn">
-              <i class="icon-plus-sign-alt"></i> Add to library 
+              <i class="icon-plus-sign-alt"></i> Add to library
             </a>
             <a href="#" class="btn">
-              <i class="icon-download-alt"></i> Download PDF 
+              <i class="icon-download-alt"></i> Download PDF
             </a>
           </div>
           <div class="publication-details">
-            <!--
-            <p>
-              <b>Keywords: </b>
-              {{#each publication.keywords}}
-                <a href="{{slug}}">{{name}}, </a>
-              {{/each}}
-            </p>
-            -->
             <p>
               <b>Published in: </b>
               {{publication.source}}
             </p>
-            <!--
-            <p class="pub-info">
-              <b>Publisher:</b> Scientific Research Publishing
-              <b>ISSN/EISSN:</b> 10994300
-              <b>Year:</b> 2009
-              <b>Volume:</b> 6
-              <b>Issue:</b> 1
-              <b>Pages:</b> 76 - 86
-              <b>DOI:</b> 10.3390/e6010074
-            </p>
-            <div class="citations-list">
-              <h2>Citations</h2>
-              <span class="count-badge">22</span>
-              <div class="clearfix"></div>
-              <ol class="pub-list">
-                <li>
-                  <a href="#">Simple word problems in universal algebras</a> - Knuth, Bendix - 1970
-                </li>
-              </ol>
-            </div>
-            -->
           </div>
         </div>
         <div class="discussion">
@@ -168,24 +125,23 @@
   <li>
     <div class="article-summary">
       <div class="article-summary-data">
-        <h4 class="title"><a href="/p/{{_id}}">{{title}}</a></h4>
+        <h2 class="title"><a href="/p/{{_id}}">{{title}}</a></h2>
         <div class="clearfix"></div>
         <span class="authors line">
           {{#each authors}}
-            <a href="/u/{{username}}">{{foreNames}} {{lastName}}, </a>
+            <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
           {{/each}}
         </span><br>
         <span class="date line">{{displayDay created}}</span><br>
         <span class="actions line">
-          <a href="#" class="preview-link">Preview abstract</a> &middot;
+          <a href="#" class="preview-link" onclick="$(this).parent().parent().siblings('.abstract').slideToggle(200);">Preview abstract</a> &middot;
           <a href="/p/{{_id}}">Full text</a>
           <i class="icon-external-link"></i>
         </span>
       </div>
-      <span class="article-summary-stats">
-        <i class="icon-bookmark"></i> {{bookmarkCount}}
-        <i class="icon-edit"></i> {{commentCount}}
-      </span>
+      <div class="article-thumb">
+        <img src='http://i.imgur.com/MsCqBjP.jpg'>
+      </div>
       <div class="clearfix"></div>
       <div class="abstract">
         <p>{{abstract}}</p>

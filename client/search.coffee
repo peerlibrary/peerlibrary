@@ -1,28 +1,19 @@
 searchEvents =
-  'click .search-link': (e) ->
+  'click .top-menu .search': (e) ->
     searchOn()
-  'click .search': (e) ->
-    if not $(e.target).is 'input'
-      searchOff()
+
   'click .search-input': (e) ->
     if not Session.get 'searchActive'
       searchOn()
-  'keydown': (e) ->
-    if ((not $(e.target).is 'input') or ($(e.target).is '.search-input')) and (not Session.get 'searchActive')
-      char = String.fromCharCode e.which
-      if char.match(/\w/) and not e.ctrlKey
-        searchOn()
+
+  'click .search-button': ->
+
+  'blur .search-input': ->
+    searchOff()
+
   'keyup': (e) ->
-    if e.which is 27
-      searchOff()
-    if $('.search-input').val()
+    if $('.search-input').is(':focus')
       Session.set 'currentSearchQuery', $('.search-input').val()
-  'keypress input': (e) ->
-    if e.which is 13
-      e.preventDefault()
-      if $('.search-input').val()
-        Meteor.Router.to '/search?q=' + $('.search-input').val()
-        searchOff()
 
 Template.index.events searchEvents
 Template.results.events searchEvents
@@ -30,28 +21,16 @@ Template.profile.events searchEvents
 
 searchOn = ->
   Session.set 'searchActive', true
-  $('#home .item-list').hide()
-  $('.search').fadeIn 250
+  $('.top-menu .search').addClass('selected')
   $('.search-input').focus()
-  $('.search-input').animate
-    width: '1000px'
-    , 250
-  $('#home .search-bar').animate
-    'margin-top': '20px'
-    , 250
-  $('#home .item-list').fadeIn()
+  $('li.explore').hide()
 
 searchOff = ->
   Session.set 'searchActive', false
-  Session.set 'currentSearchQuery', null
-  Session.set 'currentSearchLimit', 25
-  $('.search').fadeOut 250
-  $('.search-input').focus()
-  $('.search-input').val ''
-  $('.search-input').animate
-    width: '630px'
-    , 250
-  $('#home .search-bar').animate
-    'margin-top': '20%'
-    , 250
-  $('#home .item-list').hide()
+  Session.set 'currentSearchLimit', 5
+  $('.top-menu .search').removeClass('selected')
+  $('li.explore').fadeIn 200
+  if $('.search-input').val()
+    $('.top-menu .search .label').html('<i class="icon-search"></i> ' + $('.search-input').val().substring(0,55) + ' <span class="cursor"></span>')
+  else
+    $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications, authors and keywords <span class="cursor"></span>')

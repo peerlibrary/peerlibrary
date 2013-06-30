@@ -1,0 +1,67 @@
+body{width: 100%; max-width:100%; min-width:1140px;}
+
+.col1, .col1p, .col2, .col2p, .col3, .col3p, .col4, .col4p, .col5, .col5p, .col6, .col6p, .col7, .col7p, .col8, .col8p, .col9, .col9p, .col10, .col10p, .col11, .col11p, .col12, .col12p, .col13, .col13p, .col14, .col14p, .col15, .col15p, .col16, .col16p {float: left; margin-right: -100%;}
+
+/* Add this class to the container of floated columns */
+
+.container{margin-left: auto;margin-right: auto;width: 94%;}
+
+.row{overflow:auto; clear:both;} /* clear comes handy in IE */
+
+/* Columns without paddings*/
+
+.col1{width: 4.94%;}
+.col2{width: 10.88%;}
+.col3{width: 16.81%;}
+.col4{width: 22.75%;}
+.col5{width: 28.69%;}
+.col6{width: 34.63%;}
+.col7{width: 40.56%;}
+.col8{width: 46.5%;}
+.col9{width: 52.44%;}
+.col10{width: 58.38%;}
+.col11{width: 64.31%;}
+.col12{width: 70.25%;}
+.col13{width: 76.19%;}
+.col14{width: 82.13%;}
+.col15{width: 88.06%;}
+.col16{width: 94%;}
+
+/* Columns with paddings*/
+
+.col1p{width: 2.9%;padding: 0 1%;}
+.col2p{width: 8.9%;padding: 0 1%;}
+.col3p{width: 14.8%;padding: 0 1%;}
+.col4p{width: 20.8%;padding: 0 1%;}
+.col5p{width: 26.7%;padding: 0 1%;}
+.col6p{width: 32.6%;padding: 0 1%;}
+.col7p{width: 38.6%;padding: 0 1%;}
+.col8p{width: 44.5%;padding: 0 1%;}
+.col9p{width: 50.4%;padding: 0 1%;}
+.col10p{width: 56.4%;padding: 0 1%;}
+.col11p{width: 62.3%;padding: 0 1%;}
+.col12p{width: 68.3%;padding: 0 1%;}
+.col13p{width: 74.2%;padding: 0 1%;}
+.col14p{width: 80.1%;padding: 0 1%;}
+.col15p{width: 86.1%;padding: 0 1%;}
+.col16p{width: 92.0%;padding: 0 1%;}
+
+/* Horizontal position of columns */
+/* By changing classes you can easily change the horizontal order of columns */
+
+.push0{margin-left:3%;}
+.push1{margin-left:8.940000000000001%;}
+.push2{margin-left:14.88%;}
+.push3{margin-left:20.81%;}
+.push4{margin-left:26.75%;}
+.push5{margin-left:32.69%;}
+.push6{margin-left:38.63%;}
+.push7{margin-left:44.56%;}
+.push8{margin-left:50.5%;}
+.push9{margin-left:56.44%;}
+.push10{margin-left:62.38%;}
+.push11{margin-left:68.31%;}
+.push12{margin-left:74.25%;}
+.push13{margin-left:80.19%;}
+.push14{margin-left:86.13%;}
+.push15{margin-left:92.06%;}

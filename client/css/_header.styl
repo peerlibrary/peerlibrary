@@ -1,0 +1,134 @@
+@import vars
+
+/* header
+========= */
+header
+  background: blue
+  height: 45px
+  font-size: 16px
+  position: fixed
+  width: 100%
+  z-index: 99999
+
+.logo
+  width: 145px
+  float: left
+
+.logo a
+  color: white
+  text-decoration: none
+  line-height: 45px
+  font-size: 22px
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
+  background: transparent
+  display: inline-block
+  padding: 0 20px
+  transition: 0.2s
+
+.logo a:hover
+  background: white
+  color: blue-accent
+  text-decoration: none!important
+
+ul.top-menu
+  list-style: none
+  padding: 0
+  margin: 0
+  color: white
+
+ul.top-menu li
+  display: block
+  float: left
+  line-height: 45px
+
+ul.top-menu li a
+  color: white
+  display: block
+  padding: 0 20px
+  transition: 0.2s
+
+ul.top-menu li.search
+  padding: 0 20px
+  cursor: pointer
+  width: 400px
+  transition: 0.2s
+
+ul.top-menu li.search .search-form
+  display: none
+
+ul.top-menu li.search .search-form input
+  background: transparent
+  border: 0
+  color: blue-accent
+  font-size: 18px
+  width: 575px
+  display: inline
+
+ul.top-menu li.selected
+  width: 600px
+  background: white
+
+ul.top-menu li.selected span.label
+  display: none
+
+ul.top-menu li.selected .search-form
+  white-space: nowrap
+  display:inline
+
+ul.top-menu li span.search-button
+  color: blue-accent
+  border: none
+  display: inline
+  position: relative
+  right: -10px
+
+ul.top-menu li a:hover, ul.top-menu li.search:hover
+  background: white
+  color: blue-accent
+  text-decoration: none!important
+
+span.cursor
+  animation: blink 1s linear 0s infinite
+  display: inline-block
+  width: 1px
+  height: 23px
+  background: blue-accent
+  position: relative
+  top: 6px
+  visibility: hidden
+  margin-left: 2px
+
+@-webkit-keyframes blink {
+  0%   { opacity:1 }
+  47%  { opacity:1 }
+  50%  { opacity:0 }
+  97%  { opacity:0 }
+  100% { opacity:1 }
+}
+
+@-moz-keyframes blink {
+  0%   { opacity:1 }
+  47%  { opacity:1 }
+  50%  { opacity:0 }
+  97%  { opacity:0 }
+  100% { opacity:1 }
+}
+
+@-ms-keyframes blink {
+  0%   { opacity:1 }
+  47%  { opacity:1 }
+  50%  { opacity:0 }
+  97%  { opacity:0 }
+  100% { opacity:1 }
+}
+
+@-o-keyframes blink {
+  0%   { opacity:1 }
+  47%  { opacity:1 }
+  50%  { opacity:0 }
+  97%  { opacity:0 }
+  100% { opacity:1 }
+}
+
+ul.top-menu li.search:hover span.cursor
+  visibility: visible

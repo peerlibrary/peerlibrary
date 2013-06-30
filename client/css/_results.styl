@@ -1,0 +1,48 @@
+@import vars
+
+/* results styles
+================= */
+.results-list
+  margin-top: 50px
+
+ol.item-list
+  list-style: none
+  padding: 5px
+
+ol.item-list li
+  background: white
+  padding: 20px
+  margin: 10px 0
+  border-radius: 2px
+  box-shadow: 0 0 0 1px rgba(14,41,57,0.12)
+  transition: 0.2s
+
+ol.item-list li:hover
+  box-shadow: 0 0 0 1px rgba(14,41,57,0.12),0 2px 5px rgba(14,41,57,0.34)
+
+.abstract
+  display: none
+
+.article-summary .article-summary-data
+  display: inline-block
+  float: left
+  width: 85%
+
+.article-summary .article-summary-data .authors span:after
+  content: ','
+
+.article-summary .article-summary-data .authors span:last-child:after
+  content: ''
+
+/* article thumb */
+.article-summary .article-thumb
+  float: right
+  display: inline-block
+  width: 90px
+  border: 1px solid #c9d0dc
+  border-radius: 2px
+
+.article-summary .article-thumb > img
+  width: 90px
+  float: right
+  height: auto
