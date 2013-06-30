@@ -302,6 +302,8 @@ Meteor.methods
       pageImageCallback = (pageNumber, canvasElement) ->
         thumbnailCanvas = new PDFJS.canvas 95, 125
         thumbnailContext = thumbnailCanvas.getContext '2d'
+
+        # TODO: Do better image resizing, antialias doesn't really help
         thumbnailContext.antialias = 'subpixel'
 
         thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
