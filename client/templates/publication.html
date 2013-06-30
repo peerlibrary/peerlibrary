@@ -3,13 +3,27 @@
   <div id="viewer">
     {{#constant}}
       <div class="display">
+        <div class="annotations">
+          <ul class="annotations-list">
+            <li>
+              <div class="text" contenteditable="true">
+                test comment
+              </div>
+            </li>
+            <li>
+              <div class="text" contenteditable="true">
+                test comment 2
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     {{/constant}}
   </div>
 </template>
 
 <template name="publicationItem">
-  <li>
+  <li class="result-item">
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title"><a href="/p/{{_id}}">{{title}}</a></h2>
@@ -27,12 +41,16 @@
         </span>
       </div>
       <div class="article-thumb">
-        <img src='{{thumbnailUrl 1}}' />
+        <ul class="scrubber">
+          {{#each thumbnailUrls}}
+            <li><img src="{{this}}"></li>
+          {{/each}}
+        </ul>
       </div>
       <div class="clearfix"></div>
       <div class="abstract">
         <p class="abstract-content">{{abstract}}</p>
-      </p>
+      </div>
     </div>
   </li>
 </template>

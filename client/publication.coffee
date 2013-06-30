@@ -15,7 +15,7 @@ Deps.autorun ->
 
       do ($canvas, $pageDisplay) ->
         pdf.getPage(pageNumber).then (page) ->
-          scale = 0.75
+          scale = 1.25
           viewport = page.getViewport scale
           context = $canvas.get(0).getContext '2d'
 
