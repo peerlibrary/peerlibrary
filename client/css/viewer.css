@@ -328,3 +328,51 @@ span.paragraph-ref {
 .thread-wrap .all-comments ol.comments-list .comment-content span.time-stamp {
 	color: #88919b;
 }
+
+/* text selection */
+
+::selection { background:rgba(0,0,255,0.3); }
+::-moz-selection { background:rgba(0,0,255,0.3); }
+
+#viewer .display-text {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: #000;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+#viewer .display-text > div {
+    color: transparent;
+    position: absolute;
+    line-height: 1;
+    white-space: pre;
+    cursor: text;
+}
+
+#viewer .display-text .highlight {
+    margin: -1px;
+    padding: 1px;
+
+    background-color: rgba(180, 0, 170, 0.2);
+    border-radius: 4px;
+}
+
+#viewer .display-text .highlight.begin {
+    border-radius: 4px 0px 0px 4px;
+}
+
+#viewer .display-text .highlight.end {
+    border-radius: 0px 4px 4px 0px;
+}
+
+#viewer .display-text .highlight.middle {
+    border-radius: 0px;
+}
+
+#viewer .display-text .highlight.selected {
+    background-color: rgba(0, 100, 0, 0.2);
+}
