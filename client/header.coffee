@@ -3,10 +3,10 @@ Template.header.events =
     searchOn()
 
   'click .search-input': (e) ->
-    if not Session.get 'searchActive'
-      searchOn()
+    searchOn()
 
   'click .search-button': ->
+    Session.set 'currentSearchQuery', $('.search-input').val()
 
   'blur .search-input': ->
     searchOff()
@@ -19,14 +19,19 @@ Template.header.events =
     e.preventDefault()
 
 searchOn = ->
+  if Session.get 'searchActive'
+    return
   Session.set 'searchActive', true
+
   $('.top-menu .search').addClass('selected')
   $('.search-input').focus()
   $('li.explore').hide()
 
 searchOff = ->
+  if not Session.get 'searchActive'
+    return
   Session.set 'searchActive', false
-  Session.set 'currentSearchLimit', 5
+
   $('.top-menu .search').removeClass('selected')
   $('li.explore').fadeIn 200
   if $('.search-input').val()
