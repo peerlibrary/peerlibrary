@@ -54,10 +54,10 @@ class Publication extends @Document
   thumbnailUrl: (page) =>
     Storage.url @thumbnail page
 
-  thumbnailUrls: () =>
+  thumbnailUrls: =>
     @thumbnailUrl page for page in [1..@numberOfPages]
 
-  createdDay = =>
+  createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
 
 @Publications = Publications
