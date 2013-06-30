@@ -1,7 +1,10 @@
 Deps.autorun ->
-  Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-  Meteor.subscribe 'notes-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
-  Meteor.subscribe 'comments-by-publication-and-paragraph', Session.get('currentPublicationId'), Session.get('currentDiscussionParagraph')
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
   publication = Publications.findOne Session.get 'currentPublicationId'
@@ -33,23 +36,89 @@ Deps.autorun ->
             .css("width", viewport.width + "px")
             .appendTo($pageDisplay)
 
-          outputScale = getOutputScale();
-          if outputScale.scaled
-            cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
-            CustomStyle.setProp 'transform', canvas, cssScale
-            CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
-            if $textLayerDiv.get(0)
-              CustomStyle.setProp 'transform', $textLayerDiv.get(0), cssScale
-              CustomStyle.setProp 'transformOrigin', $textLayerDiv.get(0), '0% 0%'
+          $pageDisplay.css("position","relative");
 
-          context._scaleX = outputScale.sx
-          context._scaleY = outputScale.sy
-          if outputScale.scaled
-            context.scale outputScale.sx, outputScale.sy
+          $closestTextDiv = null
+          closestDistance = Number.MAX_VALUE;
+
+          $textLayerDiv.mousemove (e) ->
+            layerOffset = $(this).offset()
+            relX = e.pageX - layerOffset.left
+            relY = e.pageY - layerOffset.top
+
+            closestDistance = Number.MAX_VALUE;
+            $textLayerDiv.children().each ->
+              textDivOffset = $(this).data("cachedOffset")
+              textDivWidth = $(this).data("cachedWidth")
+              textDivHeight = $(this).data("cachedHeight")
+
+              distXLeft = relX - textDivOffset.left
+              distXRight = relX - (textDivOffset.left + textDivWidth)
+              distXCenter = relX - (textDivOffset.left + textDivWidth/2.0)
+
+              distYTop = relY - textDivOffset.top
+              distYBottom = relY - (textDivOffset.top + textDivHeight)
+              distYCenter = relY - (textDivOffset.top + textDivHeight/2.0)
+
+
+              distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
+              if relX > textDivOffset.left and relX < textDivOffset.left + textDivWidth
+                distX = 0
+
+              distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
+              if relY > textDivOffset.top and relY < textDivOffset.top + textDivHeight
+                distY = 0
+              # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
+
+              dist = Math.sqrt(distX*distX + distY*distY)
+
+              if (dist < closestDistance) 
+                closestDistance = dist
+                $closestTextDiv = $(this)
+
+              $(this).css("color","rgba(0,0,0,0)")
+              $(this).css("background-color","rgba(0,0,0,0)")
+              # $(this).css("color","rgba(0,0,0,#{ Math.max(1.0-dist/100,0) })")
+
+            # $closestTextDiv.css("color","rgba(0,0,0,1.0)")
+            return if $closestTextDiv is null
+            $closestTextDiv.css("background-color","rgba(255,0,0,0.3)")
+            $(this).data("closestTextDiv",$closestTextDiv)
+
+
+          $startTextDiv = null
+          $endTextDiv = null
+
+          $textLayerDiv
+            .mousedown (e) ->
+              e.preventDefault()
+              return if not $closestTextDiv
+              $startTextDiv = $closestTextDiv
+            .mouseup (e) ->
+              return if not $closestTextDiv
+              $endTextDiv = $closestTextDiv
+
+          # outputScale = getOutputScale();
+          # if outputScale.scaled 
+          #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
+          #   CustomStyle.setProp 'transform', canvas, cssScale
+          #   CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
+          #   if $textLayerDiv.get(0)
+          #     CustomStyle.setProp 'transform', $textLayerDiv.get(0), cssScale
+          #     CustomStyle.setProp 'transformOrigin', $textLayerDiv.get(0), '0% 0%'
+          
+          # context._scaleX = outputScale.sx
+          # context._scaleY = outputScale.sy
+          # if outputScale.scaled
+          #   context.scale outputScale.sx, outputScale.sy
 
           page.getTextContent().then (textContent) ->
 
-            textLayer = new TextLayerBuilder $textLayerDiv.get(0), page.number - 1
+            textLayerOptions = 
+              textLayerDiv: $textLayerDiv.get(0)
+              pageIndex: page.number - 1
+
+            textLayer = new TextLayerBuilder textLayerOptions
             textLayer.setTextContent textContent
 
             renderContext =
@@ -58,32 +127,19 @@ Deps.autorun ->
               textLayer: textLayer
 
             page.render(renderContext).then ->
-              for paragraph, i in publication.paragraphs or [] when paragraph.page is page.pageNumber
-                do (i) ->
-                  $('<div/>').addClass('paragraph').css(
-                    left: paragraph.left * scale + 'px'
-                    top: paragraph.top * scale + 'px'
-                    width: paragraph.width * scale + 'px'
-                    height: paragraph.height * scale + 'px'
-                  ).appendTo($pageDisplay).click (e) ->
-                    Session.set 'currentDiscussionParagraph', i
-                    Session.set 'displayDiscussion', true
+              $textLayerDiv.children().each ->
+                $(this).data("cachedOffset", $(this).position())
+                $(this).data("cachedWidth", $(this).width())
+                $(this).data("cachedHeight", $(this).height())
+
+# TODO: Destroy/clear pdf.js structures/memory on autorun cycle/stop
 
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
-Template.publication.notes = ->
-  Notes.findOne
-    publication: Session.get 'currentPublicationId'
-    paragraph: Session.get 'currentDiscussionParagraph'
-
 Template.publication.comments = ->
   Comments.find
     publication: Session.get 'currentPublicationId'
-    paragraph: Session.get 'currentDiscussionParagraph'
-
-Template.publication.paragraphNumber = ->
-  Session.get 'currentDiscussionParagraph'
 
 publicationEvents =
   #TODO: click .details-link, .discussion-link
@@ -193,25 +249,24 @@ Template.publication.created = ->
 
   $('.comment-input').css('overflow', 'hidden').autogrow()
 
-Template.publication.displayTimeAgo = (time) ->
-  moment(time).fromNow()
+#Template.publication.displayTimeAgo = (time) ->
+#  moment(time).fromNow()
 
-postComment = (e) ->
-  if Meteor.user()
-    Comments.insert
-      created: new Date()
-      author:
-        username: Meteor.user().username
-        fullName: Meteor.user().profile.firstName + ' ' + Meteor.user().profile.lastName
-        id: Meteor.user()._id
-      body: $('.comment-input').val()
-      parent: null
-      publication: Session.get 'currentPublicationId'
-      paragraph: Session.get 'currentDiscussionParagraph'
-    , ->
-      $('.comment-input').val ''
-  else
-    Meteor.Router.to('/login')
+#postComment = (e) ->
+#  if Meteor.user()
+#    Comments.insert
+#      created: new Date()
+#      author:
+#        username: Meteor.user().username
+#        fullName: Meteor.user().profile.firstName + ' ' + Meteor.user().profile.lastName
+#        id: Meteor.user()._id
+#      body: $('.comment-input').val()
+#      parent: null
+#      publication: Session.get 'currentPublicationId'
+#    , ->
+#      $('.comment-input').val ''
+#  else
+#    Meteor.Router.to('/login')
 
 Template.publicationItem.displayDay = (time) ->
   moment(time).format 'MMMM Do YYYY'
@@ -221,4 +276,19 @@ Template.publicationItem.events =
     e.preventDefault()
     Meteor.subscribe 'publications-by-id', @_id, ->
       Deps.afterFlush ->
-        $(template.find('.abstract')).slideToggle(200)
+        $(template.find '.abstract').slideToggle(200)
+
+Template.publicationAnnotations.annotations = ->
+  Annotations.find
+    publication: Session.get 'currentPublicationId'
+
+updateAnnotation = (id, template) ->
+  Annotations.update id, $set: body: $(template.find '.text').text(), ->
+    Deps.afterFlush ->
+      $(template.find '.text').focus()
+
+updateAnnotation = _.debounce updateAnnotation, 5000
+
+Template.publicationAnnotations.events =
+  'keyup .text': (e, template) ->
+    updateAnnotation @_id, template

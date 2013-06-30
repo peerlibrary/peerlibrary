@@ -1,3 +1,7 @@
+Deps.autorun ->
+  if Session.equals 'adminActive', true
+    Meteor.subscribe 'arxiv-pdfs'
+
 Template.admin.arXivPDFs = ->
   ArXivPDFs.find {},
     sort:
@@ -15,5 +19,5 @@ Template.adminButtons.events
     Meteor.call 'process-pdfs'
   'click button.dummy-comments': (e) ->
     Meteor.call 'dummy-comments'
-  'click button.dummy-notes': (e) ->
-    Meteor.call 'dummy-notes'
+  'click button.dummy-annotations': (e) ->
+    Meteor.call 'dummy-annotations'

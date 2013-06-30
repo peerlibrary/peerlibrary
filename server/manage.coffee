@@ -323,40 +323,40 @@ Meteor.methods
 
     console.log "Generating dummy comments"
 
-    Publications.find(cached: true, processed: true, paragraphs: null).forEach (publication) ->
-      publication.paragraphs = (page: 1, left: 0, top: 50 * i, width: 100, height: 50 for i in [0..Random.fraction() * 10 + 10])
-      Publications.update publication._id, $set: paragraphs: publication.paragraphs
-
-      for paragraph in [0...publication.paragraphs.length]
-        comments = []
-        for comment in [0...Random.fraction() * 20]
-          comments.push(Comments.insert
-            created: randomTimestamp()
-            author: randomUser()
-            body: dimsum(1 + Random.fraction() * 2).replace /\r/g, '' # There are some \r between paragraphs
-            # 10 % of comments are top-level
-            parent: if Random.fraction() < 0.1 then null else Random.choice comments
-            publication: publication._id
-            paragraph: paragraph
-          )
+    Publications.find(cached: true, processed: true).forEach (publication) ->
+      comments = []
+      for comment in [0...Random.fraction() * 20]
+        comments.push(Comments.insert
+          created: randomTimestamp()
+          author: randomUser()
+          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \r between paragraphs
+          # 10 % of comments are top-level
+          parent: if Random.fraction() < 0.1 then null else Random.choice comments
+          publication: publication._id
+        )
 
       return # So that for loop does not return anything
 
     console.log "Done"
 
-  'dummy-notes': ->
+  'dummy-annotations': ->
     @unblock()
 
-    console.log "Generating dummy notes"
+    console.log "Generating dummy annotations"
 
-    Publications.find(cached: true, processed: true, paragraphs: $ne: null).forEach (publication) ->
-      for paragraph in [0...publication.paragraphs.length]
-        Notes.insert
+    Publications.find(cached: true, processed: true).forEach (publication) ->
+      for i in [0...Random.fraction() * 5]
+        Annotations.insert
           created: randomTimestamp()
           author: randomUser()
-          body: dimsum(1 + Random.fraction() * 3).replace /\r/g, '' # There are some \ between paragraphs
+          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \ between paragraphs
           publication: publication._id
-          paragraph: paragraph
+          location:
+            page: 1
+            left: 50
+            top: 50 + i * 100
+            width: 100
+            height: 80
 
       return # So that for loop does not return anything
 

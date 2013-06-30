@@ -3,25 +3,32 @@ Meteor.Router.add
     Session.set 'currentSearchQuery', null
     Session.set 'currentSearchLimit', 5
     'index'
-  '/login': 'login'
+  '/login':
+    'login'
   '/logout': ->
     Meteor.logout()
     Meteor.Router.to '/'
-  '/register': 'register'
+  '/register':
+    'register'
   '/p/:publicationId': (publicationId) ->
-    Session.set 'currentSearchQuery', null
-    Session.set 'currentSearchLimit', null
     Session.set 'currentPublicationId', publicationId
     'publication'
   '/u/:username': (username) ->
     Session.set 'currentProfileUsername', username
     'profile'
   '/admin': ->
-    Session.set 'currentSearchQuery', null
-    Session.set 'currentSearchLimit', null
-    #Meteor.subscribe 'arxiv-pdfs'
+    Session.set 'adminActive', true
     'admin'
-  '*': 'notfound'
+  '*':
+    'notfound'
+
+Meteor.Router.beforeRouting = ->
+    Session.set 'currentSearchQuery', null
+    Session.set 'currentSearchLimit', 0
+    Session.set 'searchActive', false
+    Session.set 'adminActive', false
+    Session.set 'currentPublicationId', null
+    Session.set 'currentProfileUsername', null
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->

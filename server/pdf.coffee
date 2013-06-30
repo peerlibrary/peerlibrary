@@ -78,7 +78,7 @@ PDF =
                 # Draw a rectangle around the text segment
                 canvasContext.strokeRect x, y, width, height
 
-              # TODO: Store into the database and find paragrahps
+              # TODO: Store into the database
               # TODO: We should just allow user to provide a callback
               #console.log page.pageNumber, x, y, width, height, direction, text
 

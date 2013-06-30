@@ -19,13 +19,7 @@ class Publication extends @Document
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
   # cached: do we have a locally stored PDF?
-  # processed: has PDF been processed (file checked, text extracted, parapraphs detected, etc.)
-  # paragraphs: list of paragraphs of the publication, paragraphs are indexed by their position in list, zero-based
-  #   page: one-based
-  #   left: left coordinate
-  #   top: top coordinate
-  #   width: width of the paragraph
-  #   height: height of the paragraph
+  # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   query: query object or string as provided by the client
@@ -54,10 +48,10 @@ class Publication extends @Document
   thumbnailUrl: (page) =>
     Storage.url @thumbnail page
 
-  thumbnailUrls: () =>
+  thumbnailUrls: =>
     @thumbnailUrl page for page in [1..@numberOfPages]
 
-  createdDay = =>
+  createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
 
 @Publications = Publications
