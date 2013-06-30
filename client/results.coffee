@@ -4,6 +4,8 @@ Deps.autorun ->
 Template.results.rendered = ->
   $('.chzn').chosen()
 
+  $('.scrubber').iscrubber()
+
   'click .preview-link': ->
     $('.abstract').css display: 'block'
 

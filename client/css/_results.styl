@@ -9,7 +9,7 @@ ol.item-list
   list-style: none
   padding: 5px
 
-ol.item-list li
+ol.item-list li.result-item
   background: white
   padding: 20px
   margin: 10px 0
@@ -17,7 +17,7 @@ ol.item-list li
   box-shadow: 0 0 0 1px rgba(14,41,57,0.12)
   transition: 0.2s
 
-ol.item-list li:hover
+ol.item-list li.result-item:hover
   box-shadow: 0 0 0 1px rgba(14,41,57,0.12),0 2px 5px rgba(14,41,57,0.34)
 
 .abstract
@@ -38,11 +38,18 @@ ol.item-list li:hover
 .article-summary .article-thumb
   float: right
   display: inline-block
-  width: 90px
+  width: 95px
   border: 1px solid #c9d0dc
   border-radius: 2px
 
 .article-summary .article-thumb > img
   width: 90px
-  float: right
   height: auto
+  float: right
+
+ul.scrubber
+  margin: 0
+  width: 95px
+
+ul.scrubber li
+  display: none
