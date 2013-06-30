@@ -1,4 +1,4 @@
-ArXivPDFs = new Meteor.Collection 'ArXivPDFs', transform: (doc) -> new ArXivPDF doc
+ArXivPDFs = new Meteor.Collection 'ArXivPDFs', transform: (doc) => new @ArXivPDF doc
 
 class ArXivPDF extends @Document
   # key: key (filename) of the tar file containing PDFs

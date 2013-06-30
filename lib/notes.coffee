@@ -1,4 +1,4 @@
-Notes = new Meteor.Collection 'Notes', transform: (doc) -> new Note doc
+Notes = new Meteor.Collection 'Notes', transform: (doc) => new @Note doc
 
 # We name it Note to be consistent, but for the user we display each Note document as "notes"
 class Note extends @Document

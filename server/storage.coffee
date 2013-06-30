@@ -18,7 +18,6 @@ class Storage extends @Storage
     @_fs.readFileSync @_storageDirectory + @_path.sep + filename
 
 fs = Npm.require 'fs'
-future = Npm.require 'fibers/future'
 path = Npm.require 'path'
 
 # Find .meteor directory
@@ -33,7 +32,6 @@ assert directoryPath.length > 0
 directoryPath.push 'pdf'
 Storage._storageDirectory = directoryPath.join path.sep
 Storage._fs = fs
-Storage._future = future
 Storage._path = path
 
 # TODO: What about security? If ../.. are passed in?

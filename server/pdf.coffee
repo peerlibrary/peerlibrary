@@ -1,8 +1,6 @@
 PDF =
   process: (pdfFile, progressCallback) ->
-    canvas = Npm.require 'canvas'
     fs = Npm.require 'fs'
-    future = Npm.require 'fibers/future'
 
     DEBUG = false
     NOT_WHITESPACE = /\S/
@@ -75,7 +73,7 @@ PDF =
                 #console.log page.pageNumber, x, y, width, height, direction, text
 
             viewport = page.getViewport 1.0
-            canvasElement = new canvas viewport.width, viewport.height
+            canvasElement = new PDFJS.canvas viewport.width, viewport.height
             canvasContext = canvasElement.getContext '2d'
 
             renderContext =
@@ -103,11 +101,10 @@ PDF =
       throw error
 
     # "finalCallback" has to be called only once to unblock
-    processAll = future.wrap (finalCallback) ->
+    processAll = blocking (finalCallback) ->
       PDFJS.getDocument({data: pdfFile, password: ''}).then processPDF(finalCallback), processError(finalCallback)
 
-    # Blocking
-    processAll().wait()
+    processAll()
 
     return # So that we do not return any results
 

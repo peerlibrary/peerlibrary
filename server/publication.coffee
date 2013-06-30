@@ -14,16 +14,6 @@ class Publication extends @Publication
       timeout: 10000 # ms
       encoding: null # PDFs are binary data
 
-    if pdf.statusCode and pdf.statusCode == 404
-      console.warn "Not found"
-      return
-    else if pdf.statusCode and pdf.statusCode != 200
-      console.error "Caching PDF failed: #{ pdf.statusCode }", pdf.content
-      throw new Meteor.Error 500, "Caching PDF failed: #{ pdf.statusCode }", pdf.content
-    else if pdf.error
-      console.error pdf.error
-      throw pdf.error
-
     Storage.save @filename(), pdf.content
 
     @cached = true
