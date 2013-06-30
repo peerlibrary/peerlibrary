@@ -27,8 +27,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.291.1",
-        "commit": "8a6c0e3c4dc42647658527091253232afdee35ff"
+        "tag": "v0.8.291.3",
+        "commit": "58e50c61a86a38a81ec62ee751d8cf7b54272823"
       },
       "jquery-ui": {
         "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",
@@ -52,8 +52,8 @@
       },
       "blocking": {
         "git": "https://github.com/peerlibrary/meteor-blocking.git",
-        "tag": "v0.2.0",
-        "commit": "dd08ba4fdf808e5afce16e69591a60076ccfa285"
+        "tag": "v0.3.0",
+        "commit": "4688975e9b73ff5ad459858dbbe8ca66394c7375"
       },
       "moment": {
         "git": "https://github.com/possibilities/meteor-moment.git",
