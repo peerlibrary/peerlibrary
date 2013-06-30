@@ -1,11 +1,13 @@
 PDF =
-  process: (pdfFile, progressCallback) ->
+  process: (pdfFile, initCallback, textCallback, pageImageCallback, progressCallback) ->
     fs = Npm.require 'fs'
 
     DEBUG = false
     NOT_WHITESPACE = /\S/
 
     processPDF = (finalCallback) -> (pdf) ->
+      initCallback pdf.numPages
+
       counter = pdf.numPages
       terminate = false
       for pageNumber in [1..pdf.numPages]
@@ -35,6 +37,8 @@ PDF =
                   # Save the canvas (with rectangles around text segments)
                   png = fs.createWriteStream 'debug' + page.pageNumber + '.png'
                   canvasElement.pngStream().pipe png
+
+                pageImageCallback page.pageNumber, canvasElement
 
                 # We call finalCallback only after all pages have been processed and thus callbacks called
                 counter--
@@ -71,6 +75,8 @@ PDF =
                 # TODO: Store into the database and find paragrahps
                 # TODO: We should just allow user to provide a callback
                 #console.log page.pageNumber, x, y, width, height, direction, text
+
+                textCallback page.pageNumber, x, y, width, height, direction, text
 
             viewport = page.getViewport 1.0
             canvasElement = new PDFJS.canvas viewport.width, viewport.height

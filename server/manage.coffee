@@ -294,8 +294,23 @@ Meteor.methods
     console.log "Processing pending PDFs"
 
     Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+      initCallback = (numberOfPages) ->
+        publication.numberOfPages = numberOfPages
+
+      textCallback = (pageNumber, x, y, width, height, direction, text) ->
+
+      pageImageCallback = (pageNumber, canvasElement) ->
+        thumbnailCanvas = new PDFJS.canvas 95, 125
+        thumbnailContext = thumbnailCanvas.getContext '2d'
+        thumbnailContext.antialias = 'subpixel'
+
+        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
+
+        Storage.save publication.thumbnail(pageNumber), thumbnailCanvas.toBuffer()
+
       try
-        publication.process()
+        publication.process null, initCallback, textCallback, pageImageCallback
+        Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
         console.error error
 

@@ -21,13 +21,16 @@ class Publication extends @Publication
 
     pdf.content
 
-  process: (pdf, progressCallback) =>
+  process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
     pdf ?= Storage.open @filename()
+    initCallback ?= (numberOfPages) ->
+    textCallback ?= (pageNumber, x, y, width, height, direction, text) ->
+    pageImageCallback ?= (pageNumber, canvasElement) ->
     progressCallback ?= ->
 
     console.log "Processing PDF for #{ @_id }: #{ @filename() }"
 
-    PDF.process pdf, progressCallback
+    PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
 
     @processed = true
     Publications.update @_id, $set: processed: @processed
