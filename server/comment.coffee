@@ -1,4 +1,3 @@
-Meteor.publish 'comments-by-publication-and-paragraph', (publication, paragraph) ->
+Meteor.publish 'comments-by-publication', (publication) ->
   Comments.find
     publication: publication
-    paragraph: paragraph
