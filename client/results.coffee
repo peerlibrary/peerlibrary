@@ -48,9 +48,11 @@ Template.results.created = ->
 
 subscribeToNext = (numResults) ->
   #Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
+
 Template.results.publications = ->
   Publications.find
     'searchResult.query': Session.get 'currentSearchQuery'
+    processed: true
   ,
     sort:
       'searchResult.order': 1

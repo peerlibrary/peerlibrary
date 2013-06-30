@@ -48,15 +48,21 @@ class Publication extends @Publication
       source: 1
       paragraphs: 1
       cached: 1
+      processed: 1
+      numberOfPages: 1
 
 Meteor.publish 'publications-by-owner', (owner) ->
   Publications.find
     owner: owner
+    processed: true
   ,
     limit: 5
     fields: Publication.publicFields().fields
 
 Meteor.publish 'publications-by-id', (id) ->
+  if not id
+    return
+
   Publications.find id, Publication.publicFields()
 
 Meteor.publish 'publications-by-ids', (ids) ->

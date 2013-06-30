@@ -54,11 +54,11 @@ class Publication extends @Document
     'thumbnail' + Storage._path.sep + @_id + Storage._path.sep + page + '-125x95.png'
 
   thumbnailUrl: (page, ignore) =>
-    console.warn "PDF #{ @_id } not processed" if not processed and not ignore
+    console.warn "PDF #{ @_id } not processed" if not @processed and not ignore
 
-    Storage.url thumbnail page
+    Storage.url @thumbnail page
 
-  thumbnailUrls: () ->
+  thumbnailUrls: () =>
     @thumbnailUrl page for page in [1..@numberOfPages]
 
   createdDay = =>
