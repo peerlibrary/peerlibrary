@@ -1,5 +1,5 @@
 Deps.autorun ->
-  if not Session.equals 'currentSearchLimit', 0
+  if not Session.equals 'currentSearchLimit', 0 and Session.get('currentSearchQuery')
     Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit')
 
 Template.results.rendered = ->
@@ -53,7 +53,7 @@ subscribeToNext = (numResults) ->
   Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
 
 Template.results.publications = ->
-  if not Session.get 'currentSearchQuery' or not Session.get 'currentSearchLimit'
+  if Session.equals 'currentSearchLimit', 0 or not Session.get('currentSearchQuery')
     return
 
   Publications.find

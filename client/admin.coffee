@@ -1,3 +1,7 @@
+Deps.autorun ->
+  if Session.equals 'adminActive', true
+    Meteor.subscribe 'arxiv-pdfs'
+
 Template.admin.arXivPDFs = ->
   ArXivPDFs.find {},
     sort:

@@ -1,7 +1,10 @@
 Deps.autorun ->
-  Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-  Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
-  Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+  if Session.get 'currentPublicationId'
+    Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
   publication = Publications.findOne Session.get 'currentPublicationId'
@@ -95,7 +98,6 @@ Deps.autorun ->
               return if not $closestTextDiv
               $endTextDiv = $closestTextDiv
 
-
           # outputScale = getOutputScale();
           # if outputScale.scaled 
           #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
@@ -131,7 +133,7 @@ Deps.autorun ->
                 $(this).data("cachedHeight", $(this).height())
 
 # TODO: Destroy/clear pdf.js structures/memory on autorun cycle/stop
--
+
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
@@ -247,24 +249,24 @@ Template.publication.created = ->
 
   $('.comment-input').css('overflow', 'hidden').autogrow()
 
-Template.publication.displayTimeAgo = (time) ->
-  moment(time).fromNow()
+#Template.publication.displayTimeAgo = (time) ->
+#  moment(time).fromNow()
 
-postComment = (e) ->
-  if Meteor.user()
-    Comments.insert
-      created: new Date()
-      author:
-        username: Meteor.user().username
-        fullName: Meteor.user().profile.firstName + ' ' + Meteor.user().profile.lastName
-        id: Meteor.user()._id
-      body: $('.comment-input').val()
-      parent: null
-      publication: Session.get 'currentPublicationId'
-    , ->
-      $('.comment-input').val ''
-  else
-    Meteor.Router.to('/login')
+#postComment = (e) ->
+#  if Meteor.user()
+#    Comments.insert
+#      created: new Date()
+#      author:
+#        username: Meteor.user().username
+#        fullName: Meteor.user().profile.firstName + ' ' + Meteor.user().profile.lastName
+#        id: Meteor.user()._id
+#      body: $('.comment-input').val()
+#      parent: null
+#      publication: Session.get 'currentPublicationId'
+#    , ->
+#      $('.comment-input').val ''
+#  else
+#    Meteor.Router.to('/login')
 
 Template.publicationItem.displayDay = (time) ->
   moment(time).format 'MMMM Do YYYY'

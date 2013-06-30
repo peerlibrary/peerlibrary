@@ -14,7 +14,7 @@ handleRegister = (e) ->
   Accounts.createUser
     email: $('#email').val()
     password: $('#password').val()
-    #TODO: handle username conflicts
+    #TODO: Handle username conflicts
     username: $('#firstName').val().toLowerCase() + '-' + $('#lastName').val().toLowerCase()
     profile:
       firstName: $('#firstName').val()
