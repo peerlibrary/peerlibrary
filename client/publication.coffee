@@ -287,8 +287,11 @@ updateAnnotation = (id, template) ->
     Deps.afterFlush ->
       $(template.find '.text').focus()
 
-updateAnnotation = _.debounce updateAnnotation, 5000
+updateAnnotation = _.debounce updateAnnotation, 3000
 
-Template.publicationAnnotations.events =
+Template.publicationAnnotationsItem.events =
   'keyup .text': (e, template) ->
     updateAnnotation @_id, template
+
+  'blur .text': (e, template) ->
+    Annotations.update @_id, $set: body: $(template.find '.text').text()

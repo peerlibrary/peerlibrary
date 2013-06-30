@@ -28,12 +28,16 @@
 
 <template name="publicationAnnotations">
   {{#each annotations}}
-    <li>
-      <div class="text" contenteditable="true">
-        {{body}}
-      </div>
-    </li>
+    {{> publicationAnnotationsItem}}
   {{/each}}
+</template>
+
+<template name="publicationAnnotationsItem">
+  <li>
+    <div class="text" contenteditable="true">
+      {{body}}
+    </div>
+  </li>
 </template>
 
 <template name="publicationItem">
