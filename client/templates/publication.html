@@ -21,7 +21,7 @@
         </span><br>
         <span class="date line">{{displayDay created}}</span><br>
         <span class="actions line">
-          <a href="#" class="preview-link" onclick="$(this).parent().parent().siblings('.abstract').slideToggle(200);">Preview abstract</a> &middot;
+          <a href="#" class="preview-link">Preview abstract</a> &middot;
           <a href="/p/{{_id}}">Full text</a>
           <i class="icon-external-link"></i>
         </span>
@@ -31,7 +31,7 @@
       </div>
       <div class="clearfix"></div>
       <div class="abstract">
-        <p>{{abstract}}</p>
+        <p class="abstract-content">{{abstract}}</p>
       </p>
     </div>
   </li>

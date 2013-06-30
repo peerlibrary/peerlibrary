@@ -215,3 +215,10 @@ postComment = (e) ->
 
 Template.publicationItem.displayDay = (time) ->
   moment(time).format 'MMMM Do YYYY'
+
+Template.publicationItem.events =
+  'click .preview-link': (e, template) ->
+    e.preventDefault()
+    Meteor.subscribe 'publications-by-id', @_id, ->
+      Deps.afterFlush ->
+        $(template.find('.abstract')).slideToggle(200)
