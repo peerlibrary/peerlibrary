@@ -30,13 +30,16 @@ class Publication extends @Document
   #   query: query object or string as provided by the client
   #   order: order of the result in the search query, lower number means higher
 
+  @_filenamePrefix: ->
+    'pdf' + Storage._path.sep
+
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
-    switch @source
+    Publication._filenamePrefix() + switch @source
       when 'arXiv' then Publication._arXivFilename @foreignId
-      else @_id + '.pdf'
+      else throw new Error("Unsupported source")
 
   url: (ignore) =>
     console.warn "PDF #{ @_id } not cached" if not @cached and not ignore
