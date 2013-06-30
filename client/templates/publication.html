@@ -2,6 +2,19 @@
   <div id="viewer">
     {{#constant}}
       <div class="display">
+        <div class="meta-menu">
+          <i class="icon-menu"></i>
+          <div class="meta-description">
+            <p><b>{{publication.title}}</b></p>
+            <p class="authors">
+              {{#each publication.authors}}
+                <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
+              {{/each}}
+            </p>
+            <p>Published in: {{publication.source}}</p>
+            <p>{{publication.created}}</p>
+          </div>
+        </div>
         <div class="annotations">
           <ul class="annotations-list">
             {{> publicationAnnotations}}
