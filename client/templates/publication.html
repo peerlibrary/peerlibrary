@@ -1,36 +1,54 @@
-<template name="publication">
+<template name='publication'>
   {{> header}}
-  <div id="viewer">
+  <div id='viewer'>
     {{#constant}}
-      <div class="display">
+      <div class='display'>
+        <div class='annotations'>
+          <ul class='annotations-list'>
+            <li>
+              <div class='text' contenteditable='true'>
+                test comment
+              </div>
+            </li>
+            <li>
+              <div class='text' contenteditable='true'>
+                test comment 2
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     {{/constant}}
   </div>
 </template>
 
-<template name="publicationItem">
-  <li>
-    <div class="article-summary">
-      <div class="article-summary-data">
-        <h2 class="title"><a href="/p/{{_id}}">{{title}}</a></h2>
-        <div class="clearfix"></div>
-        <span class="authors line">
+<template name='publicationItem'>
+  <li class='result-item'>
+    <div class='article-summary'>
+      <div class='article-summary-data'>
+        <h2 class='title'><a href='/p/{{_id}}'>{{title}}</a></h2>
+        <div class='clearfix'></div>
+        <span class='authors line'>
           {{#each authors}}
-            <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
+            <span><a href='/u/{{username}}'>{{foreNames}} {{lastName}}</a></span>
           {{/each}}
         </span><br>
-        <span class="date line">{{displayDay created}}</span><br>
-        <span class="actions line">
-          <a href="#" class="preview-link" onclick="$(this).parent().parent().siblings('.abstract').slideToggle(200);">Preview abstract</a> &middot;
-          <a href="/p/{{_id}}">Full text</a>
-          <i class="icon-external-link"></i>
+        <span class='date line'>{{displayDay created}}</span><br>
+        <span class='actions line'>
+          <a href='#' class='preview-link' onclick='$(this).parent().parent().siblings('.abstract').slideToggle(200);'>Preview abstract</a> &middot;
+          <a href='/p/{{_id}}'>Full text</a>
+          <i class='icon-external-link'></i>
         </span>
       </div>
-      <div class="article-thumb">
-        <img src='{{thumbnailUrl 1}}' />
+      <div class='article-thumb'>
+        <ul class='scrubber'>
+          {{#each thumbnailUrls}}
+            <li><img src='{{this}}'></li>
+          {{/each}}
+        </ul>
       </div>
-      <div class="clearfix"></div>
-      <div class="abstract">
+      <div class='clearfix'></div>
+      <div class='abstract'>
         <p>{{abstract}}</p>
       </p>
     </div>
