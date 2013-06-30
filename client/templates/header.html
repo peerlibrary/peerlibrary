@@ -1,23 +1,36 @@
-<template name="header">
+<template name='header'>
   <header>
-    <div class="container_12 wrap">
-      <div class="grid_12">
-        <div class="logo">
-          <a href="/"><img alt="PeerLibrary" src="/img/logo.png" /></a>
+    <div class='container'>
+      <div class='row'>
+        <div class='logo'>
+          <a href='#'>PeerLibrary</a>
         </div>
-        <div class="menu">
-          <ul class="nav">
-            <li>
-              <a href="#" class="search-link"><i class="icon-search icon-large"></i></a>
-            </li>
-            <li>
-              <a href="/register">Register</a>
-            </li>
-            <li>
-              <a href="/login" class="last">Sign in</a>
-            </li>
-          </ul>
-        </div>
+        <ul class="top-menu">
+          <li class="search">
+            <span class="label">
+              <i class="icon-search"></i> Search for publications, authors and keywords
+              <span class="cursor"></span>
+            </span>
+            <div class="search-form">
+              <form action='/' id='search'>
+                <input type='text' name='q' class='search-input' autocomplete='off'>
+                <input type='hidden' name='ie' value='UTF-8'>
+                <span class='search-button'>
+                  <i class='icon-search'></i>
+                </span>
+              </form>
+            </div>
+          </li>
+          <li class='explore'>
+            <a href='#'>Explore</a>
+          </li>
+          <li class='explore pull-right'>
+            <a href='#'>Sign In</a>
+          </li>
+          <li class='explore pull-right'>
+            <a href='#'>Register</a>
+          </li>
+        </ul>
       </div>
     </div>
   </header>

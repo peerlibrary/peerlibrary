@@ -1,12 +1,6 @@
 <template name="results">
-  {{> header}}
-  <div class="container_12">
-    <div class="grid_9">
-      <div class="topbar">
-        <a href="#" class="active">Top <hr /></a>
-        <a href="#">New <hr /></a>
-        <a href="#">Controversial <hr /></a>
-      </div>
+  <div class="row">
+    <div class="results-list col12">
       <div class="clearfix"></div>
       <ol class="item-list">
         {{#each publications}}
@@ -14,61 +8,58 @@
         {{/each}}
       </ol>
     </div>
-    <div class="grid_3">
-      <div class="search-tools">
-        <h3>Refine Search</h3>
-        <form action="/search" method="GET">
-          <span class="filter">
-            <label for="topics">Topics</label>
-            <select type="text" id="topics" data-placeholder="Select topic(s)" multiple class="chzn">
-              <option value=""></option>
-              <option>Computer Science</option>
-              <option>Biology</option>
-              <option>Physics</option>
-              <option>Chemistry</option>
-              <option>Philosophy</option>
-              <option>Mathematics</option>
-              <option>Political Science</option>
-              <option>Big Data</option>
-              <option>HTML5 Nanotechnology</option>
-              <option>Bitcoin Casino</option>
-              <option>Robot Circus</option>
-            </select>
-          </span>
-          <span class="filter">
-            <label for="journal">Published in</label>
-            <select type="text" id="journal" data-placeholder="Select journal(s)" multiple class="chzn">
-              <option>PLOS Biology</option>
-              <option>Theory of Computing</option>
-              <option>Science and Technology of Advanced Materials</option>
-              <option>Computational Linguistics</option>
-              <option>BMJ</option>
-              <option>Anamesa</option>
-              <option>Culture Machine</option>
-              <option>European Political Economy Review</option>
-            </select>
-          </span>
-          <span class="filter">
-            <label for="title">Title contains</label>
-            <input type="text" id="title" />
-          </span>
-          <span class="filter">
-            <label for="abstract">Abstract contains</label>
-            <input type="text" id="abstract" />
-          </span>
-          <span class="filter">
-            <label for="author">Author contains</label>
-            <input type="text" id="author" />
-          </span>
-          <span class="filter">
-            <label for="pub-date" class="label-slider">Publication year</label>
-            <input type="text" id="pub-date" disabled />
-            <div class="clearfix"></div>
-            <div id="date-range"></div>
-          </span>
-        </form>
-      </div>
+    <div class="col4 push12 search-refine">
+      <h3>Refine Search</h3>
+      <form action="/" method="GET">
+        <span class="filter">
+          <label for="topics">Topics</label>
+          <select type="text" id="topics" data-placeholder="Select topic(s)" multiple class="chzn">
+            <option value=""></option>
+            <option>Computer Science</option>
+            <option>Biology</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+            <option>Philosophy</option>
+            <option>Mathematics</option>
+            <option>Political Science</option>
+            <option>Big Data</option>
+            <option>HTML5 Nanotechnology</option>
+            <option>Bitcoin Casino</option>
+            <option>Robot Circus</option>
+          </select>
+        </span>
+        <span class="filter">
+          <label for="journal">Published in</label>
+          <select type="text" id="journal" data-placeholder="Select journal(s)" multiple class="chzn">
+            <option>PLOS Biology</option>
+            <option>Theory of Computing</option>
+            <option>Science and Technology of Advanced Materials</option>
+            <option>Computational Linguistics</option>
+            <option>BMJ</option>
+            <option>Anamesa</option>
+            <option>Culture Machine</option>
+            <option>European Political Economy Review</option>
+          </select>
+        </span>
+        <span class="filter">
+          <label for="title">Title contains</label>
+          <input type="text" id="title" />
+        </span>
+        <span class="filter">
+          <label for="abstract">Abstract contains</label>
+          <input type="text" id="abstract" />
+        </span>
+        <span class="filter">
+          <label for="author">Author contains</label>
+          <input type="text" id="author" />
+        </span>
+        <span class="filter">
+          <label for="pub-date" class="label-slider">Publication year</label>
+          <input type="text" id="pub-date" disabled />
+          <div class="clearfix"></div>
+          <div id="date-range"></div>
+        </span>
+      </form>
     </div>
   </div>
-  {{> search}}
 </template>

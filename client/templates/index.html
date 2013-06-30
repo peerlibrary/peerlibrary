@@ -2,21 +2,8 @@
   <div id="home">
     {{> header}}
     <section>
-      <div class="container_12 wrap">
-        <form action="/search" method="GET">
-          {{#constant}}
-            <div class="grid_12 search-bar">
-              <i class="search-icon icon-search icon-3x"></i>
-              <input type="text" placeholder="Search 1,234,567 scholarly articles" class="search-input"></input>
-            </div>
-          {{/constant}}
-          <div class="clearfix"></div>
-          <ol class="item-list">
-            {{#each publications}}
-              {{> publicationItem}}
-            {{/each}}
-          </ol>
-        </form>
+      <div class="container">
+        {{> results}}
       </div>
     </section>
   </div>

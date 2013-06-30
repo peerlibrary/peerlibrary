@@ -4,6 +4,9 @@ Deps.autorun ->
 Template.results.rendered = ->
   $('.chzn').chosen()
 
+  'click .preview-link': ->
+    $('.abstract').css display: 'block'
+
   $('#score-range').slider
     range: true
     min: 0
@@ -44,8 +47,7 @@ Template.results.created = ->
       subscribeToNext 25
 
 subscribeToNext = (numResults) ->
-  Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
-
+  #Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
 Template.results.publications = ->
   Publications.find
     'searchResult.query': Session.get 'currentSearchQuery'
