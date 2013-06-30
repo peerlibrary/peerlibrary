@@ -204,8 +204,19 @@ Template.publicationItem.events =
     e.preventDefault()
     Meteor.subscribe 'publications-by-id', @_id, ->
       Deps.afterFlush ->
-        $(template.find('.abstract')).slideToggle(200)
+        $(template.find '.abstract').slideToggle(200)
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
     publication: Session.get 'currentPublicationId'
+
+updateAnnotation = (id, template) ->
+  Annotations.update id, $set: body: $(template.find '.text').text(), ->
+    Deps.afterFlush ->
+      $(template.find '.text').focus()
+
+updateAnnotation = _.debounce updateAnnotation, 5000
+
+Template.publicationAnnotations.events =
+  'keyup .text': (e, template) ->
+    updateAnnotation @_id, template
