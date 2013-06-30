@@ -1,6 +1,5 @@
 <template name="publication">
   <div id="viewer">
-    {{#constant}}
       <div class="display">
         <div class="meta-menu">
           <i class="icon-menu"></i>
@@ -20,8 +19,10 @@
             {{> publicationAnnotations}}
           </ul>
         </div>
+        {{#constant}}
+          <div class="display-wrapper"></div>
+        {{/constant}}
       </div>
-    {{/constant}}
   </div>
 </template>
 

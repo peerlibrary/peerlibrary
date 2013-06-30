@@ -14,7 +14,7 @@ Deps.autorun ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
       $canvas = $('<canvas/>').addClass('display-canvas')
-      $pageDisplay = $('<div/>').addClass('display-page').append($canvas).appendTo('#viewer .display')
+      $pageDisplay = $('<div/>').addClass('display-page').append($canvas).appendTo('#viewer .display-wrapper')
 
       do ($canvas, $pageDisplay) ->
         pdf.getPage(pageNumber).then (page) ->
