@@ -13,6 +13,13 @@ Deps.autorun ->
     Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
     return
 
+  # Maybe we don't yet have whole publication object available
+  try
+    unless publication.url()
+      return
+  catch e
+    return
+
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
       $canvas = $('<canvas/>').addClass('display-canvas')
