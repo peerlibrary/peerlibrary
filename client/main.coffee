@@ -1,5 +1,6 @@
 Meteor.Router.add
   '/': ->
+    Session.set 'indexActive', true
     Session.set 'currentSearchQuery', null
     Session.set 'currentSearchLimit', 5
     'index'
@@ -23,12 +24,13 @@ Meteor.Router.add
     'notfound'
 
 Meteor.Router.beforeRouting = ->
-    Session.set 'currentSearchQuery', null
-    Session.set 'currentSearchLimit', 0
-    Session.set 'searchActive', false
-    Session.set 'adminActive', false
-    Session.set 'currentPublicationId', null
-    Session.set 'currentProfileUsername', null
+  Session.set 'indexActive', false
+  Session.set 'currentSearchQuery', null
+  Session.set 'currentSearchLimit', 0
+  Session.set 'searchActive', false
+  Session.set 'adminActive', false
+  Session.set 'currentPublicationId', null
+  Session.set 'currentProfileUsername', null
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->

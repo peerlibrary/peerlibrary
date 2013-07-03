@@ -103,5 +103,44 @@ Meteor.publish 'search-results', (query, limit) ->
   @ready()
 
   @onStop =>
+    @removed 'SearchResults', queryId
+
     resultsHandle.stop()
     countHandle.stop()
+
+Meteor.publish 'search-available', ->
+  id = Random.id()
+  count = 0
+  initializing = true
+
+  handle = Publications.find(
+    cached: true
+    processed: true
+  ,
+    field:
+      _id: 1
+  ).observeChanges
+    added: (id) =>
+      count++
+      if !initializing
+        @changed 'SearchResults', id,
+          countPublications: count
+
+    removed: (id) =>
+      count--
+      @changed 'SearchResults', id,
+        countPublications: count
+
+  initializing = false
+
+  @added 'SearchResults', id,
+    query: null
+    countPublications: count
+    countPeople: 0 # TODO: Implement people counting
+
+  @ready()
+
+  @onStop =>
+    @removed 'SearchResults', id
+
+    handle.stop()

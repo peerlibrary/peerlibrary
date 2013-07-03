@@ -1,8 +1,19 @@
 Deps.autorun ->
+  # Every time search query is changed, we reset counts
+  # (We don't want to reset counts on currentSearchLimit change)
+  Session.get 'currentSearchQuery'
   Session.set 'currentSearchQueryCountPublications', 0
   Session.set 'currentSearchQueryCountPeople', 0
+
+Deps.autorun ->
+  Session.set 'currentSearchQueryReady', false
   if not Session.equals('currentSearchLimit', 0) and Session.get('currentSearchQuery')
-    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit')
+    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'), ->
+      Session.set 'currentSearchQueryReady', true
+
+Deps.autorun ->
+  if Session.equals 'indexActive', true
+    Meteor.subscribe 'search-available'
 
 Template.results.rendered = ->
   $('.chzn').chosen()
@@ -79,3 +90,27 @@ Template.resultsCount.publications = ->
 
 Template.resultsCount.people = ->
   Session.get 'currentSearchQueryCountPeople'
+
+Template.searchAvailable.searchActive = ->
+  Session.get 'searchActive'
+
+Template.searchAvailable.publications = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  if not searchResult
+    return 0
+  else
+    return searchResult.countPublications
+
+Template.searchAvailable.people = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  if not searchResult
+    return 0
+  else
+    return searchResult.countPeople
+
+Template.noResults.noResults = ->
+  Session.equals('currentSearchQueryReady', true) and Session.equals('currentSearchQueryCountPublications', 0) and Session.equals('currentSearchQueryCountPeople', 0)

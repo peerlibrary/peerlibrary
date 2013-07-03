@@ -8,6 +8,8 @@
           {{> publicationItem}}
         {{/each}}
       </ol>
+      {{> searchAvailable}}
+      {{> noResults}}
     </div>
     <div class="col4 push12 search-refine">
       <h3>Refine Search</h3>
@@ -58,5 +60,17 @@
   {{/if}}
   {{#if people}}
     <div class="results-count">Found {{people}} people</div>
+  {{/if}}
+</template>
+
+<template name="searchAvailable">
+  {{#unless searchActive}}
+    <div class="search-available">Search {{publications}} publications and {{people}} people</div>
+  {{/unless}}
+</template>
+
+<template name="noResults">
+  {{#if noResults}}
+    <div class="no-results">No publications or people found</div>
   {{/if}}
 </template>
