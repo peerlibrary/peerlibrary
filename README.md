@@ -27,10 +27,15 @@ And open [http://localhost:3000/](http://localhost:3000/).
 On first run, PeerLibrary compiles and locally installs additional libraries.
 [Cairo](http://cairographics.org/) graphic library is required for this and you
 might have to configure environment properly so that it can be successfully
-compiled. For example, on Mac OS X you can get Cairo by installing
-[X11](http://xquartz.macosforge.org/) and:
+compiled.
+
+On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
+
+On Debian you can install:
+
+    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
 
 Contributing
 ------------
