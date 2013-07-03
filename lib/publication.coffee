@@ -46,7 +46,9 @@ class Publication extends @Document
     'thumbnail' + Storage._path.sep + @_id + Storage._path.sep + page + '-125x95.png'
 
   thumbnailUrl: (page) =>
-    Storage.url @thumbnail page
+    thumbnail = new String Storage.url @thumbnail page
+    thumbnail.page = page
+    thumbnail
 
   thumbnailUrls: =>
     @thumbnailUrl page for page in [1..@numberOfPages]
