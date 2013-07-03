@@ -236,6 +236,7 @@ Meteor.methods
         continue
 
       publication =
+        slug: URLify2 record.title[0]
         created: created
         updated: updated
         authors: authors

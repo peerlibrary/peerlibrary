@@ -1,6 +1,7 @@
 Publications = new Meteor.Collection 'Publications', transform: (doc) => new @Publication doc
 
 class Publication extends @Document
+  # slug: slug for URL
   # created: timestamp when the publication was published
   # updated: timestamp when the publication (or its metadata) was last updated
   # authors: a list of authors, each author:

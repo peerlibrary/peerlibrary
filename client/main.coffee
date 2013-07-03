@@ -11,9 +11,12 @@ Meteor.Router.add
     Meteor.Router.to '/'
   '/register':
     'register'
-  '/p/:publicationId': (publicationId) ->
-    Session.set 'currentPublicationId', publicationId
-    'publication'
+  '/p/:publicationId/:publicationSlug?':
+    as: 'publication'
+    to: (publicationId, publicationSlug) ->
+      Session.set 'currentPublicationId', publicationId
+      Session.set 'currentPublicationSlug', publicationSlug
+      'publication'
   '/u/:username': (username) ->
     Session.set 'currentProfileUsername', username
     'profile'

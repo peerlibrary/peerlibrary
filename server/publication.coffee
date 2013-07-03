@@ -33,6 +33,7 @@ class Publication extends @Publication
 
   @publicSearchResultFields: ->
     [
+      'slug'
       'created'
       'updated'
       'authors'
@@ -42,6 +43,7 @@ class Publication extends @Publication
 
   @publicFields: ->
     fields:
+      slug: 1
       created: 1
       updated: 1
       authors: 1

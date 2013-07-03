@@ -44,7 +44,7 @@
   <li class="result-item">
     <div class="article-summary">
       <div class="article-summary-data">
-        <h2 class="title"><a href="/p/{{_id}}">{{title}}</a></h2>
+        <h2 class="title"><a href="{{publicationPath _id slug}}">{{title}}</a></h2>
         <div class="clearfix"></div>
         <span class="authors line">
           {{#each authors}}
@@ -54,7 +54,7 @@
         <span class="date line">{{displayDay created}}</span><br>
         <span class="actions line">
           <a href="#" class="preview-link">Preview abstract</a> &middot;
-          <a href="/p/{{_id}}">Full text</a>
+          <a href="{{publicationPath _id slug}}">Full text</a>
           <i class="icon-external-link"></i>
         </span>
       </div>

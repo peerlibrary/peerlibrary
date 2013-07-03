@@ -15,6 +15,7 @@
     "xml2js": {},
     "util": {},
     "dimsum": {},
-    "connect": {}
+    "connect": {},
+    "urlify2": {}
   }
 }

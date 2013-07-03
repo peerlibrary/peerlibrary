@@ -17,7 +17,8 @@
       "xml2js": {},
       "util": {},
       "dimsum": {},
-      "connect": {}
+      "connect": {},
+      "urlify2": {}
     },
     "packages": {
       "router": {
@@ -79,6 +80,11 @@
         "git": "https://github.com/peerlibrary/meteor-connect.git",
         "tag": "v2.8.0.1",
         "commit": "3753d9426213cb8ad97029f0bb497342546199ee"
+      },
+      "urlify2": {
+        "git": "https://github.com/peerlibrary/meteor-urlify2.git",
+        "tag": "v0.1.0",
+        "commit": "da50147811c03084f1a52c70b6946de6bd27b27d"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

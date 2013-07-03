@@ -1,15 +1,17 @@
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-  if Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
-  if Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
   publication = Publications.findOne Session.get 'currentPublicationId'
 
   return unless publication
+
+  unless Session.equals 'currentPublicationSlug', publication.slug
+    Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
+    return
 
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
