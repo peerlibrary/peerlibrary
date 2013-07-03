@@ -42,22 +42,25 @@ Meteor.publish 'search-results', (query, limit) ->
     # TODO: Validate?
     realQuery = query
 
+  findQuery =
+    title: new RegExp(query, 'i')
+    cached: true
+    processed: true
+
+  queryId = Random.id()
+
   # TODO: Do some real seaching
   # TODO: How to influence order of results? Should we have just simply a field?
   # TODO: Escape query in regexp
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
-  handle = Publications.find(
-    title: new RegExp(query, 'i')
-    cached: true
-    processed: true
-  ,
+  resultsHandle = Publications.find(findQuery,
     limit: limit
     fields: _.pick Publication.publicFields().fields, Publication.publicSearchResultFields()
   ).observeChanges
     added: (id, fields) =>
       # TODO: Check if for second query with same id, is searchResult field updated or is the old one kept on the client?
       fields.searchResult =
-        query: query
+        id: queryId
         # TODO: Implement
         order: 1
 
@@ -72,7 +75,33 @@ Meteor.publish 'search-results', (query, limit) ->
       # We remove from the search results and leave to some other publish function to remove whole document
       @changed 'Publications', id, searchResult: undefined
 
+  count = 0
+  countInitializing = true
+
+  countHandle = Publications.find(findQuery,
+    field:
+      _id: 1
+  ).observeChanges
+    added: (id) =>
+      count++
+      if !countInitializing
+        @changed 'SearchResults', queryId,
+          countPublications: count
+
+    removed: (id) =>
+      count--
+      @changed 'SearchResults', queryId,
+        countPublications: count
+
+  countInitializing = false
+
+  @added 'SearchResults', queryId,
+    query: query
+    countPublications: count
+    countPeople: 0 # TODO: Implement people counting
+
   @ready()
 
   @onStop =>
-    handle.stop()
+    resultsHandle.stop()
+    countHandle.stop()

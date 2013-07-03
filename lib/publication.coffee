@@ -22,7 +22,7 @@ class Publication extends @Document
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
-  #   query: query object or string as provided by the client
+  #   id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
   @_filenamePrefix: ->

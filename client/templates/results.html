@@ -2,6 +2,7 @@
   <div class="row">
     <div class="results-list col12">
       <div class="clearfix"></div>
+      {{> resultsCount}}
       <ol class="item-list">
         {{#each publications}}
           {{> publicationItem}}
@@ -49,4 +50,13 @@
       </form>
     </div>
   </div>
+</template>
+
+<template name="resultsCount">
+  {{#if publications}}
+    <div class="results-count">Found {{publications}} publications</div>
+  {{/if}}
+  {{#if people}}
+    <div class="results-count">Found {{people}} people</div>
+  {{/if}}
 </template>
