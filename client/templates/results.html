@@ -64,9 +64,9 @@
 </template>
 
 <template name="searchAvailable">
-  {{#unless searchActive}}
+  {{#if display}}
     <div class="search-available">Search {{publications}} publications and {{people}} people</div>
-  {{/unless}}
+  {{/if}}
 </template>
 
 <template name="noResults">

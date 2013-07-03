@@ -3,6 +3,9 @@ Meteor.Router.add
     Session.set 'indexActive', true
     Session.set 'currentSearchQuery', null
     Session.set 'currentSearchLimit', 5
+    # TODO: This is ugly and hard-coded
+    $('.search-input').add('#title').val ''
+    $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications and people <span class="cursor"></span>')
     'index'
   '/login':
     'login'

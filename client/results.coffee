@@ -91,8 +91,8 @@ Template.resultsCount.publications = ->
 Template.resultsCount.people = ->
   Session.get 'currentSearchQueryCountPeople'
 
-Template.searchAvailable.searchActive = ->
-  Session.get 'searchActive'
+Template.searchAvailable.display = ->
+  not Session.equals('searchActive', true) and not Session.equals('currentSearchQueryReady', true)
 
 Template.searchAvailable.publications = ->
   searchResult = SearchResults.findOne
