@@ -37,4 +37,4 @@ searchOff = ->
   if $('.search-input').val()
     $('.top-menu .search .label').html('<i class="icon-search"></i> ' + $('.search-input').val().substring(0,55) + ' <span class="cursor"></span>')
   else
-    $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications, authors and keywords <span class="cursor"></span>')
+    $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications and people <span class="cursor"></span>')
