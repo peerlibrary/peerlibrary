@@ -9,10 +9,10 @@ Template.admin.arXivPDFs = ->
     limit: 5
 
 Template.adminButtons.events
-  'click button.sync-arxhiv-pdf-cache': (e) ->
-    Meteor.call 'sync-arxhiv-pdf-cache'
-  'click button.sync-arxhiv-metadata': (e) ->
-    Meteor.call 'sync-arxhiv-metadata'
+  'click button.sync-arxiv-pdf-cache': (e) ->
+    Meteor.call 'sync-arxiv-pdf-cache'
+  'click button.sync-arxiv-metadata': (e) ->
+    Meteor.call 'sync-arxiv-metadata'
   'click button.sync-local-pdf-cache': (e) ->
     Meteor.call 'sync-local-pdf-cache'
   'click button.process-pdfs': (e) ->
