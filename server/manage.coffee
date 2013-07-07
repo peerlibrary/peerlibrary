@@ -35,7 +35,7 @@ randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
 Meteor.methods
-  'sync-arxhiv-pdf-cache': ->
+  'sync-arxiv-pdf-cache': ->
     @unblock()
 
     if not Meteor.settings.AWS
@@ -148,7 +148,7 @@ Meteor.methods
 
     console.log "Done"
 
-  'sync-arxhiv-metadata': ->
+  'sync-arxiv-metadata': ->
     @unblock()
 
     console.log "Syncing arXiv metadata"
