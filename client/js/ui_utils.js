@@ -153,3 +153,5 @@ var Cache = function cacheCache(size) {
   };
 };
 
+this.CustomStyle = CustomStyle;
+this.getOutputScale = getOutputScale;
