@@ -350,14 +350,12 @@ Meteor.methods
         Annotations.insert
           created: randomTimestamp()
           author: randomUser()
-          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \ between paragraphs
+          body: dimsum.sentence(1 + Random.fraction() * 6).replace /\r/g, '' # There are some \ between paragraphs
           publication: publication._id
           location:
             page: 1
-            left: 50
-            top: 50 + i * 100
-            width: 100
-            height: 80
+            start: 3 + i * 15
+            end: 7 + i * 15
 
       return # So that for loop does not return anything
 
