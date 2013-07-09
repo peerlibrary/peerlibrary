@@ -31,11 +31,25 @@ getElementPosition = (element) ->
 
   dims
 
-findClosestElement = ($elements, position) ->
+hideHiglight = ($textLayer) ->
+  $textLayer.children().css
+    'background-color': 'rgba(0,0,0,0)'
+
+showHighlight = ($textLayer, start, end) ->
+  hideHiglight $textLayer
+
+  return if start is -1 or end is -1
+
+  [start, end] = [Math.min(start, end), Math.max(start, end)]
+
+  $textLayer.children().slice(start, end + 1).css
+    'background-color': 'rgba(255,0,0,0.3)'
+
+findClosestElement = ($textLayer, position) ->
   closestDistance = Number.MAX_VALUE
   closestElementIndex = -1
 
-  $elements.each (i, element) ->
+  $textLayer.children().each (i, element) ->
     elementPosition = $(element).data 'position'
 
     distanceXLeft = position.left - elementPosition.left
@@ -66,26 +80,17 @@ setupTextSelection = (publication, page, $textLayer) ->
     return if highlightStartIndex is -1
 
     offset = $textLayer.offset()
-    currentPosition =
+    currentPositionIndex = findClosestElement $textLayer,
       left: e.pageX - offset.left
       top: e.pageY - offset.top
 
-    $elements = $textLayer.children()
-    currentPositionIndex = findClosestElement $elements, currentPosition
-
     return if currentPositionIndex is -1
 
-    $elements.css
-      'background-color': 'rgba(0,0,0,0)'
-
-    $highlight = $elements.slice Math.min(highlightStartIndex, currentPositionIndex), Math.max(highlightStartIndex, currentPositionIndex) + 1
-
-    $highlight.css
-      'background-color': 'rgba(255,0,0,0.3)'
+    showHighlight $textLayer, highlightStartIndex, currentPositionIndex
 
   $textLayer.mousedown (e) ->
     offset = $textLayer.offset()
-    highlightStartIndex = findClosestElement $textLayer.children(),
+    highlightStartIndex = findClosestElement $textLayer,
       left: e.pageX - offset.left
       top: e.pageY - offset.top
 
