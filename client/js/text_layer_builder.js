@@ -27,7 +27,7 @@
  * object also provides for a way to highlight
  * text that is being searched for.
  */
-this.TextLayerBuilder = function textLayerBuilder(options) {
+var TextLayerBuilder = function textLayerBuilder(options) {
   var textLayerFrag = document.createDocumentFragment();
 
   this.textLayerDiv = options.textLayerDiv;
@@ -131,7 +131,7 @@ this.TextLayerBuilder = function textLayerBuilder(options) {
     textDiv.style.fontSize = fontHeight + 'px';
     textDiv.style.fontFamily = geom.fontFamily;
     textDiv.style.left = geom.x + 'px';
-    textDiv.style.top = (geom.y - fontHeight*0.9) + 'px';
+    textDiv.style.top = (geom.y - fontHeight) + 'px';
 
     // The content of the div is set in the `setTextContent` function.
 
@@ -373,81 +373,3 @@ this.TextLayerBuilder = function textLayerBuilder(options) {
   };
 };
 
-
-// optimised CSS custom property getter/setter
-this.CustomStyle = (function CustomStyleClosure() {
-
-  // As noted on: http://www.zachstronaut.com/posts/2009/02/17/
-  //              animate-css-transforms-firefox-webkit.html
-  // in some versions of IE9 it is critical that ms appear in this list
-  // before Moz
-  var prefixes = ['ms', 'Moz', 'Webkit', 'O'];
-  var _cache = { };
-
-  function CustomStyle() {
-  }
-
-  CustomStyle.getProp = function get(propName, element) {
-    // check cache only when no element is given
-    if (arguments.length == 1 && typeof _cache[propName] == 'string') {
-      return _cache[propName];
-    }
-
-    element = element || document.documentElement;
-    var style = element.style, prefixed, uPropName;
-
-    // test standard property first
-    if (typeof style[propName] == 'string') {
-      return (_cache[propName] = propName);
-    }
-
-    // capitalize
-    uPropName = propName.charAt(0).toUpperCase() + propName.slice(1);
-
-    // test vendor specific properties
-    for (var i = 0, l = prefixes.length; i < l; i++) {
-      prefixed = prefixes[i] + uPropName;
-      if (typeof style[prefixed] == 'string') {
-        return (_cache[propName] = prefixed);
-      }
-    }
-
-    //if all fails then set to undefined
-    return (_cache[propName] = 'undefined');
-  };
-
-  CustomStyle.setProp = function set(propName, element, str) {
-    var prop = this.getProp(propName);
-    if (prop != 'undefined')
-      element.style[prop] = str;
-  };
-
-  return CustomStyle;
-})();
-
-function getFileName(url) {
-  var anchor = url.indexOf('#');
-  var query = url.indexOf('?');
-  var end = Math.min(
-    anchor > 0 ? anchor : url.length,
-    query > 0 ? query : url.length);
-  return url.substring(url.lastIndexOf('/', end) + 1, end);
-}
-
-/**
- * Returns scale factor for the canvas. It makes sense for the HiDPI displays.
- * @return {Object} The object with horizontal (sx) and vertical (sy)
-                    scales. The scaled property is set to false if scaling is
-                    not required, true otherwise.
- */
-function getOutputScale() {
-  var pixelRatio = 'devicePixelRatio' in window ? window.devicePixelRatio : 1;
-  return {
-    sx: pixelRatio,
-    sy: pixelRatio,
-    scaled: pixelRatio != 1
-  };
-}
-
-this.getFileName = getFileName;
-this.getOutputScale = getOutputScale;
