@@ -127,7 +127,7 @@ Deps.autorun ->
               textLayerDiv: $textLayerDiv.get(0)
               pageIndex: page.number - 1
 
-            textLayer = new TextLayerBuilder textLayerOptions
+            textLayer = new PDFJS.TextLayerBuilder textLayerOptions
             textLayer.setTextContent textContent
 
             renderContext =

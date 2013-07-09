@@ -373,3 +373,4 @@ var TextLayerBuilder = function textLayerBuilder(options) {
   };
 };
 
+PDFJS.TextLayerBuilder = TextLayerBuilder;
