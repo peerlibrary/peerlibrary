@@ -31,6 +31,9 @@ getElementPosition = (element) ->
 
   dims
 
+normalizeStartEnd = (start, end) ->
+  [Math.min(start, end), Math.max(start, end)]
+
 hideHiglight = ($textLayer) ->
   $textLayer.children().css
     'background-color': 'rgba(0,0,0,0)'
@@ -40,7 +43,7 @@ showHighlight = ($textLayer, start, end) ->
 
   return if start is -1 or end is -1
 
-  [start, end] = [Math.min(start, end), Math.max(start, end)]
+  [start, end] = normalizeStartEnd start, end
 
   $textLayer.children().slice(start, end + 1).css
     'background-color': 'rgba(255,0,0,0.3)'
@@ -73,21 +76,34 @@ findClosestElement = ($textLayer, position) ->
 
   closestElementIndex
 
+openHihglight = (publication, page, $textLayer, start, end) ->
+  return if start is -1 or end is -1
+
+  [start, end] = normalizeStartEnd start, end
+
+  # TODO: Implement
+
+closeHighlight = (publication, page, $textLayer, start, end) ->
+  hideHiglight $textLayer
+
+  # TODO: Implement
+
 setupTextSelection = (publication, page, $textLayer) ->
   highlightStartPosition = null
   highlightStartIndex = -1
+  highlightEndIndex = -1
 
   $textLayer.mousemove (e) ->
     return if highlightStartIndex is -1
 
     offset = $textLayer.offset()
-    currentPositionIndex = findClosestElement $textLayer,
+    highlightEndIndex = findClosestElement $textLayer,
       left: e.pageX - offset.left
       top: e.pageY - offset.top
 
-    return if currentPositionIndex is -1
+    return if highlightEndIndex is -1
 
-    showHighlight $textLayer, highlightStartIndex, currentPositionIndex
+    showHighlight $textLayer, highlightStartIndex, highlightEndIndex
 
   $textLayer.mousedown (e) ->
     offset = $textLayer.offset()
@@ -101,10 +117,13 @@ setupTextSelection = (publication, page, $textLayer) ->
 
     offset = $textLayer.offset()
     if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
-      hideHiglight $textLayer
+      closeHighlight publication, page, $textLayer, highlightStartIndex, highlightEndIndex
+    else
+      openHihglight publication, page, $textLayer, highlightStartIndex, highlightEndIndex
 
     highlightStartPosition = null
     highlightStartIndex = -1
+    highlightEndIndex = -1
 
   $textLayer.mouseleave (e) ->
     return if highlightStartIndex is -1
@@ -113,6 +132,7 @@ setupTextSelection = (publication, page, $textLayer) ->
 
     highlightStartPosition = null
     highlightStartIndex = -1
+    highlightEndIndex = -1
 
 displayPublication = (publication) ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
