@@ -31,77 +31,69 @@ getElementPosition = (element) ->
 
   dims
 
+findClosestElement = ($elements, position) ->
+  closestDistance = Number.MAX_VALUE
+  closestElementIndex = -1
+
+  $elements.each (i, element) ->
+    elementPosition = $(element).data 'position'
+
+    distanceXLeft = position.left - elementPosition.left
+    distanceXRight = position.left - (elementPosition.left + elementPosition.width)
+
+    distanceYTop = position.top - elementPosition.top
+    distanceYBottom = position.top - (elementPosition.top + elementPosition.height)
+
+    distanceX = if Math.abs(distanceXLeft) < Math.abs(distanceXRight) then distanceXLeft else distanceXRight
+    if position.left > elementPosition.left and position.left < elementPosition.left + elementPosition.width
+      distanceX = 0
+
+    distanceY = if Math.abs(distanceYTop) < Math.abs(distanceYBottom) then distanceYTop else distanceYBottom
+    if position.top > elementPosition.top and position.top < elementPosition.top + elementPosition.height
+      distanceY = 0
+
+    distance = distanceX * distanceX + distanceY * distanceY
+    if distance < closestDistance
+      closestDistance = distance
+      closestElementIndex = i
+
+  closestElementIndex
+
 setupTextSelection = (publication, page, $textLayer) ->
-  $closestTextDiv = null
-  closestDistance = Number.MAX_VALUE;
+  selectionStartIndex = -1
 
   $textLayer.mousemove (e) ->
-    layerOffset = $(this).offset()
-    relX = e.pageX - layerOffset.left
-    relY = e.pageY - layerOffset.top
+    return if selectionStartIndex is -1
 
-    closestDistance = Number.MAX_VALUE;
-    $textLayer.children().each ->
-      position = $(this).data 'position'
+    offset = $textLayer.offset()
+    currentPosition =
+      left: e.pageX - offset.left
+      top: e.pageY - offset.top
 
-      distXLeft = relX - position.left
-      distXRight = relX - (position.left + position.width)
-      distXCenter = relX - (position.left + position.width/2.0)
+    $elements = $textLayer.children()
+    currentPositionIndex = findClosestElement $elements, currentPosition
 
-      distYTop = relY - position.top
-      distYBottom = relY - (position.top + position.height)
-      distYCenter = relY - (position.top + position.height/2.0)
+    return if currentPositionIndex is -1
 
-      distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
-      if relX > position.left and relX < position.left + position.width
-        distX = 0
+    $elements.css
+      'background-color': 'rgba(0,0,0,0)'
 
-      distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
-      if relY > position.top and relY < position.top + position.height
-        distY = 0
-      # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
+    $selection = $elements.slice Math.min(selectionStartIndex, currentPositionIndex), Math.max(selectionStartIndex, currentPositionIndex) + 1
 
-      dist = Math.sqrt(distX*distX + distY*distY)
+    $selection.css
+      'background-color': 'rgba(255,0,0,0.3)'
 
-      if (dist < closestDistance)
-        closestDistance = dist
-        $closestTextDiv = $(this)
+  $textLayer.mousedown (e) ->
+    offset = $textLayer.offset()
+    selectionStartIndex = findClosestElement $textLayer.children(),
+      left: e.pageX - offset.left
+      top: e.pageY - offset.top
 
-      $(this).css("color","rgba(0,0,0,0)")
-      $(this).css("background-color","rgba(0,0,0,0)")
-      # $(this).css("color","rgba(0,0,0,#{ Math.max(1.0-dist/100,0) })")
+  $textLayer.mouseup (e) ->
+    selectionStartIndex = -1
 
-    # $closestTextDiv.css("color","rgba(0,0,0,1.0)")
-    return if $closestTextDiv is null
-    $closestTextDiv.css("background-color","rgba(255,0,0,0.3)")
-    $(this).data("closestTextDiv",$closestTextDiv)
-
-
-  $startTextDiv = null
-  $endTextDiv = null
-
-  $textLayer
-    .mousedown (e) ->
-      e.preventDefault()
-      return if not $closestTextDiv
-      $startTextDiv = $closestTextDiv
-    .mouseup (e) ->
-      return if not $closestTextDiv
-      $endTextDiv = $closestTextDiv
-
-  # outputScale = getOutputScale();
-  # if outputScale.scaled
-  #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
-  #   CustomStyle.setProp 'transform', canvas, cssScale
-  #   CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
-  #   if $textLayer.get(0)
-  #     CustomStyle.setProp 'transform', $textLayer.get(0), cssScale
-  #     CustomStyle.setProp 'transformOrigin', $textLayer.get(0), '0% 0%'
-
-  # context._scaleX = outputScale.sx
-  # context._scaleY = outputScale.sy
-  # if outputScale.scaled
-  #   context.scale outputScale.sx, outputScale.sy
+  $textLayer.mouseleave (e) ->
+    selectionStartIndex = -1
 
 displayPublication = (publication) ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
@@ -122,7 +114,15 @@ displayPublication = (publication) ->
           $textLayer = $('<div/>').addClass('display-text').css(
             height: viewport.height + 'px'
             width: viewport.width + 'px'
-          ).appendTo $pageDisplay
+          # Disable text selection in various ways
+          ).attr(
+            unselectable: 'on'
+          ).css(
+            'user-select': 'none'
+            '-moz-user-select': 'none'
+            '-khtml-user-select': 'none'
+            '-webkit-user-select': 'none'
+          ).on('selectstart', false).appendTo $pageDisplay
 
           setupTextSelection publication, page, $textLayer
 
