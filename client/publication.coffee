@@ -228,10 +228,10 @@ Template.publication.created = ->
   $ ->
     # WebKit contentEditable focus bug workaround:
     if /AppleWebKit\/([\d.]+)/.exec navigator.userAgent
-      editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo '.paragraph-notes'
+      $editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo '.paragraph-notes'
       $('[contenteditable]').blur ->
-        editableFix[0].setSelectionRange 0, 0
-        editableFix.blur()
+        $editableFix[0].setSelectionRange 0, 0
+        $editableFix.blur()
 
   placeCaretAtEnd = (el) ->
     el.focus()
