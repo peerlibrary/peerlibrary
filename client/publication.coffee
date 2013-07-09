@@ -60,10 +60,10 @@ findClosestElement = ($elements, position) ->
   closestElementIndex
 
 setupTextSelection = (publication, page, $textLayer) ->
-  selectionStartIndex = -1
+  highlightStartIndex = -1
 
   $textLayer.mousemove (e) ->
-    return if selectionStartIndex is -1
+    return if highlightStartIndex is -1
 
     offset = $textLayer.offset()
     currentPosition =
@@ -78,22 +78,22 @@ setupTextSelection = (publication, page, $textLayer) ->
     $elements.css
       'background-color': 'rgba(0,0,0,0)'
 
-    $selection = $elements.slice Math.min(selectionStartIndex, currentPositionIndex), Math.max(selectionStartIndex, currentPositionIndex) + 1
+    $highlight = $elements.slice Math.min(highlightStartIndex, currentPositionIndex), Math.max(highlightStartIndex, currentPositionIndex) + 1
 
-    $selection.css
+    $highlight.css
       'background-color': 'rgba(255,0,0,0.3)'
 
   $textLayer.mousedown (e) ->
     offset = $textLayer.offset()
-    selectionStartIndex = findClosestElement $textLayer.children(),
+    highlightStartIndex = findClosestElement $textLayer.children(),
       left: e.pageX - offset.left
       top: e.pageY - offset.top
 
   $textLayer.mouseup (e) ->
-    selectionStartIndex = -1
+    highlightStartIndex = -1
 
   $textLayer.mouseleave (e) ->
-    selectionStartIndex = -1
+    highlightStartIndex = -1
 
 displayPublication = (publication) ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
