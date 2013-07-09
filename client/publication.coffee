@@ -252,6 +252,20 @@ Template.publicationAnnotationsItem.events =
   'blur .text': (e, template) ->
     Annotations.update @_id, $set: body: $(template.find '.text').text()
 
+  'mouseenter .annotation': (e, template) ->
+    unless _.isEqual Session.get('currentHighlight'), @location
+      Session.set 'currentHighlight', null
+
+    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end
+
+  'mouseleave .annotation': (e, template) ->
+    unless _.isEqual Session.get('currentHighlight'), @location
+      hideHiglight $('#viewer .display .display-text')
+
+  'click .annotation': (e, template) ->
+    Session.set 'currentHighlight', @location
+    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end
+
 Template.publicationAnnotationsItem.highlighted = ->
   currentHighlight = Session.get 'currentHighlight'
 

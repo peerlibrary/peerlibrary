@@ -16,7 +16,7 @@
   margin-bottom: 20px;
 }
 
-#viewer .highlighted {
+#viewer .highlighted, #viewer .annotations .annotation:hover {
   background-color: rgba(255,0,0,0.3);
 }
 
