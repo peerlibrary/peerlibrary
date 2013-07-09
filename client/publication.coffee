@@ -4,22 +4,34 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
-Deps.autorun ->
-  publication = Publications.findOne Session.get 'currentPublicationId'
+# This function should work on rotated elements as well for all values
+getElementPosition = (element) ->
+  dims =
+    left: 0
+    top: 0
+    right: 0
+    bottom: 0
+    width: 0
+    height: 0
 
-  return unless publication
+  if element
+    rect = element.getBoundingClientRect()
+    parentRect = $(element).parent().get(0).getBoundingClientRect()
+    dims.left = rect.left - parentRect.left
+    dims.top = rect.top - parentRect.top
+    dims.right = rect.right - parentRect.right
+    dims.bottom = rect.bottom - parentRect.bottom
 
-  unless Session.equals 'currentPublicationSlug', publication.slug
-    Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
-    return
+    if rect.width
+      dims.width = rect.width
+      dims.height = rect.height
+    else
+      dims.width = dims.right - dims.left
+      dims.height = dims.bottom - dims.top
 
-  # Maybe we don't yet have whole publication object available
-  try
-    unless publication.url()
-      return
-  catch e
-    return
+  dims
 
+displayPublication = (publication) ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
       $canvas = $('<canvas/>').addClass('display-canvas')
@@ -35,17 +47,10 @@ Deps.autorun ->
             height: viewport.height
             width: viewport.width
 
-          $pageDisplay.attr
-            height: viewport.height
-            width: viewport.width
-
           $textLayerDiv = $('<div/>').addClass('display-text').css(
             height: viewport.height + 'px'
             width: viewport.width + 'px'
           ).appendTo $pageDisplay
-
-          $pageDisplay.css
-            position: 'relative'
 
           $closestTextDiv = null
           closestDistance = Number.MAX_VALUE;
@@ -57,25 +62,23 @@ Deps.autorun ->
 
             closestDistance = Number.MAX_VALUE;
             $textLayerDiv.children().each ->
-              textDivOffset = $(this).data("cachedOffset")
-              textDivWidth = $(this).data("cachedWidth")
-              textDivHeight = $(this).data("cachedHeight")
+              position = $(this).data 'position'
 
-              distXLeft = relX - textDivOffset.left
-              distXRight = relX - (textDivOffset.left + textDivWidth)
-              distXCenter = relX - (textDivOffset.left + textDivWidth/2.0)
+              distXLeft = relX - position.left
+              distXRight = relX - (position.left + position.width)
+              distXCenter = relX - (position.left + position.width/2.0)
 
-              distYTop = relY - textDivOffset.top
-              distYBottom = relY - (textDivOffset.top + textDivHeight)
-              distYCenter = relY - (textDivOffset.top + textDivHeight/2.0)
+              distYTop = relY - position.top
+              distYBottom = relY - (position.top + position.height)
+              distYCenter = relY - (position.top + position.height/2.0)
 
 
               distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
-              if relX > textDivOffset.left and relX < textDivOffset.left + textDivWidth
+              if relX > position.left and relX < position.left + position.width
                 distX = 0
 
               distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
-              if relY > textDivOffset.top and relY < textDivOffset.top + textDivHeight
+              if relY > position.top and relY < position.top + position.height
                 distY = 0
               # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
 
@@ -136,9 +139,26 @@ Deps.autorun ->
 
             page.render(renderContext).then ->
               $textLayerDiv.children().each ->
-                $(this).data("cachedOffset", $(this).position())
-                $(this).data("cachedWidth", $(this).width())
-                $(this).data("cachedHeight", $(this).height())
+                $(this).data
+                  position: getElementPosition this
+
+Deps.autorun ->
+  publication = Publications.findOne Session.get 'currentPublicationId'
+
+  return unless publication
+
+  unless Session.equals 'currentPublicationSlug', publication.slug
+    Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
+    return
+
+  # Maybe we don't yet have whole publication object available
+  try
+    unless publication.url()
+      return
+  catch e
+    return
+
+  displayPublication publication
 
 # TODO: Destroy/clear pdf.js structures/memory on autorun cycle/stop
 
