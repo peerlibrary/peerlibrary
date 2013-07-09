@@ -31,6 +31,79 @@ getElementPosition = (element) ->
 
   dims
 
+setupTextSelection = (publication, page, $textLayer) ->
+  $closestTextDiv = null
+  closestDistance = Number.MAX_VALUE;
+
+  $textLayer.mousemove (e) ->
+    layerOffset = $(this).offset()
+    relX = e.pageX - layerOffset.left
+    relY = e.pageY - layerOffset.top
+
+    closestDistance = Number.MAX_VALUE;
+    $textLayer.children().each ->
+      position = $(this).data 'position'
+
+      distXLeft = relX - position.left
+      distXRight = relX - (position.left + position.width)
+      distXCenter = relX - (position.left + position.width/2.0)
+
+      distYTop = relY - position.top
+      distYBottom = relY - (position.top + position.height)
+      distYCenter = relY - (position.top + position.height/2.0)
+
+
+      distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
+      if relX > position.left and relX < position.left + position.width
+        distX = 0
+
+      distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
+      if relY > position.top and relY < position.top + position.height
+        distY = 0
+      # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
+
+      dist = Math.sqrt(distX*distX + distY*distY)
+
+      if (dist < closestDistance)
+        closestDistance = dist
+        $closestTextDiv = $(this)
+
+      $(this).css("color","rgba(0,0,0,0)")
+      $(this).css("background-color","rgba(0,0,0,0)")
+      # $(this).css("color","rgba(0,0,0,#{ Math.max(1.0-dist/100,0) })")
+
+    # $closestTextDiv.css("color","rgba(0,0,0,1.0)")
+    return if $closestTextDiv is null
+    $closestTextDiv.css("background-color","rgba(255,0,0,0.3)")
+    $(this).data("closestTextDiv",$closestTextDiv)
+
+
+  $startTextDiv = null
+  $endTextDiv = null
+
+  $textLayer
+    .mousedown (e) ->
+      e.preventDefault()
+      return if not $closestTextDiv
+      $startTextDiv = $closestTextDiv
+    .mouseup (e) ->
+      return if not $closestTextDiv
+      $endTextDiv = $closestTextDiv
+
+  # outputScale = getOutputScale();
+  # if outputScale.scaled
+  #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
+  #   CustomStyle.setProp 'transform', canvas, cssScale
+  #   CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
+  #   if $textLayer.get(0)
+  #     CustomStyle.setProp 'transform', $textLayer.get(0), cssScale
+  #     CustomStyle.setProp 'transformOrigin', $textLayer.get(0), '0% 0%'
+
+  # context._scaleX = outputScale.sx
+  # context._scaleY = outputScale.sy
+  # if outputScale.scaled
+  #   context.scale outputScale.sx, outputScale.sy
+
 displayPublication = (publication) ->
   PDFJS.getDocument(publication.url()).then (pdf) ->
     for pageNumber in [1..pdf.numPages]
@@ -47,86 +120,16 @@ displayPublication = (publication) ->
             height: viewport.height
             width: viewport.width
 
-          $textLayerDiv = $('<div/>').addClass('display-text').css(
+          $textLayer = $('<div/>').addClass('display-text').css(
             height: viewport.height + 'px'
             width: viewport.width + 'px'
           ).appendTo $pageDisplay
 
-          $closestTextDiv = null
-          closestDistance = Number.MAX_VALUE;
-
-          $textLayerDiv.mousemove (e) ->
-            layerOffset = $(this).offset()
-            relX = e.pageX - layerOffset.left
-            relY = e.pageY - layerOffset.top
-
-            closestDistance = Number.MAX_VALUE;
-            $textLayerDiv.children().each ->
-              position = $(this).data 'position'
-
-              distXLeft = relX - position.left
-              distXRight = relX - (position.left + position.width)
-              distXCenter = relX - (position.left + position.width/2.0)
-
-              distYTop = relY - position.top
-              distYBottom = relY - (position.top + position.height)
-              distYCenter = relY - (position.top + position.height/2.0)
-
-
-              distX = if Math.abs(distXLeft) < Math.abs(distXRight) then distXLeft else distXRight
-              if relX > position.left and relX < position.left + position.width
-                distX = 0
-
-              distY = if Math.abs(distYTop) < Math.abs(distYBottom) then distYTop else distYBottom
-              if relY > position.top and relY < position.top + position.height
-                distY = 0
-              # distY = if Math.abs(distY) < Math.abs(distYCenter) then distY else distYCenter
-
-              dist = Math.sqrt(distX*distX + distY*distY)
-
-              if (dist < closestDistance) 
-                closestDistance = dist
-                $closestTextDiv = $(this)
-
-              $(this).css("color","rgba(0,0,0,0)")
-              $(this).css("background-color","rgba(0,0,0,0)")
-              # $(this).css("color","rgba(0,0,0,#{ Math.max(1.0-dist/100,0) })")
-
-            # $closestTextDiv.css("color","rgba(0,0,0,1.0)")
-            return if $closestTextDiv is null
-            $closestTextDiv.css("background-color","rgba(255,0,0,0.3)")
-            $(this).data("closestTextDiv",$closestTextDiv)
-
-
-          $startTextDiv = null
-          $endTextDiv = null
-
-          $textLayerDiv
-            .mousedown (e) ->
-              e.preventDefault()
-              return if not $closestTextDiv
-              $startTextDiv = $closestTextDiv
-            .mouseup (e) ->
-              return if not $closestTextDiv
-              $endTextDiv = $closestTextDiv
-
-          # outputScale = getOutputScale();
-          # if outputScale.scaled 
-          #   cssScale = "scale(#{ 1 / outputScale.sx }, #{1 / outputScale.sy})";
-          #   CustomStyle.setProp 'transform', canvas, cssScale
-          #   CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
-          #   if $textLayerDiv.get(0)
-          #     CustomStyle.setProp 'transform', $textLayerDiv.get(0), cssScale
-          #     CustomStyle.setProp 'transformOrigin', $textLayerDiv.get(0), '0% 0%'
-          
-          # context._scaleX = outputScale.sx
-          # context._scaleY = outputScale.sy
-          # if outputScale.scaled
-          #   context.scale outputScale.sx, outputScale.sy
+          setupTextSelection publication, page, $textLayer
 
           page.getTextContent().then (textContent) ->
             textLayerOptions = 
-              textLayerDiv: $textLayerDiv.get(0)
+              textLayerDiv: $textLayer.get(0)
               pageIndex: page.number - 1
 
             textLayer = new PDFJS.TextLayerBuilder textLayerOptions
@@ -138,7 +141,7 @@ displayPublication = (publication) ->
               textLayer: textLayer
 
             page.render(renderContext).then ->
-              $textLayerDiv.children().each ->
+              $textLayer.children().each ->
                 $(this).data
                   position: getElementPosition this
 
