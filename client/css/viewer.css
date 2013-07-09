@@ -16,16 +16,6 @@
   margin-bottom: 20px;
 }
 
-#viewer .display-page canvas {
-  border: 1px solid #bbc1c4;
-  border-radius: 2px;
-}
-
-#viewer .display-page .paragraph {
-  border: 1px solid red;
-  position: absolute;
-}
-
 /* text selection */
 
 #viewer .display-page canvas ::selection { background:rgba(255,255,10,0.3); }

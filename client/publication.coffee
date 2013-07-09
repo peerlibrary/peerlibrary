@@ -39,13 +39,13 @@ Deps.autorun ->
             height: viewport.height
             width: viewport.width
 
-          $textLayerDiv = $('<div/>')
-            .addClass('display-text')
-            .css("height", viewport.height + "px")
-            .css("width", viewport.width + "px")
-            .appendTo($pageDisplay)
+          $textLayerDiv = $('<div/>').addClass('display-text').css(
+            height: viewport.height + 'px'
+            width: viewport.width + 'px'
+          ).appendTo $pageDisplay
 
-          $pageDisplay.css("position","relative");
+          $pageDisplay.css
+            position: 'relative'
 
           $closestTextDiv = null
           closestDistance = Number.MAX_VALUE;
@@ -122,7 +122,6 @@ Deps.autorun ->
           #   context.scale outputScale.sx, outputScale.sy
 
           page.getTextContent().then (textContent) ->
-
             textLayerOptions = 
               textLayerDiv: $textLayerDiv.get(0)
               pageIndex: page.number - 1
