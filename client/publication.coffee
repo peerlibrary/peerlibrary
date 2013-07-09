@@ -34,11 +34,19 @@ getElementPosition = (element) ->
 normalizeStartEnd = (start, end) ->
   [Math.min(start, end), Math.max(start, end)]
 
-hideHiglight = ($textLayer) ->
+removeTemporaryAnnotation = ->
+  $highlightedAnnotation = $('#viewer .display .annotations .highlighted')
+  if $.trim($highlightedAnnotation.text()) is "Enter annotation"
+    annotation = $highlightedAnnotation.data 'annotation'
+    Annotations.remove annotation._id if annotation
+
+hideHiglight = ($textLayer, dontRemove) ->
   $textLayer.children().removeClass 'highlighted'
 
-showHighlight = ($textLayer, start, end) ->
-  hideHiglight $textLayer
+  removeTemporaryAnnotation() unless dontRemove
+
+showHighlight = ($textLayer, start, end, dontRemove) ->
+  hideHiglight $textLayer, dontRemove
 
   return if start is -1 or end is -1
 
@@ -101,7 +109,7 @@ openHihglight = (publication, page, $textLayer, start, end) ->
     start: start
     end: end
 
-closeHighlight = (publication, page, $textLayer, start, end) ->
+closeHighlight = (publication, page, $textLayer) ->
   hideHiglight $textLayer
 
   Session.set 'currentHighlight', null
@@ -135,7 +143,7 @@ setupTextSelection = (publication, page, $textLayer) ->
 
     offset = $textLayer.offset()
     if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
-      closeHighlight publication, page, $textLayer, highlightStartIndex, highlightEndIndex
+      closeHighlight publication, page, $textLayer
     else
       openHihglight publication, page, $textLayer, highlightStartIndex, highlightEndIndex
 
@@ -198,8 +206,8 @@ displayPublication = (publication) ->
 
             page.render(renderContext).then ->
               $textLayer.children().each ->
-                $(this).data
-                  position: getElementPosition this
+                $(@).data
+                  position: getElementPosition @
 
 Deps.autorun ->
   publication = Publications.findOne Session.get 'currentPublicationId'
@@ -253,23 +261,33 @@ Template.publicationAnnotationsItem.events =
     Annotations.update @_id, $set: body: $(template.find '.text').text()
 
   'mouseenter .annotation': (e, template) ->
+    currentHighlight = true
     unless _.isEqual Session.get('currentHighlight'), @location
       Session.set 'currentHighlight', null
+      currentHighlight = false
 
-    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end
+    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
 
   'mouseleave .annotation': (e, template) ->
     unless _.isEqual Session.get('currentHighlight'), @location
       hideHiglight $('#viewer .display .display-text')
 
   'click .annotation': (e, template) ->
-    Session.set 'currentHighlight', @location
-    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end
+    currentHighlight = true
+    unless _.isEqual Session.get('currentHighlight'), @location
+      Session.set 'currentHighlight', @location
+      currentHighlight = false
+
+    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
 
 Template.publicationAnnotationsItem.highlighted = ->
   currentHighlight = Session.get 'currentHighlight'
 
   currentHighlight?.page is @location.page and currentHighlight?.start is @location.start and currentHighlight?.end is @location.end
+
+Template.publicationAnnotationsItem.rendered = ->
+  $(@firstNode).data
+    annotation: @data
 
 Template.publicationEntry.displayDay = (time) ->
   moment(time).format 'MMMM Do YYYY'
