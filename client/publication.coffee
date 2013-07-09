@@ -74,6 +74,7 @@ findClosestElement = ($textLayer, position) ->
   closestElementIndex
 
 setupTextSelection = (publication, page, $textLayer) ->
+  highlightStartPosition = null
   highlightStartIndex = -1
 
   $textLayer.mousemove (e) ->
@@ -90,14 +91,27 @@ setupTextSelection = (publication, page, $textLayer) ->
 
   $textLayer.mousedown (e) ->
     offset = $textLayer.offset()
-    highlightStartIndex = findClosestElement $textLayer,
+    highlightStartPosition =
       left: e.pageX - offset.left
       top: e.pageY - offset.top
+    highlightStartIndex = findClosestElement $textLayer, highlightStartPosition
 
   $textLayer.mouseup (e) ->
+    return if highlightStartIndex is -1
+
+    offset = $textLayer.offset()
+    if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
+      hideHiglight $textLayer
+
+    highlightStartPosition = null
     highlightStartIndex = -1
 
   $textLayer.mouseleave (e) ->
+    return if highlightStartIndex is -1
+
+    hideHiglight $textLayer
+
+    highlightStartPosition = null
     highlightStartIndex = -1
 
 displayPublication = (publication) ->
