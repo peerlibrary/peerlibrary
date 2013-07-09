@@ -32,7 +32,7 @@ Template.results.rendered = ->
     slide: (event, ui) ->
       $('#score').val(ui.values[ 0 ] + ' - ' + ui.values[ 1 ])
 
-  $('#score').val($('#score-range').slider('values', 0) +' - ' + $('#score-range').slider('values', 1))
+  $('#score').val($('#score-range').slider('values', 0) + ' - ' + $('#score-range').slider('values', 1))
 
   $('#date-range').slider
     range: true
