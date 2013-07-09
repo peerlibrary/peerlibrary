@@ -35,8 +35,7 @@ normalizeStartEnd = (start, end) ->
   [Math.min(start, end), Math.max(start, end)]
 
 hideHiglight = ($textLayer) ->
-  $textLayer.children().css
-    'background-color': 'rgba(0,0,0,0)'
+  $textLayer.children().removeClass 'highlighted'
 
 showHighlight = ($textLayer, start, end) ->
   hideHiglight $textLayer
@@ -45,8 +44,7 @@ showHighlight = ($textLayer, start, end) ->
 
   [start, end] = normalizeStartEnd start, end
 
-  $textLayer.children().slice(start, end + 1).css
-    'background-color': 'rgba(255,0,0,0.3)'
+  $textLayer.children().slice(start, end + 1).addClass 'highlighted'
 
 findClosestElement = ($textLayer, position) ->
   closestDistance = Number.MAX_VALUE
@@ -81,12 +79,32 @@ openHihglight = (publication, page, $textLayer, start, end) ->
 
   [start, end] = normalizeStartEnd start, end
 
-  # TODO: Implement
+  annotationExists = Annotations.find(
+    publication: publication._id
+    location:
+      page: page.pageNumber
+      start: start
+      end: end
+  ).count()
+
+  if not annotationExists
+    Annotations.insert
+      publication: publication._id
+      body: "Enter annotation"
+      location:
+        page: page.pageNumber
+        start: start
+        end: end
+
+  Session.set 'currentHighlight',
+    page: page.pageNumber
+    start: start
+    end: end
 
 closeHighlight = (publication, page, $textLayer, start, end) ->
   hideHiglight $textLayer
 
-  # TODO: Implement
+  Session.set 'currentHighlight', null
 
 setupTextSelection = (publication, page, $textLayer) ->
   highlightStartPosition = null
@@ -168,7 +186,7 @@ displayPublication = (publication) ->
           page.getTextContent().then (textContent) ->
             textLayerOptions = 
               textLayerDiv: $textLayer.get(0)
-              pageIndex: page.number - 1
+              pageIndex: page.pageNumber - 1
 
             textLayer = new PDFJS.TextLayerBuilder textLayerOptions
             textLayer.setTextContent textContent
@@ -213,6 +231,12 @@ Template.publication.comments = ->
 Template.publicationAnnotations.annotations = ->
   Annotations.find
     publication: Session.get 'currentPublicationId'
+  ,
+    sort: [
+      ['location.page', 'asc']
+      ['location.start', 'asc']
+      ['location.end', 'asc']
+    ]
 
 updateAnnotation = (id, template) ->
   Annotations.update id, $set: body: $(template.find '.text').text(), ->
@@ -227,6 +251,11 @@ Template.publicationAnnotationsItem.events =
 
   'blur .text': (e, template) ->
     Annotations.update @_id, $set: body: $(template.find '.text').text()
+
+Template.publicationAnnotationsItem.highlighted = ->
+  currentHighlight = Session.get 'currentHighlight'
+
+  currentHighlight?.page is @location.page and currentHighlight?.start is @location.start and currentHighlight?.end is @location.end
 
 Template.publicationEntry.displayDay = (time) ->
   moment(time).format 'MMMM Do YYYY'

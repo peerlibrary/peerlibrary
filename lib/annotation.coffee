@@ -10,10 +10,8 @@ class Annotation extends @Document
   # publication: publication's id
   # location:
   #   page: one-based
-  #   left: left coordinate
-  #   top: top coordinate
-  #   width: width of the annotation's location
-  #   height: height of the annotation's location
+  #   start: start index of text layer elements of the annotation's highlight (inclusive)
+  #   end: end index of text layer elements of the annotation's highlight (inclusive)
 
 @Annotations = Annotations
 @Annotation = Annotation

@@ -4,8 +4,9 @@ Deps.autorun ->
 
 Template.admin.arXivPDFs = ->
   ArXivPDFs.find {},
-    sort:
-      processingStart: -1
+    sort: [
+      ['processingStart', 'desc']
+    ]
     limit: 5
 
 Template.adminButtons.events

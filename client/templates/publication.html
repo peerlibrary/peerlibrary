@@ -33,7 +33,7 @@
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li>
+  <li{{#if highlighted}} class="highlighted"{{/if}}>
     <div class="text" contenteditable="true">
       {{body}}
     </div>

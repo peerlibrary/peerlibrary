@@ -16,6 +16,10 @@
   margin-bottom: 20px;
 }
 
+#viewer .highlighted {
+  background-color: rgba(255,0,0,0.3);
+}
+
 /* text selection */
 
 #viewer .display-page canvas ::selection { background:rgba(255,255,10,0.3); }

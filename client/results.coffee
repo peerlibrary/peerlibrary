@@ -79,8 +79,9 @@ Template.results.publications = ->
   Publications.find
     'searchResult.id': searchResult._id
   ,
-    sort:
-      'searchResult.order': 1
+    sort: [
+      ['searchResult.order', 'asc']
+    ]
     limit: Session.get 'currentSearchLimit'
 
 Template.resultsCount.publications = ->
