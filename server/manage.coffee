@@ -46,7 +46,7 @@ Meteor.methods
 
     s3 = new AWS.S3()
 
-    list = blocking s3, s3.listObjects
+    list = blocking(s3, s3.listObjects)
       Bucket: 'arxiv'
       Prefix: 'pdf/'
       RequestPayer: 'requester'
