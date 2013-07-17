@@ -1,24 +1,24 @@
+fs = Npm.require 'fs'
+path = Npm.require 'path'
+
 class Storage extends @Storage
   @_assurePath: (path) ->
     path = path.split @_path.sep
     for segment, i in path[1...path.length-1]
       p = path[0..i+1].join @_path.sep
-      if !@_fs.existsSync p
-        @_fs.mkdirSync p
+      if !fs.existsSync p
+        fs.mkdirSync p
 
   @save: (filename, data) ->
     filename = @_storageDirectory + @_path.sep + filename
     @_assurePath filename
-    @_fs.writeFileSync filename, data
+    fs.writeFileSync filename, data
 
   @exists: (filename) ->
-    @_fs.existsSync @_storageDirectory + @_path.sep + filename
+    fs.existsSync @_storageDirectory + @_path.sep + filename
 
   @open: (filename) ->
-    @_fs.readFileSync @_storageDirectory + @_path.sep + filename
-
-fs = Npm.require 'fs'
-path = Npm.require 'path'
+    fs.readFileSync @_storageDirectory + @_path.sep + filename
 
 # Find .meteor directory
 directoryPath = process.mainModule.filename.split path.sep
@@ -31,7 +31,6 @@ assert directoryPath.length > 0
 
 directoryPath.push 'storage'
 Storage._storageDirectory = directoryPath.join path.sep
-Storage._fs = fs
 Storage._path = path
 
 # TODO: What about security? If ../.. are passed in?
