@@ -286,7 +286,7 @@ Template.publicationAnnotationsItem.highlighted = ->
   currentHighlight?.page is @location.page and currentHighlight?.start is @location.start and currentHighlight?.end is @location.end
 
 Template.publicationAnnotationsItem.rendered = ->
-  $(@firstNode).nextUntil(@lastNode).addBack().add(@lastNode).data
+  $(@findAll('.annotation')).data
     annotation: @data
 
 Template.publicationEntry.displayDay = (time) ->
