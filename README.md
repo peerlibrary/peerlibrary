@@ -46,7 +46,8 @@ roadmap has not yet been established. Nevertheless you are invited to join the
 development but please understand that things might be changing under your feet
 so it is probably useful to discuss planned contributions in advance. Open [a
 GitHub issue](https://github.com/peerlibrary/peerlibrary/issues/new) or join us
-on IRC at #rawpotato @ [Freenode](http://freenode.net/).
+on IRC at #rawpotato @ [Freenode](http://freenode.net/) or on a
+[development mailing list](http://lists.peerlibrary.org/lists/info/dev).
 
 For ideas what to contribute you can:
 * check [list of open issues](https://github.com/peerlibrary/peerlibrary/issues?state=open)
