@@ -29,7 +29,9 @@ On first run, PeerLibrary compiles and locally installs additional libraries.
 might have to configure environment properly so that it can be successfully
 compiled.
 
-On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and:
+On Mac OS X you can get Cairo by installing
+[X11](http://xquartz.macosforge.org/), `pkg-config`
+([Homebrew](http://brew.sh/), [MacPorts](https://www.macports.org/)), and:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
