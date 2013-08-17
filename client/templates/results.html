@@ -8,7 +8,6 @@
           {{> publicationEntry}}
         {{/each}}
       </ol>
-      {{> searchAvailable}}
       {{> noResults}}
     </div>
     {{> refineSearch}}
@@ -21,12 +20,6 @@
   {{/if}}
   {{#if people}}
     <div class="results-count">Found {{people}} people</div>
-  {{/if}}
-</template>
-
-<template name="searchAvailable">
-  {{#if display}}
-    <div class="search-available">Search {{publications}} publications and {{people}} people</div>
   {{/if}}
 </template>
 

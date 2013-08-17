@@ -55,6 +55,8 @@ Template.results.rendered = ->
       $(".search-tools").css position: "fixed"
 
 Template.results.created = ->
+  # TODO: We should probably remove the event handler when going away from the page?
+
   # Infinite scrolling
   $(window).on 'scroll', ->
     if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
@@ -92,27 +94,6 @@ Template.resultsCount.people = ->
 
 Template.refineSearch.display = ->
   Session.equals('searchActive', true) or Session.equals('currentSearchQueryReady', true)
-
-Template.searchAvailable.display = ->
-  not Session.equals('searchActive', true) and not Session.equals('currentSearchQueryReady', true)
-
-Template.searchAvailable.publications = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPublications
-
-Template.searchAvailable.people = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPeople
 
 Template.noResults.noResults = ->
   Session.equals('currentSearchQueryReady', true) and Session.equals('currentSearchQueryCountPublications', 0) and Session.equals('currentSearchQueryCountPeople', 0)

@@ -5,9 +5,10 @@
 
 <body>
   {{> header}}
-  <section>
+  <section class="{{currentPage}}">
     <div class="container">
       {{renderPage}}
     </div>
   </section>
+  {{> footer}}
 </body>

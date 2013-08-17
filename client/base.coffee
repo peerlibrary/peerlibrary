@@ -6,6 +6,11 @@ Meteor.Router.add
     # TODO: This is ugly and hard-coded
     $('.search-input').add('#title').val ''
     $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications and people <span class="cursor"></span>')
+
+    # TODO: We should probably remove the event handler when going away from the page?
+    $(window).on 'scroll', ->
+      Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
+
     'index'
   '/login':
     'login'
@@ -31,6 +36,7 @@ Meteor.Router.add
 
 Meteor.Router.beforeRouting = ->
   Session.set 'indexActive', false
+  Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
   Session.set 'currentSearchQuery', null
   Session.set 'currentSearchLimit', 0
   Session.set 'searchActive', false

@@ -1,3 +1,24 @@
 <template name="index">
-  {{> results}}
+  {{#if searchActive}}
+    {{> results}}
+  {{else}}
+    {{> indexSearchInput}}
+    {{> presentation}}
+  {{/if}}
+</template>
+
+<template name="indexSearchInput">
+  <input type="text" placeholder="Search {{publications}} publications and {{people}} people" class="search-input" />
+</template>
+
+<template name="presentation">
+  <div class="presentation">
+    <ul>
+      <li>Search & Explore</li>
+      <li>Publications & People</li>
+      <li>Highlight & Annotate</li>
+      <li>Organize & ???</li>
+      <li>Share & Collaborate</li>
+    </ul>
+  </div>
 </template>

@@ -21,6 +21,9 @@ Template.header.events =
 Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
 
+Template.header.indexHeader = ->
+  'index-header' if Session.get('indexHeader') and not Session.get('searchActive')
+
 searchOn = ->
   if Session.get 'searchActive'
     return
@@ -41,3 +44,6 @@ searchOff = ->
     $('.top-menu .search .label').html('<i class="icon-search"></i> ' + $('.search-input').val().substring(0,55) + ' <span class="cursor"></span>')
   else
     $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications and people <span class="cursor"></span>')
+
+@searchOn = searchOn
+@searchOff = searchOff
