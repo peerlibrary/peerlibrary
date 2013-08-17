@@ -39,6 +39,13 @@ On Debian you can install:
 
     aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
 
+Debug mode
+----------
+
+To run PeerLibrary in debug mode, you can run it with debug settings:
+
+    mrt --settings=settings-debug.json
+
 Contributing
 ------------
 

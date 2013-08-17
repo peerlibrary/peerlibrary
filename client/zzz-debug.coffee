@@ -1,7 +1,5 @@
 # Should be last file loaded
 
-# TODO: Add some switch to enable/disable this, or maybe based on the logged-in (admin) user?
-
 pulseNode = (i, node) ->
   return unless node.style
 
@@ -23,11 +21,12 @@ pulseNode = (i, node) ->
 pulse = (template) ->
   $(template.firstNode).nextUntil(template.lastNode).addBack().add(template.lastNode).each pulseNode
 
-_.each Template, (template, name) ->
-  oldRendered = template.rendered
-  counter = 0
+if Meteor.settings.public?.debug?.rendering
+  _.each Template, (template, name) ->
+    oldRendered = template.rendered
+    counter = 0
 
-  template.rendered = (args...) ->
-    console.debug name, "render count: #{ ++counter }"
-    oldRendered.apply @, args if oldRendered
-    pulse @
+    template.rendered = (args...) ->
+      console.debug name, "render count: #{ ++counter }"
+      oldRendered.apply @, args if oldRendered
+      pulse @
