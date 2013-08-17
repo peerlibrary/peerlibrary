@@ -2,8 +2,11 @@
   <header>
     <div class="container">
       <div class="row">
-        <div class="logo">
+        <div class="logo {{development}}">
           <a href="/">PeerLibrary</a>
+          {{#if development}}
+            <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
+          {{/if}}
         </div>
         <ul class="top-menu">
           <li class="search">

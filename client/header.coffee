@@ -18,6 +18,9 @@ Template.header.events =
   'submit #search': (e) ->
     e.preventDefault()
 
+Template.header.development = ->
+  'development' unless Meteor.settings?.public?.production
+
 searchOn = ->
   if Session.get 'searchActive'
     return

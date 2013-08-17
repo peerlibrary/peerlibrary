@@ -21,7 +21,7 @@ pulseNode = (i, node) ->
 pulse = (template) ->
   $(template.firstNode).nextUntil(template.lastNode).addBack().add(template.lastNode).each pulseNode
 
-if Meteor.settings.public?.debug?.rendering
+if Meteor.settings?.public?.debug?.rendering
   _.each Template, (template, name) ->
     oldRendered = template.rendered
     counter = 0
