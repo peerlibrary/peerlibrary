@@ -26,18 +26,7 @@ Template.results.rendered = ->
 
   $(@findAll '.scrubber').iscrubber()
 
-  $(@findAll '#score-range').slider
-    range: true
-    min: 0
-    max: 100
-    values: [0, 100]
-    step: 10
-    slide: (event, ui) ->
-      $(@findAll '#score').val(ui.values[ 0 ] + ' - ' + ui.values[ 1 ])
-
-  $(@findAll '#score').val($(@findAll '#score-range').slider('values', 0) + ' - ' + $(@findAll '#score-range').slider('values', 1))
-
-  $(@findAll '#date-range').slider
+  slider = $(@findAll '#date-range').slider
     range: true
     min: 0
     max: 100
@@ -46,7 +35,7 @@ Template.results.rendered = ->
     slide: (event, ui) ->
       $(@findAll '#pub-date').val(ui.values[0] + ' - ' + ui.values[1])
 
-  $(@findAll '#pub-date').val($(@findAll '#date-range').slider('values', 0) + ' - ' + $(@findAll '#date-range').slider('values', 1))
+  $(@findAll '#pub-date').val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
 
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false

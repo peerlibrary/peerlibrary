@@ -8,7 +8,6 @@
     "basePackages": {
       "router": {},
       "pdf.js": {},
-      "jquery-ui": {},
       "assert": {},
       "aws-sdk": {},
       "tar": {},
@@ -30,11 +29,6 @@
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
         "tag": "v0.8.298.1",
         "commit": "6ac181e4bd7c5ed160ff1d7fe0d9e7c66ef3e656"
-      },
-      "jquery-ui": {
-        "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",
-        "tag": "v1.9.2",
-        "commit": "c437d45edcf1367df8d5ffa8bad2867758030bd2"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",

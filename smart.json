@@ -6,7 +6,6 @@
   "packages": {
     "router": {},
     "pdf.js": {},
-    "jquery-ui": {},
     "assert": {},
     "aws-sdk": {},
     "tar": {},
