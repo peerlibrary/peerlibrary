@@ -12,8 +12,10 @@ Deps.autorun ->
 Deps.autorun ->
   Session.set 'currentSearchQueryReady', false
   if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
+    Session.set 'currentSearchQueryLoading', true
     Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'), ->
       Session.set 'currentSearchQueryReady', true
+      Session.set 'currentSearchQueryLoading', false
 
 Deps.autorun ->
   if Session.get 'indexActive'
@@ -91,6 +93,9 @@ Template.resultsCount.people = ->
 
 Template.noResults.noResults = ->
   Session.get('currentSearchQueryReady') and not Session.get('currentSearchQueryCountPublications') and not Session.get('currentSearchQueryCountPeople')
+
+Template.resultsLoading.resultsLoading = ->
+  Session.get('currentSearchQueryLoading')
 
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')

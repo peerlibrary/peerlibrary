@@ -3,13 +3,16 @@
     <div class="results-list col12">
       <div class="clearfix"></div>
       {{> resultsCount}}
-      <ol class="item-list">
-        {{#each publications}}
-          {{> publicationSearchResult}}
-        {{/each}}
-      </ol>
-      {{> noResults}}
       {{> resultsSearchInvitation}}
+      {{> noResults}}
+      {{#if publications}}
+        <ol class="item-list">
+          {{#each publications}}
+            {{> publicationSearchResult}}
+          {{/each}}
+        </ol>
+      {{/if}}
+      {{> resultsLoading}}
     </div>
     {{> sidebarSearch}}
   </div>
@@ -27,6 +30,12 @@
 <template name="noResults">
   {{#if noResults}}
     <div class="no-results">No publications or people found</div>
+  {{/if}}
+</template>
+
+<template name="resultsLoading">
+  {{#if resultsLoading}}
+    <div class="results-loading">Loading...</div>
   {{/if}}
 </template>
 

@@ -36,11 +36,16 @@ Meteor.Router.beforeRouting = ->
   Session.set 'indexActive', false
   Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
   Session.set 'currentSearchQuery', null
+  Session.set 'currentSearchQueryCountPublications', 0
+  Session.set 'currentSearchQueryCountPeople', 0
+  Session.set 'currentSearchQueryLoading', false
+  Session.set 'currentSearchQueryReady', false
   Session.set 'currentSearchLimit', 5
   Session.set 'searchActive', false
   Session.set 'searchFocused', false
   Session.set 'adminActive', false
   Session.set 'currentPublicationId', null
+  Session.set 'currentPublicationSlug', null
   Session.set 'currentProfileUsername', null
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
