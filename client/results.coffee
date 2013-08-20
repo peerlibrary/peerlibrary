@@ -111,6 +111,8 @@ Template.publicationSearchResult.events =
         $(template.findAll '.abstract').slideToggle(200)
 
 Template.sidebarSearch.events =
+  # TODO: Parse search input and map to #title and others
+
   'blur #title': (e, template) ->
     Session.set 'currentSearchQuery', $(template.findAll '#title').val()
 
@@ -118,4 +120,14 @@ Template.sidebarSearch.events =
     Session.set 'currentSearchQuery', $(template.findAll '#title').val()
 
   'keyup #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+  'paste #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+  'cut #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+  'submit #sidebar-search': (e, template) ->
+    e.preventDefault()
     Session.set 'currentSearchQuery', $(template.findAll '#title').val()
