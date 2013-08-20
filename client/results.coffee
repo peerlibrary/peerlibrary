@@ -26,16 +26,17 @@ Template.results.rendered = ->
 
   $(@findAll '.scrubber').iscrubber()
 
+  publicationDate =  $(@findAll '#publication-date')
   slider = $(@findAll '#date-range').slider
     range: true
     min: 0
     max: 100
     values: [0, 100]
-    step: 10
+    step: 1
     slide: (event, ui) ->
-      $(@findAll '#pub-date').val(ui.values[0] + ' - ' + ui.values[1])
+      publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
 
-  $(@findAll '#pub-date').val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
+  publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
 
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
