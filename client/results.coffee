@@ -22,7 +22,8 @@ Deps.autorun ->
     Meteor.subscribe 'search-available'
 
 Template.results.rendered = ->
-  $(@findAll '.chzn').chosen()
+  $(@findAll '.chzn').chosen
+    no_results_text: "No tag match"
 
   $(@findAll '.scrubber').iscrubber()
 
