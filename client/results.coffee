@@ -7,66 +7,54 @@ Deps.autorun ->
 
 Deps.autorun ->
   Session.set 'currentSearchQueryReady', false
-  if not Session.equals('currentSearchLimit', 0) and Session.get('currentSearchQuery')
+  if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
     Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'), ->
       Session.set 'currentSearchQueryReady', true
 
 Deps.autorun ->
-  if Session.equals 'indexActive', true
+  if Session.get 'indexActive'
     Meteor.subscribe 'search-available'
 
 Template.results.rendered = ->
-  $('.chzn').chosen()
+  $(@findAll '.chzn').chosen()
 
-  $('.scrubber').iscrubber()
+  $(@findAll '.scrubber').iscrubber()
 
-  'click .preview-link': ->
-    $('.abstract').css display: 'block'
-
-  $('#score-range').slider
+  $(@findAll '#score-range').slider
     range: true
     min: 0
     max: 100
     values: [0, 100]
     step: 10
     slide: (event, ui) ->
-      $('#score').val(ui.values[ 0 ] + ' - ' + ui.values[ 1 ])
+      $(@findAll '#score').val(ui.values[ 0 ] + ' - ' + ui.values[ 1 ])
 
-  $('#score').val($('#score-range').slider('values', 0) + ' - ' + $('#score-range').slider('values', 1))
+  $(@findAll '#score').val($(@findAll '#score-range').slider('values', 0) + ' - ' + $(@findAll '#score-range').slider('values', 1))
 
-  $('#date-range').slider
+  $(@findAll '#date-range').slider
     range: true
     min: 0
     max: 100
     values: [0, 100]
     step: 10
     slide: (event, ui) ->
-      $('#pub-date').val(ui.values[0] + ' - ' + ui.values[1])
+      $(@findAll '#pub-date').val(ui.values[0] + ' - ' + ui.values[1])
 
-  $('#pub-date').val($('#date-range').slider('values', 0) + ' - ' + $('#date-range').slider('values', 1))
-
-  # adjust positioning of sidebar
-  if $(window).width() < 1140
-    $(".search-tools").css position: "absolute"
-  $(window).resize ->
-    if $(window).width() < 1140
-      $(".search-tools").css position: "absolute"
-    else
-      $(".search-tools").css position: "fixed"
+  $(@findAll '#pub-date').val($(@findAll '#date-range').slider('values', 0) + ' - ' + $(@findAll '#date-range').slider('values', 1))
 
 Template.results.created = ->
-  # TODO: We should probably remove the event handler when going away from the page?
+  #$(window).on 'scroll.results', ->
+  #  if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
+  #    subscribeToNext 10
 
-  # Infinite scrolling
-  $(window).on 'scroll', ->
-    if $(window).scrollTop() >= $(document).height() - $(window).height() - 1140
-      subscribeToNext 10
+Template.results.destroyed = ->
+  $(window).off 'scroll.results'
 
-subscribeToNext = (numResults) ->
-  Session.set 'currentSearchLimit', Session.get('currentSearchLimit') + numResults
+subscribeToNext = (pageSize) ->
+  Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
 
 Template.results.publications = ->
-  if Session.equals('currentSearchLimit', 0) or not Session.get('currentSearchQuery')
+  if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
     return
 
   searchResult = SearchResults.findOne
@@ -92,8 +80,28 @@ Template.resultsCount.publications = ->
 Template.resultsCount.people = ->
   Session.get 'currentSearchQueryCountPeople'
 
-Template.refineSearch.display = ->
-  Session.equals('searchActive', true) or Session.equals('currentSearchQueryReady', true)
-
 Template.noResults.noResults = ->
-  Session.equals('currentSearchQueryReady', true) and Session.equals('currentSearchQueryCountPublications', 0) and Session.equals('currentSearchQueryCountPeople', 0)
+  Session.get('currentSearchQueryReady') and not Session.get('currentSearchQueryCountPublications') and not Session.get('currentSearchQueryCountPeople')
+
+Template.resultsSearchInvitation.searchInvitation = ->
+  not Session.get('currentSearchQuery')
+
+Template.publicationSearchResult.displayDay = (time) ->
+  moment(time).format 'MMMM Do YYYY'
+
+Template.publicationSearchResult.events =
+  'click .preview-link': (e, template) ->
+    e.preventDefault()
+    Meteor.subscribe 'publications-by-id', @_id, ->
+      Deps.afterFlush ->
+        $(template.findAll '.abstract').slideToggle(200)
+
+Template.sidebarSearch.events =
+  'blur #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+  'change #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+  'keyup #title': (e, template) ->
+    Session.set 'currentSearchQuery', $(template.findAll '#title').val()

@@ -2,10 +2,10 @@ Template.login.error = ->
   Session.get 'error'
 
 Template.login.events =
-  'submit': (e) ->
+  'submit': (e, template) ->
     e.preventDefault()
     handleLogin e
-  'keypress input': (e) ->
+  'keypress input': (e, template) ->
     if e.which is 13
       e.preventDefault()
       handleLogin e

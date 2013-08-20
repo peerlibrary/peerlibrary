@@ -1,16 +1,21 @@
 <template name="footer">
-  <footer class="{{searchActive}}">
+  <footer>
     <ul>
       <li><a href="http://blog.peerlibrary.org">Blog</a></li>
-      <li><a href="#">GitHub</a></li>
-      <li><a href="#">Twitter</a></li>
-      <li><a href="#">Newsletter</a></li>
+      <li><a href="https://twitter.com/PeerLibrary">Twitter</a></li>
+      <li><a href="http://lists.peerlibrary.org/lists/info/news">Newsletter</a></li>
+      <li><a href="#">Contact</a></li>
     </ul>
     <ul>
       <li><a href="#">Help</a></li>
-      <li><a href="#">Terms</a></li>
+      <li><a href="https://github.com/peerlibrary/peerlibrary">Source</a></li>
       <li><a href="#">Privacy</a></li>
-      <li><a href="#">Contact</a></li>
     </ul>
   </footer>
+</template>
+
+<template name="baseFooter">
+  {{#unless searchActive}}
+    {{> footer}}
+  {{/unless}}
 </template>

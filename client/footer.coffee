@@ -1,2 +1,2 @@
-Template.footer.searchActive = ->
-  'search-active' if Session.get('searchActive')
+Template.baseFooter.searchActive = ->
+  Session.get 'searchActive'

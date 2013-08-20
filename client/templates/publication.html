@@ -39,36 +39,3 @@
     </div>
   </li>
 </template>
-
-<template name="publicationEntry">
-  <li class="result-item">
-    <div class="article-summary">
-      <div class="article-summary-data">
-        <h2 class="title"><a href="{{publicationPath _id slug}}">{{title}}</a></h2>
-        <div class="clearfix"></div>
-        <span class="authors line">
-          {{#each authors}}
-            <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
-          {{/each}}
-        </span><br>
-        <span class="date line">{{displayDay created}}</span><br>
-        <span class="actions line">
-          <a href="#" class="preview-link">Preview abstract</a> &middot;
-          <a href="{{publicationPath _id slug}}">Full text</a>
-          <i class="icon-external-link"></i>
-        </span>
-      </div>
-      <div class="article-thumb">
-        <ul class="scrubber">
-          {{#each thumbnailUrls}}
-            <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{this.page}}"></li>
-          {{/each}}
-        </ul>
-      </div>
-      <div class="clearfix"></div>
-      <div class="abstract">
-        <p class="abstract-content">{{abstract}}</p>
-      </div>
-    </div>
-  </li>
-</template>

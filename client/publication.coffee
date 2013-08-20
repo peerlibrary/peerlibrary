@@ -247,9 +247,9 @@ Template.publicationAnnotations.annotations = ->
     ]
 
 updateAnnotation = (id, template) ->
-  Annotations.update id, $set: body: $(template.find '.text').text(), ->
+  Annotations.update id, $set: body: $(template.findAll '.text').text(), ->
     Deps.afterFlush ->
-      $(template.find '.text').focus()
+      $(template.findAll '.text').focus()
 
 updateAnnotation = _.debounce updateAnnotation, 3000
 
@@ -258,7 +258,7 @@ Template.publicationAnnotationsItem.events =
     updateAnnotation @_id, template
 
   'blur .text': (e, template) ->
-    Annotations.update @_id, $set: body: $(template.find '.text').text()
+    Annotations.update @_id, $set: body: $(template.findAll '.text').text()
 
   'mouseenter .annotation': (e, template) ->
     currentHighlight = true
@@ -286,15 +286,5 @@ Template.publicationAnnotationsItem.highlighted = ->
   currentHighlight?.page is @location.page and currentHighlight?.start is @location.start and currentHighlight?.end is @location.end
 
 Template.publicationAnnotationsItem.rendered = ->
-  $(@findAll('.annotation')).data
+  $(@findAll '.annotation').data
     annotation: @data
-
-Template.publicationEntry.displayDay = (time) ->
-  moment(time).format 'MMMM Do YYYY'
-
-Template.publicationEntry.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
-    Meteor.subscribe 'publications-by-id', @_id, ->
-      Deps.afterFlush ->
-        $(template.find '.abstract').slideToggle(200)

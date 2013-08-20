@@ -10,15 +10,15 @@ Template.admin.arXivPDFs = ->
     limit: 5
 
 Template.adminButtons.events
-  'click button.sync-arxiv-pdf-cache': (e) ->
+  'click button.sync-arxiv-pdf-cache': (e, template) ->
     Meteor.call 'sync-arxiv-pdf-cache'
-  'click button.sync-arxiv-metadata': (e) ->
+  'click button.sync-arxiv-metadata': (e, template) ->
     Meteor.call 'sync-arxiv-metadata'
-  'click button.sync-local-pdf-cache': (e) ->
+  'click button.sync-local-pdf-cache': (e, template) ->
     Meteor.call 'sync-local-pdf-cache'
-  'click button.process-pdfs': (e) ->
+  'click button.process-pdfs': (e, template) ->
     Meteor.call 'process-pdfs'
-  'click button.dummy-comments': (e) ->
+  'click button.dummy-comments': (e, template) ->
     Meteor.call 'dummy-comments'
-  'click button.dummy-annotations': (e) ->
+  'click button.dummy-annotations': (e, template) ->
     Meteor.call 'dummy-annotations'

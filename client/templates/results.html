@@ -5,12 +5,13 @@
       {{> resultsCount}}
       <ol class="item-list">
         {{#each publications}}
-          {{> publicationEntry}}
+          {{> publicationSearchResult}}
         {{/each}}
       </ol>
       {{> noResults}}
+      {{> resultsSearchInvitation}}
     </div>
-    {{> refineSearch}}
+    {{> sidebarSearch}}
   </div>
 </template>
 
@@ -29,47 +30,86 @@
   {{/if}}
 </template>
 
-<template name="refineSearch">
-  {{#if display}}
-    <div class="col4 push12 search-refine">
-      <h3>Refine Search</h3>
-      <form action="/" method="GET">
-        <span class="filter">
-          <label for="title">Title contains</label>
-          <input type="text" id="title" />
-        </span>
-        <span class="filter">
-          <label for="abstract">Abstract contains</label>
-          <input type="text" id="abstract" />
-        </span>
-        <span class="filter">
-          <label for="author">Author(s)</label>
-          <input type="text" id="author" />
-        </span>
-        <span class="filter">
-          <label for="topics">Topics</label>
-          <select type="text" id="topics" data-placeholder="Select topic(s)" multiple class="chzn">
-            <option value=""></option>
-            <option>Computer Science</option>
-            <option>Biology</option>
-            <option>Physics</option>
-            <option>Chemistry</option>
-            <option>Philosophy</option>
-            <option>Mathematics</option>
-            <option>Political Science</option>
-            <option>Big Data</option>
-            <option>HTML5 Nanotechnology</option>
-            <option>Bitcoin Casino</option>
-            <option>Robot Circus</option>
-          </select>
-        </span>
-        <span class="filter">
-          <label for="pub-date" class="label-slider">Publication year</label>
-          <input type="text" id="pub-date" disabled />
-          <div class="clearfix"></div>
-          <div id="date-range"></div>
-        </span>
-      </form>
-    </div>
+<template name="resultsSearchInvitation">
+  {{#if searchInvitation}}
+    {{!TODO: Make a better search help, explaining how to search, telling to search above and on the right, possibly with suggestions, some arrows and nice illustration?}}
+    <div class="search-invitation">Type in the search query</div>
   {{/if}}
+</template>
+
+<template name="sidebarSearch">
+  <div class="col4 push12 search-sidebar">
+    <h3>Search</h3>
+    <form method="GET">
+      <span class="filter">
+        <label for="title">Title contains</label>
+        <input type="text" id="title" />
+      </span>
+      <span class="filter">
+        <label for="abstract">Abstract contains</label>
+        <input type="text" id="abstract" />
+      </span>
+      <span class="filter">
+        <label for="author">Author(s)</label>
+        <input type="text" id="author" />
+      </span>
+      <span class="filter">
+        <label for="topics">Topics</label>
+        <select type="text" id="topics" data-placeholder="Select topic(s)" multiple class="chzn">
+          <option value=""></option>
+          <option>Computer Science</option>
+          <option>Biology</option>
+          <option>Physics</option>
+          <option>Chemistry</option>
+          <option>Philosophy</option>
+          <option>Mathematics</option>
+          <option>Political Science</option>
+          <option>Big Data</option>
+          <option>HTML5 Nanotechnology</option>
+          <option>Bitcoin Casino</option>
+          <option>Robot Circus</option>
+        </select>
+      </span>
+      <span class="filter">
+        <label for="pub-date" class="label-slider">Publication year</label>
+        <input type="text" id="pub-date" disabled />
+        <div class="clearfix"></div>
+        <div id="date-range"></div>
+      </span>
+    </form>
+    {{> footer}}
+  </div>
+</template>
+
+<template name="publicationSearchResult">
+  <li class="result-item">
+    <div class="article-summary">
+      <div class="article-summary-data">
+        <h2 class="title"><a href="{{publicationPath _id slug}}">{{title}}</a></h2>
+        <div class="clearfix"></div>
+        <span class="authors line">
+          {{#each authors}}
+            <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
+          {{/each}}
+        </span><br>
+        <span class="date line">{{displayDay created}}</span><br>
+        <span class="actions line">
+          <a href="#" class="preview-link">Preview abstract</a> &middot;
+          <a href="{{publicationPath _id slug}}">Full text</a>
+          <i class="icon-external-link"></i>
+        </span>
+      </div>
+      <div class="article-thumb">
+        <ul class="scrubber">
+          {{#each thumbnailUrls}}
+            <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{this.page}}"></li>
+          {{/each}}
+        </ul>
+      </div>
+      <div class="clearfix"></div>
+      <div class="abstract">
+        <p class="abstract-content">{{abstract}}</p>
+      </div>
+    </div>
+  </li>
 </template>

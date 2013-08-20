@@ -2,11 +2,10 @@
 
 /* header
 ========= */
-header
+header .fat-header, header .normal-header
   background: blue
   height: 45px
   font-size: 16px
-  position: fixed
   top: 0
   width: 100%
   z-index: 99999
@@ -48,16 +47,16 @@ ul.top-menu li a
   padding: 0 20px
   transition: 0.2s
 
-ul.top-menu li.search
+ul.top-menu .search-wrapper
   padding: 0 20px
   cursor: pointer
   width: 400px
   transition: 0.2s
 
-ul.top-menu li.search .search-form
+ul.top-menu .search-wrapper .search-form
   display: none
 
-ul.top-menu li.search .search-form input
+ul.top-menu .search-wrapper .search-form input
   background: transparent
   border: 0
   color: blue-accent
@@ -65,16 +64,16 @@ ul.top-menu li.search .search-form input
   width: 575px
   display: inline
 
-ul.top-menu li.selected
+ul.top-menu .search-wrapper.search-focused
   width: 600px
   background: white
 
-ul.top-menu li.selected span.label
+ul.top-menu .search-wrapper.search-focused span.label
   display: none
 
-ul.top-menu li.selected .search-form
+ul.top-menu .search-wrapper.search-focused .search-form
   white-space: nowrap
-  display:inline
+  display: inline
 
 ul.top-menu li span.search-button
   color: blue-accent
@@ -83,7 +82,7 @@ ul.top-menu li span.search-button
   position: relative
   right: -10px
 
-ul.top-menu li a:hover, ul.top-menu li.search:hover
+ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   background: white
   color: blue-accent
   text-decoration: none!important
@@ -131,7 +130,7 @@ span.cursor
   100% { opacity:1 }
 }
 
-ul.top-menu li.search:hover span.cursor
+ul.top-menu .search-wrapper:hover span.cursor
   visibility: visible
 
 .development
@@ -149,5 +148,27 @@ ul.top-menu li.search:hover span.cursor
   -o-transform: rotate(-10deg)
   -ms-transform: rotate(-10deg)
 
-header.index-header
+header.index-header .fat-header
   position: absolute
+
+header.index-header .normal-header
+  visibility: hidden
+
+header.no-index-header .fat-header
+  visibility: hidden
+
+header.no-index-header .normal-header
+  position: fixed
+
+header.index-header .search-wrapper
+  position: absolute
+  display: block
+  top: 100px
+  left: 100px
+  visibility: visible
+  background: blue
+  padding: 0 10px
+
+header.no-index-header .search-wrapper
+  position: relative
+  display: block

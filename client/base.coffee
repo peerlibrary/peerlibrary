@@ -1,36 +1,34 @@
 Meteor.Router.add
   '/': ->
     Session.set 'indexActive', true
-    Session.set 'currentSearchQuery', null
-    Session.set 'currentSearchLimit', 5
-    # TODO: This is ugly and hard-coded
-    $('.search-input').add('#title').val ''
-    $('.top-menu .search .label').html('<i class="icon-search"></i> Search for publications and people <span class="cursor"></span>')
-
-    # TODO: We should probably remove the event handler when going away from the page?
-    $(window).on 'scroll', ->
-      Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
-
     'index'
+
   '/login':
     'login'
+
   '/logout': ->
     Meteor.logout()
+    # TODO: Redirect back to the page where it came from (or support logout without having to go to /logout)
     Meteor.Router.to '/'
+
   '/register':
     'register'
+
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
     to: (publicationId, publicationSlug) ->
       Session.set 'currentPublicationId', publicationId
       Session.set 'currentPublicationSlug', publicationSlug
       'publication'
+
   '/u/:username': (username) ->
     Session.set 'currentProfileUsername', username
     'profile'
+
   '/admin': ->
     Session.set 'adminActive', true
     'admin'
+
   '*':
     'notfound'
 
@@ -38,8 +36,9 @@ Meteor.Router.beforeRouting = ->
   Session.set 'indexActive', false
   Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
   Session.set 'currentSearchQuery', null
-  Session.set 'currentSearchLimit', 0
+  Session.set 'currentSearchLimit', 5
   Session.set 'searchActive', false
+  Session.set 'searchFocused', false
   Session.set 'adminActive', false
   Session.set 'currentPublicationId', null
   Session.set 'currentProfileUsername', null

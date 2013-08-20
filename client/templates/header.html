@@ -1,41 +1,56 @@
 <template name="header">
-  <header class="{{indexHeader}}">
-    {{#if indexHeader}}
-      <div class="container">TODO</div>
-    {{else}}
-      <div class="container">
-        <div class="row">
-          <div class="logo {{development}}">
-            <a href="/">PeerLibrary</a>
-            {{#if development}}
-              <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
-            {{/if}}
-          </div>
-          <ul class="top-menu">
-            <li class="search">
-              <span class="label">
-                <i class="icon-search"></i> Search for publications and people
-                <span class="cursor"></span>
-              </span>
-              <div class="search-form">
-                <form action="/" id="search">
-                  <input type="text" name="q" class="search-input" autocomplete="off">
-                  <input type="hidden" name="ie" value="UTF-8">
-                  <span class="search-button">
-                    <i class="icon-search"></i>
-                  </span>
-                </form>
-              </div>
-            </li>
-            <li class="explore">
-              <a href="#">Explore</a>
-            </li>
-            <li class="explore pull-right">
-              <a href="#">Sign In or Register</a>
-            </li>
-          </ul>
+  <header class="{{indexHeader}} {{noIndexHeader}}">
+    <div class="container fat-header">TODO: Fat header</div>
+    <div class="container normal-header">
+      <div class="row">
+        <div class="logo {{development}}">
+          <a href="/">PeerLibrary</a>
+          {{#if development}}
+            <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
+          {{/if}}
         </div>
+        <ul class="top-menu">
+          <li class="search">
+            {{> searchInput}}
+          </li>
+          <li class="explore pull-right">
+            <a href="#">Sign In or Register</a>
+          </li>
+          <li class="explore pull-right">
+            <a href="#">Explore</a>
+          </li>
+        </ul>
       </div>
-    {{/if}}
+    </div>
   </header>
+</template>
+
+<template name="searchInput">
+  <div class="search-wrapper {{searchFocused}}">
+    <span class="label">
+      <i class="icon-search"></i> {{> searchInvitation}}
+      <span class="cursor"></span>
+    </span>
+    <div class="search-form">
+      <form id="search">
+        <input type="text" name="q" class="search-input" autocomplete="off">
+        <input type="hidden" name="ie" value="UTF-8">
+        <span class="search-button">
+          <i class="icon-search"></i>
+        </span>
+      </form>
+    </div>
+  </div>
+</template>
+
+<template name="searchInvitation">
+  {{#if currentSearchQuery}}
+    {{currentSearchQuery}}
+  {{else}}
+    {{#if indexHeader}}
+      Search {{publications}} publications and {{people}} people
+    {{else}}
+      Search publications and people
+    {{/if}}
+  {{/if}}
 </template>
