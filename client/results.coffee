@@ -1,9 +1,13 @@
+searchLimitIncreasing = false
+
 Deps.autorun ->
   # Every time search query is changed, we reset counts
   # (We don't want to reset counts on currentSearchLimit change)
   Session.get 'currentSearchQuery'
   Session.set 'currentSearchQueryCountPublications', 0
   Session.set 'currentSearchQueryCountPeople', 0
+
+  searchLimitIncreasing = false
 
 Deps.autorun ->
   Session.set 'currentSearchQueryReady', false
@@ -42,16 +46,21 @@ Template.results.rendered = ->
 
   $(@findAll '#pub-date').val($(@findAll '#date-range').slider('values', 0) + ' - ' + $(@findAll '#date-range').slider('values', 1))
 
+  if Session.get 'currentSearchQueryReady'
+    searchLimitIncreasing = false
+
 Template.results.created = ->
-  #$(window).on 'scroll.results', ->
-  #  if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
-  #    subscribeToNext 10
+  $(window).on 'scroll.results', ->
+    if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
+      increaseSearchLimit 10
 
 Template.results.destroyed = ->
   $(window).off 'scroll.results'
 
-subscribeToNext = (pageSize) ->
-  Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
+increaseSearchLimit = (pageSize) ->
+  if not searchLimitIncreasing
+    searchLimitIncreasing = true
+    Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
 
 Template.results.publications = ->
   if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
