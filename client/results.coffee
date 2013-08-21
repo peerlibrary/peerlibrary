@@ -22,23 +22,6 @@ Deps.autorun ->
     Meteor.subscribe 'search-available'
 
 Template.results.rendered = ->
-  $(@findAll '.chzn').chosen
-    no_results_text: "No tag match"
-
-  $(@findAll '.scrubber').iscrubber()
-
-  publicationDate =  $(@findAll '#publication-date')
-  slider = $(@findAll '#date-range').slider
-    range: true
-    min: 0
-    max: 100
-    values: [0, 100]
-    step: 1
-    slide: (event, ui) ->
-      publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
-
-  publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
-
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 
@@ -101,6 +84,28 @@ Template.publicationSearchResult.events =
       Deps.afterFlush ->
         $(template.findAll '.abstract').slideToggle(200)
 
+Template.sidebarSearch.rendered = ->
+  $(@findAll '.chzn').chosen
+    no_results_text: "No tag match"
+
+  $(@findAll '.scrubber').iscrubber()
+
+  publicationDate = $(@findAll '#publication-date')
+  [start, end] = publicationDate.val().split(' - ') if publicationDate.val()
+  start = publicationDate.data('min') unless start
+  end = publicationDate.data('max') unless end
+
+  slider = $(@findAll '#date-range').slider
+    range: true
+    min: publicationDate.data('min')
+    max: publicationDate.data('max')
+    values: [start, end]
+    step: 1
+    slide: (event, ui) ->
+      publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
+
+  publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
+
 Template.sidebarSearch.events =
   # TODO: Parse search input and map to #title and others
 
@@ -122,3 +127,15 @@ Template.sidebarSearch.events =
   'submit #sidebar-search': (e, template) ->
     e.preventDefault()
     Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+
+Template.sidebarSearch.minPublicationDate = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  moment.utc(searchResult.minPublicationDate).year() if searchResult?.minPublicationDate
+
+Template.sidebarSearch.maxPublicationDate = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  moment.utc(searchResult.maxPublicationDate).year() if searchResult?.maxPublicationDate

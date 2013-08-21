@@ -68,7 +68,7 @@
       </span>
       <span class="filter">
         <label for="tags">Tags</label>
-        <select type="text" id="tags" data-placeholder="Select tag(s)" multiple class="chzn">
+        <select type="text" id="tags" data-placeholder="Select tag(s)" multiple="multiple" class="chzn">
           <option value=""></option>
           <option>Computer Science</option>
           <option>Biology</option>
@@ -85,7 +85,7 @@
       </span>
       <span class="filter">
         <label for="publication-date" class="label-slider">Publication year</label>
-        <input type="text" id="publication-date" disabled />
+        <input type="text" id="publication-date" data-min="{{minPublicationDate}}" data-max="{{maxPublicationDate}}" disabled="disabled" />
         <div class="clearfix"></div>
         <div id="date-range"></div>
       </span>
