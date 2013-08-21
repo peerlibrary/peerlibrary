@@ -22,6 +22,8 @@ Deps.autorun ->
     Meteor.subscribe 'search-available'
 
 Template.results.rendered = ->
+  $(@findAll '.scrubber').iscrubber()
+
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 
@@ -87,8 +89,6 @@ Template.publicationSearchResult.events =
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen
     no_results_text: "No tag match"
-
-  $(@findAll '.scrubber').iscrubber()
 
   publicationDate = $(@findAll '#publication-date')
   [start, end] = publicationDate.val().split(' - ') if publicationDate.val()
