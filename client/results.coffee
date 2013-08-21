@@ -70,8 +70,17 @@ Template.resultsCount.people = ->
 Template.noResults.noResults = ->
   Session.get('currentSearchQueryReady') and not Session.get('currentSearchQueryCountPublications') and not Session.get('currentSearchQueryCountPeople')
 
-Template.resultsLoading.resultsLoading = ->
+Template.resultsLoad.loading = ->
   Session.get('currentSearchQueryLoading')
+
+Template.resultsLoad.more = ->
+  Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < (Session.get('currentSearchQueryCountPublications') or Session.get('currentSearchQueryCountPeople') or 0)
+
+Template.resultsLoad.events =
+  'click .load-more': (e, template) ->
+    e.preventDefault()
+    searchLimitIncreasing = false # We want to force loading more in every case
+    increaseSearchLimit 10
 
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
