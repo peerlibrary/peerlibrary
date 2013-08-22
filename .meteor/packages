@@ -5,6 +5,7 @@
 
 insecure
 preserve-inputs
+standard-app-packages
 coffeescript
 jquery
 router

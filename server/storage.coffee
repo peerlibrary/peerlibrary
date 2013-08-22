@@ -37,6 +37,6 @@ Storage._path = path
 # TODO: Currently, if there is no file, processing is passed further and Meteor return 200 content, we should return 404 for this files
 # TODO: Add CORS headers
 # TODO: We have redirect == false because directory redirects do not take prefix into the account
-__meteor_bootstrap__.app.use('/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
+WebApp.connectHandlers.use('/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
 
 @Storage = Storage

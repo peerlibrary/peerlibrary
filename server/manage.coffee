@@ -157,7 +157,7 @@ Meteor.methods
     # TODO: Traverse result pages
     # TODO: Store last fetch timestamp
 
-    page = Meteor.http.get 'http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw',
+    page = HTTP.get 'http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw',
       timeout: 60000 # ms
 
     if page.statusCode and page.statusCode != 200

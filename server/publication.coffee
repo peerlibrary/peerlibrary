@@ -6,7 +6,7 @@ class Publication extends @Publication
     if not Storage.exists @filename()
       console.log "Caching PDF for #{ @_id } from the central server"
 
-      pdf = Meteor.http.get 'http://stage.peerlibrary.org' + @url(),
+      pdf = HTTP.get 'http://stage.peerlibrary.org' + @url(),
         timeout: 10000 # ms
         encoding: null # PDFs are binary data
 
