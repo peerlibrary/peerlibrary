@@ -90,8 +90,8 @@ Meteor.methods
       finishPDF = ->
         ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
 
-      Meteor.bindEnvironment processPDF, ((e) -> throw e), this
-      Meteor.bindEnvironment finishPDF, ((e) -> throw e), this
+      Meteor.bindEnvironment processPDF, ((e) -> throw e), @
+      Meteor.bindEnvironment finishPDF, ((e) -> throw e), @
 
       processTar = blocking (key, fun, cb) ->
         finished = false
@@ -315,7 +315,7 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
-        console.error error
+        console.error error.stack or error.toString?() or error
 
     console.log "Done"
 

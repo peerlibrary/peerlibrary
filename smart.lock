@@ -17,7 +17,8 @@
       "util": {},
       "dimsum": {},
       "connect": {},
-      "urlify2": {}
+      "urlify2": {},
+      "fs": {}
     },
     "packages": {
       "router": {
@@ -80,6 +81,11 @@
         "tag": "v0.1.1",
         "commit": "5b6677b01382e470bd22e6a4a8a0d4399d7900d7"
       },
+      "fs": {
+        "git": "https://github.com/peerlibrary/meteor-fs.git",
+        "tag": "v0.1.2",
+        "commit": "069d7fcaeb5df000a57238fde2785faf6dc1c37c"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -89,11 +95,6 @@
         "git": "https://github.com/tmeasday/meteor-HTML5-History-API.git",
         "tag": "v4.0.0",
         "commit": "dc4965f1424cfca625ec3fbea17eace03f8e32c5"
-      },
-      "fs": {
-        "git": "https://github.com/peerlibrary/meteor-fs.git",
-        "tag": "v0.1.1",
-        "commit": "c47cc1de491aa5154f9ab1d267dd88064ef84262"
       }
     }
   }

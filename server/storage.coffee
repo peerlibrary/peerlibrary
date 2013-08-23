@@ -1,4 +1,3 @@
-fs = Npm.require 'fs'
 path = Npm.require 'path'
 
 class Storage extends @Storage

@@ -15,6 +15,7 @@
     "util": {},
     "dimsum": {},
     "connect": {},
-    "urlify2": {}
+    "urlify2": {},
+    "fs": {}
   }
 }
