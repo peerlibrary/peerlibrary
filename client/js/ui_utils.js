@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
+// TODO: How to export global variables without having to disable strict?
+//'use strict';
 
 // optimised CSS custom property getter/setter
-var CustomStyle = (function CustomStyleClosure() {
+CustomStyle = (function CustomStyleClosure() {
 
   // As noted on: http://www.zachstronaut.com/posts/2009/02/17/
   //              animate-css-transforms-firefox-webkit.html
@@ -82,7 +83,7 @@ function getFileName(url) {
                     scales. The scaled property is set to false if scaling is
                     not required, true otherwise.
  */
-function getOutputScale() {
+getOutputScale = function () {
   var pixelRatio = 'devicePixelRatio' in window ? window.devicePixelRatio : 1;
   return {
     sx: pixelRatio,
@@ -152,6 +153,3 @@ var Cache = function cacheCache(size) {
       data.shift().destroy();
   };
 };
-
-this.CustomStyle = CustomStyle;
-this.getOutputScale = getOutputScale;
