@@ -1,10 +1,6 @@
 DEBUG = false
 NOT_WHITESPACE = /\S/
 
-PDFJS.LogManager.addLogger
-  warn: (args...) ->
-    #console.log "pdf.js:", args... if args
-
 bindEnvironemnt = (f) ->
   Meteor.bindEnvironment f, (e) -> throw e
 
