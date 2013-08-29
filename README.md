@@ -5,6 +5,10 @@ Enriching the experience of open access scholarly literature.
 
 A project of the [Open Access Initiative at Berkeley](http://oa.berkeley.edu/).
 
+http://peerlibrary.org/
+
+http://blog.peerlibrary.org/
+
 Development installation
 ------------------------
 
