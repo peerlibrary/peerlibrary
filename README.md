@@ -46,9 +46,13 @@ On Debian you can install:
 
 ### Debug mode ###
 
-To run PeerLibrary in debug mode, you can run it with debug settings:
+To run PeerLibrary in the debug mode, you can run it with debug settings:
 
     mrt --settings=settings-debug.json
+
+The debug mode currently does not do much, just shows how Meteor is redrawing browser content. So unless
+you are trying to optimize PeerLibrary browser content redrawing performance, there is no need to run in
+the debug mode.
 
 Contributing
 ------------
