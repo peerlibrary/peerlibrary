@@ -5,7 +5,7 @@ Enriching the experience of open access scholarly literature.
 
 A project of the [Open Access Initiative at Berkeley](http://oa.berkeley.edu/).
 
-http://peerlibrary.org/ | http://blog.peerlibrary.org/
+http://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
 * [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
 * IRC at #rawpotato @ [Freenode](http://freenode.net/)
