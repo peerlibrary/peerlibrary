@@ -5,9 +5,10 @@ Enriching the experience of open access scholarly literature.
 
 A project of the [Open Access Initiative at Berkeley](http://oa.berkeley.edu/).
 
-http://peerlibrary.org/
+http://peerlibrary.org/ | http://blog.peerlibrary.org/
 
-http://blog.peerlibrary.org/
+* [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
+* IRC at #rawpotato @ [Freenode](http://freenode.net/)
 
 Development installation
 ------------------------
@@ -43,8 +44,7 @@ On Debian you can install:
 
     aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
 
-Debug mode
-----------
+### Debug mode ###
 
 To run PeerLibrary in debug mode, you can run it with debug settings:
 
@@ -54,16 +54,14 @@ Contributing
 ------------
 
 PeerLibrary is currently in an active development where we are creating
-basic architecture. Major code refactoring and rewrites are thus common. Clear
-roadmap has not yet been established. Nevertheless you are invited to join the
-development but please understand that things might be changing under your feet
-so it is probably useful to discuss planned contributions in advance. Open [a
-GitHub issue](https://github.com/peerlibrary/peerlibrary/issues/new) or join us
-on IRC at #rawpotato @ [Freenode](http://freenode.net/) or on a
-[development mailing list](http://lists.peerlibrary.org/lists/info/dev).
+basic architecture. Major code refactoring and rewrites are thus common.
+Nevertheless you are invited to join the development but please understand
+that things might be changing under your feet so it is probably useful to
+discuss planned contributions in advance.
 
 For ideas what to contribute you can:
-* check [list of open issues](https://github.com/peerlibrary/peerlibrary/issues?state=open)
+* check the [roadmap and milestones](https://github.com/peerlibrary/peerlibrary/issues/milestones)
+  and related open issues
 * check `TODO` comments in the code: there are quite some of them which are of "here is a
   dirty hack, do a real implementation" kind, those are a good start to contribute;
   while some other have to wait for other things to be done first
@@ -81,12 +79,3 @@ For ideas what to contribute you can:
   us know
 * advocate at your local university to open its publications to be able to integrate
   into PeerLibrary
-
-In particular, we are currently searching for help with:
-* natural language parsing of search queries (we want search to be similar to Facebook Graph Search)
-  and mapping queries to supported filters
-* full-text search and ranking of results, especially how to rank weight different filters,
-  content vs. title and so on; if you want to try out your own idea how to help people find
-  relevant publications, PeerLibrary could be a playground you searched for
-* integrating Meteor with [ConcurrenTree](https://github.com/campadrenalin/ConcurrenTree)-like
-  approach for rich-text real-time collaborative editor
