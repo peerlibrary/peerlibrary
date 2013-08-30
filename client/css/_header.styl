@@ -163,12 +163,48 @@ header.no-index-header .normal-header
 header.index-header .search-wrapper
   position: absolute
   display: block
-  top: 100px
-  left: 100px
+  top: 420px
+  left: 50%
+  margin-left: -210px
   visibility: visible
-  background: blue
+  background: white
+  color: #444
+  border: 1px solid #999
   padding: 0 10px
 
 header.no-index-header .search-wrapper
   position: relative
   display: block
+
+/*
+Fat header
+========== */
+header .fat-header
+  background: #333
+  height: 70px
+
+header .fat-header .logo
+  width: 200px
+  float: left
+
+header .fat-header .logo a
+  color: white
+  text-decoration: none
+  line-height: 70px
+  font-size: 30px
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
+  background: transparent
+  display: inline-block
+  padding: 0 20px
+  transition: 0.2s
+
+header .fat-header span.tagline
+  color: white
+  line-height: 70px
+  display: inline-block
+  float: left
+
+header .fat-header ul.top-menu li
+  display: block
+  float: left
+  line-height: 70px
