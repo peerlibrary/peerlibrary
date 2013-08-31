@@ -315,7 +315,7 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
-        console.error error.stack or error.toString?() or error
+        console.error "Error processing PDF:", error.stack or error.toString?() or error
 
     console.log "Done"
 
