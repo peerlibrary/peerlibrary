@@ -115,27 +115,29 @@ Template.sidebarSearch.rendered = ->
 
   publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
 
-Template.sidebarSearch.events =
-  # TODO: Parse search input and map to #title and others
+sidebarIntoQuery = (template) ->
+  # TODO: Add other fields as well
+  title: $(template.findAll '#title').val()
 
+Template.sidebarSearch.events =
   'blur #title': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
   'change #title': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
   'keyup #title': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
   'paste #title': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
   'cut #title': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
   'submit #sidebar-search': (e, template) ->
     e.preventDefault()
-    Session.set 'currentSearchQuery', $(template.findAll '#title').val()
+    structuredQueryChange(sidebarIntoQuery template)
 
 Template.sidebarSearch.minPublicationDate = ->
   searchResult = SearchResults.findOne
@@ -148,3 +150,7 @@ Template.sidebarSearch.maxPublicationDate = ->
     query: null
 
   moment.utc(searchResult.maxPublicationDate).year() if searchResult?.maxPublicationDate
+
+Deps.autorun ->
+  # TODO: Set from structured query
+  $('#title').val(Session.get 'currentSearchQuery')

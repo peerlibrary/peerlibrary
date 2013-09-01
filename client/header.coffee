@@ -10,27 +10,27 @@ Template.header.events =
   # TODO: Parse search input and map to #title and others
 
   'click .search-button': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'change .search-input': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'keyup .search-input': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'paste .search-input': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'cut .search-input': (e, template) ->
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
   'submit #search': (e, template) ->
     e.preventDefault()
-    Session.set 'currentSearchQuery', $(template.findAll '.search-input').val()
+    naturalQueryChange $(template.findAll '.search-input').val()
 
 Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
@@ -79,5 +79,4 @@ Template.searchInput.rendered = ->
     $(@findAll '.search-input').focus()
 
 Deps.autorun ->
-  # TODO: Parse search input and map to #title and others
-  $('.search-input').add('#title').val(Session.get 'currentSearchQuery')
+  $('.search-input').val(Session.get 'currentSearchQuery')
