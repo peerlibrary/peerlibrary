@@ -1,5 +1,8 @@
 searchLimitIncreasing = false
 
+currentSearchQueryCount = ->
+  (Session.get('currentSearchQueryCountPublications') or 0) + (Session.get('currentSearchQueryCountPeople') or 0)
+
 Deps.autorun ->
   # Every time search query is changed, we reset counts
   # (We don't want to reset counts on currentSearchLimit change)
@@ -36,7 +39,9 @@ Template.results.destroyed = ->
   $(window).off 'scroll.results'
 
 increaseSearchLimit = (pageSize) ->
-  if not searchLimitIncreasing
+  if searchLimitIncreasing
+    return
+  if Session.get('currentSearchLimit') < currentSearchQueryCount()
     searchLimitIncreasing = true
     Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
 
@@ -68,13 +73,13 @@ Template.resultsCount.people = ->
   Session.get 'currentSearchQueryCountPeople'
 
 Template.noResults.noResults = ->
-  Session.get('currentSearchQueryReady') and not Session.get('currentSearchQueryCountPublications') and not Session.get('currentSearchQueryCountPeople')
+  Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
 
 Template.resultsLoad.loading = ->
   Session.get('currentSearchQueryLoading')
 
 Template.resultsLoad.more = ->
-  Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < (Session.get('currentSearchQueryCountPublications') or Session.get('currentSearchQueryCountPeople') or 0)
+  Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
 
 Template.resultsLoad.events =
   'click .load-more': (e, template) ->
