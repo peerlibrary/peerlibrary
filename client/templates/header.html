@@ -43,14 +43,14 @@
 </template>
 
 <template name="searchInput">
-  <div class="search-wrapper {{searchFocused}}">
+  <div class="search-wrapper {{searchFocused}} {{indexHeader}} {{noIndexHeader}}">
     <span class="label">
       <i class="icon-search"></i> {{> searchInvitation}}
       <span class="cursor"></span>
     </span>
     <div class="search-form">
       <form id="search">
-        <input type="text" name="q" class="search-input" autocomplete="off">
+        <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Search {{publications}} publications and {{people}} people" autofocus>
         <input type="hidden" name="ie" value="UTF-8">
         <span class="search-button">
           <i class="icon-search"></i>

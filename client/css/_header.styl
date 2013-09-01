@@ -160,21 +160,48 @@ header.no-index-header .fat-header
 header.no-index-header .normal-header
   position: fixed
 
+/* index search
+===============
+*/
+
 header.index-header .search-wrapper
   position: absolute
   display: block
+  height: 10px
   top: 420px
   left: 50%
-  margin-left: -210px
+  width: 620px
+  margin-left: -310px
   visibility: visible
-  background: white
+  background: transparent
   color: #444
-  border: 1px solid #999
+  border-width: 0 2px 2px 2px
+  border-style: solid
+  border-color: #999
   padding: 0 10px
+
+header.index-header .search-wrapper:hover
+  background: transparent
 
 header.no-index-header .search-wrapper
   position: relative
   display: block
+
+header.index-header .search-wrapper .label
+  display: none
+
+header.index-header .search-wrapper .search-form
+  display: block
+
+header.index-header .search-wrapper .search-form .search-button
+  display: none
+
+header.index-header .search-wrapper .search-form input
+  position: relative
+  top: -35px
+  height: 40px
+  width: 616px
+  background: transparent
 
 /*
 Fat header
@@ -184,7 +211,7 @@ header .fat-header
   height: 70px
 
 header .fat-header .logo
-  width: 200px
+  width: 180px
   float: left
 
 header .fat-header .logo a
@@ -201,6 +228,7 @@ header .fat-header .logo a
 header .fat-header span.tagline
   color: white
   line-height: 70px
+  padding: 0 20px
   display: inline-block
   float: left
 

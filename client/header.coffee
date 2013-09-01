@@ -78,5 +78,9 @@ Template.searchInput.rendered = ->
   if Session.get 'searchFocused'
     $(@findAll '.search-input').focus()
 
+Template.searchInput.indexHeader = Template.header.indexHeader
+
+Template.searchInput.noIndexHeader =  Template.header.noIndexHeader
+
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')
