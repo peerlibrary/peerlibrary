@@ -48,29 +48,6 @@ Template.header.created = ->
 Template.header.destroyed = ->
   $(window).off 'scroll.header'
 
-Template.searchInvitation.indexHeader = Template.header.indexHeader
-
-Template.searchInvitation.publications = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPublications
-
-Template.searchInvitation.people = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPeople
-
-Template.searchInvitation.currentSearchQuery = ->
-  (Session.get('currentSearchQuery') or '').substring(0, 55)
-
 Template.searchInput.searchFocused = ->
   'search-focused' if Session.get 'searchFocused'
 
@@ -80,7 +57,33 @@ Template.searchInput.rendered = ->
 
 Template.searchInput.indexHeader = Template.header.indexHeader
 
-Template.searchInput.noIndexHeader =  Template.header.noIndexHeader
+Template.searchInput.noIndexHeader = Template.header.noIndexHeader
+
+publications = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  if not searchResult
+    return 0
+  else
+    return searchResult.countPublications
+
+people = ->
+  searchResult = SearchResults.findOne
+    query: null
+
+  if not searchResult
+    return 0
+  else
+    return searchResult.countPeople
+
+Template.searchInput.searchInvitation = ->
+  if Session.get 'currentSearchQuery'
+    Session.get 'currentSearchQuery'
+  else if Template.header.indexHeader()
+    return "Search #{ publications() } publications and #{ people() } people"
+  else
+    return "Search publications and people"
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')

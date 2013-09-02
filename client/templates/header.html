@@ -45,12 +45,12 @@
 <template name="searchInput">
   <div class="search-wrapper {{searchFocused}} {{indexHeader}} {{noIndexHeader}}">
     <span class="label">
-      <i class="icon-search"></i> {{> searchInvitation}}
+      <i class="icon-search"></i> {{searchInvitation}}
       <span class="cursor"></span>
     </span>
     <div class="search-form">
       <form id="search">
-        <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Search {{publications}} publications and {{people}} people" autofocus>
+        <input type="text" name="q" class="search-input" autocomplete="off" placeholder="{{searchInvitation}}" autofocus="autofocus">
         <input type="hidden" name="ie" value="UTF-8">
         <span class="search-button">
           <i class="icon-search"></i>
@@ -58,16 +58,4 @@
       </form>
     </div>
   </div>
-</template>
-
-<template name="searchInvitation">
-  {{#if currentSearchQuery}}
-    {{currentSearchQuery}}
-  {{else}}
-    {{#if indexHeader}}
-      Search {{publications}} publications and {{people}} people
-    {{else}}
-      Search publications and people
-    {{/if}}
-  {{/if}}
 </template>
