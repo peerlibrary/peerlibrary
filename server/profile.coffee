@@ -12,7 +12,7 @@ Meteor.publish 'users-by-username', (username) ->
     fields:
       username: 1
       person: 1
-      
+
 Meteor.publish 'persons-by-username', (username) ->
   Persons.find
     user: username
