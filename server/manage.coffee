@@ -280,7 +280,7 @@ Meteor.methods
             _id: authorId
           ,
             $addToSet:
-              publications: id # TODO: entity resolution  
+              publications: id # TODO: entity resolution
         console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
 
