@@ -6,57 +6,76 @@ Meteor.startup ->
   if Meteor.users.find({}, limit: 1).count() == 0
     console.log "Populating users"
 
-    Accounts.createUser
-      email: 'cs@cornell.edu'
-      username: 'carl-sagan'
-      password: INITIAL_PASSWORD
-      profile:
-        firstName: 'Carl'
-        lastName: 'Sagan'
+    #Carl Sagan
+    id = Persons.insert
+      user: 'carl-sagan'
+      foreNames: 'Carl'
+      lastName: 'Sagan'
+      work: [
         position: 'Professor of Astronomy'
         institution: 'Cornell University'
-
+        startYear: 1971
+        endYear: 1996
+        ,
+        position: 'Miller Fellow'
+        institution: 'University of California, Berkeley'
+        startYear: 1960
+        endYear: 1962
+      ]
+      education: [
+        degree: 'PhD'
+        concentration: 'Astronomy'
+        institution: 'University of Chicago'
+        startYear: 1956
+        endYear: 1960
+        completed: true
+        ,
+        degree: 'BS'
+        concentration: 'Physics'
+        institution: 'University of Chicago'
+        startYear: 1951
+        endYear: 1955
+        completed: true
+      ]
+      publications: []
     Accounts.createUser
-      email: 'rf@caltech.edu'
-      username: 'richard-feynman'
+      email: 'sagan@berkeley.edu'
+      username: 'carl-sagan'
       password: INITIAL_PASSWORD
-      profile:
-        firstName: 'Richard'
-        lastName: 'Feynman'
-        position: 'Professor of Physics'
-        institution: 'Caltech'
-
-    Accounts.createUser
-      email: 'mf@ens.fr'
-      username: 'michel-foucault'
-      password: INITIAL_PASSWORD
-      profile:
-        firstName: 'Michel'
-        lastName: 'Foucault'
+      person: id
+    
+    #Hannah Arendt
+    id = Persons.insert
+      user: 'hannah-arendt'
+      foreNames: 'Hannah'
+      lastName: 'Arendt'
+      work: [
         position: 'Professor of Philosophy'
-        institution: 'Ecole Normale Superieure'
-
+        institution: 'New School for Social Research'
+        startYear: 1967
+        endYear: 1975
+        ,
+        position: 'Visiting Professor'
+        institution: 'University of California, Berkeley'
+        startYear: 1955
+        endYear: 1956
+      ]
+      education: [
+        degree: 'PhD'
+        concentration: 'Philosophy'
+        institution: 'University of Heidelberg'
+        startYear: 1926
+        endYear: 1928
+        completed: true
+      ]
+      publications: []
     Accounts.createUser
-      email: 'jh@uni-frankfurt.de'
-      username: 'jurgen-habermas'
+      email: 'arendt@berkeley.edu'
+      username: 'hannah-arendt'
       password: INITIAL_PASSWORD
-      profile:
-        firstName: 'Jurgen'
-        lastName: 'Habermas'
-        position: 'Professor of Sociology'
-        institution: 'Goethe University Frankfurt am Main'
+      person: id
 
-    Accounts.createUser
-      email: 'on@unb.br'
-      username: 'oscar-niemeyer'
-      password: INITIAL_PASSWORD
-      profile:
-        firstName: 'Oscar'
-        lastName: 'Niemeyer'
-        position: 'Professor of Architecture'
-        institution: 'University of Brasilia'
-
-    console.log "Created users 'carl-sagan', 'richard-feynman', 'michel-foucault', 'jurgen-habermas', and 'oscar-niemeyer' with password '#{ INITIAL_PASSWORD }'"
+    console.log "Created users 'carl-sagan', 'hannah-arendt' with password '#{ INITIAL_PASSWORD }'"
 
     console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
