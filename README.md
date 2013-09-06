@@ -25,11 +25,11 @@ environment `PATH` variable. For example, by running:
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
-Install it as well.
+Install it as well:
 
     npm install -g meteorite
 
-From the cloned PeerLibrary repository then run a development instance of PeerLibrary:
+From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
 
     mrt
 
