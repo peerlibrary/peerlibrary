@@ -43,11 +43,14 @@ On first run, PeerLibrary compiles and locally installs additional libraries.
 might have to configure environment properly so that it can be successfully
 compiled.
 
-On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/),
-`pkg-config` (using [Homebrew](http://brew.sh/) or
-[MacPorts](https://www.macports.org/)), and:
+On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and
+run the following before you run `mrt`:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
+
+To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/) and
+`pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/) or
+[MacPorts](https://www.macports.org/).
 
 On Debian you can install:
 
