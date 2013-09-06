@@ -22,7 +22,7 @@ environment `PATH` variable. For example, by running:
 
     export PATH="~/.meteor/tools/latest/bin/:$PATH"
 
-To add tool to you shell permanently, run:
+To add tools to you shell permanently, run:
 
     echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
 
