@@ -43,11 +43,10 @@ your local development instance.
 
 On first run, PeerLibrary compiles and locally installs additional libraries.
 [Cairo](http://cairographics.org/) graphic library is required for this and you
-might have to configure environment properly so that it can be successfully
-compiled.
+might have to setup your system so that it can be successfully compiled.
 
 On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and
-run the following before you run `mrt`:
+run the following before you run `mrt` to configure environment:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
