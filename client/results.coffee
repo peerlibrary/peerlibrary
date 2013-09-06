@@ -16,9 +16,15 @@ Deps.autorun ->
   Session.set 'currentSearchQueryReady', false
   if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
     Session.set 'currentSearchQueryLoading', true
-    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'), ->
-      Session.set 'currentSearchQueryReady', true
-      Session.set 'currentSearchQueryLoading', false
+    Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'),
+      onReady: ->
+        Session.set 'currentSearchQueryReady', true
+        Session.set 'currentSearchQueryLoading', false
+      onError: ->
+        # TODO: Should we display some error?
+        Session.set 'currentSearchQueryLoading', false
+  else
+    Session.set 'currentSearchQueryLoading', false
 
 Deps.autorun ->
   if Session.get 'indexActive'

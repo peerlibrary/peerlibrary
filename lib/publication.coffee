@@ -4,10 +4,7 @@ class Publication extends @Document
   # slug: slug for URL
   # created: timestamp when the publication was published
   # updated: timestamp when the publication (or its metadata) was last updated
-  # authors: a list of authors, each author:
-  #   lastName
-  #   foreNames
-  #   affiliation
+  # authors: a list of person ids
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source

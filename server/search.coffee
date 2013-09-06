@@ -109,7 +109,7 @@ Meteor.publish 'search-results', (query, limit) ->
     countHandle.stop()
 
 Meteor.publish 'search-available', ->
-  id = Random.id()
+  searchResultsId = Random.id()
   count = 0
   minPublicationDate = null
   maxPublicationDate = null
@@ -121,6 +121,7 @@ Meteor.publish 'search-available', ->
   ,
     field:
       _id: 1
+      created: 1
   ).observeChanges
     added: (id, fields) =>
       count++
@@ -161,7 +162,7 @@ Meteor.publish 'search-available', ->
 
   initializing = false
 
-  @added 'SearchResults', id,
+  @added 'SearchResults', searchResultsId,
     query: null
     countPublications: count
     countPeople: 0 # TODO: Implement people counting
@@ -171,6 +172,6 @@ Meteor.publish 'search-available', ->
   @ready()
 
   @onStop =>
-    @removed 'SearchResults', id
+    @removed 'SearchResults', searchResultsId
 
     handle.stop()

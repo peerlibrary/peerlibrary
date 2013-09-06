@@ -235,11 +235,22 @@ Meteor.methods
         console.warn "Empty authors list, skipping", util.inspect record, false, null
         continue
 
+      authorIds = []
+      for author in authors
+        id = Persons.insert
+          user: null
+          foreNames: author.foreNames
+          lastName: author.lastName
+          work: []
+          education: []
+          publications: []
+        authorIds.push id
+
       publication =
         slug: URLify2 record.title[0]
         created: created
         updated: updated
-        authors: authors
+        authors: authorIds
         authorsRaw: record.authors[0]
         title: record.title[0]
         comments: record.comments?[0]
@@ -264,6 +275,12 @@ Meteor.methods
       # TODO: Upsert would be better
       if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publications.insert publication
+        for authorId in publication.authors
+          Persons.update
+            _id: authorId
+          ,
+            $addToSet:
+              publications: id # TODO: entity resolution
         console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
 
