@@ -17,15 +17,24 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl https://install.meteor.com | sh
 
-Additional packages require [Meteorite](http://oortcloud.github.com/meteorite/):
+To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin/` to your
+environment `PATH` variable. For example, by running:
+
+    export PATH="~/.meteor/tools/latest/bin/:$PATH"
+    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' > ~/.bash_profile
+
+PeerLibrary requires additional Meteor packages which are provided through
+[Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
+Install it as well.
 
     npm install -g meteorite
 
-And then run:
+From the cloned PeerLibrary repository then run a development instance of PeerLibrary:
 
     mrt
 
-And open [http://localhost:3000/](http://localhost:3000/).
+And open [http://localhost:3000/](http://localhost:3000/), which is an address of
+your local development instance.
 
 ### Requirements ###
 
