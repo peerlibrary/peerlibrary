@@ -21,7 +21,7 @@ To add all tools provided by Meteor into your environment, add `~/.meteor/tools/
 environment `PATH` variable. For example, by running:
 
     export PATH="~/.meteor/tools/latest/bin/:$PATH"
-    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' > ~/.bash_profile
+    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
