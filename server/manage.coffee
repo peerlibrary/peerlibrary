@@ -26,9 +26,11 @@ ARXIV_ACCENTS =
 
 randomUser = ->
   user = Random.choice Meteor.users.find().fetch()
+  person = Persons.findOne
+    _id: user.profile.person
 
   username: user.username
-  fullName: user.profile.firstName + ' ' + user.profile.lastName
+  fullName: person.foreNames + ' ' + person.lastName
   id: user._id
 
 randomTimestamp = ->
@@ -250,7 +252,8 @@ Meteor.methods
         slug: URLify2 record.title[0]
         created: created
         updated: updated
-        authors: authorIds
+        authors: authors
+        authorIds: authorIds
         authorsRaw: record.authors[0]
         title: record.title[0]
         comments: record.comments?[0]
@@ -275,7 +278,7 @@ Meteor.methods
       # TODO: Upsert would be better
       if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publications.insert publication
-        for authorId in publication.authors
+        for authorId in publication.authorIds
           Persons.update
             _id: authorId
           ,

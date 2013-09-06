@@ -1,5 +1,3 @@
-@INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
-
 Meteor.Router.add
   '/': ->
     Session.set 'indexActive', true
@@ -42,7 +40,7 @@ Meteor.Router.beforeRouting = ->
   Session.set 'currentSearchQueryCountPeople', 0
   Session.set 'currentSearchQueryLoading', false
   Session.set 'currentSearchQueryReady', false
-  Session.set 'currentSearchLimit', INITIAL_SEARCH_LIMIT
+  Session.set 'currentSearchLimit', 5
   Session.set 'searchActive', false
   Session.set 'searchFocused', false
   Session.set 'adminActive', false

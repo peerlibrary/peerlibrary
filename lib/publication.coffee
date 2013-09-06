@@ -26,11 +26,15 @@ class Publication extends @Document
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
 
+  @_uploadFilename: (id) ->
+    'upload' + Storage._path.sep + id + '.pdf'
+
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
     Publication._filenamePrefix() + switch @source
+      when 'upload' then Publication._uploadFilename @_id
       when 'arXiv' then Publication._arXivFilename @foreignId
       else throw new Meteor.Error 500, "Unsupported source"
 

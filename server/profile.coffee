@@ -1,9 +1,10 @@
 Accounts.onCreateUser (options, user) ->
-  if user.hasOwnProperty 'person'
+  if not user.hasOwnProperty 'profile'
     id = Persons.insert
       user: user.username
-    user.person = id
-    user
+    user.profile =
+      person: id
+  user
 
 Meteor.publish 'users-by-username', (username) ->
   Meteor.users.find
@@ -11,7 +12,7 @@ Meteor.publish 'users-by-username', (username) ->
   ,
     fields:
       username: 1
-      person: 1
+      profile: 1
 
 Meteor.publish 'persons-by-username', (username) ->
   Persons.find
