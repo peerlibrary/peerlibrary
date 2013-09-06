@@ -17,15 +17,24 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl https://install.meteor.com | sh
 
-Additional packages require [Meteorite](http://oortcloud.github.com/meteorite/):
+To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin/` to your
+environment `PATH` variable. For example, by running:
+
+    export PATH="~/.meteor/tools/latest/bin/:$PATH"
+    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
+
+PeerLibrary requires additional Meteor packages which are provided through
+[Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
+Install it as well:
 
     npm install -g meteorite
 
-And then run:
+From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
 
     mrt
 
-And open [http://localhost:3000/](http://localhost:3000/).
+And open [http://localhost:3000/](http://localhost:3000/), which is an address of
+your local development instance.
 
 ### Requirements ###
 
@@ -34,9 +43,9 @@ On first run, PeerLibrary compiles and locally installs additional libraries.
 might have to configure environment properly so that it can be successfully
 compiled.
 
-On Mac OS X you can get Cairo by installing
-[X11](http://xquartz.macosforge.org/), `pkg-config`
-([Homebrew](http://brew.sh/), [MacPorts](https://www.macports.org/)), and:
+On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/),
+`pkg-config` (using [Homebrew](http://brew.sh/) or
+[MacPorts](https://www.macports.org/)), and:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
