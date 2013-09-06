@@ -50,9 +50,10 @@ run the following before you run `mrt` to configure environment:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
-To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/) and
-`pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/) or
-[MacPorts](https://www.macports.org/).
+To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
+with command line tools installed (from Preferences > Downloads > Components),
+and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
+or MacPorts](https://www.macports.org/).
 
 On Debian you can install:
 
