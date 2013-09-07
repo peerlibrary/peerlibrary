@@ -79,7 +79,7 @@ Meteor.publish 'search-results', (query, limit) ->
   countInitializing = true
 
   countHandle = Publications.find(findQuery,
-    field:
+    fields:
       _id: 1
   ).observeChanges
     added: (id) =>
@@ -119,7 +119,7 @@ Meteor.publish 'search-available', ->
     cached: true
     processed: true
   ,
-    field:
+    fields:
       _id: 1
       created: 1
   ).observeChanges
