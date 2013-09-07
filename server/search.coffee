@@ -139,7 +139,7 @@ Meteor.publish 'search-available', ->
         maxPublicationDate = created
         changed.maxPublicationDate = maxPublicationDate
 
-      @changed 'SearchResults', id, changed if !initializing
+      @changed 'SearchResults', searchResultsId, changed if !initializing
 
     changed: (id, fields) =>
       return unless fields.created
@@ -150,11 +150,11 @@ Meteor.publish 'search-available', ->
       changed.minPublicationDate = created.toDate() if created < minPublicationDate
       changed.maxPublicationDate = created.toDate() if created > maxPublicationDate
 
-      @changed 'SearchResults', id, changed if changed
+      @changed 'SearchResults', searchResultsId, changed if changed
 
     removed: (id) =>
       count--
-      @changed 'SearchResults', id,
+      @changed 'SearchResults', searchResultsId,
         countPublications: count
 
       # We ignore removed publications for minPublicationDate and maxPublicationDate
