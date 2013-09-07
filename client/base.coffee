@@ -21,9 +21,11 @@ Meteor.Router.add
       Session.set 'currentPublicationSlug', publicationSlug
       'publication'
 
-  '/u/:personSlug': (personSlug) ->
-    Session.set 'currentPersonSlug', personSlug
-    'profile'
+  '/u/:personSlug':
+    as: 'profile'
+    to: (personSlug) ->
+      Session.set 'currentPersonSlug', personSlug
+      'profile'
 
   '/admin': ->
     Session.set 'adminActive', true

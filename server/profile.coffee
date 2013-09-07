@@ -9,21 +9,25 @@ Accounts.onCreateUser (options, user) ->
 
 Meteor.publish 'users-by-username', (username) ->
   Meteor.users.find
-    username: username
-  ,
-    fields:
-      username: 1
-      profile: 1
+      username: username
+    ,
+      fields:
+        username: 1
+        profile: 1
 
 Meteor.publish 'persons-by-slug', (slug) ->
   Persons.find
-    slug: slug
-  ,
-    fields:
-      user: 1
-      slug: 1
-      foreNames: 1
-      lastName: 1
-      work: 1
-      education: 1
-      publications: 1
+    $or: [
+        _id: slug
+      ,
+        user: slug
+      ]
+    ,
+      fields:
+        user: 1
+        slug: 1
+        foreNames: 1
+        lastName: 1
+        work: 1
+        education: 1
+        publications: 1
