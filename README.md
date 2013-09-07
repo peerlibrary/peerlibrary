@@ -21,6 +21,9 @@ To add all tools provided by Meteor into your environment, add `~/.meteor/tools/
 environment `PATH` variable. For example, by running:
 
     export PATH="~/.meteor/tools/latest/bin/:$PATH"
+
+To add tools to you shell permanently, run:
+
     echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
 
 PeerLibrary requires additional Meteor packages which are provided through
@@ -40,14 +43,17 @@ your local development instance.
 
 On first run, PeerLibrary compiles and locally installs additional libraries.
 [Cairo](http://cairographics.org/) graphic library is required for this and you
-might have to configure environment properly so that it can be successfully
-compiled.
+might have to setup your system so that it can be successfully compiled.
 
-On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/),
-`pkg-config` (using [Homebrew](http://brew.sh/) or
-[MacPorts](https://www.macports.org/)), and:
+On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and
+run the following before you run `mrt` to configure environment:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
+
+To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
+with command line tools installed (from Preferences > Downloads > Components),
+and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
+or [MacPorts](https://www.macports.org/).
 
 On Debian you can install:
 
