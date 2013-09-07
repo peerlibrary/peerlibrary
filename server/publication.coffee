@@ -54,12 +54,16 @@ class Publication extends @Publication
       foreignId: 1
       source: 1
 
-Meteor.publish 'publications-by-owner', (owner) ->
-  if not owner
+Meteor.publish 'publications-by-author-slug', (authorSlug) ->
+  if not authorSlug
     return
 
+  author = Persons.findOne
+    slug: authorSlug
+
   Publications.find
-    owner: owner
+    authorIds:
+      $all: [author._id]
     cached: true
     processed: true
   ,
@@ -86,5 +90,8 @@ Meteor.publish 'publications-by-ids', (ids) ->
     processed: true
   ,
     Publication.publicFields()
+
+Persons._ensureIndex 'slug',
+  unique: 1
 
 @Publication = Publication

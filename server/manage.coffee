@@ -246,6 +246,11 @@ Meteor.methods
           work: []
           education: []
           publications: []
+        Persons.update
+          _id: id
+        ,
+          $set:
+            slug: id
         authorIds.push id
 
       publication =

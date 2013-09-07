@@ -1,12 +1,11 @@
 Deps.autorun ->
-  Meteor.subscribe 'users-by-username', Session.get 'currentProfileUsername'
-  Meteor.subscribe 'persons-by-username', Session.get 'currentProfileUsername'
-  Meteor.subscribe 'publications-by-owner', Session.get 'currentProfileUsername'
+  if Session.get 'currentPersonSlug'
+    Meteor.subscribe 'persons-by-slug', Session.get 'currentPersonSlug'
+    Meteor.subscribe 'publications-by-author-slug', Session.get 'currentPersonSlug'
 
 Template.profile.person = ->
   Persons.findOne
-    user: Session.get 'currentProfileUsername'
+    slug: Session.get 'currentPersonSlug'
 
 Template.profile.publications = ->
-  Publications.find
-    owner: Session.get 'currentProfileUsername'
+  Publications.find()

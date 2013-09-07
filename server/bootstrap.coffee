@@ -9,6 +9,7 @@ Meteor.startup ->
     #Carl Sagan
     id = Persons.insert
       user: 'carl-sagan'
+      slug: 'carl-sagan'
       foreNames: 'Carl'
       lastName: 'Sagan'
       work: [
@@ -48,6 +49,7 @@ Meteor.startup ->
     #Hannah Arendt
     id = Persons.insert
       user: 'hannah-arendt'
+      slug: 'hannah-arendt'
       foreNames: 'Hannah'
       lastName: 'Arendt'
       work: [

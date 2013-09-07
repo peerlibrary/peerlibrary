@@ -21,8 +21,8 @@ Meteor.Router.add
       Session.set 'currentPublicationSlug', publicationSlug
       'publication'
 
-  '/u/:username': (username) ->
-    Session.set 'currentProfileUsername', username
+  '/u/:personSlug': (personSlug) ->
+    Session.set 'currentPersonSlug', personSlug
     'profile'
 
   '/admin': ->
@@ -46,7 +46,7 @@ Meteor.Router.beforeRouting = ->
   Session.set 'adminActive', false
   Session.set 'currentPublicationId', null
   Session.set 'currentPublicationSlug', null
-  Session.set 'currentProfileUsername', null
+  Session.set 'currentPersonSlug', null
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->
