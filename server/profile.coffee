@@ -1,10 +1,17 @@
 Accounts.onCreateUser (options, user) ->
-  unless options.profile
-    id = Persons.insert
-      user: user.username
-      slug: user.username
-    user.profile =
-      person: id
+  if options.profile
+    user.profile = options.profile
+  else
+    try
+      personId = Persons.insert
+        user:
+          id: user._id
+          username: user.username
+        slug: user.username
+      user.profile =
+        person: personId
+    catch e
+      throw new Meteor.Error 403, 'Username conflicts with existing slug.'
   user
 
 Meteor.publish 'users-by-username', (username) ->
@@ -20,7 +27,7 @@ Meteor.publish 'persons-by-slug', (slug) ->
     $or: [
         _id: slug
       ,
-        user: slug
+        'user.username': slug
       ]
     ,
       fields:
