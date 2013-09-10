@@ -14,31 +14,31 @@ Meteor.startup ->
       foreNames: 'Carl'
       lastName: 'Sagan'
       work: [
-          position: 'Professor of Astronomy'
-          institution: 'Cornell University'
-          startYear: 1971
-          endYear: 1996
-        ,
-          position: 'Miller Fellow'
-          institution: 'University of California, Berkeley'
-          startYear: 1960
-          endYear: 1962
-        ]
+        position: 'Professor of Astronomy'
+        institution: 'Cornell University'
+        startYear: 1971
+        endYear: 1996
+      ,
+        position: 'Miller Fellow'
+        institution: 'University of California, Berkeley'
+        startYear: 1960
+        endYear: 1962
+      ]
       education: [
-          degree: 'PhD'
-          concentration: 'Astronomy'
-          institution: 'University of Chicago'
-          startYear: 1956
-          endYear: 1960
-          completed: true
-        ,
-          degree: 'BS'
-          concentration: 'Physics'
-          institution: 'University of Chicago'
-          startYear: 1951
-          endYear: 1955
-          completed: true
-        ]
+        degree: 'PhD'
+        concentration: 'Astronomy'
+        institution: 'University of Chicago'
+        startYear: 1956
+        endYear: 1960
+        completed: true
+      ,
+        degree: 'BS'
+        concentration: 'Physics'
+        institution: 'University of Chicago'
+        startYear: 1951
+        endYear: 1955
+        completed: true
+      ]
       publications: []
     userId = Accounts.createUser
       email: 'sagan@berkeley.edu'
@@ -60,24 +60,24 @@ Meteor.startup ->
       foreNames: 'Hannah'
       lastName: 'Arendt'
       work: [
-          position: 'Professor of Philosophy'
-          institution: 'New School for Social Research'
-          startYear: 1967
-          endYear: 1975
-        ,
-          position: 'Visiting Professor'
-          institution: 'University of California, Berkeley'
-          startYear: 1955
-          endYear: 1956
-        ]
+        position: 'Professor of Philosophy'
+        institution: 'New School for Social Research'
+        startYear: 1967
+        endYear: 1975
+      ,
+        position: 'Visiting Professor'
+        institution: 'University of California, Berkeley'
+        startYear: 1955
+        endYear: 1956
+      ]
       education: [
-          degree: 'PhD'
-          concentration: 'Philosophy'
-          institution: 'University of Heidelberg'
-          startYear: 1926
-          endYear: 1928
-          completed: true
-        ]
+        degree: 'PhD'
+        concentration: 'Philosophy'
+        institution: 'University of Heidelberg'
+        startYear: 1926
+        endYear: 1928
+        completed: true
+      ]
       publications: []
     userId = Accounts.createUser
       email: 'arendt@berkeley.edu'

@@ -27,7 +27,7 @@ ARXIV_ACCENTS =
 randomUser = ->
   user = Random.choice Meteor.users.find().fetch()
   person = Persons.findOne
-    _id: user.profile.person
+    _id: user.person
 
   id: user._id
   username: user.username

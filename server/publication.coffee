@@ -91,7 +91,4 @@ Meteor.publish 'publications-by-ids', (ids) ->
   ,
     Publication.publicFields()
 
-Persons._ensureIndex 'slug',
-  unique: 1
-
 @Publication = Publication
