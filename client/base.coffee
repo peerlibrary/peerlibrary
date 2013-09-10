@@ -1,3 +1,5 @@
+@INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
+
 Meteor.Router.add
   '/': ->
     Session.set 'indexActive', true
