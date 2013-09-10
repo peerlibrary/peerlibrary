@@ -47,10 +47,10 @@ Meteor.startup ->
       profile:
         person: personId
     Persons.update
-        _id: personId
-      ,
-        $set:
-          'user.id': userId
+      _id: personId
+    ,
+      $set:
+        'user.id': userId
     
     #Hannah Arendt
     personId = Persons.insert
@@ -86,10 +86,10 @@ Meteor.startup ->
       profile:
         person: personId
     Persons.update
-        _id: personId
-      ,
-        $set:
-          'user.id': userId
+      _id: personId
+    ,
+      $set:
+        'user.id': userId
 
     console.log "Created users 'carl-sagan', 'hannah-arendt' with password '#{ INITIAL_PASSWORD }'"
 
