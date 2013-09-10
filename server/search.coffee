@@ -98,7 +98,7 @@ Meteor.publish 'search-results', (query, limit) ->
   @added 'SearchResults', queryId,
     query: query
     countPublications: count
-    countPeople: 0 # TODO: Implement people counting
+    countPersons: 0 # TODO: Implement people counting
 
   @ready()
 
@@ -110,12 +110,14 @@ Meteor.publish 'search-results', (query, limit) ->
 
 Meteor.publish 'search-available', ->
   searchResultsId = Random.id()
-  count = 0
+  countPublications = 0
+  countPersons = 0
+  initializingPublications = true
+  initializingPersons = true
   minPublicationDate = null
   maxPublicationDate = null
-  initializing = true
 
-  handle = Publications.find(
+  handlePublications = Publications.find(
     cached: true
     processed: true
   ,
@@ -124,12 +126,12 @@ Meteor.publish 'search-available', ->
       created: 1
   ).observeChanges
     added: (id, fields) =>
-      count++
+      countPublications++
 
       created = moment.utc fields.created
 
       changed =
-        countPublications: count
+        countPublications: countPublications
 
       if not minPublicationDate or created < minPublicationDate
         minPublicationDate = created
@@ -139,7 +141,7 @@ Meteor.publish 'search-available', ->
         maxPublicationDate = created
         changed.maxPublicationDate = maxPublicationDate
 
-      @changed 'SearchResults', searchResultsId, changed if !initializing
+      @changed 'SearchResults', searchResultsId, changed if !initializingPublications
 
     changed: (id, fields) =>
       return unless fields.created
@@ -153,19 +155,37 @@ Meteor.publish 'search-available', ->
       @changed 'SearchResults', searchResultsId, changed if changed
 
     removed: (id) =>
-      count--
+      countPublications--
       @changed 'SearchResults', searchResultsId,
-        countPublications: count
+        countPublications: countPublications
 
       # We ignore removed publications for minPublicationDate and maxPublicationDate
       # This much simplifies the code and there is not really a big drawback because of this
 
-  initializing = false
+  initializingPublications = false
+
+  handlePersons = Persons.find({},
+    fields:
+      _id: 1
+  ).observeChanges
+    added: (id) =>
+      countPersons++
+
+      if !initializingPersons
+        @changed 'SearchResults', searchResultsId,
+          countPersons: countPersons
+
+    removed: (id) =>
+      countPublications--
+      @changed 'SearchResults', searchResultsId,
+        countPersons: countPersons
+
+  initializingPersons = false
 
   @added 'SearchResults', searchResultsId,
     query: null
-    countPublications: count
-    countPeople: 0 # TODO: Implement people counting
+    countPublications: countPublications
+    countPersons: countPersons
     minPublicationDate: minPublicationDate?.toDate()
     maxPublicationDate: maxPublicationDate?.toDate()
 
@@ -174,4 +194,5 @@ Meteor.publish 'search-available', ->
   @onStop =>
     @removed 'SearchResults', searchResultsId
 
-    handle.stop()
+    handlePublications.stop()
+    handlePersons.stop()
