@@ -29,9 +29,9 @@ randomUser = ->
   person = Persons.findOne
     _id: user.profile.person
 
+  id: user._id
   username: user.username
   fullName: person.foreNames + ' ' + person.lastName
-  id: user._id
 
 randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
