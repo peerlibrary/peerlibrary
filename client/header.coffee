@@ -84,20 +84,20 @@ publications = ->
   else
     return searchResult.countPublications
 
-people = ->
+persons = ->
   searchResult = SearchResults.findOne
     query: null
 
   if not searchResult
     return 0
   else
-    return searchResult.countPeople
+    return searchResult.countPersons
 
 Template.searchInput.searchInvitation = ->
   if Session.get 'currentSearchQuery'
     Session.get 'currentSearchQuery'
   else if Template.header.indexHeader()
-    return "Search #{ publications() } publications and #{ people() } people"
+    return "Search #{ publications() } publications and #{ persons() } people"
   else
     return "Search publications and people"
 
