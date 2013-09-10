@@ -1,14 +1,14 @@
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->
-  (Session.get('currentSearchQueryCountPublications') or 0) + (Session.get('currentSearchQueryCountPeople') or 0)
+  (Session.get('currentSearchQueryCountPublications') or 0) + (Session.get('currentSearchQueryCountPersons') or 0)
 
 Deps.autorun ->
   # Every time search query is changed, we reset counts
   # (We don't want to reset counts on currentSearchLimit change)
   Session.get 'currentSearchQuery'
   Session.set 'currentSearchQueryCountPublications', 0
-  Session.set 'currentSearchQueryCountPeople', 0
+  Session.set 'currentSearchQueryCountPersons', 0
 
   searchLimitIncreasing = false
 
@@ -62,7 +62,7 @@ Template.results.publications = ->
     return
 
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
-  Session.set 'currentSearchQueryCountPeople', searchResult.countPeople
+  Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
   Publications.find
     'searchResult.id': searchResult._id
@@ -75,8 +75,8 @@ Template.results.publications = ->
 Template.resultsCount.publications = ->
   Session.get 'currentSearchQueryCountPublications'
 
-Template.resultsCount.people = ->
-  Session.get 'currentSearchQueryCountPeople'
+Template.resultsCount.persons = ->
+  Session.get 'currentSearchQueryCountPersons'
 
 Template.noResults.noResults = ->
   Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
