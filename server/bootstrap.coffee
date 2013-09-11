@@ -44,8 +44,7 @@ Meteor.startup ->
       email: 'sagan@berkeley.edu'
       username: 'carl-sagan'
       password: INITIAL_PASSWORD
-      profile:
-        person: personId
+      person: personId
     Persons.update
       _id: personId
     ,
@@ -83,8 +82,7 @@ Meteor.startup ->
       email: 'arendt@berkeley.edu'
       username: 'hannah-arendt'
       password: INITIAL_PASSWORD
-      profile:
-        person: personId
+      person: personId
     Persons.update
       _id: personId
     ,

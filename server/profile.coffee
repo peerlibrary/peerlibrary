@@ -1,6 +1,6 @@
 Accounts.onCreateUser (options, user) ->
-  if options.profile and options.profile.person
-    user.person = options.profile.person
+  if options.person
+    user.person = options.person
   else
     try
       personId = Persons.insert
