@@ -18,7 +18,5 @@ Template.adminButtons.events
     Meteor.call 'sync-local-pdf-cache'
   'click button.process-pdfs': (e, template) ->
     Meteor.call 'process-pdfs'
-  'click button.dummy-comments': (e, template) ->
-    Meteor.call 'dummy-comments'
   'click button.dummy-annotations': (e, template) ->
     Meteor.call 'dummy-annotations'

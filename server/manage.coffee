@@ -344,27 +344,6 @@ Meteor.methods
 
     console.log "Done"
 
-  'dummy-comments': ->
-    @unblock()
-
-    console.log "Generating dummy comments"
-
-    Publications.find(cached: true, processed: true).forEach (publication) ->
-      comments = []
-      for comment in [0...Random.fraction() * 20]
-        comments.push(Comments.insert
-          created: randomTimestamp()
-          author: randomUser()
-          body: dimsum(1 + Random.fraction() * 1).replace /\r/g, '' # There are some \r between paragraphs
-          # 10 % of comments are top-level
-          parent: if Random.fraction() < 0.1 then null else Random.choice comments
-          publication: publication._id
-        )
-
-      return # So that for loop does not return anything
-
-    console.log "Done"
-
   'dummy-annotations': ->
     @unblock()
 
