@@ -20,7 +20,7 @@ class @Publication extends @Publication
     # TODO: Handle errors as well
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       for pageNumber in [1..@_pdf.numPages]
-        $canvas = $('<canvas/>').addClass('display-canvas')
+        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $pageDisplay = $('<div/>').addClass('display-page').append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
@@ -32,7 +32,7 @@ class @Publication extends @Publication
             viewport = @_viewport
               page: page # Dummy page object
 
-            $canvas.attr
+            $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
               width: viewport.width
 
