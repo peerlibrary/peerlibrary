@@ -3,16 +3,23 @@ class @Publication extends @Publication
     scale = 1.25
     page.page.getViewport scale
 
+  _progressCallback: (progressData) =>
+    @_progressData = progressData if progressData
+
+    documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
+    pagesHalf = if @_pdf then (@_pagesDone / @_pdf.numPages) / 2 else 0
+
+    Session.set 'currentPublicationProgress', documentHalf + pagesHalf
+
   show: =>
     @destroy()
 
+    @_pagesDone = 0
     @_pages = []
 
     # TODO: Handle errors as well
-    PDFJS.getDocument(@url()).then (pdf) =>
-      @_pdf = pdf
-
-      for pageNumber in [1..pdf.numPages]
+    PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
+      for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas')
         $pageDisplay = $('<div/>').addClass('display-page').append($canvas).appendTo('#viewer .display-wrapper')
 
@@ -20,7 +27,7 @@ class @Publication extends @Publication
 
         do ($canvas, $pageDisplay) =>
           # TODO: Handle errors as well
-          pdf.getPage(pageNumber).then (page) =>
+          @_pdf.getPage(pageNumber).then (page) =>
             viewport = @_viewport
               page: page # Dummy page object
 
@@ -33,6 +40,9 @@ class @Publication extends @Publication
               $pageDisplay: $pageDisplay
               page: page
               rendering: false
+            @_pagesDone++
+
+            @_progressCallback()
 
             # Check if new page should be maybe rendered?
             @checkRender()
@@ -53,7 +63,7 @@ class @Publication extends @Publication
     for page in @_pages or []
       page.page.destroy()
     @_pdf.destroy() if @_pdf
-    @_pages = null
+    @_pages = null # To remove references to canvas elements
 
     $(window).off 'scroll.publication'
 

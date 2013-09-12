@@ -37,6 +37,7 @@
             <a href="#">Explore</a>
           </li>
         </ul>
+        {{> progressBar}}
       </div>
     </div>
   </header>
@@ -58,4 +59,10 @@
       </form>
     </div>
   </div>
+</template>
+
+<template name="progressBar">
+  {{#if progress}}
+    <div class="progress-bar" style="width: {{progress}}%"></div>
+  {{/if}}
 </template>
