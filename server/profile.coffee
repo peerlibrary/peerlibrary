@@ -1,16 +1,21 @@
 Accounts.onCreateUser (options, user) ->
-  if options.person
-    user.person = options.person
-  else
-    try
-      personId = Persons.insert
-        user:
-          id: user._id
-          username: user.username
-        slug: user.username
-      user.person = personId
-    catch e
-      throw new Meteor.Error 403, 'Username conflicts with existing slug.'
+  try
+    person =
+      user:
+        id: user._id
+        username: user.username
+      slug: user.username
+
+    person.foreNames = if options.foreNames then options.foreNames else null
+    person.lastName = if options.lastName then options.lastName else null
+    person.work = if options.work then options.work else null
+    person.education = if options.education then options.education else null
+    person.publications = if options.publications then options.publications else null
+
+    personId = Persons.insert person
+    user.person = personId
+  catch e
+    throw new Meteor.Error 403, 'Username conflicts with existing slug.'
   user
 
 Meteor.publish 'users-by-username', (username) ->

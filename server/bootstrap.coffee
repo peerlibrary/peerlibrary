@@ -7,10 +7,10 @@ Meteor.startup ->
     console.log "Populating users"
 
     #Carl Sagan
-    personId = Persons.insert
-      user:
-        username: 'carl-sagan'
-      slug: 'carl-sagan'
+    Accounts.createUser
+      email: 'sagan@berkeley.edu'
+      username: 'carl-sagan'
+      password: INITIAL_PASSWORD
       foreNames: 'Carl'
       lastName: 'Sagan'
       work: [
@@ -40,22 +40,12 @@ Meteor.startup ->
         completed: true
       ]
       publications: []
-    userId = Accounts.createUser
-      email: 'sagan@berkeley.edu'
-      username: 'carl-sagan'
-      password: INITIAL_PASSWORD
-      person: personId
-    Persons.update
-      _id: personId
-    ,
-      $set:
-        'user.id': userId
-    
+      
     #Hannah Arendt
-    personId = Persons.insert
-      user:
-        username: 'hannah-arendt'
-      slug: 'hannah-arendt'
+    Accounts.createUser
+      email: 'arendt@berkeley.edu'
+      username: 'hannah-arendt'
+      password: INITIAL_PASSWORD
       foreNames: 'Hannah'
       lastName: 'Arendt'
       work: [
@@ -78,18 +68,14 @@ Meteor.startup ->
         completed: true
       ]
       publications: []
-    userId = Accounts.createUser
-      email: 'arendt@berkeley.edu'
-      username: 'hannah-arendt'
-      password: INITIAL_PASSWORD
-      person: personId
-    Persons.update
-      _id: personId
-    ,
-      $set:
-        'user.id': userId
 
-    console.log "Created users 'carl-sagan', 'hannah-arendt' with password '#{ INITIAL_PASSWORD }'"
+    #Paul Feyerabend
+    Accounts.createUser
+      email: 'feyerabend@berkeley.edu'
+      username: 'paul-feyerabend'
+      password: INITIAL_PASSWORD
+
+    console.log "Created users 'carl-sagan', 'hannah-arendt', 'paul-feyerabend' with password '#{ INITIAL_PASSWORD }'"
 
     console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
