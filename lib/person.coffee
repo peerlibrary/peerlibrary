@@ -1,6 +1,6 @@
-Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
+@Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
 
-class Person extends @Document
+class @Person extends @Document
   # user: username (null if unregistered)
   # slug: unique slug for URL
   # created: creation timestamp
@@ -22,6 +22,3 @@ class Person extends @Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of authored publication ids
-
-@Persons = Persons
-@Person = Person
