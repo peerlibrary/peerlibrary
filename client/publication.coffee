@@ -48,6 +48,7 @@ class @Publication extends @Publication
             @checkRender()
 
     $(window).on 'scroll.publication', @checkRender
+    $(window).on 'resize.publication', @checkRender
 
   checkRender: =>
     for page in @_pages
@@ -66,6 +67,7 @@ class @Publication extends @Publication
     @_pages = null # To remove references to canvas elements
 
     $(window).off 'scroll.publication'
+    $(window).off 'resize.publication'
 
   renderPage: (page) =>
     return if page.rendering
