@@ -1,6 +1,6 @@
-Publications = new Meteor.Collection 'Publications', transform: (doc) => new @Publication doc
+@Publications = new Meteor.Collection 'Publications', transform: (doc) => new @Publication doc
 
-class Publication extends @Document
+class @Publication extends @Document
   # slug: slug for URL
   # created: timestamp when the publication was published
   # updated: timestamp when the publication (or its metadata) was last updated
@@ -57,6 +57,3 @@ class Publication extends @Document
 
   createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
-
-@Publications = Publications
-@Publication = Publication

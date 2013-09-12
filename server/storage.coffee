@@ -1,6 +1,6 @@
 path = Npm.require 'path'
 
-class Storage extends @Storage
+class @Storage extends @Storage
   @_assurePath: (path) ->
     path = path.split @_path.sep
     for segment, i in path[1...path.length-1]
@@ -37,5 +37,3 @@ Storage._path = path
 # TODO: Add CORS headers
 # TODO: We have redirect == false because directory redirects do not take prefix into the account
 WebApp.connectHandlers.use('/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
-
-@Storage = Storage

@@ -1,4 +1,4 @@
-class Publication extends @Publication
+class @Publication extends @Publication
   checkCache: =>
     if @cached
       return
@@ -90,5 +90,3 @@ Meteor.publish 'publications-by-ids', (ids) ->
     processed: true
   ,
     Publication.publicFields()
-
-@Publication = Publication
