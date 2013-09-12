@@ -14,7 +14,8 @@ Accounts.onCreateUser (options, user) ->
       person.publications = options.profile.publications if options.profile.publications?
 
     personId = Persons.insert person
-    user.person = personId
+    user.person =
+      id: personId
   catch e
     if e.name isnt 'MongoError'
       throw e
