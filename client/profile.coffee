@@ -1,11 +1,13 @@
 Deps.autorun ->
   if Session.get 'currentPersonSlug'
-    Meteor.subscribe 'persons-by-slug', Session.get 'currentPersonSlug'
+    # We also search by id because we may have to redirect to canonical URL
+    Meteor.subscribe 'persons-by-id-or-slug', Session.get 'currentPersonSlug'
     Meteor.subscribe 'publications-by-author-slug', Session.get 'currentPersonSlug'
 
 Deps.autorun ->
   person = Persons.findOne()
   if person
+    # Assure URL is canonical
     unless Session.equals 'currentPersonSlug', person.slug
       Meteor.Router.to Meteor.Router.profilePath person.slug
       return
