@@ -6,16 +6,22 @@ Accounts.onCreateUser (options, user) ->
         username: user.username
       slug: user.username
 
-    person.foreNames = if options.foreNames then options.foreNames else null
-    person.lastName = if options.lastName then options.lastName else null
-    person.work = if options.work then options.work else null
-    person.education = if options.education then options.education else null
-    person.publications = if options.publications then options.publications else null
+    if options.profile
+      person.foreNames = options.profile.foreNames if options.profile.foreNames?
+      person.lastName = options.profile.lastName if options.profile.lastName?
+      person.work = options.profile.work if options.profile.work?
+      person.education = options.profile.education if options.profile.education?
+      person.publications = options.profile.publications if options.profile.publications?
 
     personId = Persons.insert person
     user.person = personId
   catch e
-    throw new Meteor.Error 403, 'Username conflicts with existing slug.'
+    if e.name isnt 'MongoError'
+      throw e
+    # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
+    if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
+      throw new Meteor.Error 403, 'Username conflicts with existing slug.'
+    throw e
   user
 
 Meteor.publish 'users-by-username', (username) ->
