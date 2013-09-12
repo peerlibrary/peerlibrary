@@ -27,11 +27,11 @@ ARXIV_ACCENTS =
 randomUser = ->
   user = Random.choice Meteor.users.find().fetch()
   person = Persons.findOne
-    _id: user.profile.person
+    _id: user.person.id
 
+  id: user._id
   username: user.username
   fullName: person.foreNames + ' ' + person.lastName
-  id: user._id
 
 randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()

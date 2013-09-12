@@ -1,10 +1,23 @@
 Accounts.onCreateUser (options, user) ->
-  unless options.profile
-    id = Persons.insert
-      user: user.username
+  try
+    person =
+      user:
+        id: user._id
+        username: user.username
       slug: user.username
-    user.profile =
-      person: id
+
+    _.extend person, _.pick(options.profile or {}, 'foreNames', 'lastName', 'work', 'education', 'publications')
+
+    personId = Persons.insert person
+    user.person =
+      id: personId
+  catch e
+    if e.name isnt 'MongoError'
+      throw e
+    # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
+    if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
+      throw new Meteor.Error 403, 'Username conflicts with existing slug.'
+    throw e
   user
 
 Meteor.publish 'users-by-username', (username) ->
@@ -13,14 +26,14 @@ Meteor.publish 'users-by-username', (username) ->
     ,
       fields:
         username: 1
-        profile: 1
+        person: 1
 
-Meteor.publish 'persons-by-slug', (slug) ->
+Meteor.publish 'persons-by-id-or-slug', (slug) ->
   Persons.find
     $or: [
-        _id: slug
+        slug: slug
       ,
-        user: slug
+        _id: slug
       ]
     ,
       fields:
@@ -31,3 +44,6 @@ Meteor.publish 'persons-by-slug', (slug) ->
         work: 1
         education: 1
         publications: 1
+
+Persons._ensureIndex 'slug',
+  unique: 1

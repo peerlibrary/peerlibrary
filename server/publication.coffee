@@ -90,6 +90,3 @@ Meteor.publish 'publications-by-ids', (ids) ->
     processed: true
   ,
     Publication.publicFields()
-
-Persons._ensureIndex 'slug',
-  unique: 1
