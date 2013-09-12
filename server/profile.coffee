@@ -33,12 +33,13 @@ Meteor.publish 'users-by-username', (username) ->
         username: 1
         person: 1
 
-Meteor.publish 'persons-by-slug', (slug) ->
+Meteor.publish 'persons-by-id-or-slug', (slug) ->
   Persons.find
     $or: [
-        _id: slug
+        slug: slug
       ,
-        'user.username': slug
+        # For redirecting to canonical URL (this is done in client/profile.coffee)
+        _id: slug
       ]
     ,
       fields:
