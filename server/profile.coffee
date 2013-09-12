@@ -6,12 +6,7 @@ Accounts.onCreateUser (options, user) ->
         username: user.username
       slug: user.username
 
-    if options.profile
-      person.foreNames = options.profile.foreNames if options.profile.foreNames?
-      person.lastName = options.profile.lastName if options.profile.lastName?
-      person.work = options.profile.work if options.profile.work?
-      person.education = options.profile.education if options.profile.education?
-      person.publications = options.profile.publications if options.profile.publications?
+    _.extend person, _.pick(options.profile or {}, 'foreNames', 'lastName', 'work', 'education', 'publications')
 
     personId = Persons.insert person
     user.person =
@@ -38,7 +33,6 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
     $or: [
         slug: slug
       ,
-        # For redirecting to canonical URL (this is done in client/profile.coffee)
         _id: slug
       ]
     ,
