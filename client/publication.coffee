@@ -21,7 +21,8 @@ class @Publication extends @Publication
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas')
-        $pageDisplay = $('<div/>').addClass('display-page').append($canvas).appendTo('#viewer .display-wrapper')
+        $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
+        $pageDisplay = $('<div/>').addClass('display-page').append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
         # TODO: Add pending page number + loading animation to the page
 
@@ -80,7 +81,8 @@ class @Publication extends @Publication
     console.debug "Rendering page #{ page.page.pageNumber }"
 
     # TODO: Handle errors as well
-    page.page.render renderContext
+    page.page.render(renderContext).then =>
+      page.$pageDisplay.find('.loading').hide()
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
