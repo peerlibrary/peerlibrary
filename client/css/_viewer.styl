@@ -18,13 +18,16 @@
 #viewer .highlighted, #viewer .annotations .annotation:hover
   background-color: rgba(255,0,0,0.3)
 
+#viewer .display-page canvas
+  background: rgba(255,255,255,1.0)
+
 /* text selection */
 
 #viewer .display-page canvas ::selection
-  background:rgba(255,255,10,0.3)
+  background: rgba(255,255,10,0.3)
 
 #viewer .display-page canvas ::-moz-selection
-  background:rgba(255,255,10,0.3)
+  background: rgba(255,255,10,0.3)
 
 #viewer .display-text
   position: absolute
@@ -188,3 +191,20 @@
 
 #viewer .display-text .highlight.selected
   background-color: rgba(0, 100, 0, 0.2)
+
+#viewer .loading
+  position: absolute
+  left: 50%
+  top: 50%
+  height: 10em
+  width: 10em
+  margin-left: -5em
+  margin-top: -5em
+  line-height: 10em
+  background-image: url('/packages/pdf.js/pdf.js/web/images/loading-icon.gif')
+  background-position: 50% 50%
+  background-repeat: no-repeat
+
+#viewer .display-canvas-loading
+  width: 400px
+  height: 400px
