@@ -31,7 +31,7 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
-  @publicSearchResultFields: ->
+  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
     [
       'slug'
       'created'
@@ -41,7 +41,7 @@ class @Publication extends @Publication
       'numberOfPages'
     ]
 
-  @publicFields: ->
+  @PUBLIC_FIELDS: ->
     fields:
       slug: 1
       created: 1
@@ -67,7 +67,7 @@ Meteor.publish 'publications-by-author-slug', (authorSlug) ->
     cached: true
     processed: true
   ,
-    Publication.publicFields()
+    Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'publications-by-id', (id) ->
   if not id
@@ -78,7 +78,7 @@ Meteor.publish 'publications-by-id', (id) ->
     cached: true
     processed: true
   ,
-    Publication.publicFields()
+    Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'publications-by-ids', (ids) ->
   if not ids
@@ -89,4 +89,4 @@ Meteor.publish 'publications-by-ids', (ids) ->
     cached: true
     processed: true
   ,
-    Publication.publicFields()
+    Publication.PUBLIC_FIELDS()
