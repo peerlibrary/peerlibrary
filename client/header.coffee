@@ -113,6 +113,7 @@ Deps.autorun ->
 
   if progress != 1.0
     Meteor.clearTimeout progressHide if progressHide
+    progressHide = null
     return
 
   return if progressHide
