@@ -121,6 +121,9 @@ class @Publication extends @Publication
     console.debug "Rendering page #{ page.page.pageNumber }"
 
     page.page.render(renderContext).then =>
+      # Maybe this instance has been destroyed in meantime
+      return if @_pages is null
+
       console.debug "Rendering page #{ page.page.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading").hide()
