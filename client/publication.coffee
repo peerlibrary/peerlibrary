@@ -24,8 +24,6 @@ class @Publication extends @Publication
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $pageDisplay = $('<div/>').addClass('display-page').append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
-        # TODO: Add pending page number + loading animation to the page
-
         do ($canvas, $pageDisplay) =>
           # TODO: Handle errors as well
           @_pdf.getPage(pageNumber).then (page) =>
