@@ -3,7 +3,7 @@ class @Publication extends @Publication
     super args...
 
     @_pages = null
-    @_annotator = new Annotator @
+    @_annotator = new Annotator
 
   _viewport: (page) =>
     scale = 1.25
@@ -101,6 +101,9 @@ class @Publication extends @Publication
     for page in pages
       page.page.destroy()
     @_pdf.destroy() if @_pdf
+
+    # To make sure it is cleaned up
+    @_annotator = null
 
   renderPage: (page) =>
     return if page.rendering

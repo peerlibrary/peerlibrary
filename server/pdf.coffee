@@ -50,7 +50,9 @@ PDF =
             pageImageCallback page.pageNumber, canvasElement
 
           appendText: bindEnvironemnt (geom) ->
-            {x, y, width, height, direction, text} = PDFJS.pdfTextSegment viewport.height, textContent, appendCounter, geom
+            # TODO: Verify it still draws correctly on the server
+            {left, top, width, height, direction, text} = PDFJS.pdfTextSegment textContent, appendCounter, geom
+            top = viewport.height - top
 
             appendCounter++
 
@@ -59,9 +61,9 @@ PDF =
 
             if DEBUG
               # Draw a rectangle around the text segment
-              canvasContext.strokeRect x, y, width, height
+              canvasContext.strokeRect left, top, width, height
 
-            textCallback page.pageNumber, x, y, width, height, direction, text
+            textCallback page.pageNumber, left, top, width, height, direction, text
 
     progressCallback 1.0
 
