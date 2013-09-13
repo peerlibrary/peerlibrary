@@ -31,7 +31,7 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
-  @PUBLIC_SEARCH_RESULT_FIELDS: ->
+  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
     [
       'slug'
       'created'
