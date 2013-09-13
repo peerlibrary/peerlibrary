@@ -103,3 +103,22 @@ Template.searchInput.searchInvitation = ->
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')
+
+Template.progressBar.progress = ->
+  100 * Session.get 'currentPublicationProgress'
+
+progressHide = null
+Deps.autorun ->
+  progress = Session.get 'currentPublicationProgress'
+
+  if progress != 1.0
+    Meteor.clearTimeout progressHide if progressHide
+    progressHide = null
+    return
+
+  return if progressHide
+
+  progressHide = Meteor.setTimeout ->
+    Session.set 'currentPublicationProgress', null
+    progressHide = null
+  , 250
