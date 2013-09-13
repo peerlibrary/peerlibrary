@@ -1,42 +1,41 @@
 class @Annotator
   constructor: (@_publication) ->
-    @_segments = []
+    @_pages = []
 
   setPage: (page) =>
-    # Initialize page
-    @_segments[page.pageNumber - 1] =
+    # Initialize the page
+    @_pages[page.pageNumber - 1] =
       viewport: @_publication._viewport
         page: page # Dummy page object
-      elements: []
+      textSegments: []
 
   setTextContent: (pageNumber, textContent) =>
-    @_segments[pageNumber - 1].textContent = textContent
+    @_pages[pageNumber - 1].textContent = textContent
 
   textLayer: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+
     beginLayout: =>
-      segments = @_segments[pageNumber - 1]
-      segments.textLayerDone = false
-      segments.textLayerCounter = 0
+      page.textSegmentsDone = false
 
     endLayout: =>
-      segments =  @_segments[pageNumber - 1]
-      segments.textLayerDone = true
+      page.textSegmentsDone = true
 
-      console.log @_segments[pageNumber - 1].elements
+      console.log page.textSegments
 
     appendText: (geom) =>
-      segments = @_segments[pageNumber - 1]
-      segments.elements.push(
-        PDFJS.pdfTextSegment segments.viewport.height, segments.textContent, segments.textLayerCounter, geom
+      page.textSegments.push(
+        PDFJS.pdfTextSegment page.viewport.height, page.textContent, page.textSegments.length, geom
       )
-      segments.textLayerCounter++
 
   imageLayer: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+
     beginLayout: =>
-      @_segments[pageNumber - 1].imageLayerDone = false
+      page.imageLayerDone = false
 
     endLayout: =>
-      @_segments[pageNumber - 1].imageLayerDone = true
+      page.imageLayerDone = true
 
     appendImage: (geom) =>
       #console.log pageNumber, "appendImage", geom
