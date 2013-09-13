@@ -1,9 +1,17 @@
 class @Publication extends @Publication
+  constructor: (args...) ->
+    super args...
+
+    @_pages = null
+
   _viewport: (page) =>
     scale = 1.25
     page.page.getViewport scale
 
   _progressCallback: (progressData) =>
+    # Maybe this instance has been destroyed in meantime
+    return if @_pages is null
+
     @_progressData = progressData if progressData
 
     documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
@@ -12,31 +20,39 @@ class @Publication extends @Publication
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
   show: =>
-    @destroy()
+    console.debug "Showing publication #{ @_id }"
+
+    assert.strictEqual @_pages, null
 
     @_pagesDone = 0
     @_pages = []
 
-    # TODO: Handle errors as well
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
+      # To make sure we are starting with empty slate
+      $('#viewer .display-wrapper').empty()
+
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
-        $pageDisplay = $('<div/>').addClass('display-page').append($canvas).append($loading).appendTo('#viewer .display-wrapper')
+        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
-        do ($canvas, $pageDisplay) =>
-          # TODO: Handle errors as well
+        do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (page) =>
+            # Maybe this instance has been destroyed in meantime
+            return if @_pages is null
+
+            assert.equal pageNumber, page.pageNumber
+
             viewport = @_viewport
               page: page # Dummy page object
 
+            $canvas = $("#display-page-#{ pageNumber } canvas")
             $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
               width: viewport.width
 
-            @_pages[page.pageNumber - 1] =
-              $canvas: $canvas
-              $pageDisplay: $pageDisplay
+            @_pages[pageNumber - 1] =
+              pageNumber: pageNumber
               page: page
               rendering: false
             @_pagesDone++
@@ -46,41 +62,76 @@ class @Publication extends @Publication
             # Check if new page should be maybe rendered?
             @checkRender()
 
-    $(window).on 'scroll.publication', @checkRender
-    $(window).on 'resize.publication', @checkRender
+          , (args...) =>
+            # TODO: Handle errors better (call destroy?)
+            console.error "Error getting page #{ pageNumber }", args...
+
+      $(window).on 'scroll.publication', @checkRender
+      $(window).on 'resize.publication', @checkRender
+
+    , (args...) =>
+      # TODO: Handle errors better (call destroy?)
+      console.error "Error showing #{ @_id }", args...
 
   checkRender: =>
-    for page in @_pages
+    for page in @_pages or []
       continue if page.rendering
 
-      canvasTop = page.$canvas.offset().top
-      canvasBottom = canvasTop + page.$canvas.height()
+      $canvas = $("#display-page-#{ page.pageNumber } canvas")
+
+      canvasTop = $canvas.offset().top
+      canvasBottom = canvasTop + $canvas.height()
       # Add 100px so that we start rendering early
       if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
         @renderPage page
 
   destroy: =>
-    for page in @_pages or []
-      page.page.destroy()
-    @_pdf.destroy() if @_pdf
-    @_pages = null # To remove references to canvas elements
+    console.debug "Destroying publication #{ @_id }"
+
+    pages = @_pages or []
+    @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
 
     $(window).off 'scroll.publication'
     $(window).off 'resize.publication'
+
+    for page in pages
+      page.page.destroy()
+    @_pdf.destroy() if @_pdf
 
   renderPage: (page) =>
     return if page.rendering
     page.rendering = true
 
+    $canvas = $("#display-page-#{ page.pageNumber } canvas")
+
+    # Redo canvas resize to make sure it is the right size
+    # It seems sometimes already resized canvases are being deleted and replaced with initial versions
+    viewport = @_viewport page
+    $canvas.attr
+      height: viewport.height
+      width: viewport.width
+
     renderContext =
-      canvasContext: page.$canvas.get(0).getContext '2d'
+      canvasContext: $canvas.get(0).getContext '2d'
       viewport: @_viewport page
 
     console.debug "Rendering page #{ page.page.pageNumber }"
 
-    # TODO: Handle errors as well
     page.page.render(renderContext).then =>
-      page.$pageDisplay.find('.loading').hide()
+      console.debug "Rendering page #{ page.page.pageNumber } complete"
+
+      $("#display-page-#{ page.pageNumber } .loading").hide()
+
+    , (args...) =>
+      # TODO: Handle errors better (call destroy?)
+      console.error "Error rendering page #{ page.page.pageNumber }", args...
+
+  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available
+  # TODO: Verify that it works after support for filtering fields on the client will be released in Meteor
+  @SHOW_FIELDS: ->
+    fields:
+      foreignId: 1
+      source: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
@@ -88,7 +139,8 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get 'currentPublicationId'
+  # TODO: Limit only to fields necessary to display publication so that it is not rerun on field changes
+  publication = Publications.findOne Session.get('currentPublicationId'), Publication.SHOW_FIELDS()
 
   return unless publication
 
