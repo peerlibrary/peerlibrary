@@ -29,15 +29,8 @@ PeerLibrary requires additional Meteor packages which are provided through
 Install it as well:
 
     npm install -g meteorite
-
-From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
-
-    mrt
-
-And open [http://localhost:3000/](http://localhost:3000/), which is an address of
-your local development instance.
-
-### Requirements ###
+    
+### Other requirements to run PeerLibrary ###
 
 On first run, PeerLibrary compiles and locally installs additional libraries.
 [Cairo](http://cairographics.org/) graphic library is required for this and you
@@ -51,11 +44,22 @@ run the following before you run `mrt` to configure environment:
 To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
 with command line tools installed (from Preferences > Downloads > Components),
 and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
-or [MacPorts](https://www.macports.org/).
+([MacPorts](https://www.macports.org/) also works, if you prefer it).
 
 On Debian you can install:
 
-    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
+    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++    
+
+### Run it! ###
+
+From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
+
+    mrt
+
+And open [http://localhost:3000/](http://localhost:3000/), which is an address of
+your local development instance.
+
+
 
 ### Debug mode ###
 
