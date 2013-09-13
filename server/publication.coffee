@@ -31,6 +31,8 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
+  # A subset of public fields used for search results to optimize transmission to a client
+  # This list is applied to PUBLIC_FIELDS to get a subset
   @PUBLIC_SEARCH_RESULTS_FIELDS: ->
     [
       'slug'
@@ -41,6 +43,7 @@ class @Publication extends @Publication
       'numberOfPages'
     ]
 
+  # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields:
       slug: 1
