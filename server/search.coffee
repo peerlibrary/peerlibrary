@@ -55,7 +55,7 @@ Meteor.publish 'search-results', (query, limit) ->
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
   resultsHandle = Publications.find(findQuery,
     limit: limit
-    fields: _.pick Publication.publicFields().fields, Publication.publicSearchResultFields()
+    fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
   ).observeChanges
     added: (id, fields) =>
       # TODO: Check if for second query with same id, is searchResult field updated or is the old one kept on the client?
