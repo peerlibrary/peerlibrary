@@ -3,7 +3,7 @@ class @Publication extends @Publication
     super args...
 
     @_pages = null
-    @_annotator = new Annotator()
+    @_annotator = new Annotator @
 
   _viewport: (page) =>
     scale = 1.25
@@ -107,6 +107,8 @@ class @Publication extends @Publication
     page.rendering = true
 
     console.debug "Rendering page #{ page.page.pageNumber }"
+
+    @_annotator.setPage page.page
 
     page.page.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime

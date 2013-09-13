@@ -50,19 +50,7 @@ PDF =
             pageImageCallback page.pageNumber, canvasElement
 
           appendText: bindEnvironemnt (geom) ->
-            width = geom.canvasWidth * geom.hScale
-            height = geom.fontSize * Math.abs geom.vScale
-            x = geom.x
-            y = viewport.height - geom.y
-            text = textContent.bidiTexts[appendCounter].str
-            direction = textContent.bidiTexts[appendCounter].dir
-
-            if direction == 'ttb' # Vertical text
-              # We rotate for 90 degrees
-              # Example: http://blogs.adobe.com/CCJKType/files/2012/07/TaroUTR50SortedList112.pdf
-              x -= height
-              y -= width - height
-              [height, width] = [width, height]
+            {x, y, width, height, direction, text} = PDFJS.pdfTextSegment viewport.height, textContent, appendCounter, geom
 
             appendCounter++
 
