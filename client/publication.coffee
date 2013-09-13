@@ -4,6 +4,9 @@ class @Publication extends @Publication
     page.page.getViewport scale
 
   _progressCallback: (progressData) =>
+    # Maybe this instance has been destroyed in meantime
+    return if @_pages is null
+
     @_progressData = progressData if progressData
 
     documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
@@ -12,7 +15,9 @@ class @Publication extends @Publication
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
   show: =>
-    @destroy()
+    @destroy(true)
+
+    console.debug "Showing publication #{ @_id }"
 
     @_pagesDone = 0
     @_pages = []
@@ -29,6 +34,9 @@ class @Publication extends @Publication
         do ($canvas, $pageDisplay) =>
           # TODO: Handle errors as well
           @_pdf.getPage(pageNumber).then (page) =>
+            # Maybe this instance has been destroyed in meantime
+            return if @_pages is null
+
             viewport = @_viewport
               page: page # Dummy page object
 
@@ -52,7 +60,7 @@ class @Publication extends @Publication
     $(window).on 'resize.publication', @checkRender
 
   checkRender: =>
-    for page in @_pages
+    for page in @_pages or []
       continue if page.rendering
 
       canvasTop = page.$canvas.offset().top
@@ -61,14 +69,21 @@ class @Publication extends @Publication
       if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
         @renderPage page
 
-  destroy: =>
+  destroy: (preShow) =>
+    if preShow is true # Have to check for real true value because inInvalidate passes a computation
+      console.debug "Destroying before showing publication #{ @_id }"
+    else
+      console.debug "Destroying publication #{ @_id }"
+
+    $(window).off 'scroll.publication'
+    $(window).off 'resize.publication'
+
     for page in @_pages or []
       page.page.destroy()
     @_pdf.destroy() if @_pdf
     @_pages = null # To remove references to canvas elements
 
-    $(window).off 'scroll.publication'
-    $(window).off 'resize.publication'
+    $('#viewer .display-wrapper').empty()
 
   renderPage: (page) =>
     return if page.rendering
@@ -89,8 +104,18 @@ Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
-Deps.autorun ->
-  publication = Publications.findOne Session.get 'currentPublicationId'
+Template.publication.publication = ->
+  Publications.findOne Session.get 'currentPublicationId'
+
+Template.publicationDisplay.created = ->
+  console.log "created", @data
+
+Template.publicationDisplay.destroyed = ->
+  publication = @data
+  publication.destroy()
+
+Template.publicationDisplay.rendered = ->
+  publication = @data
 
   return unless publication
 
@@ -105,11 +130,12 @@ Deps.autorun ->
   catch e
     return
 
-  publication.show()
-  Deps.onInvalidate publication.destroy
+  # Nothing new, don't redraw
+  #if @_publication?._id is publication?._id
+  #  return
 
-Template.publication.publication = ->
-  Publications.findOne Session.get 'currentPublicationId'
+  @_publication = publication
+  publication.show()
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find

@@ -20,10 +20,14 @@
           </ul>
         </div>
         {{#constant}}
-          <div class="display-wrapper"></div>
+          {{> publicationDisplay publication}}
         {{/constant}}
       </div>
   </div>
+</template>
+
+<template name="publicationDisplay">
+  <div class="display-wrapper"></div>
 </template>
 
 <template name="publicationAnnotations">
