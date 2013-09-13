@@ -120,4 +120,4 @@ Deps.autorun ->
   progressHide = Meteor.setTimeout ->
     Session.set 'currentPublicationProgress', null
     progressHide = null
-  , 500
+  , 250
