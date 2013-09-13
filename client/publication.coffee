@@ -28,6 +28,9 @@ class @Publication extends @Publication
     @_pages = []
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
+      # Maybe this instance has been destroyed in meantime
+      return if @_pages is null
+
       # To make sure we are starting with empty slate
       $('#viewer .display-wrapper').empty()
 
