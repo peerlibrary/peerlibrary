@@ -59,7 +59,15 @@ From a cloned PeerLibrary repository then run a development instance of PeerLibr
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
 your local development instance.
 
+To demo the tool, you will need to populate your instance of the database with publications. Go to 
+[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of 
+buttons in the center of the screen that will allow you to cache publications. 
+Click on the second button (Sync arXiv metadata) to begin the syncing process. The process 
+will automatically proceed to caching and processing PDFs. Publications that make it all 
+the way through "processing" will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
+Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can 
+click the button in the admin interface for the process which you previously left off on.
 
 ### Debug mode ###
 
