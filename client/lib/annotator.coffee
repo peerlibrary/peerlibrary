@@ -83,11 +83,34 @@ class @Annotator
 
     closestSegmentIndex
 
+  _normalizeStartEnd: (start, end) =>
+    [Math.min(start, end), Math.max(start, end)]
+
+  _hideHiglight: (pageNumber) =>
+    $("#display-page-#{ pageNumber } .highlight").remove()
+
   _showHighlight: (pageNumber, start, end) =>
+    @_hideHiglight pageNumber
+
+    return if start is -1 or end is -1
+
+    [start, end] = @_normalizeStartEnd start, end
+
+    page = @_pages[pageNumber - 1]
+    $displayPage = $("#display-page-#{ pageNumber }")
+
+    for segment in page.textSegments[start...end]
+      $displayPage.append(
+        $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
+      )
 
   _openHighlight: (pageNumber, start, end) =>
+    # TODO: Implement
 
   _closeHighlight: (pageNumber) =>
+    @_hideHiglight pageNumber
+
+    # TODO: Implement
 
   _enableHighligts: (pageNumber) =>
     page = @_pages[pageNumber - 1]
@@ -101,11 +124,11 @@ class @Annotator
     # For debugging
     #@_showSegments pageNumber
 
-    $canvas = $("#display-page-#{ pageNumber } canvas")
-
     highlightStartPosition = null
     highlightStartIndex = -1
     highlightEndIndex = -1
+
+    $canvas = $("#display-page-#{ pageNumber } canvas")
 
     $canvas.mousemove (e) =>
       return if highlightStartIndex is -1

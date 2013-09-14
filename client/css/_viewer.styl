@@ -16,58 +16,11 @@
   margin-right: auto
   margin-bottom: 20px
 
-#viewer .highlighted, #viewer .annotations .annotation:hover
-  background-color: rgba(255, 0, 0, 0.3)
-
 #viewer .display-page canvas
   background: rgba(255, 255, 255, 1.0)
 
-/* text selection */
-
-#viewer .display-page canvas ::selection
-  background: rgba(255, 255, 10, 0.3)
-
-#viewer .display-page canvas ::-moz-selection
-  background: rgba(255, 255, 10, 0.3)
-
-#viewer .display-text
-  position: absolute
-  left: 0
-  top: 0
-  right: 0
-  bottom: 0
-  color: #000
-  font-family: sans-serif
-  overflow: hidden
-  margin-right: auto
-  margin-left: auto
-
-#viewer .display-text > div
-  color: transparent
-  position: absolute
-  line-height: 1
-  white-space: pre
-  cursor: text
-
-#viewer .display-text .highlight
-  margin: -1px
-  padding: 1px
-  background-color: rgba(180, 0, 170, 0.2)
-  border-radius: 4px
-
-#viewer .display-text .highlight.begin
-  border-radius: 4px 0px 0px 4px
-
-#viewer .display-text .highlight.end
-  border-radius: 0px 4px 4px 0px
-
-#viewer .display-text .highlight.middle
-  border-radius: 0px
-
-#viewer .display-text .highlight.selected
-  background-color: rgba(0, 100, 0, 0.2)
-
 /* meta menu */
+
 .meta-menu
   position: fixed
   cursor: pointer
@@ -108,6 +61,7 @@
   content: ''
 
 /* annotations */
+
 .annotations
   position: absolute
   z-index: 100
@@ -127,6 +81,9 @@
 
 .annotations ul.annotations-list li:hover
   box-shadow: 0 0 0 1px rgba(14, 41, 57, 0.12), 0 2px 5px rgba(14, 41, 57, 0.34)
+
+.annotations .annotation:hover
+  background-color: rgba(255, 0, 0, 0.3)
 
 /* loading */
 
@@ -158,3 +115,9 @@
 
 #viewer .display-page .image-segment
   background-color: rgba(240, 110, 0, 0.2)
+
+/* highlights */
+
+#viewer .display-page .highlight
+  position: absolute
+  background-color: rgba(255, 0, 0, 0.3)
