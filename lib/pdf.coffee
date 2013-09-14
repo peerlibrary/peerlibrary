@@ -7,7 +7,16 @@ PDFJS.pdfTextSegment = (textContent, i, geom) ->
   text = textContent.bidiTexts[i].str
   direction = textContent.bidiTexts[i].dir
 
-  # TODO: Should rotate segment based on the angle
+  # When the angle is not 0, we rotate and compute the bounding box of the rotated segment
+  if geom.angle isnt 0.0
+    x = [left, left + width * Math.cos(geom.angle), left - height * Math.sin(geom.angle), left + width * Math.cos(geom.angle) - height * Math.sin(geom.angle)]
+    y = [top, top + width * Math.sin(geom.angle), top + height * Math.cos(geom.angle), top + width * Math.sin(geom.angle) + height * Math.cos(geom.angle)]
+
+    left = _.min(x)
+    top = _.min(y)
+
+    width = _.max(x) - left
+    height = _.max(y) - top
 
   # TODO: Return other values as well?
   left: left
