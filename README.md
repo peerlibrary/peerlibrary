@@ -29,15 +29,8 @@ PeerLibrary requires additional Meteor packages which are provided through
 Install it as well:
 
     npm install -g meteorite
-
-From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
-
-    mrt
-
-And open [http://localhost:3000/](http://localhost:3000/), which is an address of
-your local development instance.
-
-### Requirements ###
+    
+### Other requirements to run PeerLibrary ###
 
 On first run, PeerLibrary compiles and locally installs additional libraries.
 [Cairo](http://cairographics.org/) graphic library is required for this and you
@@ -51,11 +44,30 @@ run the following before you run `mrt` to configure environment:
 To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
 with command line tools installed (from Preferences > Downloads > Components),
 and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
-or [MacPorts](https://www.macports.org/).
+([MacPorts](https://www.macports.org/) also works, if you prefer it).
 
 On Debian you can install:
 
-    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
+    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++    
+
+### Run it! ###
+
+From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
+
+    mrt
+
+And open [http://localhost:3000/](http://localhost:3000/), which is an address of
+your local development instance.
+
+To demo the tool, you will need to populate your instance of the database with publications. Go to 
+[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of 
+buttons in the center of the screen that will allow you to cache publications. 
+Click on the second button (Sync arXiv metadata) to begin the syncing process. The process 
+will automatically proceed to caching and processing PDFs. Publications that make it all 
+the way through "processing" will be searchable at your [http://localhost:3000/](http://localhost:3000/).
+
+Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can 
+click the button in the admin interface for the process which you previously left off on.
 
 ### Debug mode ###
 
