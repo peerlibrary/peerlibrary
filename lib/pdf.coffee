@@ -7,12 +7,7 @@ PDFJS.pdfTextSegment = (textContent, i, geom) ->
   text = textContent.bidiTexts[i].str
   direction = textContent.bidiTexts[i].dir
 
-  #if direction == 'ttb' # Vertical text
-    # We rotate for 90 degrees
-    # Example: http://blogs.adobe.com/CCJKType/files/2012/07/TaroUTR50SortedList112.pdf
-  #  left -= height
-  #  top -= width - height
-  #  [height, width] = [width, height]
+  # TODO: Should rotate segment based on the angle
 
   # TODO: Return other values as well?
   left: left
