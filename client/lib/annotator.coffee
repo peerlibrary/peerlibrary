@@ -23,8 +23,6 @@ class @Annotator
 
       @_enableHighligts pageNumber
 
-      @_showSegments pageNumber
-
     appendText: (geom) =>
       page.textSegments.push PDFJS.pdfTextSegment page.textContent, page.textSegments.length, geom
 
@@ -87,7 +85,7 @@ class @Annotator
 
   _showHighlight: (pageNumber, start, end) =>
 
-  _openHighlight: (pageNumber, highlightStartIndex, highlightEndIndex) =>
+  _openHighlight: (pageNumber, start, end) =>
 
   _closeHighlight: (pageNumber) =>
 
@@ -99,6 +97,9 @@ class @Annotator
     # Highlights already enabled for this page
     return if page.highlightsEnabled
     page.highlightsEnabled = true
+
+    # For debugging
+    #@_showSegments pageNumber
 
     $canvas = $("#display-page-#{ pageNumber } canvas")
 
