@@ -26,9 +26,7 @@ class @Annotator
       @_showSegments pageNumber
 
     appendText: (geom) =>
-      page.textSegments.push(
-        PDFJS.pdfTextSegment page.textContent, page.textSegments.length, geom
-      )
+      page.textSegments.push PDFJS.pdfTextSegment page.textContent, page.textSegments.length, geom
 
   imageLayer: (pageNumber) =>
     page = @_pages[pageNumber - 1]
@@ -42,8 +40,7 @@ class @Annotator
       @_enableHighligts pageNumber
 
     appendImage: (geom) =>
-      # TODO: Add image segments
-      #console.log pageNumber, "appendImage", geom
+      page.imageSegments.push _.pick(geom, 'left', 'top', 'width', 'height')
 
   # For debugging: draw divs for all segments
   _showSegments: (pageNumber) =>
@@ -52,14 +49,13 @@ class @Annotator
 
     for segment in page.textSegments
       $displayPage.append(
-        $('<div/>').addClass('segment text-segment').css
-          left: segment.left
-          top: segment.top
-          width: segment.width
-          height: segment.height
+        $('<div/>').addClass('segment text-segment').css _.pick(segment, 'left', 'top', 'width', 'height')
       )
 
-    # TODO: Display image segments as well
+    for segment in page.imageSegments
+      $displayPage.append(
+        $('<div/>').addClass('segment image-segment').css  _.pick(segment, 'left', 'top', 'width', 'height')
+      )
 
   _findClosestSegment: (pageNumber, position) =>
     page = @_pages[pageNumber - 1]
