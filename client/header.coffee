@@ -103,3 +103,6 @@ Template.searchInput.searchInvitation = ->
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')
+
+Accounts.ui.config
+  passwordSignupFields: 'USERNAME_AND_EMAIL'
