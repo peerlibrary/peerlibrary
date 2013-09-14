@@ -51,6 +51,7 @@ PDF =
 
           appendText: bindEnvironemnt (geom) ->
             # TODO: Verify it still draws correctly on the server
+            # TODO: Store other values as well?
             {left, top, width, height, direction, text} = PDFJS.pdfTextSegment textContent, appendCounter, geom
             top = viewport.height - top
 

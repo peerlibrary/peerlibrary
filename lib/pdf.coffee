@@ -13,6 +13,7 @@ PDFJS.pdfTextSegment = (textContent, i, geom) ->
     top -= width - height
     [height, width] = [width, height]
 
+  # TODO: Return other values as well?
   left: left
   top: top
   width: width
