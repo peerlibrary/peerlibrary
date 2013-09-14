@@ -19,6 +19,14 @@
 #viewer .display-page canvas
   background: rgba(255, 255, 255, 1.0)
 
+/* Additional ways to disable default selection in the code as well */
+/* Opera requires unselectable="on" */
+#viewer .display-page
+  user-select: 'none'
+  -moz-user-select: 'none'
+  -khtml-user-select: 'none'
+  -webkit-user-select: 'none'
+
 /* meta menu */
 
 .meta-menu
@@ -116,7 +124,7 @@
 #viewer .display-page .image-segment
   background-color: rgba(240, 110, 0, 0.2)
 
-/* highlights */
+/* highlighting */
 
 #viewer .display-page .highlight
   position: absolute

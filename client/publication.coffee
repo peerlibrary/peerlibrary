@@ -38,7 +38,14 @@ class @Publication extends @Publication
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
-        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('#viewer .display-wrapper')
+        $('<div/>').addClass(
+          'display-page'
+        ).attr(
+          id: "display-page-#{ pageNumber }"
+          unselectable: 'on' # For Opera
+        ).on(
+          'selectstart', false # Trying hard to disable default selection
+        ).append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (page) =>
