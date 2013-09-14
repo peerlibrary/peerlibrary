@@ -50,8 +50,12 @@ class @Publication extends @Publication
             viewport = @_viewport
               page: page # Dummy page object
 
-            $canvas = $("#display-page-#{ pageNumber } canvas")
+            $displayPage = $("#display-page-#{ page.pageNumber }")
+            $canvas = $displayPage.find('canvas')
             $canvas.removeClass('display-canvas-loading').attr
+              height: viewport.height
+              width: viewport.width
+            $displayPage.css
               height: viewport.height
               width: viewport.width
 
@@ -119,12 +123,16 @@ class @Publication extends @Publication
 
       @_annotator.setTextContent page.pageNumber, textContent
 
-      $canvas = $("#display-page-#{ page.pageNumber } canvas")
+      $displayPage = $("#display-page-#{ page.pageNumber }")
+      $canvas = $displayPage.find('canvas')
 
       # Redo canvas resize to make sure it is the right size
       # It seems sometimes already resized canvases are being deleted and replaced with initial versions
       viewport = @_viewport page
       $canvas.attr
+        height: viewport.height
+        width: viewport.width
+      $displayPage.css
         height: viewport.height
         width: viewport.width
 
