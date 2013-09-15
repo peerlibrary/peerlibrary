@@ -83,28 +83,44 @@ class @Annotator
 
     closestSegmentIndex
 
-  _normalizeStartEnd: (start, end) =>
-    [Math.min(start, end), Math.max(start, end)]
+  _normalizeStartEnd: (startPosition, startIndex, endPosition, endIndex) =>
+    if startIndex < endIndex
+      # We don't have to do anything
+      return [startPosition, startIndex, endPosition, endIndex]
+    else if startIndex > endIndex
+      return [endPosition, endIndex, startPosition, startIndex]
+    else
+      # Start and end are in the same segment, we prefer the left point (and top)
+      # TODO: What about right-to-left texts? Or top-down texts?
+      if startPosition.left < endPosition.left
+        return [startPosition, startIndex, endPosition, endIndex]
+      else if startPosition.left > endPosition.left
+        return [endPosition, endIndex, startPosition, startIndex]
+      # Left coordinates are equal, we prefer top one
+      else if startPosition.top < endPosition.top
+        return [startPosition, startIndex, endPosition, endIndex]
+      else
+        return [endPosition, endIndex, startPosition, startIndex]
 
   _hideHiglight: (pageNumber) =>
     $("#display-page-#{ pageNumber } .highlight").remove()
 
-  _showHighlight: (pageNumber, start, end) =>
+  _showHighlight: (pageNumber, startPosition, startIndex, endPosition, endIndex) =>
     @_hideHiglight pageNumber
 
-    return if start is -1 or end is -1
+    return if startPosition is -1 or endPosition is -1
 
-    [start, end] = @_normalizeStartEnd start, end
+    [startPosition, startIndex, endPosition, endIndex] = @_normalizeStartEnd startPosition, startIndex, endPosition, endIndex
 
     page = @_pages[pageNumber - 1]
     $displayPage = $("#display-page-#{ pageNumber }")
 
-    for segment in page.textSegments[start...end]
+    for segment in page.textSegments[startIndex..endIndex]
       $displayPage.append(
         $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
       )
 
-  _openHighlight: (pageNumber, start, end) =>
+  _openHighlight: (pageNumber) =>
     # TODO: Implement
 
   _closeHighlight: (pageNumber) =>
@@ -125,6 +141,7 @@ class @Annotator
     #@_showSegments pageNumber
 
     highlightStartPosition = null
+    highlightEndPosition = null
     highlightStartIndex = -1
     highlightEndIndex = -1
 
@@ -134,13 +151,14 @@ class @Annotator
       return if highlightStartIndex is -1
 
       offset = $canvas.offset()
-      highlightEndIndex = @_findClosestSegment pageNumber,
+      highlightEndPosition =
         left: e.pageX - offset.left
         top: e.pageY - offset.top
+      highlightEndIndex = @_findClosestSegment pageNumber, highlightEndPosition
 
       return if highlightEndIndex is -1
 
-      @_showHighlight pageNumber, highlightStartIndex, highlightEndIndex
+      @_showHighlight pageNumber, highlightStartPosition, highlightStartIndex, highlightEndPosition, highlightEndIndex
 
     $canvas.mousedown (e) =>
       offset = $canvas.offset()
@@ -157,9 +175,10 @@ class @Annotator
         # Mouse went up at the same location that it started, we just cleanup
         @_closeHighlight pageNumber
       else
-        @_openHighlight pageNumber, highlightStartIndex, highlightEndIndex
+        @_openHighlight pageNumber
 
       highlightStartPosition = null
+      highlightEndPosition = null
       highlightStartIndex = -1
       highlightEndIndex = -1
 
@@ -169,5 +188,6 @@ class @Annotator
       @_closeHighlight pageNumber
 
       highlightStartPosition = null
+      highlightEndPosition = null
       highlightStartIndex = -1
       highlightEndIndex = -1
