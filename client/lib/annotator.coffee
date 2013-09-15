@@ -147,47 +147,39 @@ class @Annotator
 
     $canvas = $("#display-page-#{ pageNumber } canvas")
 
-    $canvas.mousemove (e) =>
-      return if highlightStartIndex is -1
-
-      offset = $canvas.offset()
-      highlightEndPosition =
-        left: e.pageX - offset.left
-        top: e.pageY - offset.top
-      highlightEndIndex = @_findClosestSegment pageNumber, highlightEndPosition
-
-      return if highlightEndIndex is -1
-
-      @_showHighlight pageNumber, highlightStartPosition, highlightStartIndex, highlightEndPosition, highlightEndIndex
-
-    $canvas.mousedown (e) =>
+    $canvas.on 'mousedown', (e) =>
       offset = $canvas.offset()
       highlightStartPosition =
         left: e.pageX - offset.left
         top: e.pageY - offset.top
       highlightStartIndex = @_findClosestSegment pageNumber, highlightStartPosition
 
-    $canvas.mouseup (e) =>
-      return if highlightStartIndex is -1
+      $(document).on 'mousemove.highlighting', (e) =>
+        return if highlightStartIndex is -1
 
-      offset = $canvas.offset()
-      if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
-        # Mouse went up at the same location that it started, we just cleanup
-        @_closeHighlight pageNumber
-      else
-        @_openHighlight pageNumber
+        offset = $canvas.offset()
+        highlightEndPosition =
+          left: e.pageX - offset.left
+          top: e.pageY - offset.top
+        highlightEndIndex = @_findClosestSegment pageNumber, highlightEndPosition
 
-      highlightStartPosition = null
-      highlightEndPosition = null
-      highlightStartIndex = -1
-      highlightEndIndex = -1
+        return if highlightEndIndex is -1
 
-    $canvas.mouseleave (e) =>
-      return if highlightStartIndex is -1
+        @_showHighlight pageNumber, highlightStartPosition, highlightStartIndex, highlightEndPosition, highlightEndIndex
 
-      @_closeHighlight pageNumber
+      $(document).on 'mouseup.highlighting', (e) =>
+        $(document).off '.highlighting'
 
-      highlightStartPosition = null
-      highlightEndPosition = null
-      highlightStartIndex = -1
-      highlightEndIndex = -1
+        return if highlightStartIndex is -1
+
+        offset = $canvas.offset()
+        if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
+          # Mouse went up at the same location that it started, we just cleanup
+          @_closeHighlight pageNumber
+        else
+          @_openHighlight pageNumber
+
+        highlightStartPosition = null
+        highlightEndPosition = null
+        highlightStartIndex = -1
+        highlightEndIndex = -1
