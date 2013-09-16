@@ -1,10 +1,13 @@
 class @Annotator
   constructor: ->
     @_pages = []
+    @_activeHighlightStart = null
+    @_activeHighlightEnd = null
 
   setPage: (page) =>
     # Initialize the page
     @_pages[page.pageNumber - 1] =
+      pageNumber: page.pageNumber
       textSegments: []
       imageSegments: []
       highlightsEnabled: false
@@ -55,76 +58,154 @@ class @Annotator
         $('<div/>').addClass('segment image-segment').css  _.pick(segment, 'left', 'top', 'width', 'height')
       )
 
+  _distance: (position, area) =>
+    distanceXLeft = position.left - area.left
+    distanceXRight = position.left - (area.left + area.width)
+
+    distanceYTop = position.top - area.top
+    distanceYBottom = position.top - (area.top + area.height)
+
+    distanceX = if Math.abs(distanceXLeft) < Math.abs(distanceXRight) then distanceXLeft else distanceXRight
+    if position.left > area.left and position.left < area.left + area.width
+      distanceX = 0
+
+    distanceY = if Math.abs(distanceYTop) < Math.abs(distanceYBottom) then distanceYTop else distanceYBottom
+    if position.top > area.top and position.top < area.top + area.height
+      distanceY = 0
+
+    distanceX * distanceX + distanceY * distanceY
+
+  _findClosestPage: (position) =>
+    $closestCanvas = null
+    closestPageNumber = -1
+    closestDistance = Number.MAX_VALUE
+
+    $('.display-page canvas').each (i, canvas) =>
+      $canvas = $(canvas)
+      pageNumber = $canvas.data 'page-number'
+
+      return unless @_pages[pageNumber - 1]?.highlightsEnabled
+
+      offset = $canvas.offset()
+      distance = @_distance position,
+        left: offset.left
+        top: offset.top
+        width: $canvas.width()
+        height: $canvas.height()
+      if distance < closestDistance
+        $closestCanvas = $canvas
+        closestPageNumber = pageNumber
+        closestDistance = distance
+
+    assert.notEqual closestPageNumber, -1
+    assert $closestCanvas
+
+    [$closestCanvas, closestPageNumber]
+
   _findClosestSegment: (pageNumber, position) =>
     page = @_pages[pageNumber - 1]
 
-    closestDistance = Number.MAX_VALUE
     closestSegmentIndex = -1
+    closestDistance = Number.MAX_VALUE
 
     for segment, i in page.textSegments
-      distanceXLeft = position.left - segment.left
-      distanceXRight = position.left - (segment.left + segment.width)
-
-      distanceYTop = position.top - segment.top
-      distanceYBottom = position.top - (segment.top + segment.height)
-
-      distanceX = if Math.abs(distanceXLeft) < Math.abs(distanceXRight) then distanceXLeft else distanceXRight
-      if position.left > segment.left and position.left < segment.left + segment.width
-        distanceX = 0
-
-      distanceY = if Math.abs(distanceYTop) < Math.abs(distanceYBottom) then distanceYTop else distanceYBottom
-      if position.top > segment.top and position.top < segment.top + segment.height
-        distanceY = 0
-
-      distance = distanceX * distanceX + distanceY * distanceY
+      distance = @_distance position, segment
       if distance < closestDistance
-        closestDistance = distance
         closestSegmentIndex = i
+        closestDistance = distance
 
     closestSegmentIndex
 
-  _normalizeStartEnd: (startPosition, startIndex, endPosition, endIndex) =>
-    if startIndex < endIndex
+  _normalizeActiveHighlightStartEnd: =>
+    if @_activeHighlightStart.pageNumber < @_activeHighlightEnd.pageNumber
       # We don't have to do anything
-      return [startPosition, startIndex, endPosition, endIndex]
-    else if startIndex > endIndex
-      return [endPosition, endIndex, startPosition, startIndex]
+      return [@_activeHighlightStart, @_activeHighlightEnd]
+    else if @_activeHighlightStart.pageNumber > @_activeHighlightEnd.pageNumber
+      # We just swap
+      return [@_activeHighlightEnd, @_activeHighlightStart]
+
+    # Start and end are on the same page
+
+    if @_activeHighlightStart.index < @_activeHighlightEnd.index
+      # We don't have to do anything
+      return [@_activeHighlightStart, @_activeHighlightEnd]
+    else if @_activeHighlightStart.index > @_activeHighlightEnd.index
+      # We just swap
+      return [@_activeHighlightEnd, @_activeHighlightStart]
+
+    # Start and end are in the same segment, we prefer the left point (and top)
+
+    # TODO: What about right-to-left texts? Or top-down texts?
+    if @_activeHighlightStart.left < @_activeHighlightEnd.left
+      return [@_activeHighlightStart, @_activeHighlightEnd]
+    else if @_activeHighlightStart.left > @_activeHighlightEnd.left
+      return [@_activeHighlightEnd, @_activeHighlightStart]
+
+    # Left coordinates are equal, we prefer top one
+
+    if @_activeHighlightStart.top < @_activeHighlightEnd.top
+      return [@_activeHighlightStart, @_activeHighlightEnd]
     else
-      # Start and end are in the same segment, we prefer the left point (and top)
-      # TODO: What about right-to-left texts? Or top-down texts?
-      if startPosition.left < endPosition.left
-        return [startPosition, startIndex, endPosition, endIndex]
-      else if startPosition.left > endPosition.left
-        return [endPosition, endIndex, startPosition, startIndex]
-      # Left coordinates are equal, we prefer top one
-      else if startPosition.top < endPosition.top
-        return [startPosition, startIndex, endPosition, endIndex]
-      else
-        return [endPosition, endIndex, startPosition, startIndex]
+      return [@_activeHighlightEnd, @_activeHighlightStart]
 
-  _hideHiglight: (pageNumber) =>
-    $("#display-page-#{ pageNumber } .highlight").remove()
+  _hideActiveHiglight: =>
+    $(".display-page .highlight").remove()
 
-  _showHighlight: (pageNumber, startPosition, startIndex, endPosition, endIndex) =>
-    @_hideHiglight pageNumber
+  _showActiveHighlight: =>
+    # TODO: It is costy to first hide (remove) everything and the reshow (add), we should reuse things if we can
+    @_hideActiveHiglight()
 
-    return if startPosition is -1 or endPosition is -1
+    assert @_activeHighlightStart
+    assert @_activeHighlightEnd
 
-    [startPosition, startIndex, endPosition, endIndex] = @_normalizeStartEnd startPosition, startIndex, endPosition, endIndex
+    [activeHighlightStart, activeHighlightEnd] = @_normalizeActiveHighlightStartEnd()
 
-    page = @_pages[pageNumber - 1]
-    $displayPage = $("#display-page-#{ pageNumber }")
+    if activeHighlightStart.pageNumber is activeHighlightEnd.pageNumber
+      $displayPage = $("#display-page-#{ activeHighlightStart.pageNumber }")
 
-    for segment in page.textSegments[startIndex..endIndex]
-      $displayPage.append(
-        $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
-      )
+      textSegments = @_pages[activeHighlightStart.pageNumber - 1].textSegments
+      for segment in textSegments[activeHighlightStart.index..activeHighlightEnd.index]
+        $displayPage.append(
+          $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
+        )
+    else
+      # Show for the first page
 
-  _openHighlight: (pageNumber) =>
+      $displayPage = $("#display-page-#{ activeHighlightStart.pageNumber }")
+
+      textSegments = @_pages[activeHighlightStart.pageNumber - 1].textSegments
+      for segment in textSegments[activeHighlightStart.index...textSegments.length] # Exclusive range (...) here instead of inclusive (..)
+        $displayPage.append(
+          $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
+        )
+
+      # Show intermediate pages
+
+      for page in @_pages[activeHighlightStart.pageNumber...(activeHighlightEnd.pageNumber - 1)] # Range without the first and the last pages
+        continue unless page?.highlightsEnabled
+
+        $displayPage = $("#display-page-#{ page.pageNumber }")
+
+        for segment in page.textSegments
+          $displayPage.append(
+            $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
+          )
+
+      # Show for the last page
+
+      $displayPage = $("#display-page-#{ activeHighlightEnd.pageNumber }")
+
+      textSegments = @_pages[activeHighlightEnd.pageNumber - 1].textSegments
+      for segment in textSegments[0..activeHighlightEnd.index] # Inclusive range (..) here
+        $displayPage.append(
+          $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
+        )
+
+  _openActiveHighlight: =>
     # TODO: Implement
 
-  _closeHighlight: (pageNumber) =>
-    @_hideHiglight pageNumber
+  _closeActiveHighlight: =>
+    @_hideActiveHiglight()
 
     # TODO: Implement
 
@@ -140,46 +221,77 @@ class @Annotator
     # For debugging
     #@_showSegments pageNumber
 
-    highlightStartPosition = null
-    highlightEndPosition = null
-    highlightStartIndex = -1
-    highlightEndIndex = -1
-
     $canvas = $("#display-page-#{ pageNumber } canvas")
 
     $canvas.on 'mousedown', (e) =>
       offset = $canvas.offset()
-      highlightStartPosition =
-        left: e.pageX - offset.left
-        top: e.pageY - offset.top
-      highlightStartIndex = @_findClosestSegment pageNumber, highlightStartPosition
+      left = e.pageX - offset.left
+      top = e.pageY - offset.top
+      index = @_findClosestSegment pageNumber,
+        left: left
+        top: top
+
+      return if index is -1
+
+      @_activeHighlightStart =
+        pageNumber: pageNumber
+        left: left
+        top: top
+        index: index
 
       $(document).on 'mousemove.highlighting', (e) =>
-        return if highlightStartIndex is -1
+        assert @_activeHighlightStart
 
-        offset = $canvas.offset()
-        highlightEndPosition =
-          left: e.pageX - offset.left
-          top: e.pageY - offset.top
-        highlightEndIndex = @_findClosestSegment pageNumber, highlightEndPosition
+        [$c, pn] = @_findClosestPage
+          left: e.pageX
+          top: e.pageY
+        offset = $c.offset()
+        left = e.pageX - offset.left
+        top = e.pageY - offset.top
+        index = @_findClosestSegment pn,
+          left: left
+          top: top
 
-        return if highlightEndIndex is -1
+        return if index is -1
 
-        @_showHighlight pageNumber, highlightStartPosition, highlightStartIndex, highlightEndPosition, highlightEndIndex
+        @_activeHighlightEnd =
+          pageNumber: pn
+          left: left
+          top: top
+          index: index
+
+        @_showActiveHighlight()
 
       $(document).on 'mouseup.highlighting', (e) =>
         $(document).off '.highlighting'
 
-        return if highlightStartIndex is -1
+        assert @_activeHighlightStart
 
-        offset = $canvas.offset()
-        if highlightStartPosition.left is e.pageX - offset.left and highlightStartPosition.top is e.pageY - offset.top
+        [$c, pn] = @_findClosestPage
+          left: e.pageX
+          top: e.pageY
+        offset = $c.offset()
+        left = e.pageX - offset.left
+        top = e.pageY - offset.top
+        index = @_findClosestSegment pn,
+          left: left
+          top: top
+
+        if index is -1
+          @_closeHighlight()
+          return
+
+        @_activeHighlightEnd =
+          pageNumber: pn
+          left: left
+          top: top
+          index: index
+
+        if @_activeHighlightStart.left is @_activeHighlightEnd.left and @_activeHighlightStart.top is @_activeHighlightEnd.top
           # Mouse went up at the same location that it started, we just cleanup
-          @_closeHighlight pageNumber
+          @_closeActiveHighlight()
         else
-          @_openHighlight pageNumber
+          @_openActiveHighlight()
 
-        highlightStartPosition = null
-        highlightEndPosition = null
-        highlightStartIndex = -1
-        highlightEndIndex = -1
+        @_activeHighlightStart = null
+        @_activeHighlightEnd = null

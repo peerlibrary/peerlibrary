@@ -36,7 +36,7 @@ class @Publication extends @Publication
       $('#viewer .display-wrapper').empty()
 
       for pageNumber in [1..@_pdf.numPages]
-        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
+        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $('<div/>').addClass(
           'display-page'
