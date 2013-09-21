@@ -1,3 +1,8 @@
+LINE_HEIGHT_THRESHOLD = 0.5
+SPLIT_SECTION_THRESHOLD = 1.1
+SECTION_INDENT_THRESHOLD = 1.0 / 40.0
+SPLIT_PARAGRAPH_THRESHOLD = 0.9
+
 class @Annotator
   constructor: ->
     @_pages = []
@@ -7,13 +12,118 @@ class @Annotator
   setPage: (page) =>
     # Initialize the page
     @_pages[page.pageNumber - 1] =
+      page: page
       pageNumber: page.pageNumber
       textSegments: []
       imageSegments: []
       highlightsEnabled: false
+      lineHeight: null
+      paragraphs: []
 
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
+
+  _dy: (pageNumber, i) =>
+    page = @_pages[pageNumber - 1]
+    page.textSegments[i + 1].top - page.textSegments[i].top
+
+  _computeLineHeight: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+
+    dys = []
+    for segment, i in page.textSegments
+      continue if i is page.textSegments.length - 1 # Skip the last one
+
+      dy = @_dy pageNumber, i
+      if dy > 0
+        dys.push
+          dy: dy
+          area: segment.width * segment.height
+
+    return unless dys.length
+
+    dys = dys.sort((a, b) -> a.dy - b.dy)
+    lineHeights = []
+    for dy in dys
+      lastLineHeights = lineHeights[lineHeights.length - 1]
+      if lastLineHeights and Math.abs(lastLineHeights.average - dy.dy) < LINE_HEIGHT_THRESHOLD * SCALE
+        lastLineHeights.average = ((lastLineHeights.average * lastLineHeights.count) + dy.dy) / (lastLineHeights.count + 1)
+        lastLineHeights.area += dy.area
+        lastLineHeights.count++
+      else
+        lineHeights.push
+          average: dy.dy
+          count: 1
+          area: dy.area
+
+    lineHeights.sort((a, b) -> b.area - a.area)
+    page.lineHeight = lineHeights[0].average
+
+  _splitSections: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+
+    s = 0
+    sections = []
+    for segment, i in page.textSegments
+      continue if i is page.textSegments.length - 1 # Skip the last one
+
+      if Math.abs(@_dy pageNumber, i) > page.lineHeight * SPLIT_SECTION_THRESHOLD
+        sections.push [s, i + 1]
+        s = i + 1
+
+    sections.push [s, page.textSegments.length]
+    sections
+
+  _sectionIndentThreshold: (pageNumber, start, end) =>
+    page = @_pages[pageNumber - 1]
+
+    left = Number.MAX_VALUE
+    right = 0
+
+    for segment in page.textSegments[start...end]
+      left = Math.min left, segment.left
+      right = Math.max right, (segment.left + segment.width)
+
+    left + (right - left) * SECTION_INDENT_THRESHOLD
+
+  _splitParagraphs: (pageNumber, start, end, sectionIndentThreshold) =>
+    page = @_pages[pageNumber - 1]
+
+    s = start
+    paragraphs = []
+    for segment, i in page.textSegments[start...end - 1]
+      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
+        paragraphs.push [s, i + 1]
+        s = i + 1
+
+    paragraphs.push [s, end]
+    paragraphs
+
+  _processParagraph: (pageNumber, start, end) =>
+    page = @_pages[pageNumber - 1]
+
+    top = Number.MAX_VALUE
+    bottom = 0
+    left = Number.MAX_VALUE
+    right = 0
+
+    for segment in page.textSegments[start...end]
+      left = Math.min left, segment.left
+      right = Math.max right, (segment.left + segment.width)
+      top = Math.min top, segment.top
+      bottom = Math.max bottom, (segment.top + segment.height)
+
+    page.paragraphs.push
+      left: left
+      top: top
+      width: right - left
+      height: bottom - top
+
+  _processSection: (pageNumber, start, end) =>
+    sectionIndentThreshold = @_sectionIndentThreshold pageNumber, start, end
+
+    for [s, e] in @_splitParagraphs pageNumber, start, end, sectionIndentThreshold
+      @_processParagraph pageNumber, s, e
 
   _roundArea: (area) =>
     areaRounded = _.clone area
@@ -66,6 +176,16 @@ class @Annotator
     for segment in page.imageSegments
       $displayPage.append(
         $('<div/>').addClass('segment image-segment').css  _.pick(segment, 'left', 'top', 'width', 'height')
+      )
+
+  # For debugging: draw divs for all paragraphs
+  _showParagraphs: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+    $displayPage = $("#display-page-#{ pageNumber }")
+
+    for paragraph in page.paragraphs
+      $displayPage.append(
+        $('<div/>').addClass('paragraph').css _.pick(paragraph, 'left', 'top', 'width', 'height')
       )
 
   _distance: (position, area) =>
@@ -230,6 +350,14 @@ class @Annotator
 
     # For debugging
     #@_showSegments pageNumber
+
+    @_computeLineHeight pageNumber
+
+    for [start, end] in @_splitSections pageNumber
+      @_processSection pageNumber, start, end
+
+    # For debugging
+    #@_showParagraphs pageNumber
 
     $canvas = $("#display-page-#{ pageNumber } canvas")
 

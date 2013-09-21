@@ -1,3 +1,5 @@
+@SCALE = 1.25
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -6,7 +8,7 @@ class @Publication extends @Publication
     @_annotator = new Annotator
 
   _viewport: (page) =>
-    scale = 1.25
+    scale = SCALE
     page.page.getViewport scale
 
   _progressCallback: (progressData) =>
