@@ -15,6 +15,16 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
+  _roundArea: (area) =>
+    areaRounded = _.clone area
+    areaRounded.left = Math.floor areaRounded.left
+    areaRounded.top = Math.floor areaRounded.top
+    areaRounded.width += area.left - areaRounded.left
+    areaRounded.height += area.top - areaRounded.top
+    areaRounded.width = Math.ceil areaRounded.width
+    areaRounded.height = Math.ceil areaRounded.height
+    areaRounded
+
   textLayer: (pageNumber) =>
     page = @_pages[pageNumber - 1]
 
