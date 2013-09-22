@@ -3,6 +3,36 @@ SPLIT_SECTION_THRESHOLD = 1.1
 SECTION_INDENT_THRESHOLD = 1.0 / 40.0
 SPLIT_PARAGRAPH_THRESHOLD = 0.9
 
+# Merges sorted lists in sorted list with unique elements
+merge = (list1, list2) ->
+  i = 0
+  j = 0
+  list = []
+
+  while i < list1.length and j < list2.length
+    if list1[i] < list2[j]
+      list.push list1[i] unless list[list.length - 1] == list1[i]
+      i++
+    else if list2[j] < list1[i]
+      list.push list2[j] unless list[list.length - 1] == list2[j]
+      j++
+    else if list1[i] == list2[j]
+      list.push list1[i] unless list[list.length - 1] == list1[i]
+      i++
+      j++
+    else
+      assert false
+
+  while i < list1.length
+    list.push list1[i] unless list[list.length - 1] == list1[i]
+    i++
+
+  while j < list2.length
+    list.push list2[j] unless list[list.length - 1] == list2[j]
+    j++
+
+  list
+
 class @Annotator
   constructor: ->
     @_pages = []
@@ -59,47 +89,7 @@ class @Annotator
     lineHeights.sort((a, b) -> b.area - a.area)
     page.lineHeight = lineHeights[0].average
 
-  _splitSections: (pageNumber) =>
-    page = @_pages[pageNumber - 1]
-
-    s = 0
-    sections = []
-    for segment, i in page.textSegments
-      continue if i is page.textSegments.length - 1 # Skip the last one
-
-      if Math.abs(@_dy pageNumber, i) > page.lineHeight * SPLIT_SECTION_THRESHOLD
-        sections.push [s, i + 1]
-        s = i + 1
-
-    sections.push [s, page.textSegments.length]
-    sections
-
-  _sectionIndentThreshold: (pageNumber, start, end) =>
-    page = @_pages[pageNumber - 1]
-
-    left = Number.MAX_VALUE
-    right = 0
-
-    for segment in page.textSegments[start...end]
-      left = Math.min left, segment.left
-      right = Math.max right, (segment.left + segment.width)
-
-    left + (right - left) * SECTION_INDENT_THRESHOLD
-
-  _splitParagraphs: (pageNumber, start, end, sectionIndentThreshold) =>
-    page = @_pages[pageNumber - 1]
-
-    s = start
-    paragraphs = []
-    for segment, i in page.textSegments[start...end - 1]
-      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
-        paragraphs.push [s, i + 1]
-        s = i + 1
-
-    paragraphs.push [s, end]
-    paragraphs
-
-  _processParagraph: (pageNumber, start, end) =>
+  _boundingBox: (pageNumber, segmentsIndices) =>
     page = @_pages[pageNumber - 1]
 
     top = Number.MAX_VALUE
@@ -107,23 +97,102 @@ class @Annotator
     left = Number.MAX_VALUE
     right = 0
 
-    for segment in page.textSegments[start...end]
+    for i in segmentsIndices
+      segment = page.textSegments[i]
+
       left = Math.min left, segment.left
       right = Math.max right, (segment.left + segment.width)
       top = Math.min top, segment.top
       bottom = Math.max bottom, (segment.top + segment.height)
 
-    page.paragraphs.push
-      left: left
-      top: top
-      width: right - left
-      height: bottom - top
+    left: left
+    top: top
+    width: right - left
+    height: bottom - top
 
-  _processSection: (pageNumber, start, end) =>
-    sectionIndentThreshold = @_sectionIndentThreshold pageNumber, start, end
+  _areasOverlap: (area1, area2) =>
+    area1right = area1.left + area1.width
+    area2right = area2.left + area2.width
+    area1bottom = area1.top + area1.height
+    area2bottom = area2.top + area2.height
 
-    for [s, e] in @_splitParagraphs pageNumber, start, end, sectionIndentThreshold
-      @_processParagraph pageNumber, s, e
+    area1.left < area2right and area1right > area2.left and area1.top < area2bottom and area1bottom > area2.top
+
+  _mergeOverlappingSections: (pageNumber, sections) =>
+    changed = true
+    while changed
+      changed = false
+
+      # We skip the last one, because we are checking areas in pairs
+      for i in [0...sections.length - 1]
+        area1 = @_boundingBox pageNumber, sections[i]
+        area2 = @_boundingBox pageNumber, sections[i + 1]
+
+        if @_areasOverlap area1, area2
+          # We merge into the first section
+          sections[i] = merge sections[i], sections[i + 1]
+
+          # We remove the second section
+          sections.splice i + 1, 1
+
+          changed = true
+          break
+
+    sections
+
+  _splitSections: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+
+    s = 0
+    sections = []
+    for segment, i in page.textSegments
+      continue if i is page.textSegments.length - 1 # Skip the last one, @_dy checks this and the next one
+
+      if Math.abs(@_dy pageNumber, i) > page.lineHeight * SPLIT_SECTION_THRESHOLD * SCALE
+        sections.push [s..i] # Inclusive range (..) here
+        s = i + 1
+
+    sections.push [s...page.textSegments.length] # Exclusive range (...) here
+
+    @_mergeOverlappingSections pageNumber, sections
+
+  _sectionIndentThreshold: (pageNumber, segmentsIndices) =>
+    page = @_pages[pageNumber - 1]
+
+    left = Number.MAX_VALUE
+    right = 0
+
+    for i in segmentsIndices
+      segment = page.textSegments[i]
+
+      left = Math.min left, segment.left
+      right = Math.max right, (segment.left + segment.width)
+
+    left + (right - left) * SECTION_INDENT_THRESHOLD * SCALE
+
+  _splitParagraphs: (pageNumber, segments, sectionIndentThreshold) =>
+    page = @_pages[pageNumber - 1]
+
+    s = start
+    paragraphs = []
+    for segment, i in page.textSegments[start...end - 1]
+      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD * SCALE and segment.left > sectionIndentThreshold
+        paragraphs.push [s, i + 1]
+        s = i + 1
+
+    paragraphs.push [s, end]
+    paragraphs
+
+  _processParagraph: (pageNumber, segmentsIndices) =>
+    page = @_pages[pageNumber - 1]
+
+    page.paragraphs.push @_boundingBox pageNumber, segmentsIndices
+
+  _processSection: (pageNumber, segmentsIndices) =>
+    sectionIndentThreshold = @_sectionIndentThreshold pageNumber, segmentsIndices
+
+    for segsIs in @_splitParagraphs pageNumber, segmentsIndices, sectionIndentThreshold
+      @_processParagraph pageNumber, segsIs
 
   _roundArea: (area) =>
     areaRounded = _.clone area
@@ -353,11 +422,11 @@ class @Annotator
 
     @_computeLineHeight pageNumber
 
-    for [start, end] in @_splitSections pageNumber
-      @_processSection pageNumber, start, end
+    for segmentsIndices in @_splitSections pageNumber
+      @_processParagraph pageNumber, segmentsIndices
 
     # For debugging
-    #@_showParagraphs pageNumber
+    @_showParagraphs pageNumber
 
     $canvas = $("#display-page-#{ pageNumber } canvas")
 
