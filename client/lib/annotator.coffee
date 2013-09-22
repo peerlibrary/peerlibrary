@@ -33,6 +33,8 @@ merge = (list1, list2) ->
 
   list
 
+# TODO: We should really move pages into their own objects so that we do not have to pass pageNumber everywhere around
+
 class @Annotator
   constructor: ->
     @_pages = []
