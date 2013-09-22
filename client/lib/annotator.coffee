@@ -1,4 +1,5 @@
 LINE_HEIGHT_THRESHOLD = 0.5
+LARGEST_LINE_HEIGHT_WINDOW = 0.07
 SPLIT_SECTION_THRESHOLD = 1.1
 SECTION_INDENT_THRESHOLD = 1.0 / 40.0
 SPLIT_PARAGRAPH_THRESHOLD = 0.9
@@ -74,7 +75,7 @@ class @Annotator
 
     return unless dys.length
 
-    dys = dys.sort((a, b) -> a.dy - b.dy)
+    dys = dys.sort (a, b) -> a.dy - b.dy
     lineHeights = []
     for dy in dys
       lastLineHeights = lineHeights[lineHeights.length - 1]
@@ -88,8 +89,23 @@ class @Annotator
           count: 1
           area: dy.area
 
-    lineHeights.sort((a, b) -> b.area - a.area)
-    page.lineHeight = lineHeights[0].average
+    combinedArea = 0
+    for lineHeight in lineHeights
+      combinedArea += lineHeight.area
+
+    lineHeights.sort (a, b) -> b.area - a.area
+
+    # We prefer not splitting real paragraphs, so we are selecting the largest
+    # line height among a window of line heights based on their area
+    largestLineHeight = 0
+    for lineHeight in lineHeights
+      if lineHeight.area / combinedArea < lineHeights[0].area / combinedArea - LARGEST_LINE_HEIGHT_WINDOW * SCALE
+        break
+
+      if lineHeight.average > largestLineHeight
+        largestLineHeight = lineHeight.average
+
+    page.lineHeight = largestLineHeight
 
   _boundingBox: (pageNumber, segmentsIndices) =>
     page = @_pages[pageNumber - 1]
