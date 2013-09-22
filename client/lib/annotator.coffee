@@ -1,6 +1,6 @@
-LINE_HEIGHT_THRESHOLD = 0.5
-LARGEST_LINE_HEIGHT_WINDOW = 0.07
-SPLIT_SECTION_THRESHOLD = 1.1
+LINE_HEIGHT_THRESHOLD = 0.5 # To allow for small variations (half of the unit of difference)
+LARGEST_LINE_HEIGHT_WINDOW = 0.07 # Heuristic
+SPLIT_SECTION_THRESHOLD = 1.01 # To allow for small rounding errors
 SECTION_INDENT_THRESHOLD = 1.0 / 40.0
 SPLIT_PARAGRAPH_THRESHOLD = 0.9
 
@@ -79,7 +79,7 @@ class @Annotator
     lineHeights = []
     for dy in dys
       lastLineHeights = lineHeights[lineHeights.length - 1]
-      if lastLineHeights and Math.abs(lastLineHeights.average - dy.dy) < LINE_HEIGHT_THRESHOLD * SCALE
+      if lastLineHeights and Math.abs(lastLineHeights.average - dy.dy) < LINE_HEIGHT_THRESHOLD * SCALE # We scale the threshold
         lastLineHeights.average = ((lastLineHeights.average * lastLineHeights.count) + dy.dy) / (lastLineHeights.count + 1)
         lastLineHeights.area += dy.area
         lastLineHeights.count++
@@ -99,7 +99,7 @@ class @Annotator
     # line height among a window of line heights based on their area
     largestLineHeight = 0
     for lineHeight in lineHeights
-      if lineHeight.area / combinedArea < lineHeights[0].area / combinedArea - LARGEST_LINE_HEIGHT_WINDOW * SCALE
+      if lineHeight.area / combinedArea < lineHeights[0].area / combinedArea - LARGEST_LINE_HEIGHT_WINDOW
         break
 
       if lineHeight.average > largestLineHeight
@@ -175,7 +175,7 @@ class @Annotator
     for segment, i in page.textSegments
       continue if i is page.textSegments.length - 1 # Skip the last one, @_dy checks this and the next one
 
-      if Math.abs(@_dy pageNumber, i) > page.lineHeight * SPLIT_SECTION_THRESHOLD * SCALE
+      if Math.abs(@_dy pageNumber, i) > page.lineHeight * SPLIT_SECTION_THRESHOLD
         sections.push [s..i] # Inclusive range (..) here
         s = i + 1
 
@@ -195,7 +195,7 @@ class @Annotator
       left = Math.min left, segment.left
       right = Math.max right, (segment.left + segment.width)
 
-    left + (right - left) * SECTION_INDENT_THRESHOLD * SCALE
+    left + (right - left) * SECTION_INDENT_THRESHOLD
 
   _splitParagraphs: (pageNumber, segments, sectionIndentThreshold) =>
     page = @_pages[pageNumber - 1]
@@ -203,7 +203,7 @@ class @Annotator
     s = start
     paragraphs = []
     for segment, i in page.textSegments[start...end - 1]
-      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD * SCALE and segment.left > sectionIndentThreshold
+      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
         paragraphs.push [s, i + 1]
         s = i + 1
 
