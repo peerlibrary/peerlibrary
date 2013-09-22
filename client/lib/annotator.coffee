@@ -118,28 +118,37 @@ class @Annotator
 
     area1.left < area2right and area1right > area2.left and area1.top < area2bottom and area1bottom > area2.top
 
+  # TODO: We could cache bounding boxes and not recompute every time for the same section (of course we have to udpate it when we merge sections)
   _mergeOverlappingSections: (pageNumber, sections) =>
     changed = true
     while changed
       changed = false
 
-      # We skip the last one, because we are checking areas in pairs
-      for i in [0...sections.length - 1]
-        area1 = @_boundingBox pageNumber, sections[i]
-        area2 = @_boundingBox pageNumber, sections[i + 1]
+      i = 0
+      while i < sections.length - 1
+        j = i + 1
+        while j < sections.length
+          area1 = @_boundingBox pageNumber, sections[i]
+          area2 = @_boundingBox pageNumber, sections[j]
 
-        if @_areasOverlap area1, area2
-          # We merge into the first section
-          sections[i] = merge sections[i], sections[i + 1]
+          if @_areasOverlap area1, area2
+            # We merge into the first section
+            sections[i] = merge sections[i], sections[j]
 
-          # We remove the second section
-          sections.splice i + 1, 1
+            # We remove the second section
+            sections.splice j, 1
 
-          changed = true
-          break
+            changed = true
+
+          j++
+
+        i++
 
     sections
 
+  # Sections must be areas of PDF where we do NOT split any real paragraph by mistake
+  # They can contain one or more paragaphs and other elements
+  # They must not overlap as well (those should be merged together)
   _splitSections: (pageNumber) =>
     page = @_pages[pageNumber - 1]
 
