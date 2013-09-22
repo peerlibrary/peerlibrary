@@ -57,9 +57,10 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
-  _dy: (pageNumber, i) =>
+  _dy: (pageNumber, i, j) =>
+    j ?= i + 1
     page = @_pages[pageNumber - 1]
-    page.textSegments[i + 1].top - page.textSegments[i].top
+    page.textSegments[j].top - page.textSegments[i].top
 
   _computeLineHeight: (pageNumber) =>
     page = @_pages[pageNumber - 1]
@@ -199,17 +200,20 @@ class @Annotator
 
     left + (right - left) * SECTION_INDENT_THRESHOLD
 
-  _splitParagraphs: (pageNumber, segments, sectionIndentThreshold) =>
+  _splitParagraphs: (pageNumber, segmentsIndices, sectionIndentThreshold) =>
     page = @_pages[pageNumber - 1]
 
-    s = start
+    s = 0
     paragraphs = []
-    for segment, i in page.textSegments[start...end - 1]
-      if Math.abs(@_dy pageNumber, i) < page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
-        paragraphs.push [s, i + 1]
-        s = i + 1
+    for j in [1...segmentsIndices.length]
+      segment = page.textSegments[segmentsIndices[j]]
 
-    paragraphs.push [s, end]
+      if @_dy(pageNumber, segmentsIndices[j - 1], segmentsIndices[j]) > page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
+        paragraphs.push segmentsIndices[s...j]
+        s = j
+
+    paragraphs.push segmentsIndices[s..segmentsIndices.length]
+    console.log paragraphs
     paragraphs
 
   _processParagraph: (pageNumber, segmentsIndices) =>
@@ -452,7 +456,7 @@ class @Annotator
     @_computeLineHeight pageNumber
 
     for segmentsIndices in @_splitSections pageNumber
-      @_processParagraph pageNumber, segmentsIndices
+      @_processSection pageNumber, segmentsIndices
 
     # For debugging
     @_showParagraphs pageNumber
