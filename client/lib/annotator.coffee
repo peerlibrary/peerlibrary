@@ -1,6 +1,7 @@
-LINE_HEIGHT_THRESHOLD = 0.5 # To allow for small variations (half of the unit of difference)
+LINE_HEIGHT_THRESHOLD = 0.5 # To allow for small variations (in units)
 LARGEST_LINE_HEIGHT_WINDOW = 0.07 # Heuristic
 SPLIT_SECTION_THRESHOLD = 1.01 # To allow for small rounding errors
+FUZZY_OVERLAP_THRESHOLD = 2.5 # If areas are close enough, we see them as overlapping (in units)
 SECTION_INDENT_THRESHOLD = 1.0 / 40.0
 SPLIT_PARAGRAPH_THRESHOLD = 0.9
 
@@ -134,7 +135,8 @@ class @Annotator
     area1bottom = area1.top + area1.height
     area2bottom = area2.top + area2.height
 
-    area1.left < area2right and area1right > area2.left and area1.top < area2bottom and area1bottom > area2.top
+    # We scale the threshold
+    area1.left - (FUZZY_OVERLAP_THRESHOLD * SCALE) < area2right and area1right + (FUZZY_OVERLAP_THRESHOLD * SCALE) > area2.left and area1.top - (FUZZY_OVERLAP_THRESHOLD * SCALE) < area2bottom and area1bottom + (FUZZY_OVERLAP_THRESHOLD * SCALE) > area2.top
 
   # TODO: We could cache bounding boxes and not recompute every time for the same section (of course we have to udpate it when we merge sections)
   _mergeOverlappingSections: (pageNumber, sections) =>
