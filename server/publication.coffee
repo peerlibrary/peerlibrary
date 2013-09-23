@@ -68,12 +68,15 @@ Meteor.methods
   uploadPublication: (file) ->
     publication = Publications.findOne
       _id: file.name.split('.')[0]
-
     # Make sure we are not messing with another publication
     assert publication.uploading
 
-    # TODO: create upload directory if it does not exist
-    file.save Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix() + 'upload', {}
+    dirName = Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix()
+
+    # Create directory if it does not exist
+    Storage._assurePath dirName + Publication._uploadFilename ''
+
+    file.save dirName + 'upload', {}
 
   confirmPublicationUpload: (id) ->
     Publications.update
