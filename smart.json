@@ -16,6 +16,7 @@
     "dimsum": {},
     "connect": {},
     "urlify2": {},
-    "fs": {}
+    "fs": {},
+    "meteor-file": {}
   }
 }

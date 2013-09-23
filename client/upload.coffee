@@ -2,13 +2,16 @@ Deps.autorun ->
 
   Template.upload.events =
     'change input': (e) ->
-      _.each e.srcElement.files, (file) ->
-        Meteor.savePublication file
+      _.each e.srcElement.files, (pdf) ->
 
-  Meteor.savePublication = (blob) ->
-    reader = new FileReader()
+        Meteor.call 'createPublication', (err, publicationId) ->
+          file = new MeteorFile pdf
+          file.name = publicationId + '.pdf'
 
-    reader.onload = () ->
-      Meteor.call 'savePublication', Meteor.uuid(), new Uint8Array reader.result
-
-    reader.readAsArrayBuffer blob
+          file.upload pdf, 'uploadPublication',
+            size: 128 * 1024
+          , (err) ->
+            if err
+              throw err
+            else
+              Meteor.call 'confirmPublicationUpload', publicationId

@@ -58,9 +58,29 @@ class @Publication extends @Publication
       source: 1
 
 Meteor.methods
-  savePublication: (id, blob) ->
-    buffer = new Buffer blob
-    Storage.save (Publication._filenamePrefix() + Publication._uploadFilename(id)), buffer
+  createPublication: ->
+    Publications.insert
+      created: moment.utc().toDate()
+      updated: moment.utc().toDate()
+      source: 'upload'
+      uploading: true
+
+  uploadPublication: (file) ->
+    publication = Publications.findOne
+      _id: file.name.split('.')[0]
+
+    # Make sure we are not messing with another publication
+    assert publication.uploading
+
+    # TODO: create upload directory if it does not exist
+    file.save Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix() + 'upload', {}
+
+  confirmPublicationUpload: (id) ->
+    Publications.update
+      _id: id
+    ,
+      $unset:
+        uploading: 1
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   if not authorSlug
