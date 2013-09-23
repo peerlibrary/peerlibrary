@@ -57,6 +57,11 @@ class @Publication extends @Publication
       foreignId: 1
       source: 1
 
+Meteor.methods
+  savePublication: (id, blob) ->
+    buffer = new Buffer blob
+    Storage.save (Publication._filenamePrefix() + Publication._uploadFilename(id)), buffer
+
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   if not authorSlug
     return

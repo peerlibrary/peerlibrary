@@ -1,0 +1,15 @@
+<template name="upload">
+  <div class="row">
+    {{> uploadForm}}
+  </div>
+</template>
+
+<template name="uploadForm">
+  <form>
+    <input type="file" name="files" multiple />
+    
+    <div>
+      <input type="submit" value="Upload" />
+    </div>
+  </form>
+</template>

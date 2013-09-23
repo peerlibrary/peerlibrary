@@ -16,6 +16,9 @@ Meteor.Router.add
   '/register':
     'register'
 
+  '/upload':
+    'upload'
+
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
     to: (publicationId, publicationSlug) ->
