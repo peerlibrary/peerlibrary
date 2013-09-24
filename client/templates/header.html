@@ -9,9 +9,9 @@
           Open Scientific Knowledge
         </span>
         <ul class="top-menu">
-          <li class="pull-right">
-            {{loginButtons align="right"}}
-          </li>
+          {{#if indexHeader}}
+            {{> loginButtons}}
+          {{/if}}
           <li class="explore pull-right">
             <a href="#">Explore</a>
           </li>
@@ -30,9 +30,9 @@
           <li class="search">
             {{> searchInput}}
           </li>
-          <li class="pull-right">
-            {{loginButtons}}
-          </li>
+          {{#if noIndexHeader}}
+            {{> loginButtons}}
+          {{/if}}
           <li class="explore pull-right">
             <a href="#">Explore</a>
           </li>
@@ -65,4 +65,10 @@
   {{#if progress}}
     <div class="progress-bar" style="width: {{progress}}%"></div>
   {{/if}}
+</template>
+
+<template name="loginButtons">
+  <li class="login pull-right">
+    {{loginButtons align="right"}}
+  </li>
 </template>
