@@ -16,9 +16,12 @@ class @Publication extends @Document
   # foreignCategories: categories metadata provided by the source
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
+  # importing (temporary):
+  #   by: user importing the document
+  #     id
+  #   filename: original name of the uploaded file
   # cached: do we have a locally stored PDF?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
-  # uploading (temporary): true if the file is being uploaded
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   id: id of the query, an _id of the SearchResult object for the query

@@ -4,4 +4,7 @@
       <h1>{{person.foreNames}} {{person.lastName}}</h1>
     </div>
   {{/if}}
+  {{#if userPerson.id EQUALS person._id}}
+  	<h1>It's me!</h1>
+  {{/if}}
 </template>

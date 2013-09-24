@@ -56,20 +56,28 @@ class @Publication extends @Publication
       doi: 1
       foreignId: 1
       source: 1
+      importing: 1
 
 Meteor.methods
-  createPublication: ->
+  createPublication: (filename) ->
+    if this.userId is null
+      throw new Meteor.Error 403, 'User is not logged in.'
+
     Publications.insert
       created: moment.utc().toDate()
       updated: moment.utc().toDate()
       source: 'upload'
-      uploading: true
+      importing:
+        by:
+          id: this.userId
+        filename: filename
+      cached: false
+      processed: false
 
   uploadPublication: (file) ->
     publication = Publications.findOne
       _id: file.name.split('.')[0]
-    # Make sure we are not messing with another publication
-    assert publication.uploading
+      'importing.by.id': this.userId
 
     dirName = Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix()
 
@@ -78,12 +86,22 @@ Meteor.methods
 
     file.save dirName + 'upload', {}
 
-  confirmPublicationUpload: (id) ->
+  finishPublicationUpload: (id) ->
     Publications.update
       _id: id
+      'importing.by.id': this.userId
     ,
-      $unset:
-        uploading: 1
+      $set:
+        cached: true
+
+  confirmPublication: (id, metadata) ->
+    publication = Publications.findOne
+      _id: id
+      'importing.by.id': this.userId
+      cached: true
+    _.extend publication, _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi')
+    publication.confirmed = true
+    publication.save()
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   if not authorSlug
@@ -119,5 +137,11 @@ Meteor.publish 'publications-by-ids', (ids) ->
     _id: {$in: ids}
     cached: true
     processed: true
+  ,
+    Publication.PUBLIC_FIELDS()
+
+Meteor.publish 'publications-importing', ->
+  Publications.find
+    'importing.by.id': this.userId
   ,
     Publication.PUBLIC_FIELDS()

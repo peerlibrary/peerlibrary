@@ -1,4 +1,12 @@
-Template.uploadForm.events =
+Deps.autorun ->
+  Meteor.subscribe 'publications-importing'
+
+Template.upload.publicationsImporting = ->
+  Publications.find
+    importing:
+      $exists: true
+
+Template.upload.events =
   'dragover .dropzone': (e) ->
     e.preventDefault()
 
@@ -8,15 +16,16 @@ Template.uploadForm.events =
 
     _.each e.dataTransfer.files, (pdf) ->
 
-      Meteor.call 'createPublication', (err, publicationId) ->
+      Meteor.call 'createPublication', pdf.name, (err, publicationId) ->
+        console.log publicationId
+
         file = new MeteorFile pdf
         file.name = publicationId + '.pdf'
-
         file.upload pdf, 'uploadPublication',
           size: 128 * 1024
         , (err) ->
           if err
             throw err
           else
-            Meteor.call 'confirmPublicationUpload', publicationId
+            Meteor.call 'finishPublicationUpload', publicationId
             console.log 'Upload successful'
