@@ -102,8 +102,9 @@ Meteor.methods
     ,
       $set:
         _.extend _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi'),
-          confirmed: true
           updated: moment.utc().toDate()
+      $unset:
+        importing: ''
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   if not authorSlug
