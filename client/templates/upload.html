@@ -3,7 +3,9 @@
     {{> uploadForm}}
     <ul>
     {{#each publicationsImporting}}
-      <li>{{this._id}}</li>
+      {{#if this.cached}}
+        {{> publicationForm}}
+      {{/if}}
     {{/each}}
     </ul>
   </div>
@@ -14,15 +16,15 @@
 </template>
 
 <template name="publicationForm">
-  <form>
+  <form data-id="{{this._id}}">
     <label for="title">Title:</label>
-    <input type="text" name="title" />
+    <input type="text" name="title" value="{{this.title}}" />
     <label for="authorsRaw">Authors:</label>
-    <input type="text" name="authorsRaw" />
+    <input type="text" name="abstract" value="{{this.abstract}}" />
     <label for="abstract">Abstract:</label>
-    <textarea name="authorsRaw"></textarea>
+    <textarea name="authorsRaw">{{this.abstract}}</textarea>
     <label for="doi">DOI:</label>
-    <input type="text" name="doi" />
+    <input type="text" name="doi" value="{{this.doi}}" />
     <input type="submit" value="Confirm" />
   </form>
 </template>

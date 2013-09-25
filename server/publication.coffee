@@ -95,13 +95,15 @@ Meteor.methods
         cached: true
 
   confirmPublication: (id, metadata) ->
-    publication = Publications.findOne
+    Publications.update
       _id: id
       'importing.by.id': this.userId
       cached: true
-    _.extend publication, _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi')
-    publication.confirmed = true
-    publication.save()
+    ,
+      $set:
+        _.extend _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi'),
+          confirmed: true
+          updated: moment.utc().toDate()
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   if not authorSlug
@@ -144,4 +146,6 @@ Meteor.publish 'publications-importing', ->
   Publications.find
     'importing.by.id': this.userId
   ,
-    Publication.PUBLIC_FIELDS()
+    fields: _.extend Publication.PUBLIC_FIELDS().fields,
+      cached: 1
+      processed: 1

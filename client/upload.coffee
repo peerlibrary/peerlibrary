@@ -29,3 +29,11 @@ Template.upload.events =
           else
             Meteor.call 'finishPublicationUpload', publicationId
             console.log 'Upload successful'
+
+  'submit form': (e) ->
+    e.preventDefault()
+    metadata = _.reduce $(e.target).serializeArray(), (obj, subObj) ->
+      obj[subObj.name] = subObj.value
+      obj
+    , {}
+    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata 
