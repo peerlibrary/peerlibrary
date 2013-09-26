@@ -16,7 +16,10 @@ Template.upload.events =
 
     _.each e.dataTransfer.files, (pdf) ->
 
-      Meteor.call 'createPublication', pdf.name, (err, publicationId) ->
+      bitArray = sjcl.hash.sha256.hash pdf
+      sha256 = sjcl.codec.hex.fromBits bitArray
+
+      Meteor.call 'createPublication', pdf.name, sha256, (err, publicationId) ->
         console.log publicationId
 
         file = new MeteorFile pdf

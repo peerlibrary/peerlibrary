@@ -59,7 +59,7 @@ class @Publication extends @Publication
       importing: 1
 
 Meteor.methods
-  createPublication: (filename) ->
+  createPublication: (filename, sha256) ->
     if this.userId is null
       throw new Meteor.Error 403, 'User is not logged in.'
 
@@ -72,6 +72,7 @@ Meteor.methods
           id: this.userId
         filename: filename
         progress: 0
+        sha256: sha256
       cached: false
       processed: false
 
@@ -91,6 +92,12 @@ Meteor.methods
     file.save dirName + 'upload', {}
 
   finishPublicationUpload: (id) ->
+    pdf = Storage.open Publication._filenamePrefix() + Publication._uploadFilename id
+
+    # TODO: Fix SHA-256 hash (does not match client)
+    bitArray = sjcl.hash.sha256.hash pdf
+    sha256 = sjcl.codec.hex.fromBits bitArray
+
     Publications.update
       _id: id
       'importing.by.id': this.userId

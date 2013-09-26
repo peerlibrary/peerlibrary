@@ -16,10 +16,12 @@ class @Publication extends @Document
   # foreignCategories: categories metadata provided by the source
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
+  # sha256: SHA-256 hash of the file
   # importing (temporary):
   #   by: user importing the document
   #     id
   #   filename: original name of the uploaded file
+  #   sha256: SHA-256 hash of the file computed by client before upload
   # cached: do we have a locally stored PDF?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages

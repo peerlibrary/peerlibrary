@@ -17,6 +17,7 @@
     "connect": {},
     "urlify2": {},
     "fs": {},
-    "meteor-file": {}
+    "meteor-file": {},
+    "sjcl": {}
   }
 }
