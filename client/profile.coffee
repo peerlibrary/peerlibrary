@@ -17,12 +17,11 @@ Template.profile.person = ->
     # We can search by slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
-Template.profile.userPerson = ->
-  user = Meteor.user()
-  if user
-    user.person
-  else
-    null
+Template.profile.isMine = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+  if person
+    person.user.id == Meteor.user()._id
 
 Template.profile.publications = ->
   Publications.find()

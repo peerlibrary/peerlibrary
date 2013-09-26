@@ -3,9 +3,12 @@
     {{> uploadForm}}
     <ul>
     {{#each publicationsImporting}}
+    <div style="width: 960px">
+      <div style="background: red; height: 5px; width: {{this.importing.progress}}%"></div>
       {{#if this.cached}}
         {{> publicationForm}}
       {{/if}}
+    </div>
     {{/each}}
     </ul>
   </div>

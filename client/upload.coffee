@@ -36,4 +36,4 @@ Template.upload.events =
       obj[subObj.name] = subObj.value
       obj
     , {}
-    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata 
+    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata

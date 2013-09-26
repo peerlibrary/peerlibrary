@@ -71,13 +71,17 @@ Meteor.methods
         by:
           id: this.userId
         filename: filename
+        progress: 0
       cached: false
       processed: false
 
   uploadPublication: (file) ->
-    publication = Publications.findOne
+    Publications.update
       _id: file.name.split('.')[0]
       'importing.by.id': this.userId
+    ,
+      $set:
+        'importing.progress': ~~(100 * file.end / file.size)
 
     dirName = Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix()
 
