@@ -5,6 +5,8 @@ Enriching the experience of open access scholarly literature.
 
 http://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
+* [GitHub](https://github.com/peerlibrary/peerlibrary)
+* [Wiki](https://github.com/peerlibrary/peerlibrary/wiki)
 * [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
 * IRC at #rawpotato @ [Freenode](http://freenode.net/)
 
@@ -42,7 +44,7 @@ run the following before you run `mrt` to configure environment:
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
 To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
-with command line tools installed (from Preferences > Downloads > Components),
+with command line tools installed (from _Preferences_ > _Downloads_ > _Components_),
 and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
 ([MacPorts](https://www.macports.org/) also works, if you prefer it).
 
@@ -59,14 +61,14 @@ From a cloned PeerLibrary repository then run a development instance of PeerLibr
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
 your local development instance.
 
-To demo the tool, you will need to populate your instance of the database with publications. Go to 
-[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of 
-buttons in the center of the screen that will allow you to cache publications. 
-Click on the second button (Sync arXiv metadata) to begin the syncing process. The process 
-will automatically proceed to caching and processing PDFs. Publications that make it all 
+To demo the tool, you will need to populate your instance of the database with publications. Go to
+[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of
+buttons in the center of the screen that will allow you to cache publications.
+Click on the second button (_Sync arXiv metadata_) to begin the syncing process. The process
+will automatically proceed to caching and processing PDFs. Publications that make it all
 the way through "processing" will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
-Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can 
+Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can
 click the button in the admin interface for the process which you previously left off on.
 
 ### Debug mode ###
@@ -96,11 +98,7 @@ For ideas what to contribute you can:
   while some other have to wait for other things to be done first
 * while reading the code if you do not understand anything, feel free to ask and then
   contribute a comment describing the code so that the next person will understand
-* check [our ideas for possible features](https://github.com/peerlibrary/peerlibrary/wiki/Features);
-  this list is really just brainstorming and we have not yet decided which features we
-  really want and when, but it is a good start to get you thinking about possible ways
-  to contribute, especially if there is some feature you would really like to have;
-  feel free to add additional ideas
+* read (and contribute to) our [wiki](https://github.com/peerlibrary/peerlibrary/wiki)
 * if you have your favorite open access journal or repository not yet integrated into
   PeerLibrary, add support for it; this goes especially for possible non-English open
   access journals or repositories we might not even know about; you can just
