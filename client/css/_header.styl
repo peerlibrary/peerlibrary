@@ -237,9 +237,9 @@ header .fat-header ul.top-menu li
   line-height: 70px
 
 header .normal-header .progress-bar
-  background: red
-  bottom: -5px
-  height: 5px
+  background: #0E6EB9
+  bottom: -2px
+  height: 2px
   position: absolute
 
 /*
@@ -249,15 +249,22 @@ Sign up buttons
   display: inline-block
   float: right
 
+#login-buttons a
+  cursor: pointer
+
 #login-buttons #login-dropdown-list
   color: black
+  background: rgb(230,230,230)
+  border-color: rgb(210,210,210)
+  border-style: solid
+  border-width: 0 0 1px 1px
   position: absolute
   width: 293px
   right: 0px
   font-size: 14px
   line-height: 36px
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, .message, .login-button
+#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding: 0 20px
 
 #login-buttons #login-dropdown-list label
@@ -268,7 +275,7 @@ Sign up buttons
 #login-buttons #login-dropdown-list input
   position: relative
   min-height: 20px
-  width: 100%
+  width: 235px
   padding: 7px 8px
   outline: medium none
   color: rgb(51, 51, 51)
@@ -286,9 +293,6 @@ Sign up buttons
   border-color: rgb(81,167,232)
   box-shadow: 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81, 167, 232, 0.5)
 
-#login-buttons #login-dropdown-list
-  background: rgb(230,230,230)
-
 .login-close-text
   float: left
   position: relative
@@ -299,3 +303,22 @@ Sign up buttons
 
 #login-buttons.login-buttons-dropdown-align-right .login-close-text
   float: right
+
+/* auth buttons */
+
+.login-button
+  margin-top: 30px
+  padding: 5px 20px
+  background: #68E468
+  text-align: center
+  font-weight: bold
+  color: white
+  cursor: pointer
+  transition: all 0.15s ease-in 0s
+
+.login-button:hover
+  background: #7BC97B
+
+.additional-link
+  background: blue
+  text-align: center
