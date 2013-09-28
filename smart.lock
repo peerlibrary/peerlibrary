@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "966bfe935d1e857e6de05844ee9d59cfcb70307e"
+    "commit": "daaddb75c7d3d3b48553e286bae7e08231ea0278"
   },
   "dependencies": {
     "basePackages": {
@@ -30,8 +30,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.298.7",
-        "commit": "259f2d52bf4b50a1886a4cc44808751d95c1ad1c"
+        "tag": "v0.8.298.9",
+        "commit": "384e045db3bc27c3ce01e12e66a93369391fbcce"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
