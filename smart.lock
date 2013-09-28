@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "966bfe935d1e857e6de05844ee9d59cfcb70307e"
+    "commit": "daaddb75c7d3d3b48553e286bae7e08231ea0278"
   },
   "dependencies": {
     "basePackages": {
