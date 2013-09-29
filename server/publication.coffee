@@ -201,7 +201,9 @@ Meteor.publish 'publications-by-ids', (ids) ->
 Meteor.publish 'my-publications', ->
   person = Persons.findOne
     'user.id': @userId
-  console.log person
+
+  return unless person
+
   Publications.find
     _id: {$in: person.library}
     processed: true
