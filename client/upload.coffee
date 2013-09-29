@@ -1,5 +1,3 @@
-tmp = null
-
 Deps.autorun ->
   Meteor.subscribe 'publications-importing'
 
@@ -38,7 +36,7 @@ Template.upload.events =
                 throw err
               else
                 Meteor.call 'finishPublicationUpload', publicationId
-                console.log 'Upload successful'
+                # console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
 
