@@ -30,8 +30,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.298.9",
-        "commit": "384e045db3bc27c3ce01e12e66a93369391fbcce"
+        "tag": "v0.8.298.10",
+        "commit": "dc318980d5860d46d048e5e9f3bfb73783c87998"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
@@ -45,8 +45,8 @@
       },
       "tar": {
         "git": "https://github.com/peerlibrary/meteor-tar.git",
-        "tag": "v0.1.18.1",
-        "commit": "5476d42676757193bb9d090fcb96f285c64f1bcf"
+        "tag": "v0.1.18.2",
+        "commit": "b0db03814f0ece229dc69f5933a89696903887e9"
       },
       "blocking": {
         "git": "https://github.com/peerlibrary/meteor-blocking.git",
@@ -60,8 +60,8 @@
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
-        "tag": "v0.2.8.3",
-        "commit": "398408e93683fded2cdd12923f181200713aee5e"
+        "tag": "v0.2.8.4",
+        "commit": "98ba391239dd79901a7718593b48c1a7e6b0f7b2"
       },
       "util": {
         "git": "https://github.com/peerlibrary/meteor-util.git",
@@ -70,8 +70,8 @@
       },
       "dimsum": {
         "git": "https://github.com/peerlibrary/meteor-dimsum.git",
-        "tag": "v0.1.8.2",
-        "commit": "10e3f65401ac02c98be1a70ea06d8faea7252afb"
+        "tag": "v0.1.8.3",
+        "commit": "90a6c596dcd998cd38889409ffaa071e1e884459"
       },
       "connect": {
         "git": "https://github.com/peerlibrary/meteor-connect.git",
