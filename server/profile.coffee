@@ -1,3 +1,5 @@
+crypto = Npm.require 'crypto'
+
 Accounts.onCreateUser (options, user) ->
   try
     person =
@@ -11,6 +13,7 @@ Accounts.onCreateUser (options, user) ->
     personId = Persons.insert person
     user.person =
       id: personId
+    user.gravatarHash = crypto.createHash('md5').update(user.emails?[0]?.address).digest('hex')
   catch e
     if e.name isnt 'MongoError'
       throw e
