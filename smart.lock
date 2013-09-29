@@ -95,8 +95,8 @@
       },
       "sjcl": {
         "git": "https://github.com/peerlibrary/meteor-sjcl.git",
-        "tag": "v1.0.0.0",
-        "commit": "43139708ec4ed9093819a7f30a4a37eeeec0fa77"
+        "tag": "v1.0.0.2",
+        "commit": "eab8cc81fb9c204a86bfe14490bbbb44d2826383"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

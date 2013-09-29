@@ -77,6 +77,9 @@ Meteor.methods
       processed: false
 
   uploadPublication: (file) ->
+    unless file
+      throw new Meteor.Error 403, 'File is null.'
+
     Publications.update
       _id: file.name.split('.')[0]
       'importing.by.id': this.userId
@@ -84,26 +87,33 @@ Meteor.methods
       $set:
         'importing.progress': ~~(100 * file.end / file.size)
 
-    dirName = Storage._storageDirectory + Storage._path.sep + Publication._filenamePrefix()
+    Storage.saveMeteorFile file
 
-    # Create directory if it does not exist
-    Storage._assurePath dirName + Publication._uploadFilename ''
-
-    file.save dirName + 'upload', {}
 
   finishPublicationUpload: (id) ->
-    pdf = Storage.open Publication._filenamePrefix() + Publication._uploadFilename id
+    publication = Publications.findOne
+      _id: id
+      'importing.by.id': this.userId
 
-    # TODO: Fix SHA-256 hash (does not match client)
-    bitArray = sjcl.hash.sha256.hash pdf
-    sha256 = sjcl.codec.hex.fromBits bitArray
+    unless publication
+      throw new Meteor.Error 403, 'No publication importing.'
+
+    # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
+    pdf = Storage.open publication.filename()
+
+    hash = new Crypto.SHA256()
+    hash.update pdf
+    sha256 = hash.finalize()
+
+    unless sha256 == publication.importing.sha256
+      throw new Meteor.Error 500, 'Hash does not match.'
 
     Publications.update
       _id: id
-      'importing.by.id': this.userId
     ,
       $set:
         cached: true
+        sha256: sha256
 
   confirmPublication: (id, metadata) ->
     Publications.update

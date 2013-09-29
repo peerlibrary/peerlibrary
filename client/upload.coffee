@@ -1,3 +1,5 @@
+tmp = null
+
 Deps.autorun ->
   Meteor.subscribe 'publications-importing'
 
@@ -14,24 +16,32 @@ Template.upload.events =
     e.stopPropagation()
     e.preventDefault()
 
-    _.each e.dataTransfer.files, (pdf) ->
+    _.each e.dataTransfer.files, (file) ->
 
-      bitArray = sjcl.hash.sha256.hash pdf
-      sha256 = sjcl.codec.hex.fromBits bitArray
+      reader = new FileReader()
+      reader.onload = ->
+        bitArray = sjcl.hash.sha256.hash sjcl.codec.arrayBuffer.toBits this.result
+        sha256 = sjcl.codec.hex.fromBits bitArray
+        # console.log sha256
 
-      Meteor.call 'createPublication', pdf.name, sha256, (err, publicationId) ->
-        console.log publicationId
-
-        file = new MeteorFile pdf
-        file.name = publicationId + '.pdf'
-        file.upload pdf, 'uploadPublication',
-          size: 128 * 1024
-        , (err) ->
+        Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
           if err
             throw err
           else
-            Meteor.call 'finishPublicationUpload', publicationId
-            console.log 'Upload successful'
+            # console.log publicationId 
+            meteorFile = new MeteorFile file
+            meteorFile.name = publicationId + '.pdf'
+            meteorFile.upload file, 'uploadPublication',
+              size: 128 * 1024
+            , (err) ->
+              if err
+                throw err
+              else
+                Meteor.call 'finishPublicationUpload', publicationId
+                console.log 'Upload successful'
+
+      reader.readAsArrayBuffer file
+
 
   'submit form': (e) ->
     e.preventDefault()
