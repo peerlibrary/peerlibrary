@@ -4,6 +4,13 @@ Template.displayIcon.userIconUrl = ->
 
 Meteor.subscribe 'userData'
 
+Deps.autorun ->
+  user = Meteor.user()
+
+  return unless user
+
+  Meteor.subscribe 'persons-by-id-or-slug', user._id
+
 Template._loginButtonsLoggedInDropdownActions.username = ->
   Meteor.user()?.username
 
