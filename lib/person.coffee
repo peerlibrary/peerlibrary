@@ -8,7 +8,6 @@ class @Person extends @Document
   # created: creation timestamp
   # foreNames
   # lastName
-  # gravatar: email for Gravatar
   # work
   #   position (e.g. Professor of Theoretical Physics)
   #   institution (e.g. University of California, Berkeley)

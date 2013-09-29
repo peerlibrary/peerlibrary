@@ -1,0 +1,28 @@
+<template name="_loginButtonsLoggedInDropdown">
+  <div class="login-link-and-dropdown-list">
+    <a class="login-link-text" id="login-name-link">
+      {{displayName}} {{> displayIcon}}
+    </a>
+
+    {{#if dropdownVisible}}
+      <div id="login-dropdown-list" class="accounts-dialog">
+        <a class="login-close-text">Close</a>
+        <div class="login-close-text-clear"></div>
+
+        {{#if inMessageOnlyFlow}}
+          {{> _loginButtonsMessages}}
+        {{else}}
+          {{#if inChangePasswordFlow}}
+            {{> _loginButtonsChangePassword}}
+          {{else}}
+            {{> _loginButtonsLoggedInDropdownActions}}
+          {{/if}}
+        {{/if}}
+      </div>
+    {{/if}}
+  </div>
+</template>
+
+<template name="displayIcon">
+  <img src="{{ userIconUrl }}" class="user-icon" />
+</template>

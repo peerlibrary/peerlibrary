@@ -1,24 +1,6 @@
 <template name="header">
   <header class="{{indexHeader}} {{noIndexHeader}}">
-    <div class="container fat-header">
-      <div class="row">
-        <div class="logo">
-          <a href="/">PeerLibrary</a>
-        </div>
-        <span class="tagline">
-          Open Scientific Knowledge
-        </span>
-        <ul class="top-menu">
-          {{#if indexHeader}}
-            {{> loginButtons}}
-          {{/if}}
-          <li class="explore pull-right">
-            <a href="#">Explore</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="container normal-header">
+    <div class="container">
       <div class="row">
         <div class="logo {{development}}">
           <a href="/">PeerLibrary</a>
@@ -26,13 +8,14 @@
             <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
           {{/if}}
         </div>
+        <span class="tagline">
+          Open Scientific Knowledge
+        </span>
         <ul class="top-menu">
           <li class="search">
             {{> searchInput}}
           </li>
-          {{#if noIndexHeader}}
-            {{> loginButtons}}
-          {{/if}}
+          {{> loginButtons}}
           <li class="explore pull-right">
             <a href="#">Explore</a>
           </li>

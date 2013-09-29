@@ -2,7 +2,7 @@
 
 /* header
 ========= */
-header .fat-header, header .normal-header
+header .container
   background: blue
   height: 45px
   font-size: 16px
@@ -28,7 +28,7 @@ header .fat-header, header .normal-header
 .logo a:hover
   background: white
   color: blue-accent
-  text-decoration: none!important
+  text-decoration: none !important
 
 ul.top-menu
   list-style: none
@@ -85,7 +85,7 @@ ul.top-menu li span.search-button
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   background: white
   color: blue-accent
-  text-decoration: none!important
+  text-decoration: none !important
 
 span.cursor
   animation: blink 1s linear 0s infinite
@@ -148,16 +148,10 @@ ul.top-menu .search-wrapper:hover span.cursor
   -o-transform: rotate(-10deg)
   -ms-transform: rotate(-10deg)
 
-header.index-header .fat-header
+header.index-header .container
   position: absolute
 
-header.index-header .normal-header
-  visibility: hidden
-
-header.no-index-header .fat-header
-  visibility: hidden
-
-header.no-index-header .normal-header
+header.no-index-header .container
   position: fixed
 
 /* index search
@@ -203,17 +197,14 @@ header.index-header .search-wrapper .search-form input
   width: 616px
   background: transparent
 
-/*
-Fat header
-========== */
-header .fat-header
+header.index-header .container
   height: 70px
 
-header .fat-header .logo
+header.index-header .container .logo
   width: 180px
   float: left
 
-header .fat-header .logo a
+header.index-header .container .logo a
   color: white
   text-decoration: none
   line-height: 70px
@@ -224,23 +215,26 @@ header .fat-header .logo a
   padding: 0 20px
   transition: 0.2s
 
-header .fat-header span.tagline
+header.index-header .container span.tagline
   color: white
   line-height: 70px
   padding: 0 20px
   display: inline-block
   float: left
 
-header .fat-header ul.top-menu li
+header.index-header .container ul.top-menu li
   display: block
   float: left
   line-height: 70px
 
-header .normal-header .progress-bar
+header.no-index-header .container .progress-bar
   background: #0E6EB9
   bottom: -2px
   height: 2px
   position: absolute
+
+header.no-index-header .tagline
+  display: none
 
 /*
 Sign up buttons
@@ -322,3 +316,7 @@ Sign up buttons
 .additional-link
   background: blue
   text-align: center
+
+.user-icon
+  width: 25px
+  height: 25px
