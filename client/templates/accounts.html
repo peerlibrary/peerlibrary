@@ -51,9 +51,11 @@
 </template>
 
 <template name="_loginButtonsLoggedInDropdownActions">
-    <div class="login-button">
-      <a href="{{profilePath username}}">Profile</a>
-    </div>
+  {{! TODO: Here should come a list of links for the user and notifications }}
+
+  <div class="login-button">
+    <a href="{{profilePath username}}">Profile</a>
+  </div>
 
   <div class="login-button" id="login-buttons-logout">
     Sign out
