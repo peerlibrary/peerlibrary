@@ -18,9 +18,9 @@ Template.upload.events =
 
       reader = new FileReader()
       reader.onload = ->
-        bitArray = sjcl.hash.sha256.hash sjcl.codec.arrayBuffer.toBits this.result
-        sha256 = sjcl.codec.hex.fromBits bitArray
-        # console.log sha256
+        hash = new Crypto.SHA256()
+        hash.update this.result
+        sha256 = hash.finalize()
 
         Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
           if err

@@ -22,7 +22,7 @@ class @Publication extends @Publication
     initCallback ?= (numberOfPages) ->
     textCallback ?= (pageNumber, x, y, width, height, direction, text) ->
     pageImageCallback ?= (pageNumber, canvasElement) ->
-    progressCallback ?= ->
+    progressCallback ?= (progress) ->
 
     console.log "Processing PDF for #{ @_id }: #{ @filename() }"
 
@@ -71,7 +71,8 @@ Meteor.methods
         by:
           id: this.userId
         filename: filename
-        progress: 0
+        uploadProgress: 0
+        processProgress: 0
         sha256: sha256
       cached: false
       processed: false
@@ -85,7 +86,7 @@ Meteor.methods
       'importing.by.id': this.userId
     ,
       $set:
-        'importing.progress': ~~(100 * file.end / file.size)
+        'importing.uploadProgress': ~~(100 * file.end / file.size)
 
     Storage.saveMeteorFile file
 
@@ -114,6 +115,9 @@ Meteor.methods
       $set:
         cached: true
         sha256: sha256
+
+    publication.process null, null, null, null, (progress) ->
+
 
   confirmPublication: (id, metadata) ->
     Publications.update
