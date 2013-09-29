@@ -17,7 +17,11 @@
     "connect": {},
     "urlify2": {},
     "fs": {},
+<<<<<<< HEAD
     "meteor-file": {},
     "sjcl": {}
+=======
+    "digest": {}
+>>>>>>> master
   }
 }

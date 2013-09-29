@@ -19,8 +19,12 @@
       "connect": {},
       "urlify2": {},
       "fs": {},
+<<<<<<< HEAD
       "meteor-file": {},
       "sjcl": {}
+=======
+      "digest": {}
+>>>>>>> master
     },
     "packages": {
       "router": {
@@ -88,6 +92,7 @@
         "tag": "v0.1.2",
         "commit": "069d7fcaeb5df000a57238fde2785faf6dc1c37c"
       },
+<<<<<<< HEAD
       "meteor-file": {
         "git": "https://github.com/EventedMind/meteor-file.git",
         "tag": "v0.0.7",
@@ -97,6 +102,12 @@
         "git": "https://github.com/peerlibrary/meteor-sjcl.git",
         "tag": "v1.0.0.2",
         "commit": "eab8cc81fb9c204a86bfe14490bbbb44d2826383"
+=======
+      "digest": {
+        "git": "https://github.com/peerlibrary/meteor-digest.git",
+        "tag": "v0.1.0",
+        "commit": "e246384a80c50462504c1088b880b086c80496dd"
+>>>>>>> master
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
