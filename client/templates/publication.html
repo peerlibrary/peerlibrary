@@ -7,7 +7,7 @@
             <p><b>{{publication.title}}</b></p>
             <p class="authors">
               {{#each publication.authors}}
-                <span><a href="/u/{{username}}">{{foreNames}} {{lastName}}</a></span>
+                <span><a href="{{profilePath username}}">{{foreNames}} {{lastName}}</a></span>
               {{/each}}
             </p>
             <p>Published in: {{publication.source}}</p>
