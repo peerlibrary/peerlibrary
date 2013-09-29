@@ -6,7 +6,6 @@
 
     {{#if dropdownVisible}}
       <div id="login-dropdown-list" class="accounts-dialog">
-        <a class="login-close-text">Close</a>
         <div class="login-close-text-clear"></div>
 
         {{#if inMessageOnlyFlow}}
@@ -25,4 +24,42 @@
 
 <template name="displayIcon">
   <img src="{{ userIconUrl }}" class="user-icon" />
+</template>
+
+<template name="_loginButtonsLoggedOutDropdown">
+  <div class="login-link-and-dropdown-list {{additionalClasses}}">
+    {{#if dropdownVisible}}
+      {{! This text is covered by the dropdown, but duplicating it here
+          makes the position of "Close" match the position of this text. }}
+      <a class="login-link-text" id="login-sign-in-link">Sign in</a>
+      <div id="login-dropdown-list" class="accounts-dialog">
+        {{#if loggingIn}}
+          {{> _loginButtonsLoggingIn}}
+        {{/if}}
+        <div class="login-close-text-clear"></div>
+        {{> _loginButtonsLoggedOutAllServices}}
+      </div>
+    {{else}}
+      {{#if loggingIn}}
+        {{! Not normally visible, but if the user closes the dropdown during login.}}
+        {{> _loginButtonsLoggingIn}}
+      {{else}}
+        <a class="login-link-text" id="login-sign-in-link">Sign in</a>
+      {{/if}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="_loginButtonsLoggedInDropdownActions">
+  {{! TODO: Here should come a list of links for the user and notifications }}
+
+  <div class="login-button">
+    <a href="{{profilePath username}}">Profile</a>
+  </div>
+
+  <div class="login-button" id="login-buttons-logout">
+    Sign out
+  </div>
+
+  {{> _loginButtonsMessages}}
 </template>
