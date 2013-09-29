@@ -1,5 +1,12 @@
 crypto = Npm.require 'crypto'
 
 @Crypto =
-  sha256: (string) ->
-    crypto.createHash('sha256').update(string).digest('hex')
+  SHA256: class extends @Crypto.SHA256
+    constructor: ->
+      @_hash = crypto.createHash 'sha1'
+
+    update: (data) =>
+      @_hash.update data
+
+    finalize: =>
+      @_hash.digest 'hex'
