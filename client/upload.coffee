@@ -1,10 +1,22 @@
 Deps.autorun ->
-  Meteor.subscribe 'publications-importing'
+  # TODO: resubscribe after importing
+  Meteor.subscribe 'my-publications'
+  Meteor.subscribe 'my-publications-importing'
 
 Template.upload.publicationsImporting = ->
   Publications.find
     importing:
       $exists: true
+
+Template.upload.publicationsInLibrary = ->
+  person = Persons.findOne
+    'user.id': Meteor.user()?._id
+  console.log person
+  return unless person
+  Publications.find
+    _id: {$in: person.library}
+    importing:
+      $exists: false
 
 Template.upload.events =
   'dragover .dropzone': (e) ->
@@ -26,7 +38,7 @@ Template.upload.events =
           if err
             throw err
           else
-            # console.log publicationId 
+            console.log publicationId 
             meteorFile = new MeteorFile file
             meteorFile.name = publicationId + '.pdf'
             meteorFile.upload file, 'uploadPublication',
@@ -36,7 +48,7 @@ Template.upload.events =
                 throw err
               else
                 Meteor.call 'finishPublicationUpload', publicationId
-                # console.log 'Upload successful'
+                console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
 

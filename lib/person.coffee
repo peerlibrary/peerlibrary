@@ -23,3 +23,4 @@ class @Person extends @Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of authored publication ids
+  # library: list of added publication ids

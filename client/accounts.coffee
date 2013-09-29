@@ -9,7 +9,7 @@ Deps.autorun ->
 
   return unless user
 
-  Meteor.subscribe 'persons-by-id-or-slug', user._id
+  Meteor.subscribe 'persons-by-id-or-slug', user.username
 
 Template._loginButtonsLoggedInDropdownActions.username = ->
   Meteor.user()?.username
