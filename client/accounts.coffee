@@ -2,7 +2,7 @@ Template.displayIcon.userIconUrl = ->
   # TODO: We should specify default URL to the image of an avatar which is generated from name initials
   "https://secure.gravatar.com/avatar/#{ Meteor.user()?.gravatarHash }?s=25"
 
-Meteor.subscribe 'userData'
+Meteor.subscribe 'user-data'
 
 Deps.autorun ->
   user = Meteor.user()
