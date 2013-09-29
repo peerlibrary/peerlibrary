@@ -109,15 +109,26 @@ Meteor.methods
     unless sha256 == publication.importing.sha256
       throw new Meteor.Error 500, 'Hash does not match.'
 
-    Publications.update
-      _id: id
-    ,
-      $set:
-        cached: true
-        sha256: sha256
+    publication = Publications.findOne
+      sha256: sha256
+    if publication
+      # We already have the PDF, so we don't need another one
+      Publications.remove
+        _id: id
+    else
+      Publications.update
+        _id: id
+      ,
+        $set:
+          cached: true
+          sha256: sha256
 
-    publication.process null, null, null, null, (progress) ->
-
+      publication.process null, null, null, null, (progress) ->
+        Publications.update
+          _id: id
+        ,
+          $set:
+            'importing.processProgress': progress
 
   confirmPublication: (id, metadata) ->
     Publications.update

@@ -4,7 +4,11 @@
     <ul>
     {{#each publicationsImporting}}
     <div style="width: 960px">
-      <div style="background: red; height: 5px; width: {{this.importing.progress}}%"></div>
+      {{#if this.cached}}
+        <div style="background: green; height: 5px; width: {{this.importing.processProgress}}%"></div>
+      {{else}}
+        <div style="background: red; height: 5px; width: {{this.importing.uploadProgress}}%"></div>
+      {{/if}}
       {{#if this.cached}}
         {{> publicationForm}}
       {{/if}}

@@ -22,6 +22,8 @@ class @Publication extends @Document
   #     id
   #   filename: original name of the uploaded file
   #   sha256: SHA-256 hash of the file computed by client before upload
+  #   uploadProgress: 0-100, progress of uploading (%)
+  #   processProgress: 0-100, progress of processing (%)
   # cached: do we have a locally stored PDF?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
