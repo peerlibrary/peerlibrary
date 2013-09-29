@@ -5,12 +5,20 @@ Deps.autorun ->
     Meteor.subscribe 'publications-by-author-slug', Session.get 'currentPersonSlug'
 
 Deps.autorun ->
-  person = Persons.findOne()
-  if person
-    # Assure URL is canonical
-    unless Session.equals 'currentPersonSlug', person.slug
-      Meteor.Router.to Meteor.Router.profilePath person.slug
-      return
+  slug = Session.get 'currentPersonSlug'
+
+  person = Persons.findOne
+    $or: [
+      slug: slug
+    ,
+      _id: slug
+    ]
+
+  return unless person
+
+  # Assure URL is canonical
+  unless slug is person.slug
+    Meteor.Router.to Meteor.Router.profilePath person.slug
 
 Template.profile.person = ->
   Persons.findOne
