@@ -19,12 +19,8 @@
       "connect": {},
       "urlify2": {},
       "fs": {},
-<<<<<<< HEAD
       "meteor-file": {},
-      "sjcl": {}
-=======
       "digest": {}
->>>>>>> master
     },
     "packages": {
       "router": {
@@ -44,8 +40,8 @@
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
-        "tag": "v1.5.0.2",
-        "commit": "37c19ac60ce22fd5d6fa5d853aad989191396091"
+        "tag": "v1.5.0.3",
+        "commit": "6745d769dc64660ccd349c33f9ebaf1583b0961a"
       },
       "tar": {
         "git": "https://github.com/peerlibrary/meteor-tar.git",
@@ -79,8 +75,8 @@
       },
       "connect": {
         "git": "https://github.com/peerlibrary/meteor-connect.git",
-        "tag": "v2.8.5.1",
-        "commit": "906207ad27cfc77f87f42a37249c4fc3c7067861"
+        "tag": "v2.8.5.2",
+        "commit": "54fb2c1ab97aa0c43cf86d2f15d4b100cdf3a284"
       },
       "urlify2": {
         "git": "https://github.com/peerlibrary/meteor-urlify2.git",
@@ -92,22 +88,15 @@
         "tag": "v0.1.2",
         "commit": "069d7fcaeb5df000a57238fde2785faf6dc1c37c"
       },
-<<<<<<< HEAD
       "meteor-file": {
         "git": "https://github.com/EventedMind/meteor-file.git",
         "tag": "v0.0.7",
         "commit": "5d3edaaccfb9d0995cf848abfb61c3bd101ea507"
       },
-      "sjcl": {
-        "git": "https://github.com/peerlibrary/meteor-sjcl.git",
-        "tag": "v1.0.0.2",
-        "commit": "eab8cc81fb9c204a86bfe14490bbbb44d2826383"
-=======
       "digest": {
         "git": "https://github.com/peerlibrary/meteor-digest.git",
-        "tag": "v0.1.0",
-        "commit": "e246384a80c50462504c1088b880b086c80496dd"
->>>>>>> master
+        "tag": "v0.1.1",
+        "commit": "24b57bdddfbfdc3782f4909791595518115e5126"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
