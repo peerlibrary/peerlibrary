@@ -18,7 +18,8 @@
       "dimsum": {},
       "connect": {},
       "urlify2": {},
-      "fs": {}
+      "fs": {},
+      "digest": {}
     },
     "packages": {
       "router": {
@@ -85,6 +86,11 @@
         "git": "https://github.com/peerlibrary/meteor-fs.git",
         "tag": "v0.1.2",
         "commit": "069d7fcaeb5df000a57238fde2785faf6dc1c37c"
+      },
+      "digest": {
+        "git": "https://github.com/peerlibrary/meteor-digest.git",
+        "tag": "v0.1.0",
+        "commit": "e246384a80c50462504c1088b880b086c80496dd"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
