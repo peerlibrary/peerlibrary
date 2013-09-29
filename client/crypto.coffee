@@ -6,7 +6,7 @@ bin2hex = (array) ->
   str
 
 @Crypto =
-  class SHA256 extends @Crypto.SHA256
+  SHA256: class extends @Crypto.SHA256
     constructor: ->
       @_hash = new Digest.SHA256();
 
@@ -14,4 +14,4 @@ bin2hex = (array) ->
       @_hash.update data
 
     finalize: =>
-      bin2hex @_hash.finalize()
+      bin2hex new Uint8Array @_hash.finalize()
