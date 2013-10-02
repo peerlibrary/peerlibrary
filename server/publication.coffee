@@ -221,6 +221,11 @@ Meteor.publish 'my-publications', ->
     removed = {}
     removed[id] = true for id in _.difference _.keys(currentLibrary), newLibrary
 
+    # Optimization, happens when a publication document is first deleted and
+    # then removed from the library list in the person document
+    if _.isEmpty added and _.isEmpty removed
+      return
+
     oldHandlePublications = handlePublications
     handlePublications = Publications.find(
       _id:
