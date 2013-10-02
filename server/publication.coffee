@@ -209,10 +209,9 @@ Meteor.publish 'my-publications', ->
   handlePublications = null
 
   removePublications = (ids) =>
-    for id of ids
-      if currentLibrary[id]
-        delete currentLibrary[id]
-        @removed 'Publications', id
+    for id of ids when currentLibrary[id]
+      delete currentLibrary[id]
+      @removed 'Publications', id
 
   publishPublications = (newLibrary) =>
     newLibrary ||= []
