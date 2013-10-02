@@ -201,45 +201,53 @@ Meteor.publish 'publications-by-ids', (ids) ->
 Meteor.publish 'my-publications', ->
   # TODO: Should we use objects instead of lists? We are not interested in order, just existence in the set
 
+  # There are moments when two observes are observing mostly similar list
+  # of publications ids so it could happen that one is changing or removing
+  # publication just while the other one is adding, so we are making sure
+  # using currentLibrary variable that we have a consistent view of the
+  # publications we published
   currentLibrary = []
   currentPersonId = null # Just for asserts
   handlePublications = null
 
   removePublications = (ids) =>
     for id in ids
-      @removed 'Publications', id
+      if _.contains currentLibrary, id
+        currentLibrary = _.without currentLibrary, id
+        @removed 'Publications', id
 
   publishPublications = (newLibrary) =>
     newLibrary ||= []
 
     added = _.difference newLibrary, currentLibrary
     removed = _.difference currentLibrary, newLibrary
-    currentLibrary = []
 
     oldHandlePublications = handlePublications
     handlePublications = Publications.find(
       _id:
         $in: newLibrary
-      # TODO: Should be set as well
+      # TODO: Should be set as well if we have PDF locally
       # cached: true
       processed: true
     ,
       Publication.PUBLIC_FIELDS()
     ).observeChanges
       added: (id, fields) =>
+        return if _.contains currentLibrary, id
+
+        currentLibrary.push id
         # We add only the newly added ones, others were added already before
         @added 'Publications', id, fields if _.contains added, id
 
-        assert not _.contains currentLibrary, id
-        currentLibrary.push id
-
       changed: (id, fields) =>
+        return if not _.contains currentLibrary, id
+
         @changed 'Publications', id, fields
 
       removed: (id) =>
-        assert _.contains currentLibrary, id
-        currentLibrary = _.without currentLibrary, id
+        return if not _.contains currentLibrary, id
 
+        currentLibrary = _.without currentLibrary, id
         @removed 'Publications', id
 
     # We stop the handle after we established the new handle,
@@ -275,6 +283,9 @@ Meteor.publish 'my-publications', ->
     removed: (id) =>
       # We cannot remove the person if we never added the person before
       assert.notEqual currentPersonId, null
+
+      handlePublications.stop() if handlePublications
+      handlePublications = null
 
       currentPersonId = null
       removePublications currentLibrary
