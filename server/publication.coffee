@@ -199,16 +199,91 @@ Meteor.publish 'publications-by-ids', (ids) ->
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'my-publications', ->
-  person = Persons.findOne
+  # TODO: Should we use objects instead of lists? We are not interested in order, just existence in the set
+
+  currentLibrary = []
+  currentPersonId = null # Just for asserts
+  handlePublications = null
+
+  removePublications = (ids) =>
+    for id in ids
+      @removed 'Publications', id
+
+  publishPublications = (newLibrary) =>
+    newLibrary ||= []
+
+    added = _.difference newLibrary, currentLibrary
+    removed = _.difference currentLibrary, newLibrary
+    currentLibrary = []
+
+    oldHandlePublications = handlePublications
+    handlePublications = Publications.find(
+      _id:
+        $in: newLibrary
+      # TODO: Should be set as well
+      # cached: true
+      processed: true
+    ,
+      Publication.PUBLIC_FIELDS()
+    ).observeChanges
+      added: (id, fields) =>
+        # We add only the newly added ones, others were added already before
+        @added 'Publications', id, fields if _.contains added, id
+
+        assert not _.contains currentLibrary, id
+        currentLibrary.push id
+
+      changed: (id, fields) =>
+        @changed 'Publications', id, fields
+
+      removed: (id) =>
+        assert _.contains currentLibrary, id
+        currentLibrary = _.without currentLibrary, id
+
+        @removed 'Publications', id
+
+    # We stop the handle after we established the new handle,
+    # so that any possible changes hapenning in the meantime
+    # were still processed by the old handle
+    oldHandlePublications.stop() if oldHandlePublications
+
+    # And then we remove those who are not in the library anymore
+    removePublications removed
+
+  handlePersons = Persons.find(
     'user.id': @userId
-
-  return unless person
-
-  Publications.find
-    _id: {$in: person.library}
-    processed: true
   ,
-    Publication.PUBLIC_FIELDS()
+    fields:
+      # id field is implicitly added
+      'user.id': 1
+      library: 1
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentPersonId, null
+      assert.equal fields.user.id, @userId
+
+      currentPersonId = id
+      publishPublications fields.library
+
+    changed: (id, fields) =>
+      # Person should already be added
+      assert.notEqual currentPersonId, null
+
+      publishPublications fields.library
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.notEqual currentPersonId, null
+
+      currentPersonId = null
+      removePublications currentLibrary
+
+  @ready()
+
+  @onStop =>
+    handlePersons.stop() if handlePersons
+    handlePublications.stop() if handlePublications
 
 Meteor.publish 'my-publications-importing', ->
   Publications.find
