@@ -80,7 +80,7 @@ Meteor.publish 'search-results', (query, limit) ->
 
   countHandle = Publications.find(findQuery,
     fields:
-      _id: 1
+      _id: 1 # We want only id
   ).observeChanges
     added: (id) =>
       count++
@@ -122,7 +122,7 @@ Meteor.publish 'search-available', ->
     processed: true
   ,
     fields:
-      _id: 1
+      # id field is implicitly added
       created: 1
   ).observeChanges
     added: (id, fields) =>
@@ -166,7 +166,7 @@ Meteor.publish 'search-available', ->
 
   handlePersons = Persons.find({},
     fields:
-      _id: 1
+      _id: 1 # We want only id
   ).observeChanges
     added: (id) =>
       countPersons++
