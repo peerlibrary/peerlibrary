@@ -199,28 +199,28 @@ Meteor.publish 'publications-by-ids', (ids) ->
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'my-publications', ->
-  # TODO: Should we use objects instead of lists? We are not interested in order, just existence in the set
-
   # There are moments when two observes are observing mostly similar list
   # of publications ids so it could happen that one is changing or removing
   # publication just while the other one is adding, so we are making sure
   # using currentLibrary variable that we have a consistent view of the
   # publications we published
-  currentLibrary = []
+  currentLibrary = {}
   currentPersonId = null # Just for asserts
   handlePublications = null
 
   removePublications = (ids) =>
-    for id in ids
-      if _.contains currentLibrary, id
-        currentLibrary = _.without currentLibrary, id
+    for id of ids
+      if currentLibrary[id]
+        delete currentLibrary[id]
         @removed 'Publications', id
 
   publishPublications = (newLibrary) =>
     newLibrary ||= []
 
-    added = _.difference newLibrary, currentLibrary
-    removed = _.difference currentLibrary, newLibrary
+    added = {}
+    added[id] = true for id in _.difference newLibrary, _.keys(currentLibrary)
+    removed = {}
+    removed[id] = true for id in _.difference _.keys(currentLibrary), newLibrary
 
     oldHandlePublications = handlePublications
     handlePublications = Publications.find(
@@ -233,21 +233,21 @@ Meteor.publish 'my-publications', ->
       Publication.PUBLIC_FIELDS()
     ).observeChanges
       added: (id, fields) =>
-        return if _.contains currentLibrary, id
+        return if currentLibrary[id]
+        currentLibrary[id] = true
 
-        currentLibrary.push id
         # We add only the newly added ones, others were added already before
-        @added 'Publications', id, fields if _.contains added, id
+        @added 'Publications', id, fields if added[id]
 
       changed: (id, fields) =>
-        return if not _.contains currentLibrary, id
+        return if not currentLibrary[id]
 
         @changed 'Publications', id, fields
 
       removed: (id) =>
-        return if not _.contains currentLibrary, id
+        return if not currentLibrary[id]
+        delete currentLibrary[id]
 
-        currentLibrary = _.without currentLibrary, id
         @removed 'Publications', id
 
     # We stop the handle after we established the new handle,
