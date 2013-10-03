@@ -14,7 +14,8 @@ Template.upload.publicationsInLibrary = ->
   console.log person
   return unless person
   Publications.find
-    _id: {$in: person.library or []}
+    _id:
+      $in: person.library or []
     importing:
       $exists: false
 
