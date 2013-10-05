@@ -231,6 +231,9 @@ class @Annotator
     # TODO: We could try to require that paragraph height is at least 1.5 of the line height
     # TODO: We could try to require that area covered by segments should be more than 0.95 of the bounding box, so very little empty space
     if Math.abs(boundingBox.left - sectionProperties.left) < SECTION_PARAGRAPH_DISTANCE_THRESHOLD * SCALE
+      boundingBox.indices = paragraphIndices
+      for i in paragraphIndices
+        page.textSegments[i].paragraph = page.paragraphs.length
       page.paragraphs.push boundingBox
 
   _processSection: (pageNumber, segmentsIndices) =>
@@ -471,7 +474,7 @@ class @Annotator
       @_processSection pageNumber, segmentsIndices
 
     # For debugging
-    @_showParagraphs pageNumber
+    #@_showParagraphs pageNumber
 
     $canvas = $("#display-page-#{ pageNumber } canvas")
 
