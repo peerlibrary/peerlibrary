@@ -167,12 +167,13 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error rendering page #{ page.page.pageNumber }", args...
 
-  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available
+  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
   # TODO: Verify that it works after support for filtering fields on the client will be released in Meteor
   @SHOW_FIELDS: ->
     fields:
       foreignId: 1
       source: 1
+      slug: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
