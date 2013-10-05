@@ -411,17 +411,41 @@ class @Annotator
       $displayPage = $("#display-page-#{ activeHighlightStart.pageNumber }")
 
       textSegments = @_pages[activeHighlightStart.pageNumber - 1].textSegments
-      for segment in textSegments[activeHighlightStart.index..activeHighlightEnd.index]
+      first = _.pick textSegments[activeHighlightStart.index], 'left', 'top', 'width', 'height'
+      if first.left < activeHighlightStart.left
+        first.width -= activeHighlightStart.left - first.left
+        first.left = activeHighlightStart.left
+      if activeHighlightStart.index isnt activeHighlightEnd.index
+        $displayPage.append(
+          $('<div/>').addClass('highlight').css first
+        )
+      for segment in textSegments[(activeHighlightStart.index + 1)..(activeHighlightEnd.index - 1)]
         $displayPage.append(
           $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
         )
+      if activeHighlightStart.index isnt activeHighlightEnd.index
+        last = _.pick textSegments[activeHighlightEnd.index], 'left', 'top', 'width', 'height'
+      else
+        last = first
+      if last.left + last.width > activeHighlightEnd.left
+        last.width -= (last.left + last.width) - activeHighlightEnd.left
+      $displayPage.append(
+        $('<div/>').addClass('highlight').css last
+      )
     else
       # Show for the first page
 
       $displayPage = $("#display-page-#{ activeHighlightStart.pageNumber }")
 
       textSegments = @_pages[activeHighlightStart.pageNumber - 1].textSegments
-      for segment in textSegments[activeHighlightStart.index...textSegments.length] # Exclusive range (...) here instead of inclusive (..)
+      first = _.pick textSegments[activeHighlightStart.index], 'left', 'top', 'width', 'height'
+      if first.left < activeHighlightStart.left
+        first.width -= activeHighlightStart.left - first.left
+        first.left = activeHighlightStart.left
+      $displayPage.append(
+        $('<div/>').addClass('highlight').css first
+      )
+      for segment in textSegments[(activeHighlightStart.index + 1)...textSegments.length] # Exclusive range (...) here instead of inclusive (..)
         $displayPage.append(
           $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
         )
@@ -443,10 +467,16 @@ class @Annotator
       $displayPage = $("#display-page-#{ activeHighlightEnd.pageNumber }")
 
       textSegments = @_pages[activeHighlightEnd.pageNumber - 1].textSegments
-      for segment in textSegments[0..activeHighlightEnd.index] # Inclusive range (..) here
+      for segment in textSegments[0..(activeHighlightEnd.index - 1)] # Inclusive range (..) here
         $displayPage.append(
           $('<div/>').addClass('highlight').css _.pick(segment, 'left', 'top', 'width', 'height')
         )
+      last = _.pick textSegments[activeHighlightEnd.index], 'left', 'top', 'width', 'height'
+      if last.left + last.width > activeHighlightEnd.left
+        last.width -= (last.left + last.width) - activeHighlightEnd.left
+      $displayPage.append(
+        $('<div/>').addClass('highlight').css last
+      )
 
   _openActiveHighlight: =>
     # TODO: Implement
