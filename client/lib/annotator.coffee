@@ -4,6 +4,8 @@ SPLIT_SECTION_THRESHOLD = 1.01 # To allow for small rounding errors
 FUZZY_OVERLAP_THRESHOLD = 2.5 # If areas are close enough, we see them as overlapping (in units)
 SECTION_INDENT_THRESHOLD = 1.0 / 40.0
 SPLIT_PARAGRAPH_THRESHOLD = 0.9
+SECTION_PARAGRAPH_DISTANCE_THRESHOLD = 0.5 # To allow for small variations (in units)
+PARAGRAPH_HEIGHT_THRESHOLD = 1.5 # Paragraph has to be larger than one line height
 
 # Merges sorted lists in sorted list with unique elements
 merge = (list1, list2) ->
@@ -57,10 +59,9 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
-  _dy: (pageNumber, i, j) =>
-    j ?= i + 1
+  _dy: (pageNumber, i) =>
     page = @_pages[pageNumber - 1]
-    page.textSegments[j].top - page.textSegments[i].top
+    page.textSegments[i + 1].top - page.textSegments[i].top
 
   _computeLineHeight: (pageNumber) =>
     page = @_pages[pageNumber - 1]
@@ -127,6 +128,8 @@ class @Annotator
 
     left: left
     top: top
+    right: right
+    bottom: bottom
     width: right - left
     height: bottom - top
 
@@ -186,7 +189,7 @@ class @Annotator
 
     @_mergeOverlappingSections pageNumber, sections
 
-  _sectionIndentThreshold: (pageNumber, segmentsIndices) =>
+  _computeSectionProperties: (pageNumber, segmentsIndices) =>
     page = @_pages[pageNumber - 1]
 
     left = Number.MAX_VALUE
@@ -198,34 +201,43 @@ class @Annotator
       left = Math.min left, segment.left
       right = Math.max right, (segment.left + segment.width)
 
-    left + (right - left) * SECTION_INDENT_THRESHOLD
+    left: left
+    right: right
+    indentThreshold: left + (right - left) * SECTION_INDENT_THRESHOLD
 
-  _splitParagraphs: (pageNumber, segmentsIndices, sectionIndentThreshold) =>
+  _splitParagraphs: (pageNumber, segmentsIndices, sectionProperties) =>
     page = @_pages[pageNumber - 1]
 
     s = 0
     paragraphs = []
     for j in [1...segmentsIndices.length]
       segment = page.textSegments[segmentsIndices[j]]
+      paragraphIndices = segmentsIndices[s...j]
+      boundingBox = @_boundingBox pageNumber, paragraphIndices
 
-      if @_dy(pageNumber, segmentsIndices[j - 1], segmentsIndices[j]) > page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionIndentThreshold
-        paragraphs.push segmentsIndices[s...j]
+      if boundingBox.top - segment.top > page.lineHeight * SPLIT_PARAGRAPH_THRESHOLD and segment.left > sectionProperties.indentThreshold
+        paragraphs.push paragraphIndices
         s = j
 
     paragraphs.push segmentsIndices[s..segmentsIndices.length]
-    console.log paragraphs
     paragraphs
 
-  _processParagraph: (pageNumber, segmentsIndices) =>
+  _processParagraph: (pageNumber, sectionProperties, paragraphIndices) =>
     page = @_pages[pageNumber - 1]
 
-    page.paragraphs.push @_boundingBox pageNumber, segmentsIndices
+    boundingBox = @_boundingBox pageNumber, paragraphIndices
+    # TODO: Improve which paragraphs we skip
+    # TODO: We could try to require that right border of the paragraph bounding box is close to section border
+    # TODO: We could try to require that paragraph height is at least 1.5 of the line height
+    # TODO: We could try to require that area covered by segments should be more than 0.95 of the bounding box, so very little empty space
+    if Math.abs(boundingBox.left - sectionProperties.left) < SECTION_PARAGRAPH_DISTANCE_THRESHOLD * SCALE
+      page.paragraphs.push boundingBox
 
   _processSection: (pageNumber, segmentsIndices) =>
-    sectionIndentThreshold = @_sectionIndentThreshold pageNumber, segmentsIndices
+    sectionProperties = @_computeSectionProperties pageNumber, segmentsIndices
 
-    for segsIs in @_splitParagraphs pageNumber, segmentsIndices, sectionIndentThreshold
-      @_processParagraph pageNumber, segsIs
+    for paragraphIndices in @_splitParagraphs pageNumber, segmentsIndices, sectionProperties
+      @_processParagraph pageNumber, sectionProperties, paragraphIndices
 
   _roundArea: (area) =>
     areaRounded = _.clone area
