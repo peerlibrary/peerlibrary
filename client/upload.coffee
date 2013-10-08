@@ -11,8 +11,9 @@ Template.upload.publicationsImporting = ->
 Template.upload.publicationsInLibrary = ->
   person = Persons.findOne
     'user.id': Meteor.user()?._id
-  console.log person
+
   return unless person
+
   Publications.find
     _id:
       $in: person.library or []
