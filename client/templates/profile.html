@@ -1,32 +1,32 @@
 <template name="profile">
   {{#if person}}
-    <div class="row">
+    <div id="profile">
       <h1>{{person.foreNames}} {{person.lastName}}</h1>
+      {{#if isMine}}
+        <h3>Library</h3>
+        <ol class="item-list">
+          {{#each myPublications}}
+            {{> publicationSearchResult}}
+          {{/each}}
+        </ol>
+        <h3>Importing</h3>
+        <ul>
+          {{#each myPublicationsImporting}}
+            <div style="width: 960px">
+              {{#if this.cached}}
+                <div style="background: green; height: 5px; width: {{this.importing.processProgress}}%"></div>
+              {{else}}
+                <div style="background: red; height: 5px; width: {{this.importing.uploadProgress}}%"></div>
+              {{/if}}
+              {{#if this.cached}}
+                {{> publicationForm}}
+              {{/if}}
+            </div>
+          {{/each}}
+        </ul>
+        {{> uploadForm}}
+      {{/if}}
     </div>
-    {{#if isMine}}
-      <h3>Library</h3>
-      <ol class="item-list">
-        {{#each myPublications}}
-          {{> publicationSearchResult}}
-        {{/each}}
-      </ol>
-      <h3>Importing</h3>
-      <ul>
-        {{#each myPublicationsImporting}}
-          <div style="width: 960px">
-            {{#if this.cached}}
-              <div style="background: green; height: 5px; width: {{this.importing.processProgress}}%"></div>
-            {{else}}
-              <div style="background: red; height: 5px; width: {{this.importing.uploadProgress}}%"></div>
-            {{/if}}
-            {{#if this.cached}}
-              {{> publicationForm}}
-            {{/if}}
-          </div>
-        {{/each}}
-      </ul>
-      {{> uploadForm}}
-    {{/if}}
   {{/if}}
 </template>
 
