@@ -223,7 +223,7 @@ Meteor.publish 'my-publications', ->
 
     # Optimization, happens when a publication document is first deleted and
     # then removed from the library list in the person document
-    if _.isEmpty added and _.isEmpty removed
+    if _.isEmpty(added) and _.isEmpty(removed)
       return
 
     oldHandlePublications = handlePublications
