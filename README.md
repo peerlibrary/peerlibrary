@@ -71,6 +71,16 @@ the way through "processing" will be searchable at your [http://localhost:3000/]
 Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can
 click the button in the admin interface for the process which you previously left off on.
 
+### Troubleshooting ###
+
+Sometimes when installing dependencies, Meteor will throw the following error:
+
+    npm ERR! cb() never called!
+    npm ERR! not ok code 0
+
+This just means that there was a timeout while downloading a dependency, probably because of
+a networking issue. Just retry.
+
 ### Debug mode ###
 
 To run PeerLibrary in the debug mode, you can run it with debug settings:
