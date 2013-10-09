@@ -1,7 +1,8 @@
 Deps.autorun ->
   # TODO: resubscribe after importing
-  Meteor.subscribe 'my-publications'
-  Meteor.subscribe 'my-publications-importing'
+  if Session.equals 'uploadActive', true
+    Meteor.subscribe 'my-publications'
+    Meteor.subscribe 'my-publications-importing'
 
 Template.upload.publicationsImporting = ->
   Publications.find
