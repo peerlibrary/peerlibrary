@@ -16,10 +16,6 @@ Meteor.Router.add
   '/register':
     'register'
 
-  '/upload': ->
-    Session.set 'uploadActive', true
-    'upload'
-
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
     to: (publicationId, publicationSlug) ->
@@ -52,7 +48,6 @@ Meteor.Router.beforeRouting = ->
   Session.set 'searchActive', false
   Session.set 'searchFocused', false
   Session.set 'adminActive', false
-  Session.set 'uploadActive', false
   Session.set 'currentPublicationId', null
   Session.set 'currentPublicationSlug', null
   Session.set 'currentPublicationProgress', null

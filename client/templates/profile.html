@@ -3,8 +3,47 @@
     <div class="row">
       <h1>{{person.foreNames}} {{person.lastName}}</h1>
     </div>
+    {{#if isMine}}
+      <h3>Library</h3>
+      <ol class="item-list">
+        {{#each myPublications}}
+          {{> publicationSearchResult}}
+        {{/each}}
+      </ol>
+      <h3>Importing</h3>
+      <ul>
+        {{#each myPublicationsImporting}}
+          <div style="width: 960px">
+            {{#if this.cached}}
+              <div style="background: green; height: 5px; width: {{this.importing.processProgress}}%"></div>
+            {{else}}
+              <div style="background: red; height: 5px; width: {{this.importing.uploadProgress}}%"></div>
+            {{/if}}
+            {{#if this.cached}}
+              {{> publicationForm}}
+            {{/if}}
+          </div>
+        {{/each}}
+      </ul>
+      {{> uploadForm}}
+    {{/if}}
   {{/if}}
-  {{#if isMine}}
-  	<p>It's me!</p>
-  {{/if}}
+</template>
+
+<template name="uploadForm">
+  <div class="dropzone" style="border: 5px dashed #ccc; width: 600px; height: 60px; margin: 10px auto;"></div>
+</template>
+
+<template name="publicationForm">
+  <form data-id="{{this._id}}">
+    <label for="title">Title:</label>
+    <input type="text" name="title" value="{{this.title}}" />
+    <label for="authorsRaw">Authors:</label>
+    <input type="text" name="authorsRaw" value="{{this.authorsRaw}}" />
+    <label for="abstract">Abstract:</label>
+    <textarea name="abstract">{{this.abstract}}</textarea>
+    <label for="doi">DOI:</label>
+    <input type="text" name="doi" value="{{this.doi}}" />
+    <input type="submit" value="Confirm" />
+  </form>
 </template>

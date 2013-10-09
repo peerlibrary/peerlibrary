@@ -5,6 +5,10 @@ Deps.autorun ->
     # We also search by id because we may have to redirect to canonical URL
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
+    # TODO: resubscribe after importing
+    if Meteor.user()
+      Meteor.subscribe 'my-publications'
+      Meteor.subscribe 'my-publications-importing'
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
@@ -30,9 +34,73 @@ Template.profile.person = ->
 Template.profile.isMine = ->
   person = Persons.findOne
     slug: Session.get 'currentPersonSlug'
-  if person
-    person.user.id == Meteor.user()._id
 
-Template.profile.publications = ->
-  # TODO: This should not be returning all publications, but only those relevant to the profile
-  Publications.find()
+  return unless person
+
+  person.user.id == Meteor.user()?._id
+
+# Publications in logged user's library
+Template.profile.myPublications = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+    'user.id': Meteor.user()?._id
+
+  return unless person
+
+  Publications.find
+    _id:
+      $in: person.library or []
+    importing:
+      $exists: false
+
+Template.profile.myPublicationsImporting = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+    'user.id': Meteor.user()?._id
+
+  return unless person
+
+  Publications.find
+    'importing.by.id': Meteor.user()?._id
+
+Template.profile.events =
+  'dragover .dropzone': (e) ->
+    e.preventDefault()
+
+  'drop .dropzone': (e) ->
+    e.stopPropagation()
+    e.preventDefault()
+
+    _.each e.dataTransfer.files, (file) ->
+
+      reader = new FileReader()
+      reader.onload = ->
+        hash = new Crypto.SHA256()
+        hash.update this.result
+        sha256 = hash.finalize()
+
+        Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
+          if err
+            throw err
+          else
+            console.log publicationId 
+            meteorFile = new MeteorFile file
+            meteorFile.name = publicationId + '.pdf'
+            meteorFile.upload file, 'uploadPublication',
+              size: 128 * 1024
+            , (err) ->
+              if err
+                throw err
+              else
+                Meteor.call 'finishPublicationUpload', publicationId
+                console.log 'Upload successful'
+
+      reader.readAsArrayBuffer file
+
+  'submit form': (e) ->
+    e.preventDefault()
+    metadata = _.reduce $(e.target).serializeArray(), (obj, subObj) ->
+      obj[subObj.name] = subObj.value
+      obj
+    , {}
+    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata
