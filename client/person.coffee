@@ -80,20 +80,18 @@ Template.profile.events =
         sha256 = hash.finalize()
 
         Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
-          if err
-            throw err
-          else
-            console.log publicationId 
-            meteorFile = new MeteorFile file
-            meteorFile.name = publicationId + '.pdf'
-            meteorFile.upload file, 'uploadPublication',
-              size: 128 * 1024
-            , (err) ->
-              if err
-                throw err
-              else
-                Meteor.call 'finishPublicationUpload', publicationId
-                console.log 'Upload successful'
+          throw err if err
+          console.log publicationId
+          meteorFile = new MeteorFile file
+          meteorFile.name = publicationId + '.pdf'
+          meteorFile.upload file, 'uploadPublication',
+            size: 128 * 1024
+          , (err) ->
+            throw err if err
+
+            Meteor.call 'finishPublicationUpload', publicationId, (err) ->
+              throw err if err
+              console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
 
