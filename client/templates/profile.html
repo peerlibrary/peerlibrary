@@ -12,22 +12,22 @@
         <h3>Importing</h3>
         <ul>
           {{#each myPublicationsImporting}}
-            <div style="width: 960px">
-              {{#if this.cached}}
-                <div style="background: green; height: 5px; width: {{this.importing.processProgress}}%"></div>
-              {{else}}
-                <div style="background: red; height: 5px; width: {{this.importing.uploadProgress}}%"></div>
-              {{/if}}
-              {{#if this.cached}}
-                {{> publicationForm}}
-              {{/if}}
-            </div>
+            {{> publicationImporting}}
           {{/each}}
         </ul>
         {{> uploadForm}}
       {{/if}}
     </div>
   {{/if}}
+</template>
+
+<template name="publicationImporting">
+  <div style="width: 960px">
+    <div style="background: green; height: 5px; width: {{progress}}%"></div>
+    {{#if this.cached}}
+      {{> publicationForm}}
+    {{/if}}
+  </div>
 </template>
 
 <template name="uploadForm">

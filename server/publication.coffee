@@ -99,7 +99,7 @@ Meteor.methods
       'importing.by.id': this.userId
     ,
       $set:
-        'importing.uploadProgress': ~~(100 * file.end / file.size)
+        'importing.uploadProgress': file.end / file.size
 
     Storage.saveMeteorFile file
 
@@ -141,7 +141,7 @@ Meteor.methods
         _id: id
       ,
         $set:
-          'importing.processProgress': ~~(100 * progress)
+          'importing.processProgress': progress
 
   confirmPublication: (id, metadata) ->
     unless this.userId

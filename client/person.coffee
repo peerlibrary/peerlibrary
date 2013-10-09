@@ -104,3 +104,6 @@ Template.profile.events =
       obj
     , {}
     Meteor.call 'confirmPublication', $(e.target).data('id'), metadata
+
+Template.publicationImporting.progress = ->
+  50 * @importing.uploadProgress + 50 * @importing.processProgress
