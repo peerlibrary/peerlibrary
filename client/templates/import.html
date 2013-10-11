@@ -1,0 +1,17 @@
+<template name="uploadOverlay">
+  {{#if uploadOverlayActive}}
+    <div id="upload-overlay">
+      <div class="content">
+        {{#if publicationUploading}}
+          {{> uploadProgressBar}}
+        {{else}}
+          <h1>Drop files here</h1>
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="uploadProgressBar">
+  <div class="upload-progress-bar" style="width: {{progress}}%"></div>
+</template>
