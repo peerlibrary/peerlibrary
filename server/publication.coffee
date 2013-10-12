@@ -170,9 +170,10 @@ Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   author = Persons.findOne
     slug: authorSlug
 
+  return unless author
+
   Publications.find
-    authorIds:
-      $all: [author._id]
+    'authors.id': author._id
     cached: true
     processed: true
   ,

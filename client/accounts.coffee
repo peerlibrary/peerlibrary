@@ -11,8 +11,8 @@ Meteor.person = ->
   Persons.findOne
     'user.id': userId
 
-Template._loginButtonsLoggedInDropdownActions.username = ->
-  Meteor.user()?.username
+Template._loginButtonsLoggedInDropdownActions.personSlug = ->
+  Meteor.person()?.slug
 
 # To close login buttons dialog box when clicking or focusing somewhere outside
 $(document).click (e) ->
