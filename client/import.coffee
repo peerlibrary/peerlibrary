@@ -1,8 +1,6 @@
 Deps.autorun ->
-  publication = Session.get 'uploadingPublicationId'
-
-  if publication
-    Meteor.subscribe 'publications-by-id', publication
+  if Session.equals 'uploadOverlayActive', true
+    Meteor.subscribe 'my-publications-importing'
 
 Meteor.startup ->
   $(document).on 'dragenter', (e) ->
@@ -28,7 +26,6 @@ Template.uploadOverlay.events =
         Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
           throw err if err
           console.log publicationId
-          Session.set 'uploadingPublicationId', publicationId
           meteorFile = new MeteorFile file
           meteorFile.name = publicationId + '.pdf'
           meteorFile.upload file, 'uploadPublication',
@@ -48,9 +45,10 @@ Template.uploadOverlay.events =
 Template.uploadOverlay.uploadOverlayActive = ->
   Session.get 'uploadOverlayActive'
 
-Template.uploadOverlay.publicationUploading = ->
-  Publications.findOne
-    _id: Session.get 'uploadingPublicationId'
+Template.uploadOverlay.publicationsUploading = ->
+  Publications.find
+    'importing.uploadProgress':
+      $lt: 1
 
 Template.uploadProgressBar.progress = ->
   100 * @importing.uploadProgress

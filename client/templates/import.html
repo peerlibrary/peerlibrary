@@ -2,11 +2,10 @@
   {{#if uploadOverlayActive}}
     <div id="upload-overlay">
       <div class="content">
-        {{#if publicationUploading}}
+        <h1>Drop files here</h1>
+        {{#each publicationsUploading}}
           {{> uploadProgressBar}}
-        {{else}}
-          <h1>Drop files here</h1>
-        {{/if}}
+        {{/each}}
       </div>
     </div>
   {{/if}}
