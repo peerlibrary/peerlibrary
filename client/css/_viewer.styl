@@ -1,211 +1,212 @@
 @import variables
 
 #viewer
-  width: 100%
-  height: 100%
-  overflow-x: hidden
-  position: relative
-  padding-top: 60px
+  width 100%
+  height 100%
+  overflow-x hidden
+  position relative
+  padding-top 60px
 
 #viewer .display
-  height: 100%
+  height 100%
 
 #viewer .display-page
-  position: relative
-  text-align: center
-  margin-bottom: 20px
+  position relative
+  text-align center
+  margin-bottom 20px
 
 #viewer .highlighted, #viewer .annotations .annotation:hover
-  background-color: rgba(255,0,0,0.3)
+  background-color rgba(255,0,0,0.3)
 
 #viewer .display-page canvas
-  background: rgba(255,255,255,1.0)
+  background rgba(255,255,255,1.0)
 
 /* text selection */
 
 #viewer .display-page canvas ::selection
-  background: rgba(255,255,10,0.3)
+  background rgba(255,255,10,0.3)
 
 #viewer .display-page canvas ::-moz-selection
-  background: rgba(255,255,10,0.3)
+  background rgba(255,255,10,0.3)
 
 #viewer .display-text
-  position: absolute
-  left: 0
-  top: 0
-  right: 0
-  bottom: 0
-  color: #000
-  font-family: sans-serif
-  overflow: hidden
-  margin-right: auto
-  margin-left: auto
+  position absolute
+  left 0
+  top 0
+  right 0
+  bottom 0
+  color #000
+  font-family sans-serif
+  overflow hidden
+  margin-right auto
+  margin-left auto
 
 #viewer .display-text > div
-  color: transparent
-  position: absolute
-  line-height: 1
-  white-space: pre
-  cursor: text
+  color transparent
+  position absolute
+  line-height 1
+  white-space pre
+  cursor text
 
 #viewer .display-text .highlight
-  margin: -1px
-  padding: 1px
-  background-color: rgba(180, 0, 170, 0.2)
-  border-radius: 4px
+  margin -1px
+  padding 1px
+  background-color rgba(180, 0, 170, 0.2)
+  border-radius 4px
 
 #viewer .display-text .highlight.begin
-  border-radius: 4px 0px 0px 4px
+  border-radius 4px 0px 0px 4px
 
 #viewer .display-text .highlight.end
-  border-radius: 0px 4px 4px 0px
+  border-radius 0px 4px 4px 0px
 
 #viewer .display-text .highlight.middle
-  border-radius: 0px
+  border-radius 0px
 
 #viewer .display-text .highlight.selected
-  background-color: rgba(0, 100, 0, 0.2)
+  background-color rgba(0, 100, 0, 0.2)
 
 /* meta menu */
 .meta-menu
-  position: fixed
-  cursor: pointer
-  width: 28px
-  height: 22px
-  left: 20px
-  padding: 10px
-  background: #cececf
-  border-radius: 2px
-  z-index: 100
-  transition: 0.2s
-  overflow: hidden
+  position fixed
+  cursor pointer
+  width 28px
+  height 22px
+  left 20px
+  padding 10px
+  background #cececf
+  border-radius 2px
+  z-index 100
+  transition 0.2s
+  overflow hidden
 
 .meta-menu a
-  color: white
+  color white
 
 .meta-menu:hover
-  background: rgba(46,46,44,0.5)
-  width: 300px
-  min-height: 420px
+  background rgba(46,46,44,0.5)
+  width 300px
+  min-height 420px
 
 .meta-menu i.icon-menu
-  font-size: 20px
-  color: white
+  font-size 20px
+  color white
 
 .meta-menu .meta-description
-  display: none
-  color: white
-  padding: 5px
+  display none
+  color white
+  padding 5px
 
 .meta-menu:hover .meta-description
-  display: block
+  display block
 
 .meta-menu .meta-description .authors span:after
-  content: ','
+  content ','
 
 .meta-menu .meta-description .authors span:last-child:after
-  content: ''
+  content ''
 
 /* annotations */
 .annotations
-  position: absolute
-  z-index: 100
-  right: 20px
-  width: 300px
+  position absolute
+  z-index 100
+  right 20px
+  width 300px
 
 .annotations ul.annotations-list
-  list-style: none
+  list-style none
 
 .annotations ul.annotations-list li
-  background: white
-  padding: 20px
-  margin: 10px 0
-  border-radius: 2px
-  box-shadow: 0 0 0 1px rgba(14,41,57,0.12)
-  transition: 0.2s
+  background white
+  padding 20px
+  margin 10px 0
+  border-radius 2px
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+  transition 0.2s
 
 .annotations ul.annotations-list li:hover
-  box-shadow: 0 0 0 1px rgba(14,41,57,0.12),0 2px 5px rgba(14,41,57,0.34)
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12),0 2px 5px rgba(14,41,57,0.34)
 
 /* viewer */
 
 #viewer
-  width: 100%
-  height: 100%
-  overflow-x: hidden
-  position: relative
-  padding-top: 60px
+  width 100%
+  height 100%
+  overflow-x hidden
+  position relative
+  padding-top 60px
 
 #viewer .display
-  height: 100%
+  height 100%
 
 #viewer .display-page
-  position: relative
-  text-align: center
-  margin-bottom: 20px
+  position relative
+  text-align center
+  margin-bottom 20px
 
 #viewer .highlighted, #viewer .annotations .annotation:hover
-  background-color: rgba(255,0,0,0.3)
+  background-color rgba(255,0,0,0.3)
 
 /* text selection */
 
 #viewer .display-page canvas ::selection
-  background:rgba(255,255,10,0.3)
+  background rgba(255,255,10,0.3)
+
 #viewer .display-page canvas ::-moz-selection
-  background:rgba(255,255,10,0.3)
+  background rgba(255,255,10,0.3)
 
 #viewer .display-text
-  position: absolute
-  left: 0
-  top: 0
-  right: 0
-  bottom: 0
-  color: #000
-  font-family: sans-serif
-  overflow: hidden
-  margin-right: auto
-  margin-left: auto
+  position absolute
+  left 0
+  top 0
+  right 0
+  bottom 0
+  color #000
+  font-family sans-serif
+  overflow hidden
+  margin-right auto
+  margin-left auto
 
 #viewer .display-text > div
-  color: transparent
-  position: absolute
-  line-height: 1
-  white-space: pre
-  cursor: text
+  color transparent
+  position absolute
+  line-height 1
+  white-space pre
+  cursor text
 
 #viewer .display-text .highlight
-  margin: -1px
-  padding: 1px
+  margin -1px
+  padding 1px
 
-  background-color: rgba(180, 0, 170, 0.2)
-  border-radius: 4px
+  background-color rgba(180,0,170,0.2)
+  border-radius 4px
 
 #viewer .display-text .highlight.begin
-  border-radius: 4px 0px 0px 4px
+  border-radius 4px 0px 0px 4px
 
 #viewer .display-text .highlight.end
-  border-radius: 0px 4px 4px 0px
+  border-radius 0px 4px 4px 0px
 
 #viewer .display-text .highlight.middle
-  border-radius: 0px
+  border-radius 0px
 
 #viewer .display-text .highlight.selected
-  background-color: rgba(0, 100, 0, 0.2)
+  background-color rgba(0, 100, 0, 0.2)
 
 #viewer .loading
-  position: absolute
-  left: 50%
-  top: 50%
-  height: 10em
-  width: 10em
-  margin-left: -5em
-  margin-top: -5em
-  line-height: 10em
-  background-image: url('/packages/pdf.js/pdf.js/web/images/loading-icon.gif')
-  background-position: 50% 50%
-  background-repeat: no-repeat
-  text-align: center
+  position absolute
+  left 50%
+  top 50%
+  height 10em
+  width 10em
+  margin-left -5em
+  margin-top -5em
+  line-height 10em
+  background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+  background-position 50% 50%
+  background-repeat no-repeat
+  text-align center
 
 #viewer .display-canvas-loading
-  width: 400px
-  height: 400px
+  width 400px
+  height 400px
