@@ -1,34 +1,43 @@
 @import variables
 
-/* header
+/* Header
 ========= */
-header .container
-  background blue
-  height 45px
-  font-size 16px
-  top 0
-  width 100%
-  z-index 99999
+header
+  .container
+    background blue
+    height 45px
+    font-size 16px
+    top 0
+    width 100%
+    z-index 99999
+
+header.index-header
+  .container
+    position absolute
+
+header.no-index-header
+  .container
+    position fixed
 
 .logo
   width 145px
   float left
 
-.logo a
-  color white
-  text-decoration none
-  line-height 45px
-  font-size 22px
-  font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
-  background transparent
-  display inline-block
-  padding 0 20px
-  transition 0.2s
+  a
+    color white
+    text-decoration none
+    line-height 45px
+    font-size 22px
+    font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
+    background transparent
+    display inline-block
+    padding 0 20px
+    transition 0.2s
 
-.logo a:hover
-  background white
-  color blue-accent
-  text-decoration none !important
+  a:hover
+    background white
+    color blue-accent
+    text-decoration none !important
 
 ul.top-menu
   list-style none
@@ -36,51 +45,55 @@ ul.top-menu
   margin 0
   color white
 
-ul.top-menu li
-  display block
-  float left
-  line-height 45px
+  li
+    display block
+    float left
+    line-height 45px
 
-ul.top-menu li a
-  color white
-  display block
-  padding 0 20px
-  transition 0.2s
+    a
+      color white
+      display block
+      padding 0 20px
+      transition 0.2s
 
-ul.top-menu .search-wrapper
-  padding 0 20px
-  cursor pointer
-  width 400px
-  transition 0.2s
+    span.search-button
+      color blue-accent
+      border none
+      display inline
+      position relative
+      right -10px
 
-ul.top-menu .search-wrapper .search-form
-  display none
+  .search-wrapper
+    padding 0 20px
+    cursor pointer
+    width 400px
+    transition 0.2s
 
-ul.top-menu .search-wrapper .search-form input
-  background transparent
-  border 0
-  color blue-accent
-  font-size 18px
-  width 575px
-  display inline
+    .search-form
+      display none
 
-ul.top-menu .search-wrapper.search-focused
-  width 600px
-  background white
+      input
+        background transparent
+        border 0
+        color blue-accent
+        font-size 18px
+        width 575px
+        display inline
 
-ul.top-menu .search-wrapper.search-focused span.label
-  display none
+  .search-wrapper.search-focused
+    width 600px
+    background white
 
-ul.top-menu .search-wrapper.search-focused .search-form
-  white-space nowrap
-  display inline
+    span.label
+      display none
 
-ul.top-menu li span.search-button
-  color blue-accent
-  border none
-  display inline
-  position relative
-  right -10px
+    .search-form
+      white-space nowrap
+      display inline
+
+  .search-wrapper:hover
+    span.cursor
+      visibility visible
 
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   background white
@@ -146,111 +159,105 @@ span.cursor
   100%
     opacity 1
 
-ul.top-menu .search-wrapper:hover span.cursor
-  visibility visible
-
 .development
   position relative
 
-.development .banner
-  color red
-  position absolute
-  font-size 80%
-  font-weight bold
-  top 25%
-  left 10px
-  -webkit-transform rotate(-10deg)
-  -moz-transform rotate(-10deg)
-  -o-transform rotate(-10deg)
-  -ms-transform rotate(-10deg)
+  .banner
+    color red
+    position absolute
+    font-size 80%
+    font-weight bold
+    top 25%
+    left 10px
+    -webkit-transform rotate(-10deg)
+    -moz-transform rotate(-10deg)
+    -o-transform rotate(-10deg)
+    -ms-transform rotate(-10deg)
 
-header.index-header .container
-  position absolute
+/* Index search
+=============== */
 
-header.no-index-header .container
-  position fixed
+header.index-header
+  .search-wrapper
+    position absolute
+    display block
+    height 10px
+    top 420px
+    left 50%
+    width 620px
+    margin-left -310px
+    visibility visible
+    background transparent
+    color #444
+    border-width 0 2px 2px 2px
+    border-style solid
+    border-color #999
+    padding 0 10px
 
-/* index search
-===============
-*/
+    .label
+      display none
 
-header.index-header .search-wrapper
-  position absolute
-  display block
-  height 10px
-  top 420px
-  left 50%
-  width 620px
-  margin-left -310px
-  visibility visible
-  background transparent
-  color #444
-  border-width 0 2px 2px 2px
-  border-style solid
-  border-color #999
-  padding 0 10px
+    .search-form
+      display block
 
-header.index-header .search-wrapper:hover
-  background transparent
+      .search-button
+        display none
 
-header.no-index-header .search-wrapper
-  position relative
-  display block
+      input
+        position relative
+        top -35px
+        height 40px
+        width 616px
+        background transparent
 
-header.index-header .search-wrapper .label
-  display none
+  .search-wrapper:hover
+    background transparent
 
-header.index-header .search-wrapper .search-form
-  display block
+  .container
+    height 70px
 
-header.index-header .search-wrapper .search-form .search-button
-  display none
+    .logo
+      width 180px
+      float left
 
-header.index-header .search-wrapper .search-form input
-  position relative
-  top -35px
-  height 40px
-  width 616px
-  background transparent
+      a
+        color white
+        text-decoration none
+        line-height 70px
+        font-size 30px
+        font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
+        background transparent
+        display inline-block
+        padding 0 20px
 
-header.index-header .container
-  height 70px
+    span.tagline
+      color white
+      line-height 70px
+      padding 0 20px
+      display inline-block
+      float left
 
-header.index-header .container .logo
-  width 180px
-  float left
 
-header.index-header .container .logo a
-  color white
-  text-decoration none
-  line-height 70px
-  font-size 30px
-  font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
-  background transparent
-  display inline-block
-  padding 0 20px
-  transition 0.2s
+    ul.top-menu
+      li
+        display block
+        float left
+        line-height 70px
 
-header.index-header .container span.tagline
-  color white
-  line-height 70px
-  padding 0 20px
-  display inline-block
-  float left
+header.no-index-header
+  .search-wrapper
+    position relative
+    display block
 
-header.index-header .container ul.top-menu li
-  display block
-  float left
-  line-height 70px
+  .container
+    .progress-bar
+      background #0E6EB9
+      bottom -2px
+      height 2px
+      position absolute
 
-header.no-index-header .container .progress-bar
-  background #0E6EB9
-  bottom -2px
-  height 2px
-  position absolute
-
-header.no-index-header .tagline
-  display none
+  .tagline
+    display none
 
 /*
 Sign up buttons
@@ -259,49 +266,49 @@ Sign up buttons
   display inline-block
   float right
 
-#login-buttons a
-  cursor pointer
+  a
+    cursor pointer
 
-#login-buttons #login-dropdown-list
-  color black
-  background rgb(230,230,230)
-  border-color rgb(210,210,210)
-  border-style solid
-  border-width 0 0 1px 1px
-  position absolute
-  width 293px
-  right 0px
-  font-size 14px
-  line-height 36px
+  #login-dropdown-list
+    color black
+    background rgb(230,230,230)
+    border-color rgb(210,210,210)
+    border-style solid
+    border-width 0 0 1px 1px
+    position absolute
+    width 293px
+    right 0px
+    font-size 14px
+    line-height 36px
+
+    label
+      display block
+      font-weight bold
+      padding-top 16px
+
+    input
+      position relative
+      min-height 20px
+      width 235px
+      padding 7px 8px
+      outline medium none
+      color rgb(51,51,51)
+      background-color rgb(255,255,255)
+      background-repeat no-repeat
+      background-position right center
+      border 1px solid rgb(204,204,204)
+      border-radius 3px 3px 3px 3px
+      box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
+      -moz-box-sizing border-box
+      transition all 0.15s ease-in 0s
+      vertical-align middle
+
+    input:focus
+      border-color rgb(81,167,232)
+      box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding 0 20px
-
-#login-buttons #login-dropdown-list label
-  display block
-  font-weight bold
-  padding-top 16px
-
-#login-buttons #login-dropdown-list input
-  position relative
-  min-height 20px
-  width 235px
-  padding 7px 8px
-  outline medium none
-  color rgb(51,51,51)
-  background-color rgb(255,255,255)
-  background-repeat no-repeat
-  background-position right center
-  border 1px solid rgb(204,204,204)
-  border-radius 3px 3px 3px 3px
-  box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
-  -moz-box-sizing border-box
-  transition all 0.15s ease-in 0s
-  vertical-align middle
-
-#login-buttons #login-dropdown-list input:focus
-  border-color rgb(81,167,232)
-  box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
 .login-close-text
   float left
@@ -314,7 +321,9 @@ Sign up buttons
 #login-buttons.login-buttons-dropdown-align-right .login-close-text
   float right
 
-/* auth buttons */
+/*
+Auth buttons
+============ */
 
 .login-button
   margin-top 30px
