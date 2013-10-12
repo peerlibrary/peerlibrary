@@ -35,6 +35,11 @@ Template.uploadOverlay.events =
 
             Meteor.call 'finishPublicationUpload', publicationId, (err) ->
               throw err if err
+              if Publications.find(
+                'importing.uploadProgress':
+                  $lt: 1
+              ).count() == 0
+                Session.set 'uploadOverlayActive', false
               console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
