@@ -7,66 +7,24 @@
   position relative
   padding-top 60px
 
-#viewer .display
-  height 100%
+  .display
+    height 100%
 
-#viewer .display-page
-  position relative
-  text-align center
-  margin-bottom 20px
+  .display-page
+    position relative
+    text-align center
+    margin-bottom 20px
 
-#viewer .highlighted, #viewer .annotations .annotation:hover
-  background-color rgba(255,0,0,0.3)
+  .highlighted, .annotations .annotation:hover
+    background-color rgba(255,0,0,0.3)
 
-#viewer .display-page canvas
-  background rgba(255,255,255,1.0)
+  .display-page
+    canvas
+      background rgba(255,255,255,1.0)
 
-/* text selection */
+/* Meta menu
+============ */
 
-#viewer .display-page canvas ::selection
-  background rgba(255,255,10,0.3)
-
-#viewer .display-page canvas ::-moz-selection
-  background rgba(255,255,10,0.3)
-
-#viewer .display-text
-  position absolute
-  left 0
-  top 0
-  right 0
-  bottom 0
-  color #000
-  font-family sans-serif
-  overflow hidden
-  margin-right auto
-  margin-left auto
-
-#viewer .display-text > div
-  color transparent
-  position absolute
-  line-height 1
-  white-space pre
-  cursor text
-
-#viewer .display-text .highlight
-  margin -1px
-  padding 1px
-  background-color rgba(180, 0, 170, 0.2)
-  border-radius 4px
-
-#viewer .display-text .highlight.begin
-  border-radius 4px 0px 0px 4px
-
-#viewer .display-text .highlight.end
-  border-radius 0px 4px 4px 0px
-
-#viewer .display-text .highlight.middle
-  border-radius 0px
-
-#viewer .display-text .highlight.selected
-  background-color rgba(0, 100, 0, 0.2)
-
-/* meta menu */
 .meta-menu
   position fixed
   cursor pointer
@@ -80,54 +38,58 @@
   transition 0.2s
   overflow hidden
 
-.meta-menu a
-  color white
+  a
+    color white
+
+  i.icon-menu
+    font-size 20px
+    color white
+
+  .meta-description
+    display none
+    color white
+    padding 5px
+
+    .authors
+      span:after
+        content ","
+
+      span:last-child:after
+        content ""
 
 .meta-menu:hover
   background rgba(46,46,44,0.5)
   width 300px
   min-height 420px
 
-.meta-menu i.icon-menu
-  font-size 20px
-  color white
+  .meta-description
+    display block
 
-.meta-menu .meta-description
-  display none
-  color white
-  padding 5px
+/* Annotations
+============== */
 
-.meta-menu:hover .meta-description
-  display block
-
-.meta-menu .meta-description .authors span:after
-  content ","
-
-.meta-menu .meta-description .authors span:last-child:after
-  content ""
-
-/* annotations */
 .annotations
   position absolute
   z-index 100
   right 20px
   width 300px
 
-.annotations ul.annotations-list
-  list-style none
+  ul.annotations-list
+    list-style none
 
-.annotations ul.annotations-list li
-  background white
-  padding 20px
-  margin 10px 0
-  border-radius 2px
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
-  transition 0.2s
+    li
+      background white
+      padding 20px
+      margin 10px 0
+      border-radius 2px
+      box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+      transition 0.2s
 
-.annotations ul.annotations-list li:hover
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12),0 2px 5px rgba(14,41,57,0.34)
+    li:hover
+      box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
 
-/* viewer */
+/* Viewer
+========= */
 
 #viewer
   width 100%
@@ -136,77 +98,80 @@
   position relative
   padding-top 60px
 
-#viewer .display
-  height 100%
+  .display
+    height 100%
 
-#viewer .display-page
-  position relative
-  text-align center
-  margin-bottom 20px
+  .display-page
+    position relative
+    text-align center
+    margin-bottom 20px
 
-#viewer .highlighted, #viewer .annotations .annotation:hover
-  background-color rgba(255,0,0,0.3)
+  .highlighted, .annotations .annotation:hover
+    background-color rgba(255,0,0,0.3)
 
-/* text selection */
+  .loading
+    position absolute
+    left 50%
+    top 50%
+    height 10em
+    width 10em
+    margin-left -5em
+    margin-top -5em
+    line-height 10em
+    background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+    background-position 50% 50%
+    background-repeat no-repeat
+    text-align center
 
-#viewer .display-page canvas ::selection
-  background rgba(255,255,10,0.3)
+  .display-canvas-loading
+    width 400px
+    height 400px
 
-#viewer .display-page canvas ::-moz-selection
-  background rgba(255,255,10,0.3)
+/* Text selection
+================= */
 
-#viewer .display-text
-  position absolute
-  left 0
-  top 0
-  right 0
-  bottom 0
-  color #000
-  font-family sans-serif
-  overflow hidden
-  margin-right auto
-  margin-left auto
+#viewer
+  .display-page canvas
+    ::selection
+      background rgba(255,255,10,0.3)
 
-#viewer .display-text > div
-  color transparent
-  position absolute
-  line-height 1
-  white-space pre
-  cursor text
+    ::-moz-selection
+      background rgba(255,255,10,0.3)
 
-#viewer .display-text .highlight
-  margin -1px
-  padding 1px
+  .display-text
+    position absolute
+    left 0
+    top 0
+    right 0
+    bottom 0
+    color #000
+    font-family sans-serif
+    overflow hidden
+    margin-right auto
+    margin-left auto
 
-  background-color rgba(180,0,170,0.2)
-  border-radius 4px
+  .display-text > div
+    color transparent
+    position absolute
+    line-height 1
+    white-space pre
+    cursor text
 
-#viewer .display-text .highlight.begin
-  border-radius 4px 0px 0px 4px
+  .display-text
+    .highlight
+      margin -1px
+      padding 1px
+      background-color rgba(180, 0, 170, 0.2)
+      border-radius 4px
 
-#viewer .display-text .highlight.end
-  border-radius 0px 4px 4px 0px
+    .highlight.begin
+      border-radius 4px 0px 0px 4px
 
-#viewer .display-text .highlight.middle
-  border-radius 0px
+    .highlight.end
+      border-radius 0px 4px 4px 0px
 
-#viewer .display-text .highlight.selected
-  background-color rgba(0, 100, 0, 0.2)
+    .highlight.middle
+      border-radius 0px
 
-#viewer .loading
-  position absolute
-  left 50%
-  top 50%
-  height 10em
-  width 10em
-  margin-left -5em
-  margin-top -5em
-  line-height 10em
-  background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-  background-position 50% 50%
-  background-repeat no-repeat
-  text-align center
-
-#viewer .display-canvas-loading
-  width 400px
-  height 400px
+    .highlight.selected
+       background-color rgba(0, 100, 0, 0.2)
