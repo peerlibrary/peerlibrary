@@ -1,4 +1,15 @@
 class @Person extends @Person
+  # A subset of public fields used for automatic publishing
+  # This list is applied to PUBLIC_FIELDS to get a subset
+  @PUBLIC_AUTO_FIELDS: ->
+    [
+      'user'
+      'slug'
+      'gravatarHash'
+      'foreNames'
+      'lastName'
+    ]
+
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields:

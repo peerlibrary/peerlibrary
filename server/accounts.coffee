@@ -32,4 +32,4 @@ Meteor.publish null, ->
   Persons.find
     'user.id': @userId
   ,
-    Person.PUBLIC_FIELDS()
+    fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
