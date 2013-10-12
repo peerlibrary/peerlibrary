@@ -5,6 +5,7 @@ class @Person extends @Document
   #   id
   #   username
   # slug: unique slug for URL
+  # gravatarHash: hash for Gravatar
   # created: creation timestamp
   # foreNames
   # lastName

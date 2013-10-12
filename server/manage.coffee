@@ -353,6 +353,7 @@ Meteor.methods
       for i in [0...Random.fraction() * 5]
         Annotations.insert
           created: randomTimestamp()
+          # TODO: This should be random person, not user!
           author: randomUser()
           body: dimsum.sentence(1 + Random.fraction() * 6).replace /\r/g, '' # There are some \ between paragraphs
           publication: publication._id
