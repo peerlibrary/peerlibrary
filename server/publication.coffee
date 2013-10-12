@@ -58,15 +58,15 @@ class @Publication extends @Publication
       source: 1
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
-  if not authorSlug
-    return
+  return unless authorSlug
 
   author = Persons.findOne
     slug: authorSlug
 
+  return unless author
+
   Publications.find
-    authorIds:
-      $all: [author._id]
+    'authors.id': author._id
     cached: true
     processed: true
   ,
