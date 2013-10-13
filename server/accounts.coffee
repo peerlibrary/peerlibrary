@@ -7,13 +7,14 @@ Accounts.onCreateUser (options, user) ->
         id: user._id
         username: user.username
       slug: user.username
+      gravatarHash: crypto.createHash('md5').update(user.emails?[0]?.address).digest('hex')
 
     _.extend person, _.pick(options.profile or {}, 'foreNames', 'lastName', 'work', 'education', 'publications')
 
     personId = Persons.insert person
     user.person =
       id: personId
-    user.gravatarHash = crypto.createHash('md5').update(user.emails?[0]?.address).digest('hex')
+
   catch e
     if e.name isnt 'MongoError'
       throw e
@@ -21,19 +22,14 @@ Accounts.onCreateUser (options, user) ->
     if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
       throw new Meteor.Error 403, 'Username conflicts with existing slug.'
     throw e
+
   user
 
-Meteor.publish 'users-by-username', (username) ->
-  Meteor.users.find
-      username: username
-    ,
-      fields:
-        username: 1
-        person: 1
+# With null name, the record set is automatically sent to all connected clients
+Meteor.publish null, ->
+  return unless @userId
 
-Meteor.publish 'user-data', ->
-  Meteor.users.find
-    _id: @userId
+  Persons.find
+    'user.id': @userId
   ,
-    fields:
-      gravatarHash: 1
+    fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
