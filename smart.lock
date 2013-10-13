@@ -53,9 +53,9 @@
         "commit": "e25a0be72e771b317b26d2bb5758c983bdcef23c"
       },
       "moment": {
-        "git": "https://github.com/possibilities/meteor-moment.git",
-        "tag": "v1.7.0",
-        "commit": "c64b6ec0e714b9556f4b6643d430b868ba69d3d7"
+        "git": "https://github.com/acreeger/meteor-moment.git",
+        "tag": "v2.2.1",
+        "commit": "9ee12e714afe56b189f53076447b7b54f3012065"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
