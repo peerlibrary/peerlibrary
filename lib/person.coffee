@@ -1,6 +1,6 @@
 @Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
 
-class @Person extends @Document
+class @Person extends Document
   # user: (null if unregistered)
   #   _id
   #   username
@@ -28,5 +28,5 @@ class @Person extends @Document
   @Meta
     collection: Persons
     fields:
-      user: @Reference Meteor.users, ['username']
+      user: @Reference Meteor.users, ['username'], false
       publications: [@Reference Persons]

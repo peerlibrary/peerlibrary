@@ -1,6 +1,6 @@
 @Annotations = new Meteor.Collection 'Annotations', transform: (doc) => new @Annotation doc
 
-class @Annotation extends @Document
+class @Annotation extends Document
   # created: timestamp of this version
   # author:
   #   username: author's username

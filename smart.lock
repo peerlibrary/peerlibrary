@@ -19,7 +19,8 @@
       "connect": {},
       "urlify2": {},
       "fs": {},
-      "digest": {}
+      "digest": {},
+      "peerdb": {}
     },
     "packages": {
       "router": {
@@ -91,6 +92,11 @@
         "git": "https://github.com/peerlibrary/meteor-digest.git",
         "tag": "v0.1.1",
         "commit": "24b57bdddfbfdc3782f4909791595518115e5126"
+      },
+      "peerdb": {
+        "git": "https://github.com/peerlibrary/meteor-peerdb.git",
+        "tag": "v0.1.0",
+        "commit": "2ceefd28bf6d32c6e72095a7867db34fdf590654"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
