@@ -18,15 +18,16 @@ class @Person extends Document
   #   degree (e.g. PhD)
   #   concentration (e.g. Social Anthropology)
   #   institution
-  #   thesis: publication id
-  #   advisor: person id
+  #   thesis: publication id - TODO: Define reference
+  #   advisor: person id - TODO: Define reference
   #   startYear
   #   endYear: null if ongoing
   #   completed: true if degree granted
-  # publications: list of authored publication ids
+  # publications: list of
+  #   _id: authored publication's id
 
   @Meta
     collection: Persons
     fields:
-      user: @Reference Meteor.users, ['username'], false
-      publications: [@Reference Persons]
+      user: @Reference User, ['username'], false
+      publications: [@Reference Publication]

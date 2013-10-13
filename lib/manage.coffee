@@ -12,3 +12,6 @@ class @ArXivPDF extends Document
   #   path
   #   size
   #   mtime
+
+  @Meta
+    collection: ArXivPDFs

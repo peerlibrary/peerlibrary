@@ -24,15 +24,6 @@ ARXIV_ACCENTS =
   '''{\\AA}''': 'Å', '''{\\aa}''': 'å', '''{\\ae}''': 'æ', '''{\\AE}''': 'Æ', '''{\\L}''': 'Ł', '''{\\l}''': 'ł'
   '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
-randomUser = ->
-  user = Random.choice Meteor.users.find().fetch()
-  person = Persons.findOne
-    _id: user.person.id
-
-  id: user._id
-  username: user.username
-  fullName: person.foreNames + ' ' + person.lastName
-
 randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
@@ -246,12 +237,10 @@ Meteor.methods
           work: []
           education: []
           publications: []
-        Persons.update
-          _id: id
-        ,
+        Persons.update id,
           $set:
             slug: id
-        author.id = id
+        author._id = id
         author.slug = id
 
       publication =
@@ -284,11 +273,10 @@ Meteor.methods
       if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publications.insert publication
         for author in publication.authors
-          Persons.update
-            _id: author.id
-          ,
+          Persons.update author.id,
             $addToSet:
-              publications: id # TODO: Entity resolution
+              publications:
+                _id: id # TODO: Entity resolution
         console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
 
@@ -341,27 +329,5 @@ Meteor.methods
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
         console.error "Error processing PDF:", error.stack or error.toString?() or error
-
-    console.log "Done"
-
-  'dummy-annotations': ->
-    @unblock()
-
-    console.log "Generating dummy annotations"
-
-    Publications.find(cached: true, processed: true).forEach (publication) ->
-      for i in [0...Random.fraction() * 5]
-        Annotations.insert
-          created: randomTimestamp()
-          # TODO: This should be random person, not user!
-          author: randomUser()
-          body: dimsum.sentence(1 + Random.fraction() * 6).replace /\r/g, '' # There are some \ between paragraphs
-          publication: publication._id
-          location:
-            page: 1
-            start: 3 + i * 15
-            end: 7 + i * 15
-
-      return # So that for loop does not return anything
 
     console.log "Done"
