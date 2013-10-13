@@ -2,7 +2,7 @@
 
 class @Person extends @Document
   # user: (null if unregistered)
-  #   id
+  #   _id
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
@@ -24,3 +24,9 @@ class @Person extends @Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of authored publication ids
+
+  @Meta
+    collection: Persons
+    fields:
+      user: @Reference Meteor.users, ['username']
+      publications: [@Reference Persons]

@@ -61,3 +61,6 @@ class @Publication extends @Document
 
   createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
+
+  @Meta
+    collection: Publications
