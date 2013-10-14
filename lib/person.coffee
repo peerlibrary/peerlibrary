@@ -26,7 +26,8 @@ class @Person extends Document
   # publications: list of
   #   _id: authored publication's id
 
-  @Meta
+  # Should be a function so that we can redefine later on
+  @Meta =>
     collection: Persons
     fields:
       user: @Reference User, ['username'], false

@@ -5,10 +5,11 @@ class @User extends Document
   #   address: e-mail address
   #   verified: is e-mail address verified
   # services: list of authentication/linked services
-  # profile:
-  #   _id: id of related profile document
+  # person:
+  #   _id: id of related person document
 
-  @Meta
+  # Should be a function so that we can redefine later on
+  @Meta =>
     collection: Meteor.users
     fields:
-      profiles: @Reference Profile
+      person: @Reference Person

@@ -27,7 +27,8 @@ class @Publication extends Document
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
-  @Meta
+  # Should be a function so that we can redefine later on
+  @Meta =>
     collection: Publications
     fields:
       authors: [@Reference Persons, ['slug', 'foreNames', 'lastName']]
@@ -66,6 +67,3 @@ class @Publication extends Document
 
   createdDay: =>
     moment(@created).format 'MMMM Do YYYY'
-
-  @Meta
-    collection: Publications

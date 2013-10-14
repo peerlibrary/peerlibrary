@@ -15,8 +15,9 @@ class @Annotation extends Document
   #   start: start index of text layer elements of the annotation's highlight (inclusive)
   #   end: end index of text layer elements of the annotation's highlight (inclusive)
 
-  @Meta
-    collection: Publications
+  # Should be a function so that we can redefine later on
+  @Meta =>
+    collection: Annotations
     fields:
       author: @Reference Person, ['slug', 'foreNames', 'lastName']
       publication: @Reference Publication

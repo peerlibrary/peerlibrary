@@ -13,5 +13,6 @@ class @ArXivPDF extends Document
   #   size
   #   mtime
 
-  @Meta
+  # Should be a function so that we can redefine later on
+  @Meta =>
     collection: ArXivPDFs
