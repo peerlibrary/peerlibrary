@@ -173,7 +173,7 @@ Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   return unless author
 
   Publications.find
-    'authors.id': author._id
+    'authors._id': author._id
     cached: true
     processed: true
   ,

@@ -18,6 +18,7 @@
     "urlify2": {},
     "fs": {},
     "meteor-file": {},
-    "digest": {}
+    "digest": {},
+    "peerdb": {}
   }
 }
