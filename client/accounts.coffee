@@ -9,7 +9,7 @@ Meteor.person = ->
 
   # Meteor.userId is reactive
   Persons.findOne
-    'user.id': userId
+    'user._id': userId
 
 Template._loginButtonsLoggedInDropdownActions.personSlug = ->
   Meteor.person()?.slug

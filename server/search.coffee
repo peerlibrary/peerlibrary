@@ -60,7 +60,7 @@ Meteor.publish 'search-results', (query, limit) ->
     added: (id, fields) =>
       # TODO: Check if for second query with same id, is searchResult field updated or is the old one kept on the client?
       fields.searchResult =
-        id: queryId
+        _id: queryId
         # TODO: Implement
         order: 1
 

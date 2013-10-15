@@ -65,7 +65,7 @@ Template.results.publications = ->
   Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
   Publications.find
-    'searchResult.id': searchResult._id
+    'searchResult._id': searchResult._id
   ,
     sort: [
       ['searchResult.order', 'asc']
