@@ -32,34 +32,17 @@ Template.profile.person = ->
     slug: Session.get 'currentPersonSlug'
 
 Template.profile.isMine = ->
-  person = Persons.findOne
-    slug: Session.get 'currentPersonSlug'
-
-  return unless person
-
-  person.user.id == Meteor.user()?._id
+  Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
 # Publications in logged user's library
 Template.profile.myPublications = ->
-  person = Persons.findOne
-    slug: Session.get 'currentPersonSlug'
-    'user.id': Meteor.user()?._id
-
-  return unless person
-
   Publications.find
     _id:
-      $in: person.library or []
+      $in: Meteor.person()?.library or []
     importing:
       $exists: false
 
 Template.profile.myPublicationsImporting = ->
-  person = Persons.findOne
-    slug: Session.get 'currentPersonSlug'
-    'user.id': Meteor.user()?._id
-
-  return unless person
-
   Publications.find
     'importing.by.id': Meteor.user()?._id
 

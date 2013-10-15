@@ -39,7 +39,7 @@ Template.uploadOverlay.events =
                 'importing.uploadProgress':
                   $lt: 1
               ).count() == 0
-                Session.set 'uploadOverlayActive', false
+                Meteor.Router.to '/u/' + Meteor.person()?.slug
               console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
