@@ -81,6 +81,17 @@ Sometimes when installing dependencies, Meteor will throw the following error:
 This just means that there was a timeout while downloading a dependency, probably because of
 a networking issue. Just retry.
 
+If you get the following error:
+
+    npm http 404 https://registry.npmjs.org/esprima/1.1.0-dev
+    npm ERR! Error: version not found: 1.1.0-dev : esprima/1.1.0-dev
+
+This is the issue because among dependencies a development version of `esprima` package is
+installed and `npm` gets confused with versions when upgrading. You should just delete old
+version with by doing:
+
+    rm -rf ~/.meteorite/packages/pdf.js
+
 ### Debug mode ###
 
 To run PeerLibrary in the debug mode, you can run it with debug settings:

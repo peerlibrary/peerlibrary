@@ -1,8 +1,8 @@
 @Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
 
-class @Person extends @Document
+class @Person extends Document
   # user: (null if unregistered)
-  #   id
+  #   _id
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
@@ -18,9 +18,17 @@ class @Person extends @Document
   #   degree (e.g. PhD)
   #   concentration (e.g. Social Anthropology)
   #   institution
-  #   thesis: publication id
-  #   advisor: person id
+  #   thesis: publication id - TODO: Define reference
+  #   advisor: person id - TODO: Define reference
   #   startYear
   #   endYear: null if ongoing
   #   completed: true if degree granted
-  # publications: list of authored publication ids
+  # publications: list of
+  #   _id: authored publication's id
+
+  # Should be a function so that we can redefine later on
+  @Meta =>
+    collection: Persons
+    fields:
+      user: @Reference User, ['username'], false
+      publications: [@Reference Publication]
