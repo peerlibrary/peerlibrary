@@ -106,7 +106,7 @@
         <div class="clearfix"></div>
         <span class="authors line">
           {{#each authors}}
-            <span><a href="{{profilePath username}}">{{foreNames}} {{lastName}}</a></span>
+            <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
           {{/each}}
         </span><br>
         <span class="date line">{{displayDay created}}</span><br>
@@ -116,7 +116,7 @@
           <i class="icon-external-link"></i>
         </span>
       </div>
-      <div class="article-thumb">
+      <div class="article-thumbnail">
         <ul class="scrubber">
           {{#each thumbnailUrls}}
             <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{this.page}}"></li>

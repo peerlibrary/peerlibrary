@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "0e594994c9753661e3b80fde08988136a9a0aae7"
+    "commit": "20d35586fe18db5a3e0456d8324dc5f4e69a91d8"
   },
   "dependencies": {
     "basePackages": {
@@ -20,7 +20,8 @@
       "urlify2": {},
       "fs": {},
       "meteor-file": {},
-      "digest": {}
+      "digest": {},
+      "peerdb": {}
     },
     "packages": {
       "router": {
@@ -54,9 +55,9 @@
         "commit": "e25a0be72e771b317b26d2bb5758c983bdcef23c"
       },
       "moment": {
-        "git": "https://github.com/possibilities/meteor-moment.git",
-        "tag": "v1.7.0",
-        "commit": "c64b6ec0e714b9556f4b6643d430b868ba69d3d7"
+        "git": "https://github.com/acreeger/meteor-moment.git",
+        "tag": "v2.2.1",
+        "commit": "9ee12e714afe56b189f53076447b7b54f3012065"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
@@ -97,6 +98,11 @@
         "git": "https://github.com/peerlibrary/meteor-digest.git",
         "tag": "v0.1.1",
         "commit": "24b57bdddfbfdc3782f4909791595518115e5126"
+      },
+      "peerdb": {
+        "git": "https://github.com/peerlibrary/meteor-peerdb.git",
+        "tag": "v0.1.1",
+        "commit": "8b2347334dce201ac654dc07c1f1db33043c0c81"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

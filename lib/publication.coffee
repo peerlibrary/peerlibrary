@@ -1,10 +1,14 @@
 @Publications = new Meteor.Collection 'Publications', transform: (doc) => new @Publication doc
 
-class @Publication extends @Document
+class @Publication extends Document
   # slug: slug for URL
   # created: timestamp when the publication was published
   # updated: timestamp when the publication (or its metadata) was last updated
-  # authors: a list of person ids
+  # authors: list of
+  #   _id: author's person id
+  #   slug: author's person id
+  #   foreNames
+  #   lastName
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -28,8 +32,14 @@ class @Publication extends @Document
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
-  #   id: id of the query, an _id of the SearchResult object for the query
+  #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
+
+  # Should be a function so that we can redefine later on
+  @Meta =>
+    collection: Publications
+    fields:
+      authors: [@Reference Person, ['slug', 'foreNames', 'lastName']]
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep

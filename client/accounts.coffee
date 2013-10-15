@@ -1,18 +1,18 @@
 Template.displayIcon.userIconUrl = ->
   # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-  "https://secure.gravatar.com/avatar/#{ Meteor.user()?.gravatarHash }?s=25"
+  "https://secure.gravatar.com/avatar/#{ Meteor.person()?.gravatarHash }?s=25"
 
-Meteor.subscribe 'user-data'
+Meteor.person = ->
+  userId = Meteor.userId()
 
-Deps.autorun ->
-  user = Meteor.user()
+  return unless userId
 
-  return unless user
+  # Meteor.userId is reactive
+  Persons.findOne
+    'user._id': userId
 
-  Meteor.subscribe 'persons-by-id-or-slug', user.username
-
-Template._loginButtonsLoggedInDropdownActions.username = ->
-  Meteor.user()?.username
+Template._loginButtonsLoggedInDropdownActions.personSlug = ->
+  Meteor.person()?.slug
 
 # To close login buttons dialog box when clicking or focusing somewhere outside
 $(document).click (e) ->
