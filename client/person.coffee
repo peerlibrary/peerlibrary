@@ -38,22 +38,10 @@ Template.profile.isMine = ->
 Template.profile.myPublications = ->
   Publications.find
     _id:
-      $in: Meteor.person()?.library or []
+      $in: _.pluck Meteor.person()?.library, '_id'
     importing:
       $exists: false
 
 Template.profile.myPublicationsImporting = ->
   Publications.find
-    'importing.by.id': Meteor.user()?._id
-
-Template.profile.events =
-  'submit form': (e) ->
-    e.preventDefault()
-    metadata = _.reduce $(e.target).serializeArray(), (obj, subObj) ->
-      obj[subObj.name] = subObj.value
-      obj
-    , {}
-    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata
-
-Template.publicationImporting.progress = ->
-  50 * @importing.uploadProgress + 50 * @importing.processProgress
+    'importing.by._id': Meteor.user()?._id

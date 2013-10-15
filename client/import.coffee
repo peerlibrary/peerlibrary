@@ -57,3 +57,15 @@ Template.uploadOverlay.publicationsUploading = ->
 
 Template.uploadProgressBar.progress = ->
   100 * @importing.uploadProgress
+
+Template.publicationImporting.progress = ->
+  50 * @importing.uploadProgress + 50 * @importing.processProgress
+
+Template.importPublicationForm.events =
+  'submit form': (e) ->
+    e.preventDefault()
+    metadata = _.reduce $(e.target).serializeArray(), (obj, subObj) ->
+      obj[subObj.name] = subObj.value
+      obj
+    , {}
+    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata

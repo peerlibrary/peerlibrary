@@ -67,12 +67,13 @@ Meteor.methods
       sha256: sha256
     if publication
       # We already have the PDF, so just add it to the library
+      # TODO: redirect to profile
       Persons.update
-        'user.id': this.userId
+        'user._id': this.userId
       ,
         $addToSet:
-          library: publication._id
-      throw new Meteor.Error 403, 'File already exists.'
+          library:
+            _id: publication._id
     else
       Publications.insert
         created: moment.utc().toDate()
@@ -80,7 +81,7 @@ Meteor.methods
         source: 'upload'
         importing:
           by:
-            id: this.userId
+            _id: this.userId
           filename: filename
           uploadProgress: 0
           processProgress: 0
@@ -96,7 +97,7 @@ Meteor.methods
 
     Publications.update
       _id: file.name.split('.')[0]
-      'importing.by.id': this.userId
+      'importing.by._id': this.userId
     ,
       $set:
         'importing.uploadProgress': file.end / file.size
@@ -110,7 +111,7 @@ Meteor.methods
 
     publication = Publications.findOne
       _id: id
-      'importing.by.id': this.userId
+      'importing.by._id': this.userId
 
     unless publication
       throw new Meteor.Error 403, 'No publication importing.'
@@ -149,7 +150,7 @@ Meteor.methods
 
     Publications.update
       _id: id
-      'importing.by.id': this.userId
+      'importing.by._id': this.userId
       cached: true
     ,
       $set:
@@ -159,10 +160,11 @@ Meteor.methods
         importing: ''
 
     Persons.update
-        'user.id': this.userId
-      ,
-        $addToSet:
-          library: id
+      'user._id': this.userId
+    ,
+      $addToSet:
+        'library':
+          _id: id
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   return unless authorSlug
@@ -264,17 +266,17 @@ Meteor.publish 'my-publications', ->
     removePublications removed
 
   handlePersons = Persons.find(
-    'user.id': @userId
+    'user._id': @userId
   ,
     fields:
       # id field is implicitly added
-      'user.id': 1
+      'user._id': 1
       library: 1
   ).observeChanges
     added: (id, fields) =>
       # There should be only one person with the id at every given moment
       assert.equal currentPersonId, null
-      assert.equal fields.user.id, @userId
+      assert.equal fields.user._id, @userId
 
       currentPersonId = id
       publishPublications fields.library
@@ -303,7 +305,7 @@ Meteor.publish 'my-publications', ->
 
 Meteor.publish 'my-publications-importing', ->
   Publications.find
-    'importing.by.id': @userId
+    'importing.by._id': @userId
   ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1

@@ -23,7 +23,7 @@ class @Publication extends Document
   # sha256: SHA-256 hash of the file
   # importing (temporary):
   #   by: user importing the document
-  #     id
+  #     _id
   #   filename: original name of the uploaded file
   #   sha256: SHA-256 hash of the file computed by client before upload
   #   uploadProgress: 0-1, progress of uploading (%)
@@ -40,6 +40,7 @@ class @Publication extends Document
     collection: Publications
     fields:
       authors: [@Reference Person, ['slug', 'foreNames', 'lastName']]
+      # 'importing.by': @Reference User
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
