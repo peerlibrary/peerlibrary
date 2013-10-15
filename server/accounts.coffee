@@ -4,7 +4,7 @@ Accounts.onCreateUser (options, user) ->
   try
     person =
       user:
-        id: user._id
+        _id: user._id
         username: user.username
       slug: user.username
       gravatarHash: crypto.createHash('md5').update(user.emails?[0]?.address).digest('hex')
@@ -13,7 +13,7 @@ Accounts.onCreateUser (options, user) ->
 
     personId = Persons.insert person
     user.person =
-      id: personId
+      _id: personId
 
   catch e
     if e.name isnt 'MongoError'
@@ -30,6 +30,6 @@ Meteor.publish null, ->
   return unless @userId
 
   Persons.find
-    'user.id': @userId
+    'user._id': @userId
   ,
     fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()

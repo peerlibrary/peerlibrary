@@ -1,6 +1,6 @@
 @ArXivPDFs = new Meteor.Collection 'ArXivPDFs', transform: (doc) => new @ArXivPDF doc
 
-class @ArXivPDF extends @Document
+class @ArXivPDF extends Document
   # key: key (filename) of the tar file containing PDFs
   # lastModified: last modified timestamp of the file
   # eTag: eTag for the file as provided by S3
@@ -12,3 +12,7 @@ class @ArXivPDF extends @Document
   #   path
   #   size
   #   mtime
+
+  # Should be a function so that we can redefine later on
+  @Meta =>
+    collection: ArXivPDFs
