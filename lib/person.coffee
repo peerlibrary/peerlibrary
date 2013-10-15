@@ -34,3 +34,4 @@ class @Person extends Document
     fields:
       user: @Reference User, ['username'], false
       publications: [@Reference Publication]
+      library: [@Reference Publication]
