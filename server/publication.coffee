@@ -279,13 +279,13 @@ Meteor.publish 'my-publications', ->
       assert.equal fields.user._id, @userId
 
       currentPersonId = id
-      publishPublications fields.library
+      publishPublications _.pluck fields.library, '_id'
 
     changed: (id, fields) =>
       # Person should already be added
       assert.notEqual currentPersonId, null
 
-      publishPublications fields.library
+      publishPublications _.pluck fields.library, '_id'
 
     removed: (id) =>
       # We cannot remove the person if we never added the person before
@@ -295,7 +295,7 @@ Meteor.publish 'my-publications', ->
       handlePublications = null
 
       currentPersonId = null
-      removePublications currentLibrary
+      removePublications _.pluck currentLibrary, '_id'
 
   @ready()
 
