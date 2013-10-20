@@ -1,6 +1,6 @@
 # This document is a special case because Meteor.users collection is not really returning
-# instances of User class but normal documents, which seems good enough for now
-# We have this document defined so that we can define references against it
+# instances of User class but normal documents, which seems good enough for now. We have
+# this document defined so that we can define references against it.
 
 class @User extends Document
   # createdAt: time of creation
