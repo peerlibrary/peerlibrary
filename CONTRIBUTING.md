@@ -46,8 +46,8 @@ Before submitting a pull request, make sure that it follows these guidelines:
 * Describe your pull request in as much detail as possible: why this pull request is important enough for us to consider, what changes it contains, what you had to do to get it to work, how you tested it, etc. Be detailed but be clear: use bullets, examples if needed, and simple, straightforward language.
 * Pull requests should in general include:
  * All necessary code changes but not more than those
- * Tests (if pull request is fixing a bug, tests should fail without the pull request and succeed with it; if pull request is adding a new feature, tests should test all aspects of this new feature)
  * Documentation (can be through code comments and/or end-user documentation/help for new features)
+ * Tests (if pull request is fixing a bug, tests should fail without the pull request and succeed with it; if pull request is adding a new feature, tests should test all aspects of this new feature)
 * Consider writing a [blog post](http://blog.peerlibrary.org/) about you pull request as well. You have all rights to brag about it!
 
 If you are working on a big ticket item, please check in on our [development mailing list](http://lists.peerlibrary.org/lists/info/dev) first, or at least comment/open a related ticket first describing your plan. We would hate to have to steer you in a different direction after you have already put in a lot of hard work.
