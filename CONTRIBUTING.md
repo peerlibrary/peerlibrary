@@ -21,7 +21,7 @@ If you would like to start contributing code and are searching for some ideas:
 We are using GitHub and pull requests for development. If pull requests are new to you, see [this tutorial](https://help.github.com/articles/fork-a-repo) to find out how to fork and contribute to our repository.
 
 Before submitting a pull request, make sure that it follows these guidelines:
-* Make sure that your branch is based off of the `development` branch. The `development` branch is where active development happens. We cannot merge non-trivial patches off `master` branch. See [PeerLibrary development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) for more details.
+* Make sure that your branch is based off of the `development` branch. The `development` branch is where active development happens. We cannot merge non-trivial patches off `master` branch. See [PeerLibrary development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) for more details. (not yet available)
 * Sign the contributor's agreement. (not yet available)
 * Follow the PeerLibrary [code style guide](https://github.com/peerlibrary/peerlibrary/wiki/Code-Style).
 * Limit yourself to one feature or bug fix per pull request.
