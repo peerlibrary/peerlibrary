@@ -86,9 +86,9 @@ If you get the following error:
     npm http 404 https://registry.npmjs.org/esprima/1.1.0-dev
     npm ERR! Error: version not found: 1.1.0-dev : esprima/1.1.0-dev
 
-This is the issue because among dependencies a development version of `esprima` package is
-installed and `npm` gets confused with versions when upgrading. You should just delete old
-version with by doing:
+This error can occur because a development version of the `esprima` package is
+installed among the dependencies, and `npm` gets confused with versions when upgrading. You should just the delete old
+version with the command:
 
     rm -rf ~/.meteorite/packages/pdf.js
 
@@ -105,25 +105,11 @@ the debug mode.
 Contributing
 ------------
 
-PeerLibrary is currently in an active development where we are creating
+PeerLibrary is currently in active development where we are creating
 basic architecture. Major code refactoring and rewrites are thus common.
-Nevertheless you are invited to join the development but please understand
+Nevertheless, you are invited to join the development, but please understand
 that things might be changing under your feet so it is probably useful to
 discuss planned contributions in advance.
 
-For ideas what to contribute you can:
-* check the [roadmap and milestones](https://github.com/peerlibrary/peerlibrary/issues/milestones)
-  and related open issues
-* check `TODO` comments in the code: there are quite some of them which are of "here is a
-  dirty hack, do a real implementation" kind, those are a good start to contribute;
-  while some other have to wait for other things to be done first
-* while reading the code if you do not understand anything, feel free to ask and then
-  contribute a comment describing the code so that the next person will understand
-* read (and contribute to) our [wiki](https://github.com/peerlibrary/peerlibrary/wiki)
-* if you have your favorite open access journal or repository not yet integrated into
-  PeerLibrary, add support for it; this goes especially for possible non-English open
-  access journals or repositories we might not even know about; you can just
-  [open an issue for it](https://github.com/peerlibrary/peerlibrary/issues/new) to let
-  us know
-* advocate at your local university to open its publications to be able to integrate
-  into PeerLibrary
+See the [Contributing](https://github.com/peerlibrary/peerlibrary/wiki/Contributing) section of our wiki for more
+details and ideas.

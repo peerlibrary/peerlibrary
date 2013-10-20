@@ -55,14 +55,14 @@ class @Publication extends Document
     Publication._filenamePrefix() + switch @source
       when 'upload' then Publication._uploadFilename @_id
       when 'arXiv' then Publication._arXivFilename @foreignId
-      else throw new Meteor.Error 500, "Unsupported source"
+      else throw new Error "Unsupported source"
 
   url: =>
     Storage.url @filename()
 
   thumbnail: (page) =>
     if page < 1 or page > @numberOfPages
-      throw new Meteor.Error 500, "Page out of bounds: #{ page }/#{ @numberOfPages }"
+      throw new Error "Page out of bounds: #{ page }/#{ @numberOfPages }"
 
     'thumbnail' + Storage._path.sep + @_id + Storage._path.sep + page + '-125x95.png'
 

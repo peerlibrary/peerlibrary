@@ -1,7 +1,7 @@
 @Crypto =
   SHA256: class
     update: (data) =>
-      throw new Meteor.Error "Not implemented", 500
+      throw new Error "Not implemented"
 
     finalize: =>
-      throw new Meteor.Error "Not implemented", 500
+      throw new Error "Not implemented"
