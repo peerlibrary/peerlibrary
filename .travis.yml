@@ -1,0 +1,10 @@
+language: node_js
+env: PACKAGES=''
+node_js:
+  - "0.10"
+before_install:
+  - curl -L http://git.io/ejPSng | /bin/sh
+  - echo "Meteor.startup(function {} {Meteor.setTimeout(function () {process.exit(0);}, 5000)})" > server/test-timeout.js
+script:
+  - make test
+  - mrt --once
