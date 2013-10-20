@@ -7,5 +7,5 @@ before_install:
   - mv start_test.js start_test.jsz
   - echo "Meteor.startup(function () {Meteor.setTimeout(function () {process.exit(0);}, 5000)})" > server/test-timeout.js
 script:
-  - make test
   - node start_test.jsz
+  - mrt --once
