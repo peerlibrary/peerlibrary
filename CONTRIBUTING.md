@@ -9,6 +9,22 @@ General ways to contribute to the development of PeerLibrary:
 * If you have your favorite open access journal or repository not yet integrated into PeerLibrary, add support for it. This goes especially for possible non-English open access journals or repositories we might not even know about. You can just [open a ticket for it](https://github.com/peerlibrary/peerlibrary/issues/new) to let us know.
 * Advocate at your local university to open its publications to be able to integrate into PeerLibrary.
 
+Reporting bugs
+--------------
+
+If you have found a bug in PeerLibrary, file a bug report in [our issue tracker](https://github.com/peerlibrary/peerlibrary/issues/new). If the issue contains sensitive information or raises a security concern, e-mail security at peerlibrary.org instead, which will page the security team.
+
+PeerLibrary has many moving parts, and it is often difficult to reproduce a bug based on a vague description. If you want somebody to be able to fix a bug (or verify a fix that you have contributed), the best way is:
+* Find minimal and exact steps needed to reproduce the bug.
+* Describe what you expected to happen and what happened instead.
+* Specify what version of PeerLibrary you are using (your own local development version, beta version, public version). Check the PeerLibrary footer for exact version information.
+* Provide as much as you can about the environment you are using (operating system, browser, are you behind any proxy, are you on campus or off campus).
+* Make and attach a screenshot or screenshots relevant to the bug you are reporting. Do not forget to obfuscate any possibly sensitive or private information visible there.
+
+By making it as easy as possible for others to reproduce your bug, you make it easier for your bug to be fixed. We are not always able to tackle issues opened without a reproduction recipe. In those cases we will close them with a pointer to this wiki section and a request for more information.
+
+And never forget, we will **never ask you for your password** when debugging bugs you have reported or are experiencing. If you ever recieve such request, it is a [phishing attack](https://en.wikipedia.org/wiki/Phishing) on you and somebody is trying to gain unauthorized access to your account. You should report it to security at peerlibrary.org immediatelly. You should not trust such requests for your password even if they seem to be coming from security at peerlibrary.org address.
+
 Contributing code
 -----------------
 
