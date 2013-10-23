@@ -59,13 +59,11 @@ Template.uploadOverlay.events =
           , (err) ->
             throw err if err
 
-            Meteor.call 'finishPublicationUpload', publicationId, (err) ->
-              throw err if err
-              if Publications.find(
-                'importing.uploadProgress':
-                  $lt: 1
-              ).count() == 0
-                Meteor.Router.to '/u/' + Meteor.person()?.slug
+            if Publications.find(
+              'importing.uploadProgress':
+                $lt: 1
+            ).count() == 0
+              Meteor.Router.to '/u/' + Meteor.person()?.slug
 
       reader.readAsArrayBuffer file
 

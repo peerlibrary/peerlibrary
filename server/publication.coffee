@@ -97,63 +97,58 @@ Meteor.methods
     unless file
       throw new Meteor.Error 403, 'File is null.'
 
-    Publications.update
-      _id: file.name.split('.')[0]
-      'importing.by._id': this.userId
-    ,
-      $set:
-        'importing.uploadProgress': file.end / file.size
-
     Storage.saveMeteorFile file
 
-
-  finishPublicationUpload: (id) ->
-    unless this.userId
-      throw new Meteor.Error 401, 'User is not signed in.'
-
     publication = Publications.findOne
-      _id: id
+      _id: file.name.split('.')[0]
       'importing.by._id': this.userId
 
     unless publication
       throw new Meteor.Error 403, 'No publication importing.'
 
-    # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-    pdf = Storage.open publication.filename()
-
-    hash = new Crypto.SHA256()
-    hash.update pdf
-    sha256 = hash.finalize()
-
-    unless sha256 == publication.importing.sha256
-      throw new Meteor.Error 403, 'Hash does not match.'
-
-    existingPublication = Publications.findOne
-      sha256: sha256
-      processed:
-        $exists: false
-    if existingPublication
-      Persons.update
-        'user._id': this.userId
-      ,
-        $addToSet:
-          'library':
-            _id: existingPublication._id
-      return
-
     Publications.update
-      _id: id
+      _id: publication._id
     ,
       $set:
-        cached: true
-        sha256: sha256
+        'importing.uploadProgress': file.end / file.size
 
-    publication.process null, null, null, null, (progress) ->
+    if file.end == file.size
+      # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
+      pdf = Storage.open publication.filename()
+
+      hash = new Crypto.SHA256()
+      hash.update pdf
+      sha256 = hash.finalize()
+
+      unless sha256 == publication.importing.sha256
+        throw new Meteor.Error 403, 'Hash does not match.'
+
+      existingPublication = Publications.findOne
+        sha256: sha256
+        processed:
+          $exists: false
+      if existingPublication
+        Persons.update
+          'user._id': this.userId
+        ,
+          $addToSet:
+            'library':
+              _id: existingPublication._id
+        return
+
       Publications.update
-        _id: id
+        _id: publication._id
       ,
         $set:
-          'importing.processProgress': progress
+          cached: true
+          sha256: sha256
+
+      publication.process null, null, null, null, (progress) ->
+        Publications.update
+          _id: publication._id
+        ,
+          $set:
+            'importing.processProgress': progress
 
   confirmPublication: (id, metadata) ->
     unless this.userId
