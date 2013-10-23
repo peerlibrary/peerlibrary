@@ -5,7 +5,8 @@ node_js:
 before_install:
   - curl -L http://git.io/ejPSng | /bin/sh
   - echo "Meteor.startup(function () {Meteor.setTimeout(function () {process.exit(0);}, 5000)})" > server/test-timeout.js
-  - curl 'https://raw.github.com/eligrey/Blob.js/master/Blob.js' | sed 's/var Blob = /Blob = /g' > server/test-blob.js
+  - mkdir -p client/compatibility
+  - curl 'https://raw.github.com/eligrey/Blob.js/master/Blob.js' > client/compatibility/Blob.js
 script:
   - make test
   - rm -f Makefile start_test.js phantom_runner.js
