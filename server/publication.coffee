@@ -62,9 +62,11 @@ Meteor.methods
     if this.userId is null
       throw new Meteor.Error 403, 'User is not signed in.'
 
-    publication = Publications.findOne
+    existingPublication = Publications.findOne
       sha256: sha256
-    if publication
+      importing:
+        $exists: false
+    if existingPublication
       # We already have the PDF, so just add it to the library
       # TODO: redirect to profile
       Persons.update
@@ -72,7 +74,7 @@ Meteor.methods
       ,
         $addToSet:
           library:
-            _id: publication._id
+            _id: existingPublication._id
     else
       Publications.insert
         created: moment.utc().toDate()
@@ -124,10 +126,19 @@ Meteor.methods
 
     unless sha256 == publication.importing.sha256
       throw new Meteor.Error 403, 'Hash does not match.'
+
     existingPublication = Publications.findOne
       sha256: sha256
+      processed:
+        $exists: false
     if existingPublication
-      throw new Meteor.Error 403, 'File already exists.'
+      Persons.update
+        'user._id': this.userId
+      ,
+        $addToSet:
+          'library':
+            _id: existingPublication._id
+      return
 
     Publications.update
       _id: id
@@ -147,10 +158,16 @@ Meteor.methods
     unless this.userId
       throw new Meteor.Error 401, 'User is not signed in.'
 
-    Publications.update
+    publication = Publications.findOne
       _id: id
       'importing.by._id': this.userId
       cached: true
+
+    unless publication
+      throw new Meteor.Error 403, 'No publication importing.'
+
+    Publications.update
+      _id: publication._id
     ,
       $set:
         _.extend _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi'),
@@ -163,7 +180,21 @@ Meteor.methods
     ,
       $addToSet:
         'library':
-          _id: id
+          _id: publication._id
+
+    # Merge other imports of the same publication
+    matchingPublications = Publications.find
+      'importing.sha256': publication.sha256
+    matchingPublications.forEach (matchingPublication) ->
+      Persons.update
+        'user._id': matchingPublication.importing?.by?._id
+      ,
+        $addToSet:
+          'library':
+            _id: publication._id
+
+      Publications.remove
+        _id: matchingPublication._id
 
 Meteor.publish 'publications-by-author-slug', (authorSlug) ->
   return unless authorSlug
