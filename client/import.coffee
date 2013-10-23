@@ -15,6 +15,11 @@ Template.uploadOverlay.events =
     e.stopPropagation()
     e.preventDefault()
 
+    unless Meteor.user()
+      # TODO: ask user to sign in
+      Session.set 'uploadOverlayActive', false
+      return
+
     _.each e.dataTransfer.files, (file) ->
 
       reader = new FileReader()
@@ -40,7 +45,6 @@ Template.uploadOverlay.events =
                   $lt: 1
               ).count() == 0
                 Meteor.Router.to '/u/' + Meteor.person()?.slug
-              console.log 'Upload successful'
 
       reader.readAsArrayBuffer file
 
