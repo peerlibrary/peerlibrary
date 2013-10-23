@@ -75,6 +75,7 @@ Meteor.methods
         $addToSet:
           library:
             _id: existingPublication._id
+      return
     else
       Publications.insert
         created: moment.utc().toDate()

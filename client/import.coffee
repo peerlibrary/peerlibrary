@@ -5,7 +5,23 @@ Deps.autorun ->
 Meteor.startup ->
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
-    Session.set 'uploadOverlayActive', true
+
+    if Meteor.user()
+      Session.set 'uploadOverlayActive', true
+    else
+      Session.set 'loginOverlayActive', true
+
+Template.loginOverlay.loginOverlayActive = ->
+  Session.get 'loginOverlayActive'
+
+Template.loginOverlay.events =
+  'dragover': (e, template) ->
+    e.preventDefault()
+
+  'drop': (e, template) ->
+    e.stopPropagation()
+    e.preventDefault()
+    Session.set 'loginOverlayActive', false
 
 Template.uploadOverlay.events =
   'dragover': (e, template) ->
@@ -16,7 +32,6 @@ Template.uploadOverlay.events =
     e.preventDefault()
 
     unless Meteor.user()
-      # TODO: ask user to sign in
       Session.set 'uploadOverlayActive', false
       return
 
@@ -30,7 +45,13 @@ Template.uploadOverlay.events =
 
         Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
           throw err if err
-          console.log publicationId
+
+          # It already existed and was added to library
+          unless publicationId
+            Session.set 'uploadOverlayActive', false
+            Meteor.Router.to '/u/' + Meteor.person()?.slug
+            return
+
           meteorFile = new MeteorFile file
           meteorFile.name = publicationId + '.pdf'
           meteorFile.upload file, 'uploadPublication',
