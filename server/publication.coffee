@@ -1,7 +1,6 @@
 class @Publication extends @Publication
   checkCache: =>
-    if @cached
-      return
+    return if @cached
 
     if not Storage.exists @filename()
       console.log "Caching PDF for #{ @_id } from the central server"
@@ -195,7 +194,8 @@ Meteor.publish 'publications-by-ids', (ids) ->
   return unless ids?.length
 
   Publications.find
-    _id: {$in: ids}
+    _id:
+      $in: ids
     cached: true
     processed: true
   ,
