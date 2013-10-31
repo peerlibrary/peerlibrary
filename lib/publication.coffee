@@ -31,7 +31,7 @@ class @Publication extends Document
   @Meta =>
     collection: Publications
     fields:
-      authors: [@Reference Person, ['slug', 'foreNames', 'lastName']]
+      authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep

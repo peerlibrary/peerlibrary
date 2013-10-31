@@ -30,5 +30,5 @@ class @Person extends Document
   @Meta =>
     collection: Persons
     fields:
-      user: @Reference User, ['username'], false
-      publications: [@Reference Publication]
+      user: @ReferenceField User, ['username'], false
+      publications: [@ReferenceField Publication]

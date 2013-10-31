@@ -19,5 +19,5 @@ class @Annotation extends Document
   @Meta =>
     collection: Annotations
     fields:
-      author: @Reference Person, ['slug', 'foreNames', 'lastName']
-      publication: @Reference Publication
+      author: @ReferenceField Person, ['slug', 'foreNames', 'lastName']
+      publication: @ReferenceField Publication
