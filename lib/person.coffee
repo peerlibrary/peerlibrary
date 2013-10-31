@@ -32,3 +32,14 @@ class @Person extends Document
     fields:
       user: @ReferenceField User, ['username'], false
       publications: [@ReferenceField Publication]
+      slug: @GeneratedField 'self', ['user.username'], (fields) ->
+        if fields.user?.username
+          [fields._id, fields.user.username]
+        else
+          [fields._id, fields._id]
+      gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person'], (fields) ->
+        address = fields.emails?[0]?.address
+        return [null, undefined] unless fields.person?._id and address
+
+        crypto = Npm.require 'crypto'
+        [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]

@@ -32,6 +32,11 @@ class @Publication extends Document
     collection: Publications
     fields:
       authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
+      slug: @GeneratedField 'self', ['title'], (fields) ->
+        if fields.title
+          [fields._id, URLify2 fields.title]
+        else
+          [fields._id, '']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
