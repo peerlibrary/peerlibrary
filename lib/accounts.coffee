@@ -12,7 +12,7 @@ class @User extends Document
   # person:
   #   _id: id of related person document
 
-  # Should be a function so that we can redefine later on
+  # Should be a function so that we can possible resolve circual references
   @Meta =>
     collection: Meteor.users
     fields:

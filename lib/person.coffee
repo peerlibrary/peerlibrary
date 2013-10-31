@@ -26,7 +26,7 @@ class @Person extends Document
   # publications: list of
   #   _id: authored publication's id
 
-  # Should be a function so that we can redefine later on
+  # Should be a function so that we can possible resolve circual references
   @Meta =>
     collection: Persons
     fields:
