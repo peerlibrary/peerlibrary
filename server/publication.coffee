@@ -56,11 +56,11 @@ class @Publication extends @Publication
       foreignId: 1
       source: 1
 
-Meteor.publish 'publications-by-author-slug', (authorSlug) ->
-  return unless authorSlug
+Meteor.publish 'publications-by-author-slug', (slug) ->
+  return unless slug
 
   author = Persons.findOne
-    slug: authorSlug
+    slug: slug
 
   return unless author
 
