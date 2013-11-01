@@ -310,7 +310,7 @@ Meteor.publish 'my-publications', ->
 
 Meteor.publish 'my-publications-importing', ->
   Publications.find
-    'importing.by.person._id': Meteor.personId()
+    'importing.by.person._id': @personId
   ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
