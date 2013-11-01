@@ -43,7 +43,14 @@ Meteor.person = ->
     'user._id': userId
 
 Meteor.personId = ->
-  # Meteor.user is reactive
-  user = Meteor.user()
+  # Meteor.userId is reactive
+  userId = Meteor.userId()
 
-  user?.person?._id or null
+  return null unless userId
+
+  person = Persons.findOne
+    'user._id': userId
+  ,
+    _id: 1
+
+  person?._id or null
