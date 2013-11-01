@@ -43,3 +43,18 @@ class @Person extends Document
 
         crypto = Npm.require 'crypto'
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+
+Meteor.person = ->
+  # Meteor.userId is reactive
+  userId = Meteor.userId()
+
+  return null unless userId
+
+  Persons.findOne
+    'user._id': userId
+
+Meteor.personId = ->
+  # Meteor.user is reactive
+  user = Meteor.user()
+
+  user?.person?._id or null
