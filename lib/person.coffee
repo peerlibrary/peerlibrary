@@ -35,3 +35,18 @@ class @Person extends Document
       user: @ReferenceField User, ['username'], false
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
+
+Meteor.person = ->
+  # Meteor.userId is reactive
+  userId = Meteor.userId()
+
+  return null unless userId
+
+  Persons.findOne
+    'user._id': userId
+
+Meteor.personId = ->
+  # Meteor.user is reactive
+  user = Meteor.user()
+
+  user?.person?._id or null
