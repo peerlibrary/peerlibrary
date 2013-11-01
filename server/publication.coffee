@@ -72,7 +72,7 @@ Meteor.methods
         $addToSet:
           'importing.by':
             person:
-              _id: Meteor.user().person._id
+              _id: Meteor.personId()
             filename: filename
       id = existingPublication._id
     else if existingPublication?
@@ -87,7 +87,7 @@ Meteor.methods
         importing:
           by: [
             person:
-              _id: Meteor.user().person._id
+              _id: Meteor.personId()
             filename: filename
           ]
           uploadProgress: 0
@@ -97,7 +97,7 @@ Meteor.methods
         processed: false
 
     Persons.update
-      '_id': Meteor.user().person._id
+      '_id': Meteor.personId()
     ,
       $addToSet:
         library:
@@ -112,7 +112,7 @@ Meteor.methods
 
     publication = Publications.findOne
       _id: file.name # file.options.publicationId
-      'importing.by.person._id': Meteor.user().person._id
+      'importing.by.person._id': Meteor.personId()
 
     throw new Meteor.Error 403, 'No publication importing.' unless publication
 
@@ -149,7 +149,7 @@ Meteor.methods
 
     publication = Publications.findOne
       _id: id
-      'importing.by.person._id': Meteor.user().person._id
+      'importing.by.person._id': Meteor.personId()
       cached: true
 
     throw new Meteor.Error 403, 'No publication importing.' unless publication
@@ -164,7 +164,7 @@ Meteor.methods
         importing: ''
 
     Persons.update
-      _id: Meteor.user().person._id
+      _id: Meteor.personId()
     ,
       $addToSet:
         'library':
@@ -309,10 +309,9 @@ Meteor.publish 'my-publications', ->
     handlePublications.stop() if handlePublications
 
 Meteor.publish 'my-publications-importing', ->
-  Publications.find {} ,
-  # TODO: Get person on publish functions
-  #   'importing.by.person._id': Meteor.user()?.person?._id
-  # ,
+  Publications.find
+    'importing.by.person._id': Meteor.personId()
+  ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1
