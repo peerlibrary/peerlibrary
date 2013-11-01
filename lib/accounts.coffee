@@ -16,4 +16,4 @@ class @User extends Document
   @Meta =>
     collection: Meteor.users
     fields:
-      person: @Reference Person
+      person: @ReferenceField Person

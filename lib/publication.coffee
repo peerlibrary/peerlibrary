@@ -22,12 +22,11 @@ class @Publication extends Document
   # source: a string identifying where was this publication fetched from
   # sha256: SHA-256 hash of the file
   # importing (temporary):
-  #   by: user importing the document
-  #     _id
-  #   filename: original name of the uploaded file
+  #   by: list of
+  #     person: person importing the document
+  #     filename: original name of the uploaded file
   #   sha256: SHA-256 hash of the file computed by client before upload
   #   uploadProgress: 0-1, progress of uploading (%)
-  #   processProgress: 0-1, progress of processing (%)
   # cached: do we have a locally stored PDF?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
@@ -39,8 +38,12 @@ class @Publication extends Document
   @Meta =>
     collection: Publications
     fields:
-      authors: [@Reference Person, ['slug', 'foreNames', 'lastName']]
-      # 'importing.by': @Reference User
+      authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
+      # TODO: This doesn't work in PeerDB
+      # importing:
+      #  by: [
+      #    person: @ReferenceField Person
+      #  ]
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep

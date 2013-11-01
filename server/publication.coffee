@@ -59,108 +59,100 @@ class @Publication extends @Publication
 
 Meteor.methods
   createPublication: (filename, sha256) ->
-    if this.userId is null
-      throw new Meteor.Error 403, 'User is not signed in.'
+    throw new Meteor.Error 403, 'User is not signed in.' unless @userId
 
     existingPublication = Publications.findOne
       sha256: sha256
-      importing:
-        $exists: false
-    if existingPublication
-      # We already have the PDF, so just add it to the library
-      # TODO: redirect to profile
-      Persons.update
-        'user._id': this.userId
+
+    if existingPublication?.importing?
+      # We have the publication but nobody has finished uploading it, so let's do it
+      Publications.update
+        _id: existingPublication._id
       ,
         $addToSet:
-          library:
-            _id: existingPublication._id
-      return
+          'importing.by':
+            person:
+              _id: Meteor.user().person._id
+            filename: filename
+      id = existingPublication._id
+    else if existingPublication?
+      # We already have the PDF
+      id = existingPublication._id
     else
-      Publications.insert
+      # We don't have anything, create a new publication
+      id = Publications.insert
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
         source: 'upload'
         importing:
-          by:
-            _id: this.userId
-          filename: filename
+          by: [
+            person:
+              _id: Meteor.user().person._id
+            filename: filename
+          ]
           uploadProgress: 0
           processProgress: 0
           sha256: sha256
         cached: false
         processed: false
 
-  uploadPublication: (file) ->
-    unless this.userId
-      throw new Meteor.Error 401, 'User is not signed in.'
-    unless file
-      throw new Meteor.Error 403, 'File is null.'
+    Persons.update
+      '_id': Meteor.user().person._id
+    ,
+      $addToSet:
+        library:
+          _id: id
 
-    Storage.saveMeteorFile file
+    return id
+
+
+  uploadPublication: (file) ->
+    throw new Meteor.Error 401, 'User is not signed in.' unless @userId
+    throw new Meteor.Error 403, 'File is null.' unless file
 
     publication = Publications.findOne
-      _id: file.name.split('.')[0]
-      'importing.by._id': this.userId
+      _id: file.name # file.options.publicationId
+      'importing.by.person._id': Meteor.user().person._id
 
-    unless publication
-      throw new Meteor.Error 403, 'No publication importing.'
+    throw new Meteor.Error 403, 'No publication importing.' unless publication
 
-    Publications.update
-      _id: publication._id
-    ,
-      $set:
-        'importing.uploadProgress': file.end / file.size
+    unless publication.cached
 
-    if file.end == file.size
-      # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-      pdf = Storage.open publication.filename()
-
-      hash = new Crypto.SHA256()
-      hash.update pdf
-      sha256 = hash.finalize()
-
-      unless sha256 == publication.importing.sha256
-        throw new Meteor.Error 403, 'Hash does not match.'
-
-      existingPublication = Publications.findOne
-        sha256: sha256
-        processed:
-          $exists: false
-      if existingPublication
-        Persons.update
-          'user._id': this.userId
-        ,
-          $addToSet:
-            'library':
-              _id: existingPublication._id
-        return
+      Storage.saveMeteorFile file, publication.filename()
 
       Publications.update
         _id: publication._id
       ,
-        $set:
-          cached: true
-          sha256: sha256
+        $max:
+          'importing.uploadProgress': file.end / file.size
 
-      publication.process null, null, null, null, (progress) ->
+      if file.end == file.size
+        # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
+        pdf = Storage.open publication.filename()
+
+        hash = new Crypto.SHA256()
+        hash.update pdf
+        sha256 = hash.finalize()
+
+        unless sha256 == publication.importing.sha256
+          throw new Meteor.Error 403, 'Hash does not match.'
+
         Publications.update
           _id: publication._id
         ,
           $set:
-            'importing.processProgress': progress
+            cached: true
+            sha256: sha256
 
   confirmPublication: (id, metadata) ->
-    unless this.userId
-      throw new Meteor.Error 401, 'User is not signed in.'
+    throw new Meteor.Error 401, 'User is not signed in.' unless @userId
 
     publication = Publications.findOne
       _id: id
-      'importing.by._id': this.userId
+      'importing.by.person._id': Meteor.user().person._id
       cached: true
 
-    unless publication
-      throw new Meteor.Error 403, 'No publication importing.'
+    throw new Meteor.Error 403, 'No publication importing.' unless publication
 
     Publications.update
       _id: publication._id
@@ -172,31 +164,17 @@ Meteor.methods
         importing: ''
 
     Persons.update
-      'user._id': this.userId
+      _id: Meteor.user().person._id
     ,
       $addToSet:
         'library':
           _id: publication._id
 
-    # Merge other imports of the same publication
-    matchingPublications = Publications.find
-      'importing.sha256': publication.sha256
-    matchingPublications.forEach (matchingPublication) ->
-      Persons.update
-        'user._id': matchingPublication.importing?.by?._id
-      ,
-        $addToSet:
-          'library':
-            _id: publication._id
-
-      Publications.remove
-        _id: matchingPublication._id
-
-Meteor.publish 'publications-by-author-slug', (authorSlug) ->
-  return unless authorSlug
+Meteor.publish 'publications-by-author-slug', (slug) ->
+  return unless slug
 
   author = Persons.findOne
-    slug: authorSlug
+    slug: slug
 
   return unless author
 
@@ -331,9 +309,10 @@ Meteor.publish 'my-publications', ->
     handlePublications.stop() if handlePublications
 
 Meteor.publish 'my-publications-importing', ->
-  Publications.find
-    'importing.by._id': @userId
-  ,
+  Publications.find {} ,
+  # TODO: Get person on publish functions
+  #   'importing.by.person._id': Meteor.user()?.person?._id
+  # ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1

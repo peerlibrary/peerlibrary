@@ -44,4 +44,4 @@ Template.profile.myPublications = ->
 
 Template.profile.myPublicationsImporting = ->
   Publications.find
-    'importing.by._id': Meteor.user()?._id
+    'importing.by.person._id': Meteor.person()?._id

@@ -46,16 +46,12 @@ Template.uploadOverlay.events =
         Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
           throw err if err
 
-          # It already existed and was added to library
-          unless publicationId
-            Session.set 'uploadOverlayActive', false
-            Meteor.Router.to '/u/' + Meteor.person()?.slug
-            return
-
           meteorFile = new MeteorFile file
-          meteorFile.name = publicationId + '.pdf'
+          # TODO: Fix this hack
+          meteorFile.name = publicationId
           meteorFile.upload file, 'uploadPublication',
-            size: 128 * 1024
+            size: 128 * 1024,
+            publicationId: publicationId
           , (err) ->
             throw err if err
 
@@ -63,7 +59,7 @@ Template.uploadOverlay.events =
               'importing.uploadProgress':
                 $lt: 1
             ).count() == 0
-              Meteor.Router.to '/u/' + Meteor.person()?.slug
+              Meteor.Router.to '/p/' + publicationId
 
       reader.readAsArrayBuffer file
 
@@ -83,7 +79,7 @@ Template.uploadProgressBar.progress = ->
   100 * @importing.uploadProgress
 
 Template.publicationImporting.progress = ->
-  50 * @importing.uploadProgress + 50 * @importing.processProgress
+  100 * @importing.uploadProgress
 
 Template.importPublicationForm.events =
   'submit form': (e) ->

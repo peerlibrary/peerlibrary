@@ -13,9 +13,10 @@ class @Storage extends @Storage
     @_assurePath filename
     fs.writeFileSync filename, data
 
-  @saveMeteorFile: (meteorFile) ->
-    path = @_storageDirectory + @_path.sep + Publication._filenamePrefix() + Publication._uploadFilename()
+  @saveMeteorFile: (meteorFile, filename) ->
+    path = @_storageDirectory + @_path.sep + filename
     directory = path.split('/').slice(0, -1).join('/')
+    meteorFile.name = filename.split('/').slice(-1)[0]
     Storage._assurePath path
     meteorFile.save directory, {}
 
