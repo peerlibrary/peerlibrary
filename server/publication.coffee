@@ -122,8 +122,10 @@ Meteor.methods
 
       Publications.update
         _id: publication._id
+        'importing.uploadProgress':
+          $lt: file.end / file.size
       ,
-        $max:
+        $set:
           'importing.uploadProgress': file.end / file.size
 
       if file.end == file.size
