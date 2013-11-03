@@ -28,10 +28,10 @@
 <template name="publicationImporting">
   <div style="width: 960px">
     {{#if this.cached}}
-      <h3><a href="{{publicationPath this._id this.slug}}">{{ this._id }}</a></h3>
+      <h3><a href="{{publicationPath this._id this.slug}}">{{ filename }}</a></h3>
       {{> importPublicationForm}}
     {{/if}}
-    <div class="upload-progress-bar" style="width: {{progress}}%"></div>
+    {{> uploadProgressBar}}
   </div>
 </template>
 

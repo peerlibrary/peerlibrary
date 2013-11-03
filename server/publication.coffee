@@ -55,7 +55,6 @@ class @Publication extends @Publication
       doi: 1
       foreignId: 1
       source: 1
-      importing: 1
 
 Meteor.methods
   createPublication: (filename, sha256) ->
@@ -317,3 +316,4 @@ Meteor.publish 'my-publications-importing', ->
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1
+      importing: 1
