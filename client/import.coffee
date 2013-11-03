@@ -71,7 +71,7 @@ Template.uploadOverlay.uploadOverlayActive = ->
 
 Template.uploadOverlay.publicationsUploading = ->
   Publications.find
-    'importing.by._id': Meteor.userId()
+    'importing.by.person._id': Meteor.person()?._id
     'importing.uploadProgress':
       $lt: 1
 
