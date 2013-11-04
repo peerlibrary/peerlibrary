@@ -48,28 +48,31 @@ Template.uploadOverlay.events =
         hash.update this.result
         sha256 = hash.finalize()
 
-        Meteor.call 'createPublication', file.name, sha256, (err, publicationId) ->
+        Meteor.call 'createPublication', file.name, sha256, (err, [publicationId, verify]) ->
           throw err if err
 
-          meteorFile = new MeteorFile file
-          # TODO: Use meteorFile.options instead of name
-          meteorFile.name = publicationId
-          meteorFile.upload file, 'uploadPublication',
-            size: 128 * 1024,
-            publicationId: publicationId
-          , (err) ->
-            throw err if err
+          if verify
+            console.log 'Please verify.'
+          else
+            meteorFile = new MeteorFile file
+            # TODO: Use meteorFile.options instead of name
+            meteorFile.name = publicationId
+            meteorFile.upload file, 'uploadPublication',
+              size: 128 * 1024,
+              publicationId: publicationId
+            , (err) ->
+              throw err if err
 
-            if Publications.find(
-              'importing.uploadProgress':
-                $lt: 1
-            ).count() == 0
-              if template._amountOfImports > 1
-                Meteor.Router.to '/u/' + Meteor.personId()
-              else
-                Meteor.Router.to '/p/' + publicationId
+              if Publications.find(
+                'importing.uploadProgress':
+                  $lt: 1
+              ).count() == 0
+                if template._amountOfImports > 1
+                  Meteor.Router.to '/u/' + Meteor.personId()
+                else
+                  Meteor.Router.to '/p/' + publicationId
 
-              template._amountOfImports = 0
+                template._amountOfImports = 0
 
       reader.readAsArrayBuffer file
 
@@ -86,7 +89,7 @@ Template.uploadOverlay.publicationsUploading = ->
       $lt: 1
 
 Template.uploadProgressBar.progress = ->
-  100 * @importing.uploadProgress
+  100 * @importing.by[0].uploadProgress
 
 Template.publicationImporting.filename = ->
   @importing.by[0].filename

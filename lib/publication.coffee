@@ -25,9 +25,10 @@ class @Publication extends Document
   #   by: list of
   #     person: person importing the document
   #     filename: original name of the uploaded file
-  #   sha256: SHA-256 hash of the file computed by client before upload
-  #   uploadProgress: 0-1, progress of uploading (%)
+  #     temporary: temporary id of the uploaded file
+  #     uploadProgress: 0-1, progress of uploading (%)
   # cached: do we have a locally stored PDF?
+  # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any

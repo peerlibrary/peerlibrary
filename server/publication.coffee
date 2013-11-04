@@ -30,6 +30,12 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
+  _temporaryFullFilename: =>
+    assert @importing?.by?[0]?.person?._id
+    assert.equal @importing.by[0].person._id, Meteor.personId()
+
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
+
   # A subset of public fields used for search results to optimize transmission to a client
   # This list is applied to PUBLIC_FIELDS to get a subset
   @PUBLIC_SEARCH_RESULTS_FIELDS: ->
@@ -63,8 +69,14 @@ Meteor.methods
     existingPublication = Publications.findOne
       sha256: sha256
 
-    if existingPublication?.importing?
-      # We have the publication but nobody has finished uploading it, so let's do it
+    # TODO: Check if it is already in user's library
+
+    if existingPublication?.metadata
+      # We already have the PDF, so ask for verification
+      id = existingPublication._id
+      verify = true
+    else if existingPublication?
+      # We have the publication but no metadata, so get filename
       Publications.update
         _id: existingPublication._id
       ,
@@ -73,12 +85,14 @@ Meteor.methods
             person:
               _id: Meteor.personId()
             filename: filename
+            temporary: Random.id()
+            uploadProgress: 0
       id = existingPublication._id
-    else if existingPublication?
-      # We already have the PDF
-      id = existingPublication._id
+
+      # If we have the file, ask for verification. Otherwise, ask for upload
+      verify = existingPublication.cached?
     else
-      # We don't have anything, create a new publication
+      # We don't have anything, so create a new publication and ask for upload
       id = Publications.insert
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
@@ -88,21 +102,16 @@ Meteor.methods
             person:
               _id: Meteor.personId()
             filename: filename
+            temporary: Random.id()
+            uploadProgress: 0
           ]
-          uploadProgress: 0
-          processProgress: 0
-          sha256: sha256
+        sha256: sha256
         cached: false
+        metadata: false
         processed: false
+      verify = false
 
-    Persons.update
-      '_id': Meteor.personId()
-    ,
-      $addToSet:
-        library:
-          _id: id
-
-    return id
+    return [id, verify]
 
 
   uploadPublication: (file) ->
@@ -112,38 +121,50 @@ Meteor.methods
     publication = Publications.findOne
       _id: file.name # file.options.publicationId
       'importing.by.person._id': Meteor.personId()
+    ,
+      fields:
+        'importing.by.$': 1
+        'sha256': 1
+        'source': 1
 
     throw new Meteor.Error 403, 'No publication importing.' unless publication
 
-    unless publication.cached
+    Storage.saveMeteorFile file, publication._temporaryFullFilename()
 
-      Storage.saveMeteorFile file, publication.filename()
+    Publications.update
+      _id: publication._id
+      'importing.by.person._id': Meteor.personId()
+    ,
+      $set:
+        'importing.by.$.uploadProgress': file.end / file.size
 
-      Publications.update
-        _id: publication._id
-        'importing.uploadProgress':
-          $lt: file.end / file.size
-      ,
-        $set:
-          'importing.uploadProgress': file.end / file.size
+    if file.end == file.size
+      # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
+      pdf = Storage.open publication._temporaryFullFilename()
 
-      if file.end == file.size
-        # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-        pdf = Storage.open publication.filename()
+      hash = new Crypto.SHA256()
+      hash.update pdf
+      sha256 = hash.finalize()
 
-        hash = new Crypto.SHA256()
-        hash.update pdf
-        sha256 = hash.finalize()
+      unless sha256 == publication.sha256
+        throw new Meteor.Error 403, 'Hash does not match.'
 
-        unless sha256 == publication.importing.sha256
-          throw new Meteor.Error 403, 'Hash does not match.'
-
+      unless publication.cached
+        # Upload is being finished for the first time, so move it to permanent location
+        Storage.rename publication._temporaryFullFilename(), publication.filename()
         Publications.update
           _id: publication._id
         ,
           $set:
             cached: true
-            sha256: sha256
+
+      # Hash was verified, so add it to uploader's library
+      Persons.update
+        '_id': Meteor.personId()
+      ,
+        $addToSet:
+          library:
+            _id: publication._id
 
   confirmPublication: (id, metadata) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless @userId
@@ -163,13 +184,6 @@ Meteor.methods
           updated: moment.utc().toDate()
       $unset:
         importing: ''
-
-    Persons.update
-      _id: Meteor.personId()
-    ,
-      $addToSet:
-        'library':
-          _id: publication._id
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   return unless slug
