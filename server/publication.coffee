@@ -64,12 +64,18 @@ class @Publication extends @Publication
 
 Meteor.methods
   createPublication: (filename, sha256) ->
-    throw new Meteor.Error 403, 'User is not signed in.' unless @userId
+    throw new Meteor.Error 403, 'User is not signed in.' unless Meteor.personId()
 
     existingPublication = Publications.findOne
       sha256: sha256
 
-    # TODO: Check if it is already in user's library
+    if existingPublication?.importing?.by
+      existingPublication.importing.by = _.filter existingPublication.importing.by, (importingBy) ->
+        return importingBy.person._id is Meteor.personId()
+
+    if existingPublication?.importing?.by?[0]?
+      # This user already has an import, so ask for confirmation or upload
+      return [existingPublication._id, existingPublication.cached]
 
     if existingPublication?.metadata
       # We already have the PDF, so ask for verification
@@ -90,7 +96,7 @@ Meteor.methods
       id = existingPublication._id
 
       # If we have the file, ask for verification. Otherwise, ask for upload
-      verify = existingPublication.cached?
+      verify = existingPublication.cached
     else
       # We don't have anything, so create a new publication and ask for upload
       id = Publications.insert
@@ -115,7 +121,7 @@ Meteor.methods
 
 
   uploadPublication: (file) ->
-    throw new Meteor.Error 401, 'User is not signed in.' unless @userId
+    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
     throw new Meteor.Error 403, 'File is null.' unless file
 
     publication = Publications.findOne
@@ -167,7 +173,7 @@ Meteor.methods
             _id: publication._id
 
   confirmPublication: (id, metadata) ->
-    throw new Meteor.Error 401, 'User is not signed in.' unless @userId
+    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
 
     publication = Publications.findOne
       _id: id
@@ -330,4 +336,4 @@ Meteor.publish 'my-publications-importing', ->
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1
-      importing: 1
+      'importing.by.$': 1

@@ -38,8 +38,6 @@ Template.uploadOverlay.events =
       Session.set 'uploadOverlayActive', false
       return
 
-    template._amountOfImports += e.dataTransfer.files.length
-
     _.each e.dataTransfer.files, (file) ->
 
       reader = new FileReader()
@@ -54,6 +52,7 @@ Template.uploadOverlay.events =
           if verify
             console.log 'Please verify.'
           else
+            template._amountOfImports += 1
             meteorFile = new MeteorFile file
             # TODO: Use meteorFile.options instead of name
             meteorFile.name = publicationId
@@ -64,8 +63,8 @@ Template.uploadOverlay.events =
               throw err if err
 
               if Publications.find(
-                'importing.uploadProgress':
-                  $lt: 1
+                'importing.by.person._id': Meteor.personId()
+                cached: false
               ).count() == 0
                 if template._amountOfImports > 1
                   Meteor.Router.to '/u/' + Meteor.personId()
@@ -85,8 +84,7 @@ Template.uploadOverlay.uploadOverlayActive = ->
 Template.uploadOverlay.publicationsUploading = ->
   Publications.find
     'importing.by.person._id': Meteor.personId()
-    'importing.uploadProgress':
-      $lt: 1
+    cached: false
 
 Template.uploadProgressBar.progress = ->
   100 * @importing.by[0].uploadProgress
