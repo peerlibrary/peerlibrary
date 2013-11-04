@@ -1,19 +1,21 @@
-crypto = Npm.require 'crypto'
-
 Accounts.onCreateUser (options, user) ->
   try
+    personId = Random.id()
+
+    user.person =
+      _id: personId
+
     person =
+      _id: personId
       user:
         _id: user._id
         username: user.username
-      slug: user.username
-      gravatarHash: crypto.createHash('md5').update(user.emails?[0]?.address).digest('hex')
+      slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
+      gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
 
     _.extend person, _.pick(options.profile or {}, 'foreNames', 'lastName', 'work', 'education', 'publications')
 
-    personId = Persons.insert person
-    user.person =
-      _id: personId
+    Persons.insert person
 
   catch e
     if e.name isnt 'MongoError'
