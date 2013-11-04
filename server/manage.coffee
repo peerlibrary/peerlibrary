@@ -244,7 +244,7 @@ Meteor.methods
         author.slug = id
 
       publication =
-        slug: Publication.Meta.fields.slug.geneator(title: record.title[0])[1]
+        slug: Publication.Meta.fields.slug.generator(title: record.title[0])[1]
         created: created
         updated: updated
         authors: authors
