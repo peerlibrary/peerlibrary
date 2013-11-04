@@ -75,31 +75,11 @@ Template.searchInput.indexHeader = Template.header.indexHeader
 
 Template.searchInput.noIndexHeader = Template.header.noIndexHeader
 
-publications = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPublications
-
-persons = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPersons
-
 Template.searchInput.searchInvitation = ->
   if Session.get 'currentSearchQuery'
     Session.get 'currentSearchQuery'
-  else if Template.header.indexHeader()
-    return "Search #{ publications() } publications and #{ persons() } people"
   else
-    return "Search publications and people"
+    "Search publications and people"
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')

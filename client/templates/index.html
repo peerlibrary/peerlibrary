@@ -1,0 +1,14 @@
+<template name="index">
+  {{#if searchActive}}
+    {{> results}}
+  {{else}}
+    {{> indexStatistics}}
+  {{/if}}
+</template>
+
+<template name="indexStatistics">
+  <ul>
+    <li>Publications: {{publications}}</li>
+    <li>People: {{persons}}</li>
+  </ul>
+</template>
