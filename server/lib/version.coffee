@@ -14,6 +14,4 @@ execFileSync = (file, args, opts) ->
 
 result = execFileSync 'git', ['describe', '--always', '--dirty=+']
 
-__meteor_runtime_config__.VERSION = if result.success then (result.stdout.split('\n')[0] or 'error') else 'error'
-
-console.log __meteor_runtime_config__.VERSION
+__meteor_runtime_config__.VERSION = @VERSION = if result.success then (result.stdout.split('\n')[0] or 'error') else 'error'
