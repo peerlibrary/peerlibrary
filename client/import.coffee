@@ -23,6 +23,9 @@ Template.loginOverlay.events =
     e.preventDefault()
     Session.set 'loginOverlayActive', false
 
+Template.uploadOverlay.created = ->
+  @_amountOfImports = 0
+
 Template.uploadOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
@@ -34,6 +37,8 @@ Template.uploadOverlay.events =
     unless Meteor.user()
       Session.set 'uploadOverlayActive', false
       return
+
+    template._amountOfImports += e.dataTransfer.files.length
 
     _.each e.dataTransfer.files, (file) ->
 
@@ -47,7 +52,7 @@ Template.uploadOverlay.events =
           throw err if err
 
           meteorFile = new MeteorFile file
-          # TODO: Fix this hack
+          # TODO: Use meteorFile.options instead of name
           meteorFile.name = publicationId
           meteorFile.upload file, 'uploadPublication',
             size: 128 * 1024,
@@ -59,7 +64,12 @@ Template.uploadOverlay.events =
               'importing.uploadProgress':
                 $lt: 1
             ).count() == 0
-              Meteor.Router.to '/p/' + publicationId
+              if template._amountOfImports > 1
+                Meteor.Router.to '/u/' + Meteor.personId()
+              else
+                Meteor.Router.to '/p/' + publicationId
+
+              template._amountOfImports = 0
 
       reader.readAsArrayBuffer file
 
