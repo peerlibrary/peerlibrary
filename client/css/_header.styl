@@ -11,13 +11,6 @@ header
     top 0
     width 100%
     z-index 99999
-
-header.index-header
-  .container
-    position absolute
-
-header.no-index-header
-  .container
     position fixed
 
 .logo
@@ -180,12 +173,13 @@ span.cursor
 
 header.index-header
   .search-wrapper
-    position absolute
+    position fixed
     display block
     height 10px
-    top 420px
+    top 50%
     left 50%
     width 620px
+    margin-top -5px
     margin-left -310px
     visibility visible
     background transparent
@@ -215,35 +209,7 @@ header.index-header
     background transparent
 
   .container
-    height 70px
-
-    .logo
-      width 180px
-      float left
-
-      a
-        color white
-        text-decoration none
-        line-height 70px
-        font-size 30px
-        font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
-        background transparent
-        display inline-block
-        padding 0 20px
-
-    span.tagline
-      color white
-      line-height 70px
-      padding 0 20px
-      display inline-block
-      float left
-
-
-    ul.top-menu
-      li
-        display block
-        float left
-        line-height 70px
+    background-color transparent
 
 header.no-index-header
   .search-wrapper
@@ -256,9 +222,6 @@ header.no-index-header
       bottom -2px
       height 2px
       position absolute
-
-  .tagline
-    display none
 
 /*
 Sign up buttons

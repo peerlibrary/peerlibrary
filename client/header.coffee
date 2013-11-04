@@ -50,7 +50,7 @@ Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
 
 Template.header.indexHeader = ->
-  'index-header' if Session.get('indexActive') and Session.get('indexHeader') and not Session.get('searchActive')
+  'index-header' if Template.footer.indexFooter()
 
 Template.header.noIndexHeader = ->
   'no-index-header' if not Template.header.indexHeader()

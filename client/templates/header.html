@@ -2,15 +2,14 @@
   <header class="{{indexHeader}} {{noIndexHeader}}">
     <div class="container">
       <div class="row">
-        <div class="logo {{development}}">
-          <a href="/">PeerLibrary</a>
-          {{#if development}}
-            <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
-          {{/if}}
-        </div>
-        <span class="tagline">
-          Open Scientific Knowledge
-        </span>
+        {{#if noIndexHeader}}
+          <div class="logo {{development}}">
+            <a href="/">PeerLibrary</a>
+            {{#if development}}
+              <span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span>
+            {{/if}}
+          </div>
+        {{/if}}
         <ul class="top-menu">
           <li class="search">
             {{> searchInput}}
