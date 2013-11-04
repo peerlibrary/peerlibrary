@@ -89,7 +89,7 @@ Template.uploadOverlay.publicationsUploading = ->
 Template.uploadProgressBar.progress = ->
   100 * @importing.by[0].uploadProgress
 
-Template.publicationImporting.filename = ->
+Template.publicationLibraryItem.filename = ->
   @importing.by[0].filename
 
 Template.importPublicationForm.events =

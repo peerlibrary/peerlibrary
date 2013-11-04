@@ -39,8 +39,6 @@ Template.profile.myPublications = ->
   Publications.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
-    importing:
-      $exists: false
 
 Template.profile.myPublicationsImporting = ->
   Publications.find

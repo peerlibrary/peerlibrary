@@ -25,16 +25,6 @@
   <div class="upload-progress-bar" style="width: {{progress}}%"></div>
 </template>
 
-<template name="publicationImporting">
-  <div style="width: 960px">
-    {{#if this.cached}}
-      <h3><a href="{{publicationPath this._id this.slug}}">{{filename}}</a></h3>
-      {{> importPublicationForm}}
-    {{/if}}
-    {{> uploadProgressBar}}
-  </div>
-</template>
-
 <template name="importPublicationForm">
   <form data-id="{{this._id}}">
     <label for="title">Title:</label>

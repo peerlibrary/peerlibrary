@@ -61,6 +61,7 @@ class @Publication extends @Publication
       doi: 1
       foreignId: 1
       source: 1
+      metadata: 1
 
 Meteor.methods
   createPublication: (filename, sha256) ->
@@ -188,8 +189,7 @@ Meteor.methods
       $set:
         _.extend _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi'),
           updated: moment.utc().toDate()
-      $unset:
-        importing: ''
+          metadata: true
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   return unless slug
