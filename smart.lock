@@ -95,8 +95,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.3.2",
-        "commit": "2475c9e8a83c6445fd52debc6abd727b7a9df967"
+        "tag": "v0.3.3",
+        "commit": "450bd918465d517167d50a62ed7ae65380caeba2"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
