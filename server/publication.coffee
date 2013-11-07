@@ -173,6 +173,36 @@ Meteor.methods
           library:
             _id: publication._id
 
+  verifyPublication: (id, sample) ->
+    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
+
+    publication = Publications.findOne
+      _id: id
+      cached: true
+
+    throw new Meteor.Error 403, 'No publication importing.' unless publication
+
+    buffer = Storage.open publication.filename()
+    key = 0 # TODO: Meteor.settings.public.uploadKey
+    personId = Meteor.personId()
+    for index in [0...personId.length]
+      key += personId.charCodeAt index
+    serverSample = buffer.readDoubleBE key % (buffer.length - 8)
+
+    if sample == serverSample
+      # Sample was verified, so add it to person's library
+      Persons.update
+        '_id': Meteor.personId()
+      ,
+        $addToSet:
+          library:
+            _id: publication._id
+
+      return true
+    else
+      return false
+
+
   confirmPublication: (id, metadata) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
 
