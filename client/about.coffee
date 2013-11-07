@@ -1,0 +1,1 @@
+Template.about.VERSION = VERSION

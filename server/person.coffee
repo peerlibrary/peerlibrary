@@ -1,4 +1,19 @@
+crypto = Npm.require 'crypto'
+
 class @Person extends @Person
+  @MixinMeta (meta) =>
+    meta.fields.slug.generator = (fields) ->
+      if fields.user?.username
+        [fields._id, fields.user.username]
+      else
+        [fields._id, fields._id]
+    meta.fields.gravatarHash.generator = (fields) ->
+      address = fields.emails?[0]?.address
+      return [null, undefined] unless fields.person?._id and address
+
+      [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+    meta
+
   # A subset of public fields used for automatic publishing
   # This list is applied to PUBLIC_FIELDS to get a subset
   @PUBLIC_AUTO_FIELDS: ->

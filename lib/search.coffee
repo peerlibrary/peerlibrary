@@ -5,6 +5,6 @@ class @SearchResult extends Document
   # countPublications: number of publications in the results for the query
   # countPersons: number of people in the results for the query
 
-  # Should be a function so that we can redefine later on
+  # Should be a function so that we can possible resolve circual references
   @Meta =>
     collection: SearchResults
