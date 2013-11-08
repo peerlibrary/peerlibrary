@@ -1,4 +1,12 @@
 class @Publication extends @Publication
+  @MixinMeta (meta) =>
+    meta.fields.slug.generator = (fields) ->
+      if fields.title
+        [fields._id, URLify2 fields.title]
+      else
+        [fields._id, '']
+    meta
+
   checkCache: =>
     return if @cached
 

@@ -2,7 +2,7 @@
   {{#if searchActive}}
     {{> results}}
   {{else}}
-    {{> presentation}}
+    {{> indexStatistics}}
   {{/if}}
 </template>
 
@@ -41,4 +41,10 @@
 
     <div class="try-it"><a href="#">Try it out!</a></div>
   </div>
+</template>
+<template name="indexStatistics">
+  <ul class="statistics">
+    <li>Publications: {{publications}}</li>
+    <li>People: {{persons}}</li>
+  </ul>
 </template>

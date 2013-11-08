@@ -2,15 +2,6 @@ Template.displayIcon.userIconUrl = ->
   # TODO: We should specify default URL to the image of an avatar which is generated from name initials
   "https://secure.gravatar.com/avatar/#{ Meteor.person()?.gravatarHash }?s=25"
 
-Meteor.person = ->
-  userId = Meteor.userId()
-
-  return unless userId
-
-  # Meteor.userId is reactive
-  Persons.findOne
-    'user._id': userId
-
 Template._loginButtonsLoggedInDropdownActions.personSlug = ->
   Meteor.person()?.slug
 

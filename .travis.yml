@@ -1,5 +1,5 @@
 language: node_js
-env: PACKAGES=''
+env: WAIT_TIME=5000 PACKAGES=''
 node_js:
   - "0.10"
 before_install:
