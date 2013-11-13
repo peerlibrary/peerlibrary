@@ -50,12 +50,9 @@ Template.uploadOverlay.events =
           throw err if err
 
           if verify
-            key = 0 # TODO: Meteor.settings.public.uploadKey
-            personId = Meteor.personId()
-            for index in [0...personId.length]
-              key += personId.charCodeAt index
-            sample = new DataView(reader.result, key % (reader.result.byteLength - 8), 8).getFloat64(0)
-            Meteor.call 'verifyPublication', publicationId, sample, (err, success) ->
+            samples = _.map verify, (offset) ->
+              return new DataView(reader.result, offset % (reader.result.byteLength - 8), 8).getFloat64 0
+            Meteor.call 'verifyPublication', publicationId, samples, (err, success) ->
               if success
                 Meteor.Router.to '/p/' + publicationId
               else
