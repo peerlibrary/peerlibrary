@@ -90,18 +90,19 @@ Meteor.methods
     existingPublication = Publications.findOne
       sha256: sha256
 
+    # Filter importing.by to contain only this person
     if existingPublication?.importing?.by
       existingPublication.importing.by = _.filter existingPublication.importing.by, (importingBy) ->
         return importingBy.person._id is Meteor.personId()
 
     if existingPublication?.importing?.by?[0]?
-      # This user already has an import, so ask for confirmation or upload
-      return [existingPublication._id, existingPublication.cached]
+      # This person already has an import, so ask for confirmation or upload
+      return [existingPublication._id, if existingPublication.cached then existingPublication._uploadOffsets Meteor.personId() else null]
 
     if existingPublication?.metadata
       # We already have the PDF, so ask for verification
-      id = existingPublication._id
-      verify = true
+      return [existingPublication._id, existingPublication._uploadOffsets Meteor.personId()]
+
     else if existingPublication?
       # We have the publication but no metadata, so get filename
       Publications.update
@@ -114,10 +115,9 @@ Meteor.methods
             filename: filename
             temporary: Random.id()
             uploadProgress: 0
-      id = existingPublication._id
-
       # If we have the file, ask for verification. Otherwise, ask for upload
-      verify = existingPublication.cached
+      return [existingPublication._id, if existingPublication.cached then existingPublication._uploadOffsets Meteor.personId() else null]
+
     else
       # We don't have anything, so create a new publication and ask for upload
       id = Publications.insert
@@ -136,12 +136,7 @@ Meteor.methods
         cached: false
         metadata: false
         processed: false
-      verify = false
-
-    verify = if verify then publication._uploadOffsets Meteor.personId() else null
-
-    return [id, verify]
-
+      return [id, null]
 
   uploadPublication: (file) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
