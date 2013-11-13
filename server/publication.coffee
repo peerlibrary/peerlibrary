@@ -48,13 +48,13 @@ class @Publication extends @Publication
 
     Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
 
-  _uploadOffsets: (personId, bufferLength) =>
+  _uploadOffsets: (personId) =>
     return _.map Meteor.settings.uploadKeys, (key) ->
       hmac = crypto.createHmac 'sha256', key
       hmac.update personId
       hmac.update @_id
       digest = hmac.digest 'hex'
-      return parseInt(digest, 16) % (bufferLength - 8)
+      return parseInt(digest, 16)
 
   # A subset of public fields used for search results to optimize transmission to a client
   # This list is applied to PUBLIC_FIELDS to get a subset
@@ -210,7 +210,7 @@ Meteor.methods
 
     verified = _.every _.map offsets, (offset, key) ->
       clientSample = samples[key]
-      serverSample = buffer.readDoubleBE offset
+      serverSample = buffer.readDoubleBE offset % (buffer.length - 8)
       return clientSample == serverSample
 
     if verified
