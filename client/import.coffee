@@ -46,25 +46,25 @@ Template.uploadOverlay.events =
         hash.update this.result
         sha256 = hash.finalize()
 
-        Meteor.call 'createPublication', file.name, sha256, (err, [publicationId, verify]) ->
+        Meteor.call 'createPublication', file.name, sha256, (err, result) ->
           throw err if err
 
-          if verify
-            samples = _.map verify, (offset) ->
+          if result.verify
+            samples = _.map result.offsets, (offset) ->
               return new DataView(reader.result, offset % (reader.result.byteLength - 8), 8).getFloat64 0
-            Meteor.call 'verifyPublication', publicationId, samples, (err, success) ->
+            Meteor.call 'verifyPublication', result.publicationId, samples, (err, success) ->
               if success
-                Meteor.Router.to '/p/' + publicationId
+                Meteor.Router.to '/p/' + result.publicationId
               else
                 Session.set 'loginOverlayActive', false # TODO: Display error?
           else
             template._amountOfImports += 1
             meteorFile = new MeteorFile file
             # TODO: Use meteorFile.options instead of name
-            meteorFile.name = publicationId
+            meteorFile.name = result.publicationId
             meteorFile.upload file, 'uploadPublication',
               size: 128 * 1024,
-              publicationId: publicationId
+              publicationId: result.publicationId
             , (err) ->
               throw err if err
 
@@ -75,7 +75,7 @@ Template.uploadOverlay.events =
                 if template._amountOfImports > 1
                   Meteor.Router.to '/u/' + Meteor.personId()
                 else
-                  Meteor.Router.to '/p/' + publicationId
+                  Meteor.Router.to '/p/' + result.publicationId
 
                 template._amountOfImports = 0
 

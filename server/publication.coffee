@@ -97,11 +97,13 @@ Meteor.methods
 
     if existingPublication?.importing?.by?[0]?
       # This person already has an import, so ask for confirmation or upload
-      return [existingPublication._id, if existingPublication.cached then existingPublication._uploadOffsets Meteor.personId() else null]
+      id = existingPublication._id
+      verify = existingPublication.cached
 
     if existingPublication?.metadata
       # We already have the PDF, so ask for verification
-      return [existingPublication._id, existingPublication._uploadOffsets Meteor.personId()]
+      id = existingPublication._id
+      verify = true
 
     else if existingPublication?
       # We have the publication but no metadata, so get filename
@@ -116,7 +118,8 @@ Meteor.methods
             temporary: Random.id()
             uploadProgress: 0
       # If we have the file, ask for verification. Otherwise, ask for upload
-      return [existingPublication._id, if existingPublication.cached then existingPublication._uploadOffsets Meteor.personId() else null]
+      id = existingPublication._id
+      verify = existingPublication.cached
 
     else
       # We don't have anything, so create a new publication and ask for upload
@@ -136,7 +139,14 @@ Meteor.methods
         cached: false
         metadata: false
         processed: false
-      return [id, null]
+      verify = false
+
+    offsets = if verify then existingPublication._uploadOffsets Meteor.personId() else null
+
+    # return
+    publicationId: id
+    verify: verify
+    offsets: offsets
 
   uploadPublication: (file) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
