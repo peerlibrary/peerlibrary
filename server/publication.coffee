@@ -52,7 +52,7 @@ class @Publication extends @Publication
     return _.map Meteor.settings.uploadKeys, (key) ->
       hmac = crypto.createHmac 'sha256', key
       hmac.update personId
-      hmac.update @_id
+      hmac.update "#{ @_id }"
       digest = hmac.digest 'hex'
       return parseInt(digest, 16)
 
@@ -211,7 +211,7 @@ Meteor.methods
     throw new Meteor.Error 403, 'Number of samples does not match.' unless (typeIsArray samples) and (samples.length == Meteor.settings.uploadKeys.length)
 
     buffer = Storage.open publication.filename()
-    offsets = publication._uploadOffsets Meteor.personId(), bufferLength
+    offsets = publication._uploadOffsets Meteor.personId(), buffer.length
 
     verified = _.every _.map offsets, (offset, key) ->
       clientSample = samples[key]
