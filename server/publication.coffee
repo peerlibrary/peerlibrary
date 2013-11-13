@@ -1,3 +1,7 @@
+crypto = Npm.require 'crypto'
+
+typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
+
 class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
@@ -43,6 +47,14 @@ class @Publication extends @Publication
     assert.equal @importing.by[0].person._id, Meteor.personId()
 
     Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
+
+  _uploadOffsets: (personId, bufferLength) =>
+    return _.map Meteor.settings.uploadKeys, (key) ->
+      hmac = crypto.createHmac 'sha256', key
+      hmac.update personId
+      hmac.update @_id
+      digest = hmac.digest 'hex'
+      return parseInt(digest, 16) % (bufferLength - 8)
 
   # A subset of public fields used for search results to optimize transmission to a client
   # This list is applied to PUBLIC_FIELDS to get a subset
@@ -126,6 +138,8 @@ Meteor.methods
         processed: false
       verify = false
 
+    verify = if verify then publication._uploadOffsets Meteor.personId() else null
+
     return [id, verify]
 
 
@@ -181,7 +195,7 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (id, sample) ->
+  verifyPublication: (id, samples) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
 
     publication = Publications.findOne
@@ -189,16 +203,18 @@ Meteor.methods
       cached: true
 
     throw new Meteor.Error 403, 'No publication importing.' unless publication
+    throw new Meteor.Error 403, 'Number of samples does not match.' unless (typeIsArray samples) and (samples.length == Meteor.settings.uploadKeys.length)
 
     buffer = Storage.open publication.filename()
-    key = 0 # TODO: Meteor.settings.public.uploadKey
-    personId = Meteor.personId()
-    for index in [0...personId.length]
-      key += personId.charCodeAt index
-    serverSample = buffer.readDoubleBE key % (buffer.length - 8)
+    offsets = publication._uploadOffsets Meteor.personId(), bufferLength
 
-    if sample == serverSample
-      # Sample was verified, so add it to person's library
+    verified = _.every _.map offsets, (offset, key) ->
+      clientSample = samples[key]
+      serverSample = buffer.readDoubleBE offset
+      return clientSample == serverSample
+
+    if verified
+      # Samples were verified, so add it to person's library
       Persons.update
         '_id': Meteor.personId()
       ,
