@@ -1,14 +1,7 @@
 <template name="index">
-  {{#if searchActive}}
-    {{> results}}
-  {{else}}
-    {{> indexStatistics}}
-  {{/if}}
-</template>
-
-<template name="indexStatistics">
-  <ul class="statistics">
-    <li>Publications: {{publications}}</li>
-    <li>People: {{persons}}</li>
-  </ul>
+  <div id="landing">
+    <div class="main-wrap">
+      <div class="logo"><h1>PeerLibrary</h1></div>
+    </div>
+  </div> 
 </template>
