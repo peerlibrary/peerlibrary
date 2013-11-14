@@ -58,9 +58,9 @@ class @Publication extends @Publication
       hmac.update "#{ num }"
       digest = hmac.digest 'hex'
 
-      return
-        offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
-        size: VERIFICATION_SAMPLE_SIZE
+      # return
+      offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
+      size: VERIFICATION_SAMPLE_SIZE
 
   # A subset of public fields used for search results to optimize transmission to a client
   # This list is applied to PUBLIC_FIELDS to get a subset
@@ -146,10 +146,10 @@ Meteor.methods
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
 
-    return
-      publicationId: id
-      verify: verify
-      samples: samples
+    # return
+    publicationId: id
+    verify: verify
+    samples: samples
 
   uploadPublication: (file, options) ->
     throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
