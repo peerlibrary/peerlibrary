@@ -153,12 +153,14 @@ Meteor.methods
     verify: verify
     samples: samples
 
-  uploadPublication: (file) ->
+  uploadPublication: (file, options) ->
     throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
     throw new Meteor.Error 403, "File is null." unless file
 
+    check options.publicationId, String
+
     publication = Publications.findOne
-      _id: file.name # file.options.publicationId
+      _id: options.publicationId
       'importing.by.person._id': Meteor.personId()
     ,
       fields:

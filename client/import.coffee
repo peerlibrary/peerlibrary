@@ -63,8 +63,6 @@ Template.uploadOverlay.events =
           else
             template._amountOfImports += 1
             meteorFile = new MeteorFile file
-            # TODO: Use meteorFile.options instead of name
-            meteorFile.name = result.publicationId
             meteorFile.upload file, 'uploadPublication',
               size: UPLOAD_CHUNK_SIZE,
               publicationId: result.publicationId
