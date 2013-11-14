@@ -24,9 +24,9 @@ class @Person extends Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of
-  #   _id: authored publication ids
+  #   _id: authored publication id
   # library: list of
-  #   _id: added publication ids
+  #   _id: added publication id
 
   # Should be a function so that we can possible resolve circual references
   @Meta =>

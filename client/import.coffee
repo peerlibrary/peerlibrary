@@ -91,7 +91,6 @@ Template.uploadOverlay.uploadOverlayActive = ->
 Template.uploadOverlay.publicationsUploading = ->
   Publications.find
     'importing.by.person._id': Meteor.personId()
-    cached: false
 
 Template.uploadProgressBar.progress = ->
   100 * @importing.by[0].uploadProgress
