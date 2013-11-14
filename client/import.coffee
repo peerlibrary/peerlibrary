@@ -1,3 +1,5 @@
+UPLOAD_CHUNK_SIZE = 128 * 1024
+
 Deps.autorun ->
   if Session.equals 'uploadOverlayActive', true
     Meteor.subscribe 'my-publications-importing'
@@ -43,16 +45,16 @@ Template.uploadOverlay.events =
       reader = new FileReader()
       reader.onload = ->
         hash = new Crypto.SHA256()
-        hash.update this.result
+        hash.update @result
         sha256 = hash.finalize()
 
         Meteor.call 'createPublication', file.name, sha256, (err, result) ->
           throw err if err
 
           if result.verify
-            samples = _.map result.offsets, (offset) ->
-              return new DataView(reader.result, offset % (reader.result.byteLength - 8), 8).getFloat64 0
-            Meteor.call 'verifyPublication', result.publicationId, samples, (err, success) ->
+            samplesData = _.map result.samples, (sample) ->
+              return new Uint8Array reader.result.slice sample.offset, sample.offset + sample.size
+            Meteor.call 'verifyPublication', result.publicationId, samplesData, (err, success) ->
               if success
                 Meteor.Router.to '/p/' + result.publicationId
               else
@@ -63,7 +65,7 @@ Template.uploadOverlay.events =
             # TODO: Use meteorFile.options instead of name
             meteorFile.name = result.publicationId
             meteorFile.upload file, 'uploadPublication',
-              size: 128 * 1024,
+              size: UPLOAD_CHUNK_SIZE,
               publicationId: result.publicationId
             , (err) ->
               throw err if err

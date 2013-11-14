@@ -21,6 +21,7 @@ class @Publication extends Document
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
   # sha256: SHA-256 hash of the file
+  # size: size of the file (if cached)
   # importing (temporary):
   #   by: list of
   #     person: person importing the document

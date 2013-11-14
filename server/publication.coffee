@@ -2,7 +2,8 @@ crypto = Npm.require 'crypto'
 
 typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
 
-NUMBER_OF_UPLOAD_SAMPLES = 3
+NUMBER_OF_VERIFICATION_SAMPLES = 3
+VERIFICATION_SAMPLE_SIZE = 64
 
 class @Publication extends @Publication
   @MixinMeta (meta) =>
@@ -50,14 +51,17 @@ class @Publication extends @Publication
 
     Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
 
-  _uploadOffsets: (personId) =>
-    return _.map _.range(NUMBER_OF_UPLOAD_SAMPLES), (num) ->
+  _verificationSamples: (personId) =>
+    _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
       hmac = crypto.createHmac 'sha256', Crypto.SECRET_KEY
       hmac.update personId
       hmac.update "#{ @_id }"
       hmac.update "#{ num }"
       digest = hmac.digest 'hex'
-      return parseInt(digest, 16)
+
+      #return
+      offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
+      size: VERIFICATION_SAMPLE_SIZE
 
   # A subset of public fields used for search results to optimize transmission to a client
   # This list is applied to PUBLIC_FIELDS to get a subset
@@ -88,7 +92,7 @@ class @Publication extends @Publication
 
 Meteor.methods
   createPublication: (filename, sha256) ->
-    throw new Meteor.Error 403, 'User is not signed in.' unless Meteor.personId()
+    throw new Meteor.Error 403, "User is not signed in." unless Meteor.personId()
 
     existingPublication = Publications.findOne
       sha256: sha256
@@ -144,16 +148,16 @@ Meteor.methods
         processed: false
       verify = false
 
-    offsets = if verify then existingPublication._uploadOffsets Meteor.personId() else null
+    samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
 
     # return
     publicationId: id
     verify: verify
-    offsets: offsets
+    samples: samples
 
   uploadPublication: (file) ->
-    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
-    throw new Meteor.Error 403, 'File is null.' unless file
+    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
+    throw new Meteor.Error 403, "File is null." unless file
 
     publication = Publications.findOne
       _id: file.name # file.options.publicationId
@@ -164,7 +168,7 @@ Meteor.methods
         'sha256': 1
         'source': 1
 
-    throw new Meteor.Error 403, 'No publication importing.' unless publication
+    throw new Meteor.Error 403, "No publication importing." unless publication
 
     Storage.saveMeteorFile file, publication._temporaryFullFilename()
 
@@ -184,7 +188,7 @@ Meteor.methods
       sha256 = hash.finalize()
 
       unless sha256 == publication.sha256
-        throw new Meteor.Error 403, 'Hash does not match.'
+        throw new Meteor.Error 403, "Hash does not match."
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
@@ -194,6 +198,7 @@ Meteor.methods
         ,
           $set:
             cached: true
+            size: file.size
 
       # Hash was verified, so add it to uploader's library
       Persons.update
@@ -203,23 +208,23 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (id, samples) ->
-    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
+  verifyPublication: (id, samplesData) ->
+    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
       _id: id
       cached: true
 
-    throw new Meteor.Error 403, 'No publication importing.' unless publication
-    throw new Meteor.Error 403, 'Number of samples does not match.' unless (typeIsArray samples) and (samples.length == NUMBER_OF_UPLOAD_SAMPLES)
+    throw new Meteor.Error 403, "No publication importing." unless publication
+    throw new Meteor.Error 403, "Number of samples does not match." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
     buffer = Storage.open publication.filename()
-    offsets = publication._uploadOffsets Meteor.personId(), buffer.length
+    serverSamples = publication._verificationSamples Meteor.personId()
 
-    verified = _.every _.map offsets, (offset, key) ->
-      clientSample = samples[key]
-      serverSample = buffer.readDoubleBE offset % (buffer.length - 8)
-      return clientSample == serverSample
+    verified = _.every _.map serverSamples, (serverSample, index) ->
+      clientSampleData = samplesData[index]
+      serverSampleData = new Uint8Array buffer.slice serverSample.offset, serverSample.offset + serverSample.size
+      return _.isEqual clientSampleData, serverSampleData
 
     if verified
       # Samples were verified, so add it to person's library
@@ -232,17 +237,18 @@ Meteor.methods
 
       return true
     else
+      throw new Meteor.Error 403, "Verification failed."
       return false
 
   confirmPublication: (id, metadata) ->
-    throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
+    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
       _id: id
       'importing.by.person._id': Meteor.personId()
       cached: true
 
-    throw new Meteor.Error 403, 'No publication importing.' unless publication
+    throw new Meteor.Error 403, "No publication importing." unless publication
 
     Publications.update
       _id: publication._id
@@ -273,6 +279,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       _id:
         $in: _.pluck person?.library, '_id'
+    ]
   ,
     Publication.PUBLIC_FIELDS()
 
