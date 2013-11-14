@@ -98,6 +98,7 @@ Template.uploadProgressBar.progress = ->
 Template.publicationLibraryItem.filename = ->
   @importing.by[0].filename
 
+# TODO: Clean or integrate this with publication view
 Template.importPublicationForm.events =
   'submit form': (e) ->
     e.preventDefault()

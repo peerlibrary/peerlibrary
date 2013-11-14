@@ -3,7 +3,7 @@
     <div id="profile">
       <h1>{{person.foreNames}} {{person.lastName}}</h1>
       {{#if isMine}}
-        <h3>Library</h3>
+        <h2>Library</h2>
         <ol class="item-list">
           {{#each myPublications}}
             {{> publicationLibraryItem}}
@@ -39,10 +39,6 @@
             <i class="icon-external-link"></i>
           </span>
         {{/if}}
-        {{#unless metadata}}
-          <div class="clearfix"></div>
-          {{> importPublicationForm}}
-        {{/unless}}
       </div>
       {{#if processed}}
         <div class="article-thumbnail">

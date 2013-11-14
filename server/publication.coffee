@@ -234,7 +234,6 @@ Meteor.methods
     else
       return false
 
-
   confirmPublication: (id, metadata) ->
     throw new Meteor.Error 401, 'User is not signed in.' unless Meteor.personId()
 
@@ -261,10 +260,19 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   return unless author
 
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
   Publications.find
     'authors._id': author._id
-    cached: true
-    processed: true
+    $or: [
+      cached: true
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
   ,
     Publication.PUBLIC_FIELDS()
 
