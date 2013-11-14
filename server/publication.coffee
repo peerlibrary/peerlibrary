@@ -237,25 +237,6 @@ Meteor.methods
       return true
     else
       throw new Meteor.Error 403, "Verification failed."
-      return false
-
-  confirmPublication: (id, metadata) ->
-    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
-
-    publication = Publications.findOne
-      _id: id
-      'importing.by.person._id': Meteor.personId()
-      cached: true
-
-    throw new Meteor.Error 403, "No publication importing." unless publication
-
-    Publications.update
-      _id: publication._id
-    ,
-      $set:
-        _.extend _.pick(metadata or {}, 'authorsRaw', 'title', 'abstract', 'doi'),
-          updated: moment.utc().toDate()
-          metadata: true
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   return unless slug
