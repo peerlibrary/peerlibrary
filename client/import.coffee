@@ -1,4 +1,4 @@
-UPLOAD_CHUNK_SIZE = 128 * 1024
+UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 
 Deps.autorun ->
   if Session.equals 'uploadOverlayActive', true

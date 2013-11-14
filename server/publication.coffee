@@ -1,7 +1,5 @@
 crypto = Npm.require 'crypto'
 
-typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
-
 NUMBER_OF_VERIFICATION_SAMPLES = 3
 VERIFICATION_SAMPLE_SIZE = 64
 
