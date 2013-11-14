@@ -24,7 +24,7 @@ class @Publication extends @Publication
 
       Storage.save @filename(), pdf.content
 
-    @cached = true
+    @cached = moment.utc().toDate()
     Publications.update @_id, $set: cached: @cached
 
     pdf?.content
@@ -104,7 +104,7 @@ Meteor.methods
     if existingPublication?.importing?.by?[0]?
       # This person already has an import, so ask for confirmation or upload
       id = existingPublication._id
-      verify = existingPublication.cached
+      verify = !!existingPublication.cached
 
     else if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
       # This person already has the publication in library
@@ -127,7 +127,7 @@ Meteor.methods
             uploadProgress: 0
       # If we have the file, ask for verification. Otherwise, ask for upload
       id = existingPublication._id
-      verify = existingPublication.cached
+      verify = !!existingPublication.cached
 
     else
       # We don't have anything, so create a new publication and ask for upload
@@ -144,7 +144,6 @@ Meteor.methods
             uploadProgress: 0
           ]
         sha256: sha256
-        cached: false
         metadata: false
         processed: false
       verify = false
@@ -201,7 +200,7 @@ Meteor.methods
           _id: publication._id
         ,
           $set:
-            cached: true
+            cached: moment.utc().toDate()
             size: file.size
 
       # Hash was verified, so add it to uploader's library
@@ -217,7 +216,8 @@ Meteor.methods
 
     publication = Publications.findOne
       _id: id
-      cached: true
+      cached:
+        $exists: true
 
     throw new Meteor.Error 403, "No publication importing." unless publication
     throw new Meteor.Error 403, "Number of samples does not match." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
@@ -260,7 +260,6 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   Publications.find
     'authors._id': author._id
     $or: [
-      cached: true
       processed: true
     ,
       _id:
@@ -281,7 +280,6 @@ Meteor.publish 'publications-by-id', (id) ->
   Publications.find
     _id: id
     $or: [
-      cached: true
       processed: true
     ,
       _id:
@@ -303,7 +301,6 @@ Meteor.publish 'publications-by-ids', (ids) ->
     _id:
       $in: ids
     $or: [
-      cached: true
       processed: true
     ,
       _id:
@@ -345,7 +342,6 @@ Meteor.publish 'my-publications', ->
       _id:
         $in: newLibrary
       # TODO: Should be set as well if we have PDF locally
-      # cached: true
       processed: true
     ,
       Publication.PUBLIC_FIELDS()

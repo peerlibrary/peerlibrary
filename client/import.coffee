@@ -2,6 +2,7 @@ UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 
 Deps.autorun ->
   if Session.equals 'uploadOverlayActive', true
+    # TODO: Possibly optimize later
     Meteor.subscribe 'my-publications-importing'
 
 Meteor.startup ->
@@ -19,6 +20,10 @@ Template.loginOverlay.loginOverlayActive = ->
 Template.loginOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+
+  'dragleave': (e, template) ->
+    e.preventDefault()
+    Session.set 'loginOverlayActive', false
 
   'drop': (e, template) ->
     e.stopPropagation()
@@ -43,6 +48,12 @@ Template.uploadOverlay.created = ->
 Template.uploadOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+
+  'dragleave': (e, template) ->
+    e.preventDefault()
+
+    if template._amountOfImports == 0
+      Session.set 'uploadOverlayActive', false
 
   'drop': (e, template) ->
     e.stopPropagation()
@@ -98,6 +109,13 @@ Template.uploadOverlay.uploadOverlayActive = ->
 Template.uploadOverlay.publicationsUploading = ->
   Publications.find
     'importing.by.person._id': Meteor.personId()
+    $or: [
+      cached:
+        $exists: false
+    ,
+      cached:
+        $gt: moment.utc().subtract('minutes', 5).toDate()
+    ]
 
 Template.uploadProgressBar.progress = ->
   100 * @importing.by[0].uploadProgress

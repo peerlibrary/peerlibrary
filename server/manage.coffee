@@ -291,7 +291,7 @@ Meteor.methods
 
     count = 0
 
-    Publications.find(cached: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: false}).forEach (publication) ->
       try
         publication.checkCache()
         count++ if publication.cached
@@ -307,7 +307,7 @@ Meteor.methods
 
     console.log "Processing pending PDFs"
 
-    Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: true}, processed: {$ne: true}).forEach (publication) ->
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
