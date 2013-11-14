@@ -217,12 +217,12 @@ Meteor.methods
     throw new Meteor.Error 403, "No publication importing." unless publication
     throw new Meteor.Error 403, "Number of samples does not match." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
-    buffer = Storage.open publication.filename()
+    publicationFile = Storage.open publication.filename()
     serverSamples = publication._verificationSamples Meteor.personId()
 
     verified = _.every _.map serverSamples, (serverSample, index) ->
       clientSampleData = samplesData[index]
-      serverSampleData = new Uint8Array buffer.slice serverSample.offset, serverSample.offset + serverSample.size
+      serverSampleData = new Uint8Array publicationFile.slice serverSample.offset, serverSample.offset + serverSample.size
       return _.isEqual clientSampleData, serverSampleData
 
     if verified
