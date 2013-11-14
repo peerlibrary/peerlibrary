@@ -44,6 +44,7 @@ class @Publication extends @Publication
     Publications.update @_id, $set: processed: @processed
 
   _temporaryFullFilename: =>
+    # We assume that importing.by contains only this person, see comment in uploadPublication
     assert @importing?.by?[0]?.person?._id
     assert.equal @importing.by[0].person._id, Meteor.personId()
 
@@ -164,6 +165,7 @@ Meteor.methods
       'importing.by.person._id': Meteor.personId()
     ,
       fields:
+        # Ensure that importing.by contains only this person
         'importing.by.$': 1
         'sha256': 1
         'source': 1
