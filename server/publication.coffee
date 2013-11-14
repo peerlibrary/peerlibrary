@@ -2,6 +2,8 @@ crypto = Npm.require 'crypto'
 
 typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
 
+NUMBER_OF_UPLOAD_SAMPLES = 3
+
 class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
@@ -49,10 +51,11 @@ class @Publication extends @Publication
     Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
 
   _uploadOffsets: (personId) =>
-    return _.map Meteor.settings.uploadKeys, (key) ->
-      hmac = crypto.createHmac 'sha256', key
+    return _.map _.range(NUMBER_OF_UPLOAD_SAMPLES), (num) ->
+      hmac = crypto.createHmac 'sha256', Crypto.SECRET_KEY
       hmac.update personId
       hmac.update "#{ @_id }"
+      hmac.update "#{ num }"
       digest = hmac.digest 'hex'
       return parseInt(digest, 16)
 
@@ -208,7 +211,7 @@ Meteor.methods
       cached: true
 
     throw new Meteor.Error 403, 'No publication importing.' unless publication
-    throw new Meteor.Error 403, 'Number of samples does not match.' unless (typeIsArray samples) and (samples.length == Meteor.settings.uploadKeys.length)
+    throw new Meteor.Error 403, 'Number of samples does not match.' unless (typeIsArray samples) and (samples.length == NUMBER_OF_UPLOAD_SAMPLES)
 
     buffer = Storage.open publication.filename()
     offsets = publication._uploadOffsets Meteor.personId(), buffer.length
@@ -268,21 +271,42 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 Meteor.publish 'publications-by-id', (id) ->
   return unless id
 
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
   Publications.find
     _id: id
-    cached: true
-    processed: true
+    $or: [
+      cached: true
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
+    ]
   ,
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'publications-by-ids', (ids) ->
   return unless ids?.length
 
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
   Publications.find
     _id:
       $in: ids
-    cached: true
-    processed: true
+    $or: [
+      cached: true
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
+    ]
   ,
     Publication.PUBLIC_FIELDS()
 

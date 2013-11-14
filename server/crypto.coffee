@@ -10,3 +10,9 @@ crypto = Npm.require 'crypto'
 
     finalize: =>
       @_hash.digest 'hex'
+
+if Meteor.settings.secretKey
+  Crypto.SECRET_KEY = Meteor.settings.secretKey
+else
+  console.warn "Secret key setting missing, using public one"
+  Crypto.SECRET_KEY = "whatever"
