@@ -110,6 +110,8 @@ Meteor.methods
       # We have the publication, so add person to it
       Publications.update
         _id: existingPublication._id
+        'importing.by.person._id':
+          $ne: Meteor.personId()
       ,
         $addToSet:
           'importing.by':
