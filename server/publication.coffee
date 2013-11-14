@@ -106,6 +106,11 @@ Meteor.methods
       id = existingPublication._id
       verify = existingPublication.cached
 
+    else if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
+      # This person already has the publication in library
+      id = null
+      verify = false
+
     else if existingPublication?
       # We have the publication, so add person to it
       Publications.update

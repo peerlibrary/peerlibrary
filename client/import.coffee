@@ -25,6 +25,17 @@ Template.loginOverlay.events =
     e.preventDefault()
     Session.set 'loginOverlayActive', false
 
+finishImports = (template, publicationId) ->
+  return unless template._amountOfImports == template._amountOfImportsFinished
+
+  if template._amountOfImports > 1
+    Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+  else
+    Meteor.Router.to Meteor.Router.publicationPath publicationId
+
+  template._amountOfImports = 0
+  template._amountOfImportsFinished = 0
+
 Template.uploadOverlay.created = ->
   @_amountOfImports = 0
   @_amountOfImportsFinished = 0
@@ -53,16 +64,19 @@ Template.uploadOverlay.events =
         Meteor.call 'createPublication', file.name, sha256, (err, result) ->
           throw err if err
 
+          return unless result.publicationId
+
+          template._amountOfImports += 1
+
           if result.verify
             samplesData = _.map result.samples, (sample) ->
-              return new Uint8Array reader.result.slice sample.offset, sample.offset + sample.size
-            Meteor.call 'verifyPublication', result.publicationId, samplesData, (err, success) ->
-              if success
-                Meteor.Router.to Meteor.Router.publicationPath result.publicationId
-              else
-                Session.set 'uploadOverlayActive', false # TODO: Display error?
+              new Uint8Array reader.result.slice sample.offset, sample.offset + sample.size
+            Meteor.call 'verifyPublication', result.publicationId, samplesData, (err) ->
+              throw err if err
+
+              template._amountOfImportsFinished += 1
+              finishImports template, result.publicationId
           else
-            template._amountOfImports += 1
             meteorFile = new MeteorFile file
             meteorFile.upload file, 'uploadPublication',
               size: UPLOAD_CHUNK_SIZE,
@@ -71,14 +85,7 @@ Template.uploadOverlay.events =
               throw err if err
 
               template._amountOfImportsFinished += 1
-
-              if template._amountOfImports == template._amountOfImportsFinished
-                if template._amountOfImports > 1
-                  Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
-                else
-                  Meteor.Router.to Meteor.Router.publicationPath result.publicationId
-
-                template._amountOfImports = 0
+              finishImports template, result.publicationId
 
       reader.readAsArrayBuffer file
 
