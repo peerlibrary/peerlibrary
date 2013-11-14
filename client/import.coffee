@@ -27,6 +27,7 @@ Template.loginOverlay.events =
 
 Template.uploadOverlay.created = ->
   @_amountOfImports = 0
+  @_amountOfImportsFinished = 0
 
 Template.uploadOverlay.events =
   'dragover': (e, template) ->
@@ -57,9 +58,9 @@ Template.uploadOverlay.events =
               return new Uint8Array reader.result.slice sample.offset, sample.offset + sample.size
             Meteor.call 'verifyPublication', result.publicationId, samplesData, (err, success) ->
               if success
-                Meteor.Router.to '/p/' + result.publicationId
+                Meteor.Router.to Meteor.Router.publicationPath result.publicationId
               else
-                Session.set 'loginOverlayActive', false # TODO: Display error?
+                Session.set 'uploadOverlayActive', false # TODO: Display error?
           else
             template._amountOfImports += 1
             meteorFile = new MeteorFile file
@@ -69,14 +70,13 @@ Template.uploadOverlay.events =
             , (err) ->
               throw err if err
 
-              if Publications.find(
-                'importing.by.person._id': Meteor.personId()
-                cached: false
-              ).count() == 0
+              _amountOfImportsFinished += 1
+
+              if _amountOfImports == _amountOfImportsFinished
                 if template._amountOfImports > 1
-                  Meteor.Router.to '/u/' + Meteor.personId()
+                  Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
                 else
-                  Meteor.Router.to '/p/' + result.publicationId
+                  Meteor.Router.to Meteor.Router.publicationPath result.publicationId
 
                 template._amountOfImports = 0
 
@@ -98,13 +98,3 @@ Template.uploadProgressBar.progress = ->
 
 Template.publicationLibraryItem.filename = ->
   @importing.by[0].filename
-
-# TODO: Clean or integrate this with publication view
-Template.importPublicationForm.events =
-  'submit form': (e) ->
-    e.preventDefault()
-    metadata = _.reduce $(e.target).serializeArray(), (obj, subObj) ->
-      obj[subObj.name] = subObj.value
-      obj
-    , {}
-    Meteor.call 'confirmPublication', $(e.target).data('id'), metadata

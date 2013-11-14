@@ -24,18 +24,3 @@
 <template name="uploadProgressBar">
   <div class="upload-progress-bar" style="width: {{progress}}%"></div>
 </template>
-
-<!-- TODO: Clean or integrate this with publication view -->
-<template name="importPublicationForm">
-  <form data-id="{{this._id}}">
-    <label for="title">Title:</label>
-    <input type="text" name="title" value="{{this.title}}" />
-    <label for="authorsRaw">Authors:</label>
-    <input type="text" name="authorsRaw" value="{{this.authorsRaw}}" />
-    <label for="abstract">Abstract:</label>
-    <textarea name="abstract">{{this.abstract}}</textarea>
-    <label for="doi">DOI:</label>
-    <input type="text" name="doi" value="{{this.doi}}" />
-    <input type="submit" value="Confirm" />
-  </form>
-</template>
