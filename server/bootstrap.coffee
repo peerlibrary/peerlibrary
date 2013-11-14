@@ -41,7 +41,7 @@ Meteor.startup ->
           completed: true
         ]
         publications: []
-      
+
     # Hannah Arendt
     Accounts.createUser
       email: 'arendt@berkeley.edu'

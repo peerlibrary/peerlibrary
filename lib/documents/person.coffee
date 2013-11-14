@@ -24,7 +24,9 @@ class @Person extends Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of
-  #   _id: authored publication's id
+  #   _id: authored publication id
+  # library: list of
+  #   _id: added publication id
 
   # Should be a function so that we can possible resolve circual references
   @Meta =>
@@ -32,6 +34,7 @@ class @Person extends Document
     fields:
       user: @ReferenceField User, ['username'], false
       publications: [@ReferenceField Publication]
+      library: [@ReferenceField Publication]
       slug: @GeneratedField 'self', ['user.username']
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
 

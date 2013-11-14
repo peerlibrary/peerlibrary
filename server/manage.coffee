@@ -258,7 +258,7 @@ Meteor.methods
         #msc2010: record['msc-class']?[0].split(/\s*[,;]\s*|\s*\([^)]*\)\s*|\s+/).filter (x) -> x
         # Converts strings like "F.2.2; I.2.7" into ["F.2.2","I.2.7"]
         #acm1998: record['acm-class']?[0].split(/\s*[,;]\s*|\s+/).filter (x) -> x
-        foreignId: record.id[0]
+        foreignId: record._id[0]
         # TODO: Put foreign categories into tags?
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
@@ -273,7 +273,7 @@ Meteor.methods
       if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publications.insert publication
         for author in publication.authors
-          Persons.update author.id,
+          Persons.update author._id,
             $addToSet:
               publications:
                 _id: id # TODO: Entity resolution
@@ -291,7 +291,7 @@ Meteor.methods
 
     count = 0
 
-    Publications.find(cached: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: false}).forEach (publication) ->
       try
         publication.checkCache()
         count++ if publication.cached
@@ -307,7 +307,7 @@ Meteor.methods
 
     console.log "Processing pending PDFs"
 
-    Publications.find(cached: true, processed: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: true}, processed: {$ne: true}).forEach (publication) ->
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
