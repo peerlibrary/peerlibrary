@@ -70,9 +70,9 @@ Template.uploadOverlay.events =
             , (err) ->
               throw err if err
 
-              _amountOfImportsFinished += 1
+              template._amountOfImportsFinished += 1
 
-              if _amountOfImports == _amountOfImportsFinished
+              if template._amountOfImports == template._amountOfImportsFinished
                 if template._amountOfImports > 1
                   Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
                 else
