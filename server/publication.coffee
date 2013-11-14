@@ -246,6 +246,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   return unless author
 
+  # TODO: Make this reactive
   person = Persons.findOne
     _id: @personId
   ,
@@ -266,6 +267,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 Meteor.publish 'publications-by-id', (id) ->
   return unless id
 
+  # TODO: Make this reactive
   person = Persons.findOne
     _id: @personId
   ,
@@ -414,4 +416,5 @@ Meteor.publish 'my-publications-importing', ->
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1
+      # Ensure that importing.by contains only this person
       'importing.by.$': 1
