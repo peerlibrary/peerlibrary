@@ -44,6 +44,7 @@ Template.uploadOverlay.events =
 
       reader = new FileReader()
       reader.onload = ->
+        # TODO: Compute SHA in chunks
         hash = new Crypto.SHA256()
         hash.update @result
         sha256 = hash.finalize()
