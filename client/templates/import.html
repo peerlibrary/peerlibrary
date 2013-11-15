@@ -1,10 +1,10 @@
-<template name="uploadOverlay">
-  {{#if uploadOverlayActive}}
+<template name="importOverlay">
+  {{#if importOverlayActive}}
     <div class="drop-overlay">
       <div class="content">
         <h1>Drop files here</h1>
-        {{#each publicationsUploading}}
-          {{> uploadProgressBar}}
+        {{#each importingFiles}}
+          {{> importingFilesItem}}
         {{/each}}
       </div>
     </div>
@@ -21,6 +21,7 @@
   {{/if}}
 </template>
 
-<template name="uploadProgressBar">
-  <div class="upload-progress-bar" style="width: {{progress}}%"></div>
+<template name="importingFilesItem">
+  <div>Name: {{name}}, Status: {{status}}</div>
+  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}}"></div>
 </template>

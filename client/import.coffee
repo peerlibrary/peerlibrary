@@ -1,16 +1,14 @@
-UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
+# Local (client-only) collection of importing files
+ImportingFiles = new Meteor.Collection null
 
-Deps.autorun ->
-  if Session.equals 'uploadOverlayActive', true
-    # TODO: Possibly optimize later
-    Meteor.subscribe 'my-publications-importing'
+UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 
 Meteor.startup ->
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
 
-    if Meteor.user()
-      Session.set 'uploadOverlayActive', true
+    if Meteor.personId()
+      Session.set 'importOverlayActive', true
     else
       Session.set 'loginOverlayActive', true
 
@@ -30,95 +28,128 @@ Template.loginOverlay.events =
     e.preventDefault()
     Session.set 'loginOverlayActive', false
 
-finishImports = (template, publicationId) ->
-  return unless template._amountOfImports == template._amountOfImportsFinished
-
-  if template._amountOfImports > 1
-    Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
-  else
-    Meteor.Router.to Meteor.Router.publicationPath publicationId
-
-  template._amountOfImports = 0
-  template._amountOfImportsFinished = 0
-
-Template.uploadOverlay.created = ->
-  @_amountOfImports = 0
-  @_amountOfImportsFinished = 0
-
-Template.uploadOverlay.events =
+Template.importOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
 
   'dragleave': (e, template) ->
     e.preventDefault()
 
-    if template._amountOfImports == 0
-      Session.set 'uploadOverlayActive', false
+    if ImportingFiles.find().count() == 0
+      Session.set 'importOverlayActive', false
 
   'drop': (e, template) ->
     e.stopPropagation()
     e.preventDefault()
 
-    unless Meteor.user()
-      Session.set 'uploadOverlayActive', false
+    unless Meteor.personId()
+      Session.set 'importOverlayActive', false
       return
 
     _.each e.dataTransfer.files, (file) ->
-
       reader = new FileReader()
       reader.onload = ->
         # TODO: Compute SHA in chunks
+        # TODO: Compute SHA in a web worker?
         hash = new Crypto.SHA256()
         hash.update @result
         sha256 = hash.finalize()
 
         Meteor.call 'createPublication', file.name, sha256, (err, result) ->
-          throw err if err
+          if err
+            ImportingFiles.update file._id,
+              $set:
+                status: err.toString()
+            return
 
-          return unless result.publicationId
-
-          template._amountOfImports += 1
+          if result.already
+            ImportingFiles.update file._id,
+              $set:
+                status: "File already imported"
+                finished: true
+                publicationId: result.publicationId
+            return
 
           if result.verify
             samplesData = _.map result.samples, (sample) ->
               new Uint8Array reader.result.slice sample.offset, sample.offset + sample.size
             Meteor.call 'verifyPublication', result.publicationId, samplesData, (err) ->
-              throw err if err
+              if err
+                ImportingFiles.update file._id,
+                  $set:
+                    status: err.toString()
+                return
 
-              template._amountOfImportsFinished += 1
-              finishImports template, result.publicationId
+              ImportingFiles.update file._id,
+                $set:
+                  finished: true
+                  publicationId: result.publicationId
           else
-            meteorFile = new MeteorFile file
+            meteorFile = new MeteorFile file,
+              collection: ImportingFiles
+
             meteorFile.upload file, 'uploadPublication',
               size: UPLOAD_CHUNK_SIZE,
               publicationId: result.publicationId
-            , (err) ->
-              throw err if err
+            ,
+              (err) ->
+                if err
+                  ImportingFiles.update file._id,
+                    $set:
+                      status: err.toString()
+                  return
 
-              template._amountOfImportsFinished += 1
-              finishImports template, result.publicationId
+                ImportingFiles.update file._id,
+                  $set:
+                    finished: true
+                    publicationId: result.publicationId
 
-      reader.readAsArrayBuffer file
+      ImportingFiles.insert
+        name: file.name
+        status: "Preprocessing file"
+        readProgress: 0
+        uploadProgress: 0
+        finished: false
+      ,
+        # We are using callback to make sure ImportingFiles really has the file now
+        (err, id) ->
+          throw err if err
+
+          # We try to make sure list of files is rendered before hashing
+          Deps.flush()
+
+          # So that meteor-file knows what to update
+          file._id = id
+
+          # TODO: We should read in chunks, not whole file
+          reader.readAsArrayBuffer file
 
   'click': (e, template) ->
-    Session.set 'uploadOverlayActive', false
+    # We hide overlay, but in the background we are still uploading
+    # TODO: Should we allow some way to bring the overlay back in front?
+    Session.set 'importOverlayActive', false
 
-Template.uploadOverlay.uploadOverlayActive = ->
-  Session.get 'uploadOverlayActive'
+Template.importOverlay.importOverlayActive = ->
+  Session.get 'importOverlayActive'
 
-Template.uploadOverlay.publicationsUploading = ->
-  Publications.find
-    'importing.person._id': Meteor.personId()
-    $or: [
-      cached:
-        $exists: false
-    ,
-      cached:
-        $gt: moment.utc().subtract('minutes', 5).toDate()
-    ]
+Template.importOverlay.importingFiles = ->
+  ImportingFiles.find()
 
-Template.uploadProgressBar.progress = ->
-  100 * @importing[0].uploadProgress
+Deps.autorun ->
+  importingFilesCount = ImportingFiles.find().count()
 
-Template.publicationLibraryItem.filename = ->
-  @importing[0].filename
+  return unless importingFilesCount
+
+  finishedImportingFiles = ImportingFiles.find(finished: true).fetch()
+
+  return if importingFilesCount isnt finishedImportingFiles.length
+
+  # We want to redirect only when overlay is active
+  if Session.get 'importOverlayActive'
+    if importingFilesCount is 1
+      assert finishedImportingFiles.length is 1
+      Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    else
+      Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+
+  ImportingFiles.remove({})

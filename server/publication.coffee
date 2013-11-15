@@ -43,7 +43,7 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
-  _temporaryFullFilename: =>
+  _temporaryFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
     assert @importing?[0]?.person?._id
     assert.equal @importing[0].person._id, Meteor.personId()
@@ -101,15 +101,18 @@ Meteor.methods
       existingPublication.importing = _.filter existingPublication.importing, (importingBy) ->
         return importingBy.person._id is Meteor.personId()
 
-    if existingPublication?.importing?[0]
+    already = false
+    if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
+      # This person already has the publication in library
+      id = existingPublication._id
+      verify = false
+      already = true
+
+    else if existingPublication?.importing?[0]
       # This person already has an import, so ask for confirmation or upload
+      # TODO: Should we set here filename to possible new filename? So that if user is uploading a file again after some time with new filename it works with new?
       id = existingPublication._id
       verify = !!existingPublication.cached
-
-    else if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
-      # This person already has the publication in library
-      id = null
-      verify = false
 
     else if existingPublication?
       # We have the publication, so add person to it
@@ -124,7 +127,8 @@ Meteor.methods
               _id: Meteor.personId()
             filename: filename
             temporaryFilename: Random.id()
-            uploadProgress: 0
+      # TODO: We could check here if we updated anything, if we did not, then it seems user was just added to importing in parallel, so we could go to the case above (and reorder code a bit)
+
       # If we have the file, ask for verification. Otherwise, ask for upload
       id = existingPublication._id
       verify = !!existingPublication.cached
@@ -134,13 +138,12 @@ Meteor.methods
       id = Publications.insert
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
-        source: 'upload'
+        source: 'import'
         importing: [
           person:
             _id: Meteor.personId()
           filename: filename
           temporaryFilename: Random.id()
-          uploadProgress: 0
         ]
         sha256: sha256
         metadata: false
@@ -152,51 +155,51 @@ Meteor.methods
     # return
     publicationId: id
     verify: verify
+    already: already
     samples: samples
 
   uploadPublication: (file, options) ->
-    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
-    throw new Meteor.Error 403, "File is null." unless file
+    check file, MeteorFile
+    check options, Match.ObjectIncluding
+      publicationId: String
 
-    check options.publicationId, String
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
       _id: options.publicationId
       'importing.person._id': Meteor.personId()
+      cached:
+        $exists: false
     ,
       fields:
         # Ensure that importing contains only this person
         'importing.$': 1
-        'sha256': 1
-        'source': 1
+        sha256: 1
+        source: 1
 
-    throw new Meteor.Error 403, "No publication importing." unless publication
+    # File maybe finished by somebody else, or wrong publicationId, or something else.
+    # If the file was maybe finished by somebody else, we do not want really to continue writing
+    # into temporary files because maybe they were already removed.
+    throw new Meteor.Error 400, "Error uploading file. Please retry." unless publication
 
     # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
-    Storage.saveMeteorFile file, publication._temporaryFullFilename()
-
-    Publications.update
-      _id: publication._id
-      'importing.person._id': Meteor.personId()
-    ,
-      $set:
-        'importing.$.uploadProgress': file.end / file.size
+    Storage.saveMeteorFile file, publication._temporaryFilename()
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-      pdf = Storage.open publication._temporaryFullFilename()
+      pdf = Storage.open publication._temporaryFilename()
 
       hash = new Crypto.SHA256()
       hash.update pdf
       sha256 = hash.finalize()
 
       unless sha256 == publication.sha256
-        throw new Meteor.Error 403, "Hash does not match."
+        throw new Meteor.Error 403, "Hash of uploaded file does not match hash provided initially."
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._temporaryFullFilename(), publication.filename()
+        Storage.rename publication._temporaryFilename(), publication.filename()
         Publications.update
           _id: publication._id
         ,

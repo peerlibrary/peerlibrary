@@ -24,8 +24,8 @@ class @Publication extends Document
   # size: size of the file (if cached)
   # importing: (temporary) list of
   #   person: person importing the document
-  #   filename: original name of the uploaded file
-  #   temporaryFilename: temporary filename of the uploaded file
+  #   filename: original name of the imported file
+  #   temporaryFilename: temporary filename of the imported file
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
@@ -47,15 +47,15 @@ class @Publication extends Document
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
 
-  @_uploadFilename: (id) ->
-    'upload' + Storage._path.sep + id + '.pdf'
+  @_importFilename: (id) ->
+    'import' + Storage._path.sep + id + '.pdf'
 
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
     Publication._filenamePrefix() + switch @source
-      when 'upload' then Publication._uploadFilename @_id
+      when 'import' then Publication._importFilename @_id
       when 'arXiv' then Publication._arXivFilename @foreignId
       else throw new Error "Unsupported source"
 

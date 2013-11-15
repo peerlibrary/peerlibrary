@@ -48,7 +48,7 @@ Meteor.Router.beforeRouting = ->
   Session.set 'currentSearchLimit', INITIAL_SEARCH_LIMIT
   Session.set 'searchActive', false
   Session.set 'searchFocused', false
-  Session.set 'uploadOverlayActive', false
+  Session.set 'importOverlayActive', false
   Session.set 'loginOverlayActive', false
   Session.set 'adminActive', false
   Session.set 'currentPublicationId', null
