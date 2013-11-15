@@ -20,8 +20,8 @@
       "urlify2": {},
       "fs": {},
       "meteor-file": {
-        "git": "https://github.com/EventedMind/meteor-file.git",
-        "branch": "master"
+        "git": "https://github.com/peerlibrary/meteor-file.git",
+        "branch": "peerlibrary"
       },
       "digest": {},
       "peerdb": {}
@@ -93,9 +93,9 @@
         "commit": "069d7fcaeb5df000a57238fde2785faf6dc1c37c"
       },
       "meteor-file": {
-        "git": "https://github.com/EventedMind/meteor-file.git",
-        "branch": "master",
-        "commit": "0d4e08b9abf685167f212f325007b1b73bb748cd"
+        "git": "https://github.com/peerlibrary/meteor-file.git",
+        "branch": "peerlibrary",
+        "commit": "84b694ead89f2db737797304a78e8b7826fde422"
       },
       "digest": {
         "git": "https://github.com/peerlibrary/meteor-digest.git",
