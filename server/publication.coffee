@@ -44,11 +44,11 @@ class @Publication extends @Publication
     Publications.update @_id, $set: processed: @processed
 
   _temporaryFullFilename: =>
-    # We assume that importing.by contains only this person, see comment in uploadPublication
-    assert @importing?.by?[0]?.person?._id
-    assert.equal @importing.by[0].person._id, Meteor.personId()
+    # We assume that importing contains only this person, see comment in uploadPublication
+    assert @importing?[0]?.person?._id
+    assert.equal @importing[0].person._id, Meteor.personId()
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporary + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -96,12 +96,12 @@ Meteor.methods
     existingPublication = Publications.findOne
       sha256: sha256
 
-    # Filter importing.by to contain only this person
-    if existingPublication?.importing?.by
-      existingPublication.importing.by = _.filter existingPublication.importing.by, (importingBy) ->
+    # Filter importing to contain only this person
+    if existingPublication?.importing
+      existingPublication.importing = _.filter existingPublication.importing, (importingBy) ->
         return importingBy.person._id is Meteor.personId()
 
-    if existingPublication?.importing?.by?[0]?
+    if existingPublication?.importing?[0]
       # This person already has an import, so ask for confirmation or upload
       id = existingPublication._id
       verify = !!existingPublication.cached
@@ -115,11 +115,11 @@ Meteor.methods
       # We have the publication, so add person to it
       Publications.update
         _id: existingPublication._id
-        'importing.by.person._id':
+        'importing.person._id':
           $ne: Meteor.personId()
       ,
         $addToSet:
-          'importing.by':
+          importing:
             person:
               _id: Meteor.personId()
             filename: filename
@@ -135,14 +135,13 @@ Meteor.methods
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
         source: 'upload'
-        importing:
-          by: [
-            person:
-              _id: Meteor.personId()
-            filename: filename
-            temporary: Random.id()
-            uploadProgress: 0
-          ]
+        importing: [
+          person:
+            _id: Meteor.personId()
+          filename: filename
+          temporary: Random.id()
+          uploadProgress: 0
+        ]
         sha256: sha256
         metadata: false
         processed: false
@@ -163,11 +162,11 @@ Meteor.methods
 
     publication = Publications.findOne
       _id: options.publicationId
-      'importing.by.person._id': Meteor.personId()
+      'importing.person._id': Meteor.personId()
     ,
       fields:
-        # Ensure that importing.by contains only this person
-        'importing.by.$': 1
+        # Ensure that importing contains only this person
+        'importing.$': 1
         'sha256': 1
         'source': 1
 
@@ -179,10 +178,10 @@ Meteor.methods
 
     Publications.update
       _id: publication._id
-      'importing.by.person._id': Meteor.personId()
+      'importing.person._id': Meteor.personId()
     ,
       $set:
-        'importing.by.$.uploadProgress': file.end / file.size
+        'importing.$.uploadProgress': file.end / file.size
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
@@ -414,10 +413,10 @@ Meteor.publish 'my-publications', ->
 
 Meteor.publish 'my-publications-importing', ->
   Publications.find
-    'importing.by.person._id': @personId
+    'importing.person._id': @personId
   ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
       cached: 1
       processed: 1
-      # Ensure that importing.by contains only this person
-      'importing.by.$': 1
+      # Ensure that importing contains only this person
+      'importing.$': 1

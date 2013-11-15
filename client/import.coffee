@@ -108,7 +108,7 @@ Template.uploadOverlay.uploadOverlayActive = ->
 
 Template.uploadOverlay.publicationsUploading = ->
   Publications.find
-    'importing.by.person._id': Meteor.personId()
+    'importing.person._id': Meteor.personId()
     $or: [
       cached:
         $exists: false
@@ -118,7 +118,7 @@ Template.uploadOverlay.publicationsUploading = ->
     ]
 
 Template.uploadProgressBar.progress = ->
-  100 * @importing.by[0].uploadProgress
+  100 * @importing[0].uploadProgress
 
 Template.publicationLibraryItem.filename = ->
-  @importing.by[0].filename
+  @importing[0].filename

@@ -22,12 +22,11 @@ class @Publication extends Document
   # source: a string identifying where was this publication fetched from
   # sha256: SHA-256 hash of the file
   # size: size of the file (if cached)
-  # importing (temporary):
-  #   by: list of
-  #     person: person importing the document
-  #     filename: original name of the uploaded file
-  #     temporary: temporary id of the uploaded file
-  #     uploadProgress: 0-1, progress of uploading (ratio)
+  # importing: (temporary) list of
+  #   person: person importing the document
+  #   filename: original name of the uploaded file
+  #   temporaryFile: temporary id of the uploaded file
+  #   uploadProgress: 0-1, progress of uploading (ratio)
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
@@ -41,10 +40,9 @@ class @Publication extends Document
     collection: Publications
     fields:
       authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
-      importing:
-        by: [
-          person: @ReferenceField Person
-        ]
+      importing: [
+        person: @ReferenceField Person
+      ]
       slug: @GeneratedField 'self', ['title']
 
   @_filenamePrefix: ->
