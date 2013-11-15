@@ -345,8 +345,6 @@ Meteor.publish 'my-publications', ->
     handlePublications = Publications.find(
       _id:
         $in: newLibrary
-      # TODO: Should be set as well if we have PDF locally
-      processed: true
     ,
       Publication.PUBLIC_FIELDS()
     ).observeChanges
@@ -414,12 +412,13 @@ Meteor.publish 'my-publications', ->
     handlePersons.stop() if handlePersons
     handlePublications.stop() if handlePublications
 
+# We could try to combine my-publications and my-publications-importing,
+# but it is easier to have two and leave to Meteor to merge them together
 Meteor.publish 'my-publications-importing', ->
   Publications.find
     'importing.person._id': @personId
   ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
-      cached: 1
-      processed: 1
+      # TODO: We should not push temporaryFile to the client
       # Ensure that importing contains only this person
       'importing.$': 1
