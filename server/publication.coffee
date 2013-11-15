@@ -173,6 +173,8 @@ Meteor.methods
 
     throw new Meteor.Error 403, "No publication importing." unless publication
 
+    # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
+    # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
     Storage.saveMeteorFile file, publication._temporaryFullFilename()
 
     Publications.update
