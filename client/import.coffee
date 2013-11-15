@@ -1,4 +1,12 @@
 # Local (client-only) collection of importing files
+# Fields:
+#   name: user's file name
+#   readProgress: progress of reading from file, in %
+#   uploadProgress: progress of uploading file, in %
+#   status: current status or error message
+#   finished: true when importing has finished
+#   publicationId: publication ID for the imported file
+#   sha256: SHA256 hash for the file
 ImportingFiles = new Meteor.Collection null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
@@ -54,6 +62,20 @@ Template.importOverlay.events =
         hash = new Crypto.SHA256()
         hash.update @result
         sha256 = hash.finalize()
+
+        alreadyImporting = ImportingFiles.findOne(sha256: sha256)
+        if alreadyImporting
+          ImportingFiles.update file._id,
+            $set:
+              status: "File is already importing"
+              finished: true
+              # publicationId might not yet be available, but let's try
+              publicationId: alreadyImporting.publicationId
+          return
+
+        ImportingFiles.update file._id,
+          $set:
+            sha256: sha256
 
         Meteor.call 'createPublication', file.name, sha256, (err, result) ->
           if err
