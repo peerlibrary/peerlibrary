@@ -215,16 +215,19 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (id, samplesData) ->
-    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
+  verifyPublication: (publicationId, samplesData) ->
+    check publicationId, String
+    check samplesData, [Uint8Array]
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
-      _id: id
+      _id: publicationId
       cached:
         $exists: true
 
-    throw new Meteor.Error 403, "No publication importing." unless publication
-    throw new Meteor.Error 403, "Number of samples does not match." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
+    throw new Meteor.Error 400, "Error verifying file. Please retry." unless publication
+    throw new Meteor.Error 400, "Invalid number of samples." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
     publicationFile = Storage.open publication.filename()
     serverSamples = publication._verificationSamples Meteor.personId()
@@ -232,20 +235,17 @@ Meteor.methods
     verified = _.every _.map serverSamples, (serverSample, index) ->
       clientSampleData = samplesData[index]
       serverSampleData = new Uint8Array publicationFile.slice serverSample.offset, serverSample.offset + serverSample.size
-      return _.isEqual clientSampleData, serverSampleData
+      _.isEqual clientSampleData, serverSampleData
 
-    if verified
-      # Samples were verified, so add it to person's library
-      Persons.update
-        '_id': Meteor.personId()
-      ,
-        $addToSet:
-          library:
-            _id: publication._id
+    throw new Meteor.Error 403, "Verification failed." unless verified
 
-      return true
-    else
-      throw new Meteor.Error 403, "Verification failed."
+    # Samples were verified, so add it to person's library
+    Persons.update
+      '_id': Meteor.personId()
+    ,
+      $addToSet:
+        library:
+          _id: publication._id
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   return unless slug
