@@ -25,8 +25,7 @@ class @Publication extends Document
   # importing: (temporary) list of
   #   person: person importing the document
   #   filename: original name of the uploaded file
-  #   temporaryFile: temporary id of the uploaded file
-  #   uploadProgress: 0-1, progress of uploading (ratio)
+  #   temporaryFilename: temporary filename of the uploaded file
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)

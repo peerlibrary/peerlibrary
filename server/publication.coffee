@@ -48,7 +48,7 @@ class @Publication extends @Publication
     assert @importing?[0]?.person?._id
     assert.equal @importing[0].person._id, Meteor.personId()
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporaryFile + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporaryFilename + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -123,7 +123,7 @@ Meteor.methods
             person:
               _id: Meteor.personId()
             filename: filename
-            temporaryFile: Random.id()
+            temporaryFilename: Random.id()
             uploadProgress: 0
       # If we have the file, ask for verification. Otherwise, ask for upload
       id = existingPublication._id
@@ -139,7 +139,7 @@ Meteor.methods
           person:
             _id: Meteor.personId()
           filename: filename
-          temporaryFile: Random.id()
+          temporaryFilename: Random.id()
           uploadProgress: 0
         ]
         sha256: sha256
