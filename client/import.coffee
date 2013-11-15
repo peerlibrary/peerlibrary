@@ -115,14 +115,17 @@ Template.importOverlay.events =
         (err, id) ->
           throw err if err
 
-          # We try to make sure list of files is rendered before hashing
-          Deps.flush()
-
           # So that meteor-file knows what to update
           file._id = id
 
-          # TODO: We should read in chunks, not whole file
-          reader.readAsArrayBuffer file
+          # We try to make sure list of files is rendered before hashing
+          Deps.flush()
+
+          # Just temporary return to the event thread so that everything finishes rendering
+          Meteor.setTimeout ->
+            # TODO: We should read in chunks, not whole file
+            reader.readAsArrayBuffer file
+          , 5 # 0 does not seem to work, 5 seems to work
 
   'click': (e, template) ->
     # We hide overlay, but in the background we are still uploading
