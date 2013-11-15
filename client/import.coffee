@@ -154,5 +154,6 @@ Deps.autorun ->
       Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
     else
       Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+    Session.set 'importOverlayActive', false
 
   ImportingFiles.remove({})
