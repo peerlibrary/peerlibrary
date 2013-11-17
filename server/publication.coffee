@@ -43,12 +43,12 @@ class @Publication extends @Publication
     @processed = true
     Publications.update @_id, $set: processed: @processed
 
-  _temporaryFullFilename: =>
-    # We assume that importing.by contains only this person, see comment in uploadPublication
-    assert @importing?.by?[0]?.person?._id
-    assert.equal @importing.by[0].person._id, Meteor.personId()
+  _temporaryFilename: =>
+    # We assume that importing contains only this person, see comment in uploadPublication
+    assert @importing?[0]?.person?._id
+    assert.equal @importing[0].person._id, Meteor.personId()
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing.by[0].temporary + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporaryFilename + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -96,35 +96,39 @@ Meteor.methods
     existingPublication = Publications.findOne
       sha256: sha256
 
-    # Filter importing.by to contain only this person
-    if existingPublication?.importing?.by
-      existingPublication.importing.by = _.filter existingPublication.importing.by, (importingBy) ->
+    # Filter importing to contain only this person
+    if existingPublication?.importing
+      existingPublication.importing = _.filter existingPublication.importing, (importingBy) ->
         return importingBy.person._id is Meteor.personId()
 
-    if existingPublication?.importing?.by?[0]?
+    already = false
+    if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
+      # This person already has the publication in library
+      id = existingPublication._id
+      verify = false
+      already = true
+
+    else if existingPublication?.importing?[0]
       # This person already has an import, so ask for confirmation or upload
+      # TODO: Should we set here filename to possible new filename? So that if user is uploading a file again after some time with new filename it works with new?
       id = existingPublication._id
       verify = !!existingPublication.cached
-
-    else if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
-      # This person already has the publication in library
-      id = null
-      verify = false
 
     else if existingPublication?
       # We have the publication, so add person to it
       Publications.update
         _id: existingPublication._id
-        'importing.by.person._id':
+        'importing.person._id':
           $ne: Meteor.personId()
       ,
         $addToSet:
-          'importing.by':
+          importing:
             person:
               _id: Meteor.personId()
             filename: filename
-            temporary: Random.id()
-            uploadProgress: 0
+            temporaryFilename: Random.id()
+      # TODO: We could check here if we updated anything, if we did not, then it seems user was just added to importing in parallel, so we could go to the case above (and reorder code a bit)
+
       # If we have the file, ask for verification. Otherwise, ask for upload
       id = existingPublication._id
       verify = !!existingPublication.cached
@@ -134,15 +138,13 @@ Meteor.methods
       id = Publications.insert
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
-        source: 'upload'
-        importing:
-          by: [
-            person:
-              _id: Meteor.personId()
-            filename: filename
-            temporary: Random.id()
-            uploadProgress: 0
-          ]
+        source: 'import'
+        importing: [
+          person:
+            _id: Meteor.personId()
+          filename: filename
+          temporaryFilename: Random.id()
+        ]
         sha256: sha256
         metadata: false
         processed: false
@@ -153,51 +155,51 @@ Meteor.methods
     # return
     publicationId: id
     verify: verify
+    already: already
     samples: samples
 
   uploadPublication: (file, options) ->
-    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
-    throw new Meteor.Error 403, "File is null." unless file
+    check file, MeteorFile
+    check options, Match.ObjectIncluding
+      publicationId: String
 
-    check options.publicationId, String
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
       _id: options.publicationId
-      'importing.by.person._id': Meteor.personId()
+      'importing.person._id': Meteor.personId()
+      cached:
+        $exists: false
     ,
       fields:
-        # Ensure that importing.by contains only this person
-        'importing.by.$': 1
-        'sha256': 1
-        'source': 1
+        # Ensure that importing contains only this person
+        'importing.$': 1
+        sha256: 1
+        source: 1
 
-    throw new Meteor.Error 403, "No publication importing." unless publication
+    # File maybe finished by somebody else, or wrong publicationId, or something else.
+    # If the file was maybe finished by somebody else, we do not want really to continue writing
+    # into temporary files because maybe they were already removed.
+    throw new Meteor.Error 400, "Error uploading file. Please retry." unless publication
 
     # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
-    Storage.saveMeteorFile file, publication._temporaryFullFilename()
-
-    Publications.update
-      _id: publication._id
-      'importing.by.person._id': Meteor.personId()
-    ,
-      $set:
-        'importing.by.$.uploadProgress': file.end / file.size
+    Storage.saveMeteorFile file, publication._temporaryFilename()
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-      pdf = Storage.open publication._temporaryFullFilename()
+      pdf = Storage.open publication._temporaryFilename()
 
       hash = new Crypto.SHA256()
       hash.update pdf
       sha256 = hash.finalize()
 
       unless sha256 == publication.sha256
-        throw new Meteor.Error 403, "Hash does not match."
+        throw new Meteor.Error 403, "Hash of uploaded file does not match hash provided initially."
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._temporaryFullFilename(), publication.filename()
+        Storage.rename publication._temporaryFilename(), publication.filename()
         Publications.update
           _id: publication._id
         ,
@@ -213,16 +215,19 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (id, samplesData) ->
-    throw new Meteor.Error 401, "User is not signed in." unless Meteor.personId()
+  verifyPublication: (publicationId, samplesData) ->
+    check publicationId, String
+    check samplesData, [Uint8Array]
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     publication = Publications.findOne
-      _id: id
+      _id: publicationId
       cached:
         $exists: true
 
-    throw new Meteor.Error 403, "No publication importing." unless publication
-    throw new Meteor.Error 403, "Number of samples does not match." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
+    throw new Meteor.Error 400, "Error verifying file. Please retry." unless publication
+    throw new Meteor.Error 400, "Invalid number of samples." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
     publicationFile = Storage.open publication.filename()
     serverSamples = publication._verificationSamples Meteor.personId()
@@ -230,20 +235,17 @@ Meteor.methods
     verified = _.every _.map serverSamples, (serverSample, index) ->
       clientSampleData = samplesData[index]
       serverSampleData = new Uint8Array publicationFile.slice serverSample.offset, serverSample.offset + serverSample.size
-      return _.isEqual clientSampleData, serverSampleData
+      _.isEqual clientSampleData, serverSampleData
 
-    if verified
-      # Samples were verified, so add it to person's library
-      Persons.update
-        '_id': Meteor.personId()
-      ,
-        $addToSet:
-          library:
-            _id: publication._id
+    throw new Meteor.Error 403, "Verification failed." unless verified
 
-      return true
-    else
-      throw new Meteor.Error 403, "Verification failed."
+    # Samples were verified, so add it to person's library
+    Persons.update
+      '_id': Meteor.personId()
+    ,
+      $addToSet:
+        library:
+          _id: publication._id
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   return unless slug
@@ -343,8 +345,6 @@ Meteor.publish 'my-publications', ->
     handlePublications = Publications.find(
       _id:
         $in: newLibrary
-      # TODO: Should be set as well if we have PDF locally
-      processed: true
     ,
       Publication.PUBLIC_FIELDS()
     ).observeChanges
@@ -412,12 +412,13 @@ Meteor.publish 'my-publications', ->
     handlePersons.stop() if handlePersons
     handlePublications.stop() if handlePublications
 
+# We could try to combine my-publications and my-publications-importing,
+# but it is easier to have two and leave to Meteor to merge them together
 Meteor.publish 'my-publications-importing', ->
   Publications.find
-    'importing.by.person._id': @personId
+    'importing.person._id': @personId
   ,
     fields: _.extend Publication.PUBLIC_FIELDS().fields,
-      cached: 1
-      processed: 1
-      # Ensure that importing.by contains only this person
-      'importing.by.$': 1
+      # TODO: We should not push temporaryFile to the client
+      # Ensure that importing contains only this person
+      'importing.$': 1

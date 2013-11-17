@@ -17,14 +17,16 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl https://install.meteor.com | sh
 
-To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin/` to your
+To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin` to your
 environment `PATH` variable. For example, by running:
 
-    export PATH="~/.meteor/tools/latest/bin/:$PATH"
+    export PATH=~/.meteor/tools/latest/bin:$PATH
 
 To add tools to you shell permanently, run:
 
-    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
+    echo 'export PATH=~/.meteor/tools/latest/bin:$PATH' >> ~/.bash_profile
+
+Maybe on your system you have to add the lien to `~/.profile` file instead.
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
@@ -50,7 +52,7 @@ and `pkg-config` as well. The latter you can install using [Homebrew](http://bre
 
 On Debian you can install:
 
-    aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++    
+    sudo aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
 
 ### Run it! ###
 

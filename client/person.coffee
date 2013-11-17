@@ -5,8 +5,10 @@ Deps.autorun ->
     # We also search by id because we may have to redirect to canonical URL
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
-    Meteor.subscribe 'my-publications'
-    Meteor.subscribe 'my-publications-importing'
+
+    if slug is Meteor.person()?.slug
+      Meteor.subscribe 'my-publications'
+      Meteor.subscribe 'my-publications-importing'
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
@@ -37,7 +39,3 @@ Template.profile.myPublications = ->
   Publications.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
-
-Template.profile.myPublicationsImporting = ->
-  Publications.find
-    'importing.by.person._id': Meteor.personId()
