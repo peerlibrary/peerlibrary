@@ -68,10 +68,6 @@ class @Publication extends @Publication
             if @_pagesDone == @_pdf.numPages
               Session.set 'currentPublicationRendered', true
 
-            Sections.insert
-              height: viewport.height
-              number: pageNumber
-
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
             console.error "Error getting page #{ pageNumber }", args...
@@ -174,7 +170,24 @@ Deps.autorun ->
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
-Template.publication.scrollerSections = ->
+viewportHeightPercentage = ->
+  100 * Math.min($(window).height() / $('#viewer .display-wrapper').height(), 1)
+
+viewportPositionPercentage = ->
+  $displayWrapper = $('#viewer .display-wrapper')
+  100 * Math.max($(window).scrollTop() - $displayWrapper.offset().top, 0) / $displayWrapper.height()
+
+Template.publicationScroller.created = ->
+  $(window).on 'scroll.publicationScroller', (e) =>
+    $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
+
+Template.publicationScroller.rendered = ->
+  $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
+
+Template.publicationScroller.destroyed = ->
+  $(window).off 'scroll.publicationScroller'
+
+Template.publicationScroller.sections = ->
   if Session.equals 'currentPublicationRendered', true
     $displayWrapper = $('#viewer .display-wrapper')
     totalHeight = $displayWrapper.height()

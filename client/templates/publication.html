@@ -14,11 +14,7 @@
             <p>{{publication.created}}</p>
           </div>
         </div>
-        <div class="scroller">
-          {{#each scrollerSections}}
-            <div class="section" style="height: {{heightPercentage}}%; top: {{topPercentage}}%"></div>
-          {{/each}}
-        </div>
+        {{> publicationScroller}}
         <div class="annotations">
           <ul class="annotations-list">
             {{> publicationAnnotations}}
@@ -38,6 +34,15 @@
           <div class="display-wrapper"></div>
         {{/constant}}
       </div>
+  </div>
+</template>
+
+<template name="publicationScroller">
+  <div class="scroller">
+    {{#each sections}}
+      <div class="section" style="height: {{heightPercentage}}%; top: {{topPercentage}}%"></div>
+    {{/each}}
+    <div class="viewport"></div>
   </div>
 </template>
 

@@ -70,20 +70,28 @@
 
 .scroller
   position fixed
-  width 48px
+  width 64px
   top 120px
-  left 20px
+  left 12px
   bottom 20px
-  z-index 50
 
   .section
     position absolute
-    width 100%
+    width 48px
+    left 8px
     background #eee
     border: 1px solid light-grey
+    z-index 50
 
   .section:hover
     background #666
+
+  .viewport
+    position absolute
+    width 100%
+    background rgba(46,46,44,0.12)
+    border-radius 2px
+    z-index 60
 
 /* Annotations
 ============== */
