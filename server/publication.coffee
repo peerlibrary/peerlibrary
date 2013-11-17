@@ -16,7 +16,7 @@ class @Publication extends @Publication
     return if @cached
 
     if not Storage.exists @filename()
-      console.log "Caching PDF for #{ @_id } from the central server"
+      Log.info "Caching PDF for #{ @_id } from the central server"
 
       pdf = HTTP.get 'http://stage.peerlibrary.org' + @url(),
         timeout: 10000 # ms
@@ -36,7 +36,7 @@ class @Publication extends @Publication
     pageImageCallback ?= (pageNumber, canvasElement) ->
     progressCallback ?= (progress) ->
 
-    console.log "Processing PDF for #{ @_id }: #{ @filename() }"
+    Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
 
     PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
 
