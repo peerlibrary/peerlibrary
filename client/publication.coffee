@@ -1,11 +1,3 @@
-# Local (client-only) collection of sections in the document (for use in the scroller)
-# Fields:
-#   height: real height of the section in pixels (used to determine scrolling)
-#   number: for ordering (ascending), e.g. page number
-Sections = new Meteor.Collection null
-
-renderScroller = false
-
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -184,13 +176,12 @@ Template.publication.publication = ->
 
 Template.publication.scrollerSections = ->
   if Session.equals 'currentPublicationRendered', true
-    sections = Sections.find({}, sort: ['number']).fetch()
-    totalHeight = _.reduce sections, (total, section) ->
-      total + section.height
-    , 0
-    _.map sections, (section) ->
-      _.extend section,
-        heightPercentage: 100 * section.height / totalHeight
+    $displayWrapper = $('#viewer .display-wrapper')
+    totalHeight = $displayWrapper.height()
+    for section in $displayWrapper.children()
+      $section = $(section)
+      heightPercentage: 100 * $section.height() / totalHeight
+      topPercentage: 100 * $section.position().top / totalHeight
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
