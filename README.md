@@ -20,11 +20,11 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin/` to your
 environment `PATH` variable. For example, by running:
 
-    export PATH="~/.meteor/tools/latest/bin/:$PATH"
+    export PATH=~/.meteor/tools/latest/bin/:$PATH
 
 To add tools to you shell permanently, run:
 
-    echo 'export PATH="~/.meteor/tools/latest/bin/:$PATH"' >> ~/.bash_profile
+    echo 'export PATH=~/.meteor/tools/latest/bin/:$PATH' >> ~/.bash_profile
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
