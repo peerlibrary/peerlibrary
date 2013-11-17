@@ -112,10 +112,12 @@ importFile = (file) ->
       # So that meteor-file knows what to update
       file._id = id
 
-      # We try to make sure list of files is rendered before hashing
+      # We make sure list of files is rendered before hashing
       Deps.flush()
 
-      # Just temporary return to the event thread so that everything finishes rendering
+      # TODO: Remove the following workaround for a bug
+      # Deps.flush does not seem to really do it, so we have to use Meteor.setTimeout to workaround
+      # See: https://github.com/meteor/meteor/issues/1619
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
