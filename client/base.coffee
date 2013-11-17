@@ -52,6 +52,7 @@ Meteor.Router.beforeRouting = ->
   Session.set 'currentPublicationId', null
   Session.set 'currentPublicationSlug', null
   Session.set 'currentPublicationProgress', null
+  Session.set 'currentPublicationRendered', false
   Session.set 'currentPersonSlug', null
 
   # Overlays are special and we do not clear them while routing

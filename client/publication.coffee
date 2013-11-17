@@ -1,3 +1,11 @@
+# Local (client-only) collection of sections in the document (for use in the scroller)
+# Fields:
+#   height: real height of the section in pixels (used to determine scrolling)
+#   number: for ordering (ascending), e.g. page number
+Sections = new Meteor.Collection null
+
+renderScroller = false
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -64,6 +72,13 @@ class @Publication extends @Publication
 
             # Check if new page should be maybe rendered?
             @checkRender()
+
+            if @_pagesDone == @_pdf.numPages
+              Session.set 'currentPublicationRendered', true
+
+            Sections.insert
+              height: viewport.height
+              number: pageNumber
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -167,8 +182,15 @@ Deps.autorun ->
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
-Template.publication.pages = ->
-  @_pdf.numPages
+Template.publication.scrollerSections = ->
+  if Session.equals 'currentPublicationRendered', true
+    sections = Sections.find({}, sort: ['number']).fetch()
+    totalHeight = _.reduce sections, (total, section) ->
+      total + section.height
+    , 0
+    _.map sections, (section) ->
+      _.extend section,
+        heightPercentage: 100 * section.height / totalHeight
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find

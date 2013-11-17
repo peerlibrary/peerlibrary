@@ -14,13 +14,10 @@
             <p>{{publication.created}}</p>
           </div>
         </div>
-        <div class="table-of-contents">
-          <div style="height: 60px"></div>
-          <div style="height: 60px"></div>
-          <div style="height: 60px"></div>
-          <div style="height: 60px"></div>
-          <div style="height: 60px"></div>
-          <div style="height: 60px"></div>
+        <div class="scroller">
+          {{#each scrollerSections}}
+            <div style="height: {{heightPercentage}}%"></div>
+          {{/each}}
         </div>
         <div class="annotations">
           <ul class="annotations-list">
