@@ -14,9 +14,27 @@
             <p>{{publication.created}}</p>
           </div>
         </div>
+        <div class="table-of-contents">
+          <div style="height: 60px"></div>
+          <div style="height: 60px"></div>
+          <div style="height: 60px"></div>
+          <div style="height: 60px"></div>
+          <div style="height: 60px"></div>
+          <div style="height: 60px"></div>
+        </div>
         <div class="annotations">
           <ul class="annotations-list">
             {{> publicationAnnotations}}
+              <li class="annotation">
+                <div class="text" contenteditable="true">
+                  Hello
+                </div>
+              </li>
+              <li class="annotation">
+                <div class="text" contenteditable="true">
+                  World
+                </div>
+              </li>
           </ul>
         </div>
         {{#constant}}

@@ -65,13 +65,28 @@
   .meta-description
     display block
 
+/* Table of contents
+==================== */
+
+.table-of-contents
+  position fixed
+  width 48px
+  top 120px
+  left 20px
+  z-index 50
+
+  div
+    background #eee
+    margin-bottom: 1px
+    height 30px
+
 /* Annotations
 ============== */
 
 .annotations
   position absolute
   z-index 100
-  right 20px
+  right 5px
   width 300px
 
   ul.annotations-list
@@ -103,7 +118,8 @@
 
   .display-page
     position relative
-    text-align center
+    text-align left
+    margin-left 60px
     margin-bottom 20px
 
   .highlighted, .annotations .annotation:hover

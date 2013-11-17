@@ -167,6 +167,9 @@ Deps.autorun ->
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
+Template.publication.pages = ->
+  @_pdf.numPages
+
 Template.publicationAnnotations.annotations = ->
   Annotations.find
     publication: Session.get 'currentPublicationId'
