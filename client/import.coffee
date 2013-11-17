@@ -5,6 +5,7 @@
 #   uploadProgress: progress of uploading file, in %
 #   status: current status or error message
 #   finished: true when importing has finished
+#   errored: true when there was an error
 #   publicationId: publication ID for the imported file
 #   sha256: SHA256 hash for the file
 ImportingFiles = new Meteor.Collection null
@@ -18,6 +19,7 @@ verifyFile = (file, fileContent, publicationId, samples) ->
     if err
       ImportingFiles.update file._id,
         $set:
+          errored: true
           status: err.toString()
       return
 
@@ -38,6 +40,7 @@ uploadFile = (file, publicationId) ->
       if err
         ImportingFiles.update file._id,
           $set:
+            errored: true
             status: err.toString()
         return
 
@@ -50,7 +53,8 @@ testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
     ImportingFiles.update file._id,
       $set:
-        status: "Invalid file: #{ exception or message }"
+        errored: true
+        status: "Invalid PDF file"
 
 importFile = (file) ->
   reader = new FileReader()
@@ -68,8 +72,8 @@ importFile = (file) ->
       if alreadyImporting
         ImportingFiles.update file._id,
           $set:
-            status: "File is already importing"
             finished: true
+            status: "File is already importing"
             # publicationId might not yet be available, but let's try
             publicationId: alreadyImporting.publicationId
         return
@@ -82,14 +86,15 @@ importFile = (file) ->
         if err
           ImportingFiles.update file._id,
             $set:
+              errored: true
               status: err.toString()
           return
 
         if result.already
           ImportingFiles.update file._id,
             $set:
-              status: "File already imported"
               finished: true
+              status: "File already imported"
               publicationId: result.publicationId
           return
 
@@ -104,6 +109,7 @@ importFile = (file) ->
     readProgress: 0
     uploadProgress: 0
     finished: false
+    errored: false
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (err, id) ->
@@ -122,6 +128,19 @@ importFile = (file) ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
       , 5 # 0 does not seem to work, 5 seems to work
+
+hideOverlay = ->
+  allCount = ImportingFiles.find().count()
+  finishedAndErroredCount = ImportingFiles.find(
+    $or: [
+      finished: true
+    ,
+      errored: true
+    ]
+  ).count()
+  # We prevent hiding if user is uploading files
+  Session.set 'importOverlayActive', false if allCount == finishedAndErroredCount
+  ImportingFiles.remove({})
 
 Meteor.startup ->
   $(document).on 'dragenter', (e) ->
@@ -169,9 +188,14 @@ Template.importOverlay.events =
     _.each e.dataTransfer.files, importFile
 
   'click': (e, template) ->
-    # We hide overlay, but in the background we are still uploading
-    # TODO: Should we allow some way to bring the overlay back in front?
-    Session.set 'importOverlayActive', false
+    hideOverlay()
+
+Template.importOverlay.rendered = ->
+  $(document).on 'keyup.importOverlay', (e) ->
+    hideOverlay() if e.keyCode is 27 # esc key
+
+Template.importOverlay.destroyed = ->
+  $(document).off 'keyup.importOverlay'
 
 Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'
@@ -188,13 +212,12 @@ Deps.autorun ->
 
   return if importingFilesCount isnt finishedImportingFiles.length
 
-  # We want to redirect only when overlay is active
-  if Session.get 'importOverlayActive'
-    if importingFilesCount is 1
-      assert finishedImportingFiles.length is 1
-      Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
-    else
-      Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
-    Session.set 'importOverlayActive', false
+  if importingFilesCount is 1
+    assert finishedImportingFiles.length is 1
+    Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+  else
+    Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+
+  Session.set 'importOverlayActive', false
 
   ImportingFiles.remove({})

@@ -23,5 +23,5 @@
 
 <template name="importingFilesItem">
   <div>Name: {{name}}, Status: {{status}}</div>
-  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}}"></div>
+  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
 </template>
