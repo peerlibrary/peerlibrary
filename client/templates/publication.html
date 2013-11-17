@@ -40,10 +40,14 @@
 <template name="publicationScroller">
   <div class="scroller">
     {{#each sections}}
-      <div class="section" style="height: {{heightPercentage}}%; top: {{topPercentage}}%"></div>
+      {{> publicationScrollerSection}}
     {{/each}}
     <div class="viewport"></div>
   </div>
+</template>
+
+<template name="publicationScrollerSection">
+  <div class="section" style="height: {{heightPercentage}}%; top: {{topPercentage}}%"></div>
 </template>
 
 <template name="publicationAnnotations">

@@ -193,8 +193,15 @@ Template.publicationScroller.sections = ->
     totalHeight = $displayWrapper.height()
     for section in $displayWrapper.children()
       $section = $(section)
+
+      height: $section.height()
       heightPercentage: 100 * $section.height() / totalHeight
+      top: $section.position().top
       topPercentage: 100 * $section.position().top / totalHeight
+
+Template.publicationScrollerSection.events
+  'click': (e, template) ->
+    $(window).scrollTop template.data.top
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
