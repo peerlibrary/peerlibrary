@@ -3,7 +3,7 @@ if Meteor.settings.AWS
     accessKeyId: Meteor.settings.AWS.accessKeyId
     secretAccessKey: Meteor.settings.AWS.secretAccessKey
 else
-  console.warn "AWS settings missing, syncing arXiv PDF cache will not work"
+  Log.warn "AWS settings missing, syncing arXiv PDF cache will not work"
 
 # It seems there are no subject classes
 ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
@@ -32,10 +32,10 @@ Meteor.methods
     @unblock()
 
     if not Meteor.settings.AWS
-      console.error "AWS settings missing"
+      Log.error "AWS settings missing"
       throw new Meteor.Error 500, "AWS settings missing"
 
-    console.log "Syncing arXiv PDF cache"
+    Log.info "Syncing arXiv PDF cache"
 
     s3 = new AWS.S3()
 
@@ -68,7 +68,7 @@ Meteor.methods
           if match
             id = match[1]
           else
-            console.error "Invalid filename #{ props.path }"
+            Log.error "Invalid filename #{ props.path }"
             throw new Meteor.Error 500, "Invalid filename #{ props.path }"
 
         ArXivPDFs.update fileObj._id,
@@ -101,7 +101,7 @@ Meteor.methods
           if finished and counter == 0
             finalCallback()
 
-        console.log "Processing tar: #{ key }"
+        Log.info "Processing tar: #{ key }"
 
         fileObj.processingStart = moment.utc().toDate()
         fileObj._id = ArXivPDFs.insert fileObj
@@ -113,7 +113,7 @@ Meteor.methods
         ).createReadStream().pipe(
           tar.Parse()
         ).on('ignoredEntry', (entry) ->
-          console.error "Ignored entry in #{ key } tar file", entry.props
+          Log.error "Ignored entry in #{ key } tar file", entry.props
         ).on('entry', (entry) ->
           if entry.props.type != tar.types.File
             return
@@ -135,16 +135,16 @@ Meteor.methods
         )
 
       processTar file.Key, (id, pdf) ->
-        console.log "Storing PDF: #{ id }"
+        Log.info "Storing PDF: #{ id }"
 
         Storage.save (Publication._filenamePrefix() + Publication._arXivFilename(id)), pdf
 
-    console.log "Done"
+    Log.info "Done"
 
   'sync-arxiv-metadata': ->
     @unblock()
 
-    console.log "Syncing arXiv metadata"
+    Log.info "Syncing arXiv metadata"
 
     # TODO: URL hardcoded - not good
     # TODO: Traverse result pages
@@ -154,10 +154,10 @@ Meteor.methods
       timeout: 60000 # ms
 
     if page.statusCode and page.statusCode != 200
-      console.error "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
+      Log.error "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
       throw new Meteor.Error 500, "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
     else if page.error
-      console.error page.error
+      Log.error page.error
       throw page.error
 
     page = blocking(xml2js.parseString) page.content
@@ -169,7 +169,7 @@ Meteor.methods
 
       if not record?
         # Using inspect because records can be heavily nested
-        console.warn "Empty record metadata, skipping", util.inspect recordEntry, false, null
+        Log.warn "Empty record metadata, skipping", util.inspect recordEntry, false, null
         continue
 
       # TODO: Really process versions
@@ -213,7 +213,7 @@ Meteor.methods
 
       if bad
         # Using inspect because records can be heavily nested
-        console.warn "Could not parse authors, skipping", authors, util.inspect record, false, null
+        Log.warn "Could not parse authors, skipping", authors, util.inspect record, false, null
         continue
 
       # Remove collaboration information
@@ -225,7 +225,7 @@ Meteor.methods
 
       if authors.length == 0
         # Using inspect because records can be heavily nested
-        console.warn "Empty authors list, skipping", util.inspect record, false, null
+        Log.warn "Empty authors list, skipping", util.inspect record, false, null
         continue
 
       for author in authors
@@ -277,17 +277,17 @@ Meteor.methods
             $addToSet:
               publications:
                 _id: id # TODO: Entity resolution
-        console.log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+        Log.info "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
 
-    console.log "Done"
+    Log.info "Done"
 
     Meteor.call 'sync-local-pdf-cache' if count > 0
 
   'sync-local-pdf-cache': ->
     @unblock()
 
-    console.log "Syncing local PDF cache"
+    Log.info "Syncing local PDF cache"
 
     count = 0
 
@@ -296,16 +296,16 @@ Meteor.methods
         publication.checkCache()
         count++ if publication.cached
       catch error
-        console.error "#{ error }"
+        Log.error "#{ error }"
 
-    console.log "Done"
+    Log.info "Done"
 
     Meteor.call 'process-pdfs' if count > 0
 
   'process-pdfs': ->
     @unblock()
 
-    console.log "Processing pending PDFs"
+    Log.info "Processing pending PDFs"
 
     Publications.find(cached: {$exists: true}, processed: {$ne: true}).forEach (publication) ->
       initCallback = (numberOfPages) ->
@@ -328,6 +328,6 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
-        console.error "Error processing PDF:", error.stack or error.toString?() or error
+        Log.error "Error processing PDF:", error.stack or error.toString?() or error
 
-    console.log "Done"
+    Log.info "Done"

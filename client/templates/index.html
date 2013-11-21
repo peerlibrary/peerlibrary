@@ -8,7 +8,17 @@
 
 <template name="indexStatistics">
   <ul class="statistics">
-    <li>Publications: {{publications}}</li>
-    <li>People: {{persons}}</li>
+    <li>
+      <span class="value">{{publications}}</span>
+      <span class="label">Publications</span>
+    </li>
+    <li>
+      <span class="value">{{persons}}</span>
+      <span class="label">Authors</span>
+    </li>
   </ul>
+</template>
+
+<template name="background">
+  <canvas></canvas>
 </template>

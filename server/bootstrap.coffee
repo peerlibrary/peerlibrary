@@ -1,10 +1,10 @@
 INITIAL_PASSWORD = 'hello'
 
 Meteor.startup ->
-  console.log "Starting PeerLibrary"
+  Log.info "Starting PeerLibrary"
 
   if Meteor.users.find({}, limit: 1).count() == 0
-    console.log "Populating users"
+    Log.info "Populating users"
 
     # Carl Sagan
     Accounts.createUser
@@ -77,8 +77,8 @@ Meteor.startup ->
       username: 'paul-feyerabend'
       password: INITIAL_PASSWORD
 
-    console.log "Created users 'carl-sagan', 'hannah-arendt', 'paul-feyerabend' with password '#{ INITIAL_PASSWORD }'"
+    Log.info "Created users 'carl-sagan', 'hannah-arendt', 'paul-feyerabend' with password '#{ INITIAL_PASSWORD }'"
 
-    console.log "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
+    Log.info "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
 
-  console.log "Done"
+  Log.info "Done"
