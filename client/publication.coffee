@@ -219,7 +219,7 @@ Template.publicationScroller.sections = ->
 Template.publicationScroller.events
   'click': (e, template) ->
     $target = $(e.target)
-    offset = if $target.is('#scroller') then e.offsetY else $target.offset().top - $target.parent().offset().top
+    offset = if $target.is('#scroller') then e.offsetY - $('#scroller .viewport').height() / 2 else $target.offset().top - $target.parent().offset().top
     scrollToOffset offset
 
 Template.publicationAnnotations.annotations = ->
