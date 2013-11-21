@@ -177,12 +177,21 @@ viewportPositionPercentage = ->
   $displayWrapper = $('#viewer .display-wrapper')
   100 * Math.max($(window).scrollTop() - $displayWrapper.offset().top, 0) / $displayWrapper.height()
 
+scrollToOffset = (offset) ->
+  $(window).scrollTop offset * $('#viewer .display-wrapper').height() / $('#scroller').height()
+
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
     $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
 
 Template.publicationScroller.rendered = ->
   if Session.equals 'currentPublicationRendered', true
+    $(@find '.viewport').draggable
+      containment: 'parent'
+      stop: (e) ->
+        e.stopPropagation()
+        console.log e
+        scrollToOffset e.pageY - $(e.target).parent().offset().top
     $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
 
 Template.publicationScroller.destroyed = ->
@@ -200,9 +209,9 @@ Template.publicationScroller.sections = ->
 
 Template.publicationScroller.events
   'click': (e, template) ->
-    $src = $(e.srcElement)
-    offset = if $src.is('#scroller') then e.offsetY else e.pageY - $src.parent().offset().top
-    $(window).scrollTop offset * $('#viewer .display-wrapper').height() / $('#scroller').height()
+    $target = $(e.target)
+    offset = if $target.is('#scroller') then e.offsetY else e.pageY - $target.parent().offset().top
+    scrollToOffset offset
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
