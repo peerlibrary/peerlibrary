@@ -199,9 +199,11 @@ Template.publicationScroller.sections = ->
       top: $section.position().top
       topPercentage: 100 * $section.position().top / totalHeight
 
-Template.publicationScrollerSection.events
+Template.publicationScroller.events
   'click': (e, template) ->
-    $(window).scrollTop template.data.top
+    $src = $(e.srcElement)
+    offset = if $src.is('#scroller') then e.offsetY else e.pageY - $src.parent().offset().top
+    $(window).scrollTop offset * $('#viewer .display-wrapper').height() / $('#scroller').height()
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
