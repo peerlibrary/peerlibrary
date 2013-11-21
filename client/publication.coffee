@@ -180,7 +180,7 @@ viewportPositionPercentage = ->
   100 * Math.max($(window).scrollTop() - $displayWrapper.offset().top, 0) / $displayWrapper.height()
 
 scrollToOffset = (offset) ->
-  $(window).scrollTop offset * $('#viewer .display-wrapper').height() / $('#scroller').height()
+  $(window).scrollTop Math.round(offset * $('#viewer .display-wrapper').height() / $('#scroller').height())
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
