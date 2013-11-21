@@ -1,3 +1,5 @@
+draggingViewport = false
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -182,16 +184,21 @@ scrollToOffset = (offset) ->
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
-    $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
+    unless draggingViewport
+      $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
 
 Template.publicationScroller.rendered = ->
   if Session.equals 'currentPublicationRendered', true
     $(@find '.viewport').draggable
       containment: 'parent'
+      start: (e) ->
+        draggingViewport = true
+        true # Ensure default runs
       stop: (e) ->
-        e.stopPropagation()
-        console.log e
-        scrollToOffset e.pageY - $(e.target).parent().offset().top
+        draggingViewport = false
+        $target = $(e.target)
+        scrollToOffset $target.offset().top - $target.parent().offset().top
+        true # Ensure default runs
     $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
 
 Template.publicationScroller.destroyed = ->
@@ -210,7 +217,7 @@ Template.publicationScroller.sections = ->
 Template.publicationScroller.events
   'click': (e, template) ->
     $target = $(e.target)
-    offset = if $target.is('#scroller') then e.offsetY else e.pageY - $target.parent().offset().top
+    offset = if $target.is('#scroller') then e.offsetY else $target.offset().top - $target.parent().offset().top
     scrollToOffset offset
 
 Template.publicationAnnotations.annotations = ->
