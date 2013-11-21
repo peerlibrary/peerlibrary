@@ -182,7 +182,8 @@ Template.publicationScroller.created = ->
     $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
 
 Template.publicationScroller.rendered = ->
-  $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
+  if Session.equals 'currentPublicationRendered', true
+    $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
 
 Template.publicationScroller.destroyed = ->
   $(window).off 'scroll.publicationScroller'
@@ -194,9 +195,7 @@ Template.publicationScroller.sections = ->
     for section in $displayWrapper.children()
       $section = $(section)
 
-      height: $section.height()
       heightPercentage: 100 * $section.height() / totalHeight
-      top: $section.position().top
       topPercentage: 100 * $section.position().top / totalHeight
 
 Template.publicationScroller.events
