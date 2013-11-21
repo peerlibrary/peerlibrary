@@ -191,13 +191,15 @@ Template.publicationScroller.rendered = ->
   if Session.equals 'currentPublicationRendered', true
     $(@find '.viewport').draggable
       containment: 'parent'
-      start: (e) ->
+      start: (e, ui) ->
         draggingViewport = true
         true # Ensure default runs
-      stop: (e) ->
-        draggingViewport = false
+      drag: (e, ui) ->
         $target = $(e.target)
         scrollToOffset $target.offset().top - $target.parent().offset().top
+        true # Ensure default runs
+      stop: (e, ui) ->
+        draggingViewport = false
         true # Ensure default runs
     $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
 
