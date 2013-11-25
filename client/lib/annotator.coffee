@@ -54,12 +54,22 @@ class @Annotator
 
     for segment in page.textSegments
       $displayPage.append(
-        $('<div/>').addClass('segment text-segment').css _.pick(segment, 'left', 'top', 'width', 'height')
+        $('<div/>').addClass('segment text-segment').css segment.boundingBox
       )
 
     for segment in page.imageSegments
       $displayPage.append(
-        $('<div/>').addClass('segment image-segment').css  _.pick(segment, 'left', 'top', 'width', 'height')
+        $('<div/>').addClass('segment image-segment').css segment.boundingBox
+      )
+
+  # For debugging: draw divs with text for all text segments
+  _showTextSegments: (pageNumber) =>
+    page = @_pages[pageNumber - 1]
+    $displayPage = $("#display-page-#{ pageNumber }")
+
+    for segment in page.textSegments when segment.hasWidth
+      $displayPage.append(
+        $('<div/>').addClass('segment text-segment').css(segment.style).text(segment.text)
       )
 
   _enableHighligts: (pageNumber) =>
@@ -73,3 +83,4 @@ class @Annotator
 
     # For debugging
     #@_showSegments pageNumber
+    #@_showTextSegments pageNumber
