@@ -13,41 +13,41 @@
   .display
     height 100%
 
-    .display-page
-      position relative
-      margin-left auto
-      margin-right auto
-      margin-bottom 20px
-      text-align center
+    .display-wrapper
+      /* We disable selection so that user cannot select anything between pages */
+      user-select none
+      -webkit-user-select none
+      -moz-user-select none
+      -o-user-select none
+      -ms-user-select none
 
-      /* Additional ways to disable default selection in the code as well */
-      /* Opera requires unselectable="on" */
-      user-select: none
-      -webkit-user-select: none
-      -moz-user-select: none
-      -o-user-select: none
-      -ms-user-select: none
-
-      canvas
-        background rgba(255,255,255,1.0)
-
-      .loading
-        position absolute
-        left 50%
-        top 50%
-        height 10em
-        width 10em
-        margin-left -5em
-        margin-top -5em
-        line-height 10em
-        background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-        background-position 50% 50%
-        background-repeat no-repeat
+      .display-page
+        position relative
+        margin-left auto
+        margin-right auto
+        margin-bottom 20px
         text-align center
 
-      .display-canvas-loading
-        width 400px
-        height 400px
+        canvas
+          background rgba(255,255,255,1.0)
+
+        .loading
+          position absolute
+          left 50%
+          top 50%
+          height 10em
+          width 10em
+          margin-left -5em
+          margin-top -5em
+          line-height 10em
+          background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+          background-position 50% 50%
+          background-repeat no-repeat
+          text-align center
+
+        .display-canvas-loading
+          width 400px
+          height 400px
 
 /* Meta menu
 ============ */
@@ -128,6 +128,13 @@
   .text-segment
     background-color: rgba(180,170,0,0.2)
     color: rgba(230,20,20,0.4)
+
+    /* We re-enable selection for text segments */
+    user-select text
+    -webkit-user-select text
+    -moz-user-select text
+    -o-user-select text
+    -ms-user-select text
 
   .image-segment
     background-color: rgba(240,110,0,0.2)

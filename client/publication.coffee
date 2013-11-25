@@ -44,9 +44,6 @@ class @Publication extends @Publication
           'display-page'
         ).attr(
           id: "display-page-#{ pageNumber }"
-          unselectable: 'on' # For Opera
-        ).on(
-          'selectstart', false # Trying hard to disable default selection
         ).append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
