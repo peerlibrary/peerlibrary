@@ -13,42 +13,41 @@
   .display
     height 100%
 
-  .display-page
-    position relative
-    margin-left auto
-    margin-right auto
-    margin-bottom 20px
-    text-align center
+    .display-page
+      position relative
+      margin-left auto
+      margin-right auto
+      margin-bottom 20px
+      text-align center
 
-    /* Additional ways to disable default selection in the code as well */
-    /* Opera requires unselectable="on" */
-    user-select: none
-    -webkit-user-select: none
-    -moz-user-select: none
-    -o-user-select: none
-    -ms-user-select: none
+      /* Additional ways to disable default selection in the code as well */
+      /* Opera requires unselectable="on" */
+      user-select: none
+      -webkit-user-select: none
+      -moz-user-select: none
+      -o-user-select: none
+      -ms-user-select: none
 
-  .display-page
-    canvas
-      background rgba(255,255,255,1.0)
+      canvas
+        background rgba(255,255,255,1.0)
 
-  .loading
-    position absolute
-    left 50%
-    top 50%
-    height 10em
-    width 10em
-    margin-left -5em
-    margin-top -5em
-    line-height 10em
-    background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-    background-position 50% 50%
-    background-repeat no-repeat
-    text-align center
+      .loading
+        position absolute
+        left 50%
+        top 50%
+        height 10em
+        width 10em
+        margin-left -5em
+        margin-top -5em
+        line-height 10em
+        background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+        background-position 50% 50%
+        background-repeat no-repeat
+        text-align center
 
-  .display-canvas-loading
-    width 400px
-    height 400px
+      .display-canvas-loading
+        width 400px
+        height 400px
 
 /* Meta menu
 ============ */
