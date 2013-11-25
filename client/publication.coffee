@@ -194,7 +194,9 @@ Deps.autorun ->
 
   return unless publication
 
-  unless Session.equals 'currentPublicationSlug', publication.slug
+  # currentPublicationSlug is undefined if slug is not present in URL, so we use
+  # undefined when publication.slug is empty string to prevent infinite looping
+  unless Session.equals 'currentPublicationSlug', (publication.slug or undefined)
     Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
     return
 
