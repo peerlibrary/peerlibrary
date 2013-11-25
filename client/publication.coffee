@@ -1,11 +1,14 @@
+@SCALE = 1.25
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
 
     @_pages = null
+    @_annotator = new Annotator
 
   _viewport: (page) =>
-    scale = 1.25
+    scale = SCALE
     page.page.getViewport scale
 
   _progressCallback: (progressData) =>
@@ -35,9 +38,16 @@ class @Publication extends @Publication
       $('#viewer .display-wrapper').empty()
 
       for pageNumber in [1..@_pdf.numPages]
-        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
+        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
-        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('#viewer .display-wrapper')
+        $('<div/>').addClass(
+          'display-page'
+        ).attr(
+          id: "display-page-#{ pageNumber }"
+          unselectable: 'on' # For Opera
+        ).on(
+          'selectstart', false # Trying hard to disable default selection
+        ).append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (page) =>
@@ -49,8 +59,12 @@ class @Publication extends @Publication
             viewport = @_viewport
               page: page # Dummy page object
 
-            $canvas = $("#display-page-#{ pageNumber } canvas")
+            $displayPage = $("#display-page-#{ page.pageNumber }")
+            $canvas = $displayPage.find('canvas')
             $canvas.removeClass('display-canvas-loading').attr
+              height: viewport.height
+              width: viewport.width
+            $displayPage.css
               height: viewport.height
               width: viewport.width
 
@@ -101,43 +115,65 @@ class @Publication extends @Publication
       page.page.destroy()
     @_pdf.destroy() if @_pdf
 
+    # To make sure it is cleaned up
+    @_annotator = null
+
   renderPage: (page) =>
     return if page.rendering
     page.rendering = true
 
-    $canvas = $("#display-page-#{ page.pageNumber } canvas")
-
-    # Redo canvas resize to make sure it is the right size
-    # It seems sometimes already resized canvases are being deleted and replaced with initial versions
-    viewport = @_viewport page
-    $canvas.attr
-      height: viewport.height
-      width: viewport.width
-
-    renderContext =
-      canvasContext: $canvas.get(0).getContext '2d'
-      viewport: @_viewport page
-
     console.debug "Rendering page #{ page.page.pageNumber }"
 
-    page.page.render(renderContext).then =>
+    @_annotator.setPage page.page
+
+    page.page.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      console.debug "Rendering page #{ page.page.pageNumber } complete"
+      @_annotator.setTextContent page.pageNumber, textContent
 
-      $("#display-page-#{ page.pageNumber } .loading").hide()
+      $displayPage = $("#display-page-#{ page.pageNumber }")
+      $canvas = $displayPage.find('canvas')
+
+      # Redo canvas resize to make sure it is the right size
+      # It seems sometimes already resized canvases are being deleted and replaced with initial versions
+      viewport = @_viewport page
+      $canvas.attr
+        height: viewport.height
+        width: viewport.width
+      $displayPage.css
+        height: viewport.height
+        width: viewport.width
+
+      renderContext =
+        canvasContext: $canvas.get(0).getContext '2d'
+        textLayer: @_annotator.textLayer page.pageNumber
+        imageLayer: @_annotator.imageLayer page.pageNumber
+        viewport: @_viewport page
+
+      page.page.render(renderContext).then =>
+        # Maybe this instance has been destroyed in meantime
+        return if @_pages is null
+
+        console.debug "Rendering page #{ page.page.pageNumber } complete"
+
+        $("#display-page-#{ page.pageNumber } .loading").hide()
+
+      , (args...) =>
+        # TODO: Handle errors better (call destroy?)
+        console.error "Error rendering page #{ page.page.pageNumber }", args...
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
       console.error "Error rendering page #{ page.page.pageNumber }", args...
 
-  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available
+  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
   # TODO: Verify that it works after support for filtering fields on the client will be released in Meteor
   @SHOW_FIELDS: ->
     fields:
       foreignId: 1
       source: 1
+      slug: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'

@@ -32,7 +32,7 @@ class @Publication extends @Publication
   process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
     pdf ?= Storage.open @filename()
     initCallback ?= (numberOfPages) ->
-    textCallback ?= (pageNumber, x, y, width, height, direction, text) ->
+    textCallback ?= (pageNumber, left, top, width, height, direction, text) ->
     pageImageCallback ?= (pageNumber, canvasElement) ->
     progressCallback ?= (progress) ->
 

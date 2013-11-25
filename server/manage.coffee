@@ -311,7 +311,7 @@ Meteor.methods
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
-      textCallback = (pageNumber, x, y, width, height, direction, text) ->
+      textCallback = (pageNumber, left, top, width, height, direction, text) ->
 
       pageImageCallback = (pageNumber, canvasElement) ->
         thumbnailCanvas = new PDFJS.canvas 95, 125
