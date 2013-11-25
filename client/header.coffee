@@ -50,7 +50,7 @@ Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
 
 Template.header.indexHeader = ->
-  'index-header' if Session.get('indexActive') and Session.get('indexHeader') and not Session.get('searchActive')
+  'index-header' if Template.footer.indexFooter()
 
 Template.header.noIndexHeader = ->
   'no-index-header' if not Template.header.indexHeader()
@@ -75,31 +75,11 @@ Template.searchInput.indexHeader = Template.header.indexHeader
 
 Template.searchInput.noIndexHeader = Template.header.noIndexHeader
 
-publications = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPublications
-
-persons = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  if not searchResult
-    return 0
-  else
-    return searchResult.countPersons
-
 Template.searchInput.searchInvitation = ->
   if Session.get 'currentSearchQuery'
     Session.get 'currentSearchQuery'
-  else if Template.header.indexHeader()
-    return "Search #{ publications() } publications and #{ persons() } people"
   else
-    return "Search publications and people"
+    "Search scientific publications and people"
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')

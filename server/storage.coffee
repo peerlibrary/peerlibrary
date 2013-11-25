@@ -13,11 +13,25 @@ class @Storage extends @Storage
     @_assurePath filename
     fs.writeFileSync filename, data
 
+  @saveMeteorFile: (meteorFile, filename) ->
+    throw new Meteor.Error 403, 'Null filename.' unless filename
+
+    path = @_storageDirectory + @_path.sep + filename
+    directory = path.split('/').slice(0, -1).join('/')
+    meteorFile.name = filename.split('/').slice(-1)[0]
+    @_assurePath path
+    meteorFile.save directory, {}
+
   @exists: (filename) ->
     fs.existsSync @_storageDirectory + @_path.sep + filename
 
   @open: (filename) ->
     fs.readFileSync @_storageDirectory + @_path.sep + filename
+
+  @rename: (oldFilename, newFilename) ->
+    newFilename = @_storageDirectory + @_path.sep + newFilename
+    @_assurePath newFilename
+    fs.renameSync @_storageDirectory + @_path.sep + oldFilename, newFilename
 
 # Find .meteor directory
 directoryPath = process.mainModule.filename.split path.sep

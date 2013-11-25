@@ -20,31 +20,42 @@ class @Publication extends Document
   # foreignCategories: categories metadata provided by the source
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
-  # cached: do we have a locally stored PDF?
+  # sha256: SHA-256 hash of the file
+  # size: size of the file (if cached)
+  # importing: (temporary) list of
+  #   person: person importing the document
+  #   filename: original name of the imported file
+  #   temporaryFilename: temporary filename of the imported file
+  # cached: timestamp when the publication was cached
+  # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
-  # Should be a function so that we can redefine later on
+  # Should be a function so that we can possible resolve circual references
   @Meta =>
     collection: Publications
     fields:
-      authors: [@Reference Person, ['slug', 'foreNames', 'lastName']]
+      authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
+      importing: [
+        person: @ReferenceField Person
+      ]
+      slug: @GeneratedField 'self', ['title']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
 
-  @_uploadFilename: (id) ->
-    'upload' + Storage._path.sep + id + '.pdf'
+  @_importFilename: (id) ->
+    'import' + Storage._path.sep + id + '.pdf'
 
   @_arXivFilename: (arXivId) ->
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
 
   filename: =>
     Publication._filenamePrefix() + switch @source
-      when 'upload' then Publication._uploadFilename @_id
+      when 'import' then Publication._importFilename @_id
       when 'arXiv' then Publication._arXivFilename @foreignId
       else throw new Error "Unsupported source"
 

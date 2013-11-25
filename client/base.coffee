@@ -5,17 +5,6 @@ Meteor.Router.add
     Session.set 'indexActive', true
     'index'
 
-  '/login':
-    'login'
-
-  '/logout': ->
-    Meteor.logout()
-    # TODO: Redirect back to the page where it came from (or support logout without having to go to /logout)
-    Meteor.Router.to '/'
-
-  '/register':
-    'register'
-
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
     to: (publicationId, publicationSlug) ->
@@ -28,6 +17,18 @@ Meteor.Router.add
     to: (personSlug) ->
       Session.set 'currentPersonSlug', personSlug
       'profile'
+
+  '/about':
+    'about'
+
+  '/help':
+    'help'
+
+  '/privacy':
+    'privacy'
+
+  '/terms':
+    'terms'
 
   '/admin': ->
     Session.set 'adminActive', true
@@ -52,6 +53,8 @@ Meteor.Router.beforeRouting = ->
   Session.set 'currentPublicationSlug', null
   Session.set 'currentPublicationProgress', null
   Session.set 'currentPersonSlug', null
+
+  # Overlays are special and we do not clear them while routing
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->

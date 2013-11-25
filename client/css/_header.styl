@@ -11,13 +11,6 @@ header
     top 0
     width 100%
     z-index 99999
-
-header.index-header
-  .container
-    position absolute
-
-header.no-index-header
-  .container
     position fixed
 
 .logo
@@ -180,19 +173,19 @@ span.cursor
 
 header.index-header
   .search-wrapper
-    position absolute
+    position fixed
     display block
-    height 10px
-    top 420px
+    height 15px
+    top 50%
     left 50%
     width 620px
-    margin-left -310px
+    margin-left -313px
     visibility visible
     background transparent
     color #444
-    border-width 0 2px 2px 2px
+    border-width 0 4px 4px 4px
     border-style solid
-    border-color #999
+    border-color rgba(40,40,40,0.4)
     padding 0 10px
 
     .label
@@ -200,50 +193,23 @@ header.index-header
 
     .search-form
       display block
+      margin-top -26px
 
       .search-button
         display none
 
       input
         position relative
-        top -35px
         height 40px
         width 616px
+        font-size 24px
         background transparent
 
   .search-wrapper:hover
     background transparent
 
   .container
-    height 70px
-
-    .logo
-      width 180px
-      float left
-
-      a
-        color white
-        text-decoration none
-        line-height 70px
-        font-size 30px
-        font-family "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
-        background transparent
-        display inline-block
-        padding 0 20px
-
-    span.tagline
-      color white
-      line-height 70px
-      padding 0 20px
-      display inline-block
-      float left
-
-
-    ul.top-menu
-      li
-        display block
-        float left
-        line-height 70px
+    background-color transparent
 
 header.no-index-header
   .search-wrapper
@@ -256,9 +222,6 @@ header.no-index-header
       bottom -2px
       height 2px
       position absolute
-
-  .tagline
-    display none
 
 /*
 Sign up buttons

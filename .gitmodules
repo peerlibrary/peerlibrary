@@ -1,0 +1,4 @@
+[submodule "packages/blob/Blob"]
+	path = packages/blob/Blob
+	url = git://github.com/peerlibrary/Blob.js.git
+	branch = peerlibrary

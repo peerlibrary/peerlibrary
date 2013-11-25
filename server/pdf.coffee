@@ -13,7 +13,7 @@ PDF =
     initCallback document.numPages
 
     #metadata = document.getMetadataSync pageNumber
-    #console.log "Metadata", metadata
+    #Log.debug "Metadata", metadata
 
     for pageNumber in [1..document.numPages]
       page = document.getPageSync pageNumber
@@ -23,7 +23,7 @@ PDF =
       progressCallback (page.pageNumber - 1) / document.numPages
 
       #annotations = page.getAnnotationsSync()
-      #console.log "Annotations", annotations
+      #Log.debug "Annotations", annotations
 
       textContent = page.getTextContentSync()
 
@@ -37,10 +37,10 @@ PDF =
         viewport: viewport
         textLayer:
           beginLayout: bindEnvironemnt ->
-            #console.log "beginLayout"
+            #Log.debug "beginLayout"
 
           endLayout: bindEnvironemnt ->
-            #console.log "endLayout"
+            #Log.debug "endLayout"
 
             if DEBUG
               # Save the canvas (with rectangles around text segments)

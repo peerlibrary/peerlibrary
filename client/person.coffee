@@ -6,6 +6,10 @@ Deps.autorun ->
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
 
+    if slug is Meteor.person()?.slug
+      Meteor.subscribe 'my-publications'
+      Meteor.subscribe 'my-publications-importing'
+
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -27,6 +31,11 @@ Template.profile.person = ->
     # We can search by slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
-Template.profile.publications = ->
-  # TODO: This should not be returning all publications, but only those relevant to the profile
-  Publications.find()
+Template.profile.isMine = ->
+  Session.equals 'currentPersonSlug', Meteor.person()?.slug
+
+# Publications in logged user's library
+Template.profile.myPublications = ->
+  Publications.find
+    _id:
+      $in: _.pluck Meteor.person()?.library, '_id'

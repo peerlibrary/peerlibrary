@@ -6,7 +6,6 @@ Meteor.methods
   'search-propose': (query) ->
     # TODO: For now we just ignore query, we should do something smart with it
     proposals = Publications.find(
-      cached: true,
       processed: true
     ,
       limit: SEARCH_PROPOSE_LIMIT - 1
@@ -44,7 +43,6 @@ Meteor.publish 'search-results', (query, limit) ->
 
   findQuery =
     title: new RegExp(query, 'i')
-    cached: true
     processed: true
 
   queryId = Random.id()
@@ -118,7 +116,6 @@ Meteor.publish 'search-available', ->
   maxPublicationDate = null
 
   handlePublications = Publications.find(
-    cached: true
     processed: true
   ,
     fields:

@@ -1,0 +1,27 @@
+<template name="importOverlay">
+  {{#if importOverlayActive}}
+    <div class="drop-overlay">
+      <div class="content">
+        <h1>Drop files here</h1>
+        {{#each importingFiles}}
+          {{> importingFilesItem}}
+        {{/each}}
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="loginOverlay">
+  {{#if loginOverlayActive}}
+    <div class="drop-overlay">
+      <div class="content">
+        <h1>Please sign in before uploading.</h1>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="importingFilesItem">
+  <div>Name: {{name}}, Status: {{status}}</div>
+  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
+</template>

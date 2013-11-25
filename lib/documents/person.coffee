@@ -24,11 +24,38 @@ class @Person extends Document
   #   endYear: null if ongoing
   #   completed: true if degree granted
   # publications: list of
-  #   _id: authored publication's id
+  #   _id: authored publication id
+  # library: list of
+  #   _id: added publication id
 
-  # Should be a function so that we can redefine later on
+  # Should be a function so that we can possible resolve circual references
   @Meta =>
     collection: Persons
     fields:
-      user: @Reference User, ['username'], false
-      publications: [@Reference Publication]
+      user: @ReferenceField User, ['username'], false
+      publications: [@ReferenceField Publication]
+      library: [@ReferenceField Publication]
+      slug: @GeneratedField 'self', ['user.username']
+      gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
+
+Meteor.person = ->
+  # Meteor.userId is reactive
+  userId = Meteor.userId()
+
+  return null unless userId
+
+  Persons.findOne
+    'user._id': userId
+
+Meteor.personId = ->
+  # Meteor.userId is reactive
+  userId = Meteor.userId()
+
+  return null unless userId
+
+  person = Persons.findOne
+    'user._id': userId
+  ,
+    _id: 1
+
+  person?._id or null
