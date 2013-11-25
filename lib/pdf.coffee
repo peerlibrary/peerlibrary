@@ -25,3 +25,6 @@ PDFJS.pdfTextSegment = (textContent, i, geom) ->
   height: height
   direction: direction
   text: text
+
+PDFJS.pdfImageSegment = (geom) ->
+  _.pick geom, 'left', 'top', 'width', 'height'
