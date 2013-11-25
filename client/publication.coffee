@@ -76,6 +76,9 @@ class @Publication extends @Publication
 
             @_progressCallback()
 
+            # Initialize annotations
+            @annotate page
+
             # Check if new page should be maybe rendered?
             @checkRender()
 
@@ -89,6 +92,23 @@ class @Publication extends @Publication
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
       console.error "Error showing #{ @_id }", args...
+
+  annotate: (page) =>
+    @_annotator.setPage page
+
+    console.debug "Getting text content for page #{ page.pageNumber }"
+
+    page.getTextContent().then (textContent) =>
+      # Maybe this instance has been destroyed in meantime
+      return if @_pages is null
+
+      @_annotator.setTextContent page.pageNumber, textContent
+
+      console.debug "Getting text content for page #{ page.pageNumber } complete"
+
+    , (args...) =>
+      # TODO: Handle errors better (call destroy?)
+      console.error "Error getting text content for page #{ page.pageNumber }", args...
 
   checkRender: =>
     for page in @_pages or []
@@ -124,44 +144,32 @@ class @Publication extends @Publication
 
     console.debug "Rendering page #{ page.page.pageNumber }"
 
-    @_annotator.setPage page.page
+    $displayPage = $("#display-page-#{ page.pageNumber }")
+    $canvas = $displayPage.find('canvas')
 
-    page.page.getTextContent().then (textContent) =>
+    # Redo canvas resize to make sure it is the right size
+    # It seems sometimes already resized canvases are being deleted and replaced with initial versions
+    viewport = @_viewport page
+    $canvas.attr
+      height: viewport.height
+      width: viewport.width
+    $displayPage.css
+      height: viewport.height
+      width: viewport.width
+
+    renderContext =
+      canvasContext: $canvas.get(0).getContext '2d'
+      textLayer: @_annotator.textLayer page.pageNumber
+      imageLayer: @_annotator.imageLayer page.pageNumber
+      viewport: @_viewport page
+
+    page.page.render(renderContext).then =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      @_annotator.setTextContent page.pageNumber, textContent
+      console.debug "Rendering page #{ page.page.pageNumber } complete"
 
-      $displayPage = $("#display-page-#{ page.pageNumber }")
-      $canvas = $displayPage.find('canvas')
-
-      # Redo canvas resize to make sure it is the right size
-      # It seems sometimes already resized canvases are being deleted and replaced with initial versions
-      viewport = @_viewport page
-      $canvas.attr
-        height: viewport.height
-        width: viewport.width
-      $displayPage.css
-        height: viewport.height
-        width: viewport.width
-
-      renderContext =
-        canvasContext: $canvas.get(0).getContext '2d'
-        textLayer: @_annotator.textLayer page.pageNumber
-        imageLayer: @_annotator.imageLayer page.pageNumber
-        viewport: @_viewport page
-
-      page.page.render(renderContext).then =>
-        # Maybe this instance has been destroyed in meantime
-        return if @_pages is null
-
-        console.debug "Rendering page #{ page.page.pageNumber } complete"
-
-        $("#display-page-#{ page.pageNumber } .loading").hide()
-
-      , (args...) =>
-        # TODO: Handle errors better (call destroy?)
-        console.error "Error rendering page #{ page.page.pageNumber }", args...
+      $("#display-page-#{ page.pageNumber } .loading").hide()
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
