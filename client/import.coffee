@@ -11,6 +11,7 @@
 ImportingFiles = new Meteor.Collection null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
+DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
   samplesData = _.map samples, (sample) ->
@@ -149,6 +150,11 @@ Meteor.startup ->
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
 
+    DRAGGING_OVER_DOM = true
+    setTimeout () ->
+      DRAGGING_OVER_DOM = false
+    , 5
+
     if Meteor.personId()
       Session.set 'importOverlayActive', true
     else
@@ -163,7 +169,9 @@ Template.loginOverlay.events =
 
   'dragleave': (e, template) ->
     e.preventDefault()
-    Session.set 'loginOverlayActive', false
+
+    unless DRAGGING_OVER_DOM
+      Session.set 'loginOverlayActive', false
 
   'drop': (e, template) ->
     e.stopPropagation()
@@ -177,7 +185,7 @@ Template.importOverlay.events =
   'dragleave': (e, template) ->
     e.preventDefault()
 
-    if ImportingFiles.find().count() == 0
+    if ImportingFiles.find().count() == 0 and not DRAGGING_OVER_DOM
       Session.set 'importOverlayActive', false
 
   'drop': (e, template) ->
