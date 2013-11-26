@@ -150,6 +150,7 @@ Meteor.startup ->
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
 
+    # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
     DRAGGING_OVER_DOM = true
     Meteor.setTimeout ->
       DRAGGING_OVER_DOM = false
