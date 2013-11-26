@@ -9,7 +9,7 @@ class @Publication extends @Publication
 
   _viewport: (page) =>
     scale = SCALE
-    page.page.getViewport scale
+    page.pdfPage.getViewport scale
 
   _progressCallback: (progressData) =>
     # Maybe this instance has been destroyed in meantime
@@ -47,16 +47,16 @@ class @Publication extends @Publication
         ).append($canvas).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
-          @_pdf.getPage(pageNumber).then (page) =>
+          @_pdf.getPage(pageNumber).then (pdfPage) =>
             # Maybe this instance has been destroyed in meantime
             return if @_pages is null
 
-            assert.equal pageNumber, page.pageNumber
+            assert.equal pageNumber, pdfPage.pageNumber
 
             viewport = @_viewport
-              page: page # Dummy page object
+              pdfPage: pdfPage # Dummy page object
 
-            $displayPage = $("#display-page-#{ page.pageNumber }")
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
             $canvas = $displayPage.find('canvas')
             $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
@@ -67,14 +67,14 @@ class @Publication extends @Publication
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
-              page: page
+              pdfPage: pdfPage
               rendering: false
             @_pagesDone++
 
             @_progressCallback()
 
             # Initialize annotations
-            @annotate page
+            @annotate pdfPage
 
             # Check if new page should be maybe rendered?
             @checkRender()
@@ -90,22 +90,22 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error showing #{ @_id }", args...
 
-  annotate: (page) =>
-    @_annotator.setPage page
+  annotate: (pdfPage) =>
+    @_annotator.setPage pdfPage
 
-    console.debug "Getting text content for page #{ page.pageNumber }"
+    console.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
-    page.getTextContent().then (textContent) =>
+    pdfPage.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      @_annotator.setTextContent page.pageNumber, textContent
+      @_annotator.setTextContent pdfPage.pageNumber, textContent
 
-      console.debug "Getting text content for page #{ page.pageNumber } complete"
+      console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error getting text content for page #{ page.pageNumber }", args...
+      console.error "Error getting text content for page #{ pdfPage.pageNumber }", args...
 
   checkRender: =>
     for page in @_pages or []
@@ -129,7 +129,7 @@ class @Publication extends @Publication
     $(window).off 'resize.publication'
 
     for page in pages
-      page.page.destroy()
+      page.pdfPage.destroy()
     @_pdf.destroy() if @_pdf
 
     # To make sure it is cleaned up
@@ -140,7 +140,7 @@ class @Publication extends @Publication
     return if page.rendering
     page.rendering = true
 
-    console.debug "Rendering page #{ page.page.pageNumber }"
+    console.debug "Rendering page #{ page.pdfPage.pageNumber }"
 
     $displayPage = $("#display-page-#{ page.pageNumber }")
     $canvas = $displayPage.find('canvas')
@@ -161,17 +161,17 @@ class @Publication extends @Publication
       imageLayer: @_annotator.imageLayer page.pageNumber
       viewport: @_viewport page
 
-    page.page.render(renderContext).then =>
+    page.pdfPage.render(renderContext).then =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      console.debug "Rendering page #{ page.page.pageNumber } complete"
+      console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading").hide()
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error rendering page #{ page.page.pageNumber }", args...
+      console.error "Error rendering page #{ page.pdfPage.pageNumber }", args...
 
   # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
   # TODO: Verify that it works after support for filtering fields on the client will be released in Meteor
