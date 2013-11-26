@@ -143,6 +143,9 @@ hideOverlay = ->
   ImportingFiles.remove({})
 
 Meteor.startup ->
+  $(document).on 'dragstart', (e) ->
+    e.preventDefault()
+
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
 
