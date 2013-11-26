@@ -63,9 +63,9 @@ Triangle::area = ->
   Math.abs (@v0.x * @v1.y - @v1.x * @v0.y + @v1.x * @v2.y - @v2.x * @v1.y + @v2.x * @v0.y - @v0.x * @v2.y) / 2
 
 Triangle::color = ->
-  h = (@area() / 100) / 360
-  s = (@area() / 100) / 100
-  l = (25 + @area() / 100) / 100
+  h = Math.min 1, (@area() / 100) / 360
+  s = Math.min 1, (@area() / 100) / 100
+  l = Math.min 1, (25 + @area() / 100) / 100
   #a = 0.2
   hslToRgb h, s, l
   
