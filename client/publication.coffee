@@ -158,6 +158,9 @@ class @Publication extends @Publication
     @_annotator.destroy() if @_annotator
     @_annotator = null
 
+    # Clean DOM
+    $('#viewer .display-wrapper').empty()
+
   renderPage: (page) =>
     return if page.rendering
     page.rendering = true

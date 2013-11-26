@@ -108,7 +108,9 @@ draw = (time) ->
     triangles[i].draw()
     i++
 
-  renderer.render stage
+  return unless renderer
+
+  renderer?.render stage
   requestAnimationFrame draw
 
 generateTriangles = ->
@@ -151,6 +153,8 @@ generateTriangles = ->
     i++
 
 resizeCanvas = ->
+  return unless renderer
+
   canvas = renderer.view
   height = window.innerHeight
   width  = window.innerWidth
@@ -185,4 +189,5 @@ Template.indexMain.rendered = ->
 Template.indexMain.destroyed = ->
   triangles = []
   renderer = undefined
+  $('.landing canvas').remove()
   $('body').removeClass 'landing'
