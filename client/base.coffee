@@ -1,9 +1,11 @@
 @INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
 
 Meteor.Router.add
-  '/': ->
-    Session.set 'indexActive', true
-    'index'
+  '/':
+    as: 'index'
+    to: ->
+      Session.set 'indexActive', true
+      'index'
 
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
