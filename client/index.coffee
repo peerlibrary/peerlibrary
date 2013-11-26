@@ -168,26 +168,31 @@ resizeCanvas = ->
   #alert "test"
   #init()
 
+# Set this variable so we can create the canvas on the first render
+canvasCreated = false
+
 Template.indexMain.created = ->
   renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight)
   ratio = window.devicePixelRatio or 1
-  $body = $('body')
-  $body.addClass 'landing'
-  $body.append renderer.view
   #window.addEventListener "resize", resizeCanvas
   #window.addEventListener "resize", generateTriangles
 
 Template.indexMain.rendered = ->
+  unless canvasCreated
+    Deps.nonreactive ->
+      $('.landing').append renderer.view
+
+    $(window).on 'resize', ->
+      resizeCanvas()
+      generateTriangles()
+
+    canvasCreated = true
+
   resizeCanvas()
   generateTriangles()
   requestAnimationFrame draw
 
-  $(window).on 'resize', ->
-    resizeCanvas()
-    generateTriangles()
-
 Template.indexMain.destroyed = ->
   triangles = []
   renderer = undefined
-  $('.landing canvas').remove()
-  $('body').removeClass 'landing'
+  canvasCreated = false
