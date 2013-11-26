@@ -153,6 +153,8 @@ generateTriangles = ->
     i++
 
 resizeCanvas = ->
+  return unless renderer
+
   canvas = renderer.view
   height = window.innerHeight
   width  = window.innerWidth
