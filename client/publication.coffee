@@ -133,6 +133,7 @@ class @Publication extends @Publication
     @_pdf.destroy() if @_pdf
 
     # To make sure it is cleaned up
+    @_annotator.destroy()
     @_annotator = null
 
   renderPage: (page) =>

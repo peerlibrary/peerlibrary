@@ -4,6 +4,9 @@ class @Annotator
   constructor: ->
     @_pages = []
 
+  destroy: =>
+    # Nothing really to do
+
   setPage: (page) =>
     # Initialize the page
     @_pages[page.pageNumber - 1] =
