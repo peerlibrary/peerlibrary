@@ -57,22 +57,22 @@ class @Page
 
   # For debugging: draw divs for all segments
   _showSegments: =>
-    for segment in @textSegments
-      @$displayPage.append(
-        $('<div/>').addClass('segment text-segment').css segment.boundingBox
-      )
+    divs = for segment in @textSegments
+      $('<div/>').addClass('segment text-segment').css segment.boundingBox
 
-    for segment in @imageSegments
-      @$displayPage.append(
-        $('<div/>').addClass('segment image-segment').css segment.boundingBox
-      )
+    @$displayPage.append divs
+
+    divs = for segment in @imageSegments
+      $('<div/>').addClass('segment image-segment').css segment.boundingBox
+
+    @$displayPage.append divs
 
   # For debugging: draw divs with text for all text segments
   _showTextSegments: =>
-    for segment in @textSegments when segment.hasWidth
-      @$displayPage.append(
-        $('<div/>').addClass('segment text-segment').css(segment.style).text(segment.text)
-      )
+    divs = for segment in @textSegments when segment.hasWidth
+      $('<div/>').addClass('segment text-segment').css(segment.style).text(segment.text)
+
+    @$displayPage.append divs
 
   _enableHighligts: =>
     return unless @textSegmentsDone and @imageLayerDone

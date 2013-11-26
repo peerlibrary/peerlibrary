@@ -133,11 +133,14 @@
 
 #viewer .display-page
   .segment, .paragraph
-    position: absolute
+    position absolute
 
   .text-segment
-    background-color: rgba(180,170,0,0.2)
-    color: rgba(230,20,20,0.4)
+    background-color rgba(180,170,0,0.2)
+    color rgba(230,20,20,0.4)
+    line-height 1
+    white-space pre
+    cursor text
 
     /* We re-enable selection for text segments */
     user-select text
@@ -147,14 +150,14 @@
     -ms-user-select text
 
   .image-segment
-    background-color: rgba(240,110,0,0.2)
+    background-color rgba(240,110,0,0.2)
 
   .paragraph
-    background-color: rgba(0,110,180,0.2)
+    background-color rgba(0,110,180,0.2)
 
 /* Highlighting
 =============== */
 
 #viewer .display-page .highlight
-  position: absolute
-  background-color: rgba(255,0,0,0.3)
+  position absolute
+  background-color rgba(255,0,0,0.3)
