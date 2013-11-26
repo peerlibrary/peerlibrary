@@ -62,7 +62,7 @@ class @Page
         $('<div/>').addClass('segment text-segment').css segment.boundingBox
       )
 
-    for segment in page.imageSegments
+    for segment in @imageSegments
       @$displayPage.append(
         $('<div/>').addClass('segment image-segment').css segment.boundingBox
       )
