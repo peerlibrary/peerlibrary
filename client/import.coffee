@@ -151,7 +151,7 @@ Meteor.startup ->
     e.preventDefault()
 
     DRAGGING_OVER_DOM = true
-    setTimeout () ->
+    Meteor.setTimeout ->
       DRAGGING_OVER_DOM = false
     , 5
 
