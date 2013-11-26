@@ -167,11 +167,11 @@ resizeCanvas = ->
 Template.indexMain.created = ->
   renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight)
   ratio = window.devicePixelRatio or 1
-  document.body.className += "landing"
-  document.body.appendChild renderer.view
+  $body = $('body')
+  $body.addClass 'landing'
+  $body.append renderer.view
   #window.addEventListener "resize", resizeCanvas
   #window.addEventListener "resize", generateTriangles
-  console.log "created"
 
 Template.indexMain.rendered = ->
   resizeCanvas()
@@ -181,8 +181,8 @@ Template.indexMain.rendered = ->
   $(window).on 'resize', ->
     resizeCanvas()
     generateTriangles()
-  console.log "rendered"
 
 Template.indexMain.destroyed = ->
   triangles = []
   renderer = undefined
+  $('body').removeClass 'landing'
