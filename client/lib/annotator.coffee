@@ -165,9 +165,8 @@ class @Annotator
 
       canvasTop = $canvas.offset().top
       canvasBottom = canvasTop + $canvas.height()
-      # Add 100px so that we start rendering early
-      # TODO: Should we try to render a bit more in advance, so that search works better?
-      if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
+      # Add 500px so that we start rendering early
+      if canvasTop - 500 <= $(window).scrollTop() + $(window).height() and canvasBottom + 500 >= $(window).scrollTop()
         pagesToRender.push page
       else
         # TODO: Only if page is not having a user selection (multipage selection in progress)
