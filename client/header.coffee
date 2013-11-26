@@ -25,7 +25,9 @@ Template.header.events =
   'keyup .search-input': (e, template) ->
     val = $(template.findAll '.search-input').val()
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
-    Session.set 'searchActive', true if val
+    return unless val
+
+    Session.set 'searchActive', true
     Session.set 'searchFocused', true
     naturalQueryChange val
 
