@@ -9,6 +9,8 @@ class @Page
     @imageLayerDone = null
     @highlightsEnabled = false
 
+    @_extractedText = null
+
     @$displayPage = $("#display-page-#{ @pageNumber }")
 
   destroy: =>
@@ -37,6 +39,21 @@ class @Page
 
     appendImage: (geom) =>
       @imageSegments.push PDFJS.pdfImageSegment geom
+
+  hasTextContent: =>
+    @textContent isnt null
+
+  extractText: =>
+    return @_extractedText unless @_extractedText is null
+
+    text = ''
+    for t in @textContent.bidiTexts
+      text += t.str
+
+    # TODO: Clean-up the text: remove double whitespaces
+    # TODO: Clean-up the text: remove hypenation
+
+    @_extractedText = text
 
   # For debugging: draw divs for all segments
   _showSegments: =>
@@ -83,9 +100,10 @@ class @Annotator
     @_pages[pageNumber - 1].textContent = textContent
 
   hasTextContent: (pageNumber) =>
-    return false unless @_pages[pageNumber - 1]
+    @_pages[pageNumber - 1]?.hasTextContent()
 
-    @_pages[pageNumber - 1].textContent isnt null
+  extractText: (pageNumber) =>
+    @_pages[pageNumber - 1].extractText()
 
   textLayer: (pageNumber) =>
     @_pages[pageNumber - 1].textLayer()

@@ -71,10 +71,11 @@ class @Publication extends @Publication
               rendering: false
             @_pagesDone++
 
-            @_progressCallback()
+            @_annotator.setPage pdfPage
 
-            # Initialize annotations
-            @annotate pdfPage
+            @_getTextContent pdfPage
+
+            @_progressCallback()
 
             # Check if new page should be maybe rendered?
             @checkRender()
@@ -90,9 +91,7 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error showing #{ @_id }", args...
 
-  annotate: (pdfPage) =>
-    @_annotator.setPage pdfPage
-
+  _getTextContent: (pdfPage) =>
     console.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
     pdfPage.getTextContent().then (textContent) =>
@@ -100,6 +99,19 @@ class @Publication extends @Publication
       return if @_pages is null
 
       @_annotator.setTextContent pdfPage.pageNumber, textContent
+
+      # Good initial font size, we want text to cover whole page,
+      # but if there is not much text to begin with, we should not
+      # make it too big
+      fontSize = 21
+
+      $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
+      $textLayerDummy = $('<div/>').addClass('text-layer-dummy').css('font-size', fontSize).text(@_annotator.extractText pdfPage.pageNumber)
+      $displayPage.append($textLayerDummy)
+
+      while $textLayerDummy.outerHeight(true) > $displayPage.height() and fontSize > 1
+        fontSize--
+        $textLayerDummy.css('font-size', fontSize)
 
       console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
