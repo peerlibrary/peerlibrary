@@ -5,7 +5,7 @@ class @Publication extends @Publication
     super args...
 
     @_pages = null
-    @_annotator = new Annotator
+    @_annotator = null
 
   _viewport: (page) =>
     scale = SCALE
@@ -29,6 +29,7 @@ class @Publication extends @Publication
 
     @_pagesDone = 0
     @_pages = []
+    @_annotator = new Annotator
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -39,12 +40,13 @@ class @Publication extends @Publication
 
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $textLayer = $('<div/>').addClass('text-layer')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $('<div/>').addClass(
           'display-page'
         ).attr(
           id: "display-page-#{ pageNumber }"
-        ).append($canvas).append($loading).appendTo('#viewer .display-wrapper')
+        ).append($canvas).append($textLayer).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (pdfPage) =>
@@ -149,12 +151,11 @@ class @Publication extends @Publication
     $(window).off 'scroll.publication'
     $(window).off 'resize.publication'
 
-    for page in pages
-      page.pdfPage.destroy()
+    page.pdfPage.destroy() for page in pages
     @_pdf.destroy() if @_pdf
 
     # To make sure it is cleaned up
-    @_annotator.destroy()
+    @_annotator.destroy() if @_annotator
     @_annotator = null
 
   renderPage: (page) =>
@@ -189,6 +190,9 @@ class @Publication extends @Publication
       console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading").hide()
+
+      # Maybe we have to render text layer as well
+      @_annotator.checkRender()
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)

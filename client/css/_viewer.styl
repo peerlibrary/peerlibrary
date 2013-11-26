@@ -31,6 +31,26 @@
         canvas
           background rgba(255,255,255,1.0)
 
+        .display-canvas-loading
+          width 400px
+          height 400px
+
+        .text-layer
+          color rgba(230,20,20,0.4)
+          line-height 1
+          white-space pre
+          cursor text
+
+          /* We re-enable selection for text segments */
+          user-select text
+          -webkit-user-select text
+          -moz-user-select text
+          -o-user-select text
+          -ms-user-select text
+
+          .text-layer-segment
+            position absolute
+
         .loading
           position absolute
           left 50%
@@ -45,13 +65,10 @@
           background-repeat no-repeat
           text-align center
 
-        .display-canvas-loading
-          width 400px
-          height 400px
-
         .text-layer-dummy
           position absolute
           color transparent
+          cursor default
           top 0
           left 0
           width 100%

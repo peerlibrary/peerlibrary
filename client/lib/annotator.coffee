@@ -8,6 +8,7 @@ class @Page
     @textSegmentsDone = null
     @imageLayerDone = null
     @highlightsEnabled = false
+    @rendering = false
 
     @_extractedText = null
 
@@ -85,12 +86,46 @@ class @Page
     #@_showSegments()
     #@_showTextSegments()
 
+  render: =>
+    assert @highlightsEnabled
+
+    $textLayerDummy = @$displayPage.find('.text-layer-dummy')
+
+    return unless $textLayerDummy.is(':visible')
+
+    @rendering = true
+
+    $textLayerDummy.hide()
+
+    divs = for segment in @textSegments when segment.hasWidth
+      $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
+
+    @$displayPage.find('.text-layer').append divs
+
+    @rendering = false
+
+  remove: =>
+    $textLayerDummy = @$displayPage.find('.text-layer-dummy')
+
+    return if $textLayerDummy.is(':visible')
+
+    @$displayPage.find('.text-layer').empty()
+
+    $textLayerDummy.show()
+
 class @Annotator
   constructor: ->
     @_pages = []
 
+    $(window).on 'scroll.annotator', @checkRender
+    $(window).on 'resize.annotator', @checkRender
+
   destroy: =>
+    $(window).off 'scroll.annotator'
+    $(window).off 'resize.annotator'
+
     page.destroy() for page in @_pages
+    @_pages = []
 
   setPage: (pdfPage) =>
     # Initialize the page
@@ -110,3 +145,29 @@ class @Annotator
 
   imageLayer: (pageNumber) =>
     @_pages[pageNumber - 1].imageLayer()
+
+  checkRender: =>
+    pagesToRender = []
+    pagesToRemove = []
+
+    for page in @_pages
+      # If page is just in process of being rendered, we skip it
+      continue if page.rendering
+
+      # Page is not yet ready
+      continue unless page.highlightsEnabled
+
+      $canvas = page.$displayPage.find('canvas')
+
+      canvasTop = $canvas.offset().top
+      canvasBottom = canvasTop + $canvas.height()
+      # Add 100px so that we start rendering early
+      # TODO: Should we try to render a bit more in advance, so that search works better?
+      if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
+        pagesToRender.push page
+      else
+        # TODO: Only if page is not having a user selection (multipage selection in progress)
+        pagesToRemove.push page
+
+    page.render() for page in pagesToRender
+    page.remove() for page in pagesToRemove
