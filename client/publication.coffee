@@ -103,6 +103,10 @@ class @Publication extends @Publication
 
       console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
+      # Check if the page should be maybe rendered, but we
+      # skipped it because text content was not yet available
+      @checkRender()
+
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
       console.error "Error getting text content for page #{ pdfPage.pageNumber }", args...
@@ -110,6 +114,11 @@ class @Publication extends @Publication
   checkRender: =>
     for page in @_pages or []
       continue if page.rendering
+
+      # When rendering we also set text segment locations for what we need text
+      # content to be already available, so if we are before text content has
+      # been set, we skip (it will be retried after text content is set)
+      continue unless @_annotator.hasTextContent page.pageNumber
 
       $canvas = $("#display-page-#{ page.pageNumber } canvas")
 

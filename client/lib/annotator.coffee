@@ -82,6 +82,11 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
+  hasTextContent: (pageNumber) =>
+    return false unless @_pages[pageNumber - 1]
+
+    @_pages[pageNumber - 1].textContent isnt null
+
   textLayer: (pageNumber) =>
     @_pages[pageNumber - 1].textLayer()
 
