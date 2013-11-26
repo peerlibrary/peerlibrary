@@ -1,3 +1,5 @@
+MAX_TEXT_LAYER_SEGMENTS_TO_RENDER = 100000
+
 class @Page
   constructor: (@annotator, @pdfPage) ->
     @pageNumber = @pdfPage.pageNumber
@@ -100,7 +102,9 @@ class @Page
     divs = for segment in @textSegments when segment.hasWidth
       $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
 
-    @$displayPage.find('.text-layer').append divs
+    # There is no use rendering so many divs to make browser useless
+    # TODO: Report this to the server? Or should we simply discover such PDFs already on the server when processing them?
+    @$displayPage.find('.text-layer').append divs if divs.length <= MAX_TEXT_LAYER_SEGMENTS_TO_RENDER
 
     @rendering = false
 
