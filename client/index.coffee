@@ -108,7 +108,9 @@ draw = (time) ->
     triangles[i].draw()
     i++
 
-  renderer.render stage
+  return unless renderer
+
+  renderer?.render stage
   requestAnimationFrame draw
 
 generateTriangles = ->
