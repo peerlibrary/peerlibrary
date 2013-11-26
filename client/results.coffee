@@ -30,16 +30,16 @@ Deps.autorun ->
   if Session.get 'indexActive'
     Meteor.subscribe 'search-available'
 
+Template.results.created = ->
+  $(window).on 'scroll.results', ->
+    if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
+      increaseSearchLimit 10
+
 Template.results.rendered = ->
   $(@findAll '.scrubber').iscrubber()
 
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
-
-Template.results.created = ->
-  $(window).on 'scroll.results', ->
-    if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
-      increaseSearchLimit 10
 
 Template.results.destroyed = ->
   $(window).off 'scroll.results'
