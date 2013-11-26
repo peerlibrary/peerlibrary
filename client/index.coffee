@@ -189,5 +189,5 @@ Template.indexMain.rendered = ->
 Template.indexMain.destroyed = ->
   triangles = []
   renderer = undefined
+  $('.landing canvas').remove()
   $('body').removeClass 'landing'
-  $('body canvas').remove()
