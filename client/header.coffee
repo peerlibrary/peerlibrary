@@ -18,7 +18,7 @@ Template.header.events =
     naturalQueryChange $(template.findAll '.search-input').val()
 
   'change .search-input': (e, template) ->
-    Meteor.Router.to Meteor.Router.indexPath()
+    Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     naturalQueryChange $(template.findAll '.search-input').val()
@@ -28,14 +28,14 @@ Template.header.events =
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
     if val
-      Meteor.Router.to Meteor.Router.indexPath()
+      Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
       Session.set 'searchActive', true
       Session.set 'searchFocused', true
 
     naturalQueryChange val
 
   'paste .search-input': (e, template) ->
-    Meteor.Router.to Meteor.Router.indexPath()
+    Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     naturalQueryChange $(template.findAll '.search-input').val()
