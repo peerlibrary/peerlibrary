@@ -12,3 +12,24 @@ Template.indexStatistics.persons = ->
 
 Template.index.searchActive = ->
   Session.get 'searchActive'
+
+Template.indexMain.created = ->
+  @_background = new Background
+  @_backgroundRendered = false
+
+  $(window).on 'resize.background', @_background.resize
+
+Template.indexMain.rendered = ->
+  return if @_backgroundRendered
+
+  Deps.nonreactive =>
+    $(@find '.landing').append @_background.render()
+
+    @_backgroundRendered = true
+
+Template.indexMain.destroyed = ->
+  $(window).off 'resize.background'
+
+  @_background.destroy()
+  @_background = null
+  @_backgroundRendered = false

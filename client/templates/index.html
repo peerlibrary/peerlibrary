@@ -2,6 +2,7 @@
   {{#if searchActive}}
     {{> results}}
   {{else}}
+    {{> indexMain}}
     {{> indexStatistics}}
   {{/if}}
 </template>
@@ -14,11 +15,17 @@
     </li>
     <li>
       <span class="value">{{persons}}</span>
-      <span class="label">Authors</span>
+      <span class="label">People</span>
     </li>
   </ul>
 </template>
 
-<template name="background">
-  <canvas></canvas>
+<template name="indexMain">
+  {{#constant}}
+    <div class="landing">
+      <div class="big-logo">
+        <h1>PeerLibrary</h1>
+      </div>
+    </div>
+  {{/constant}}
 </template>

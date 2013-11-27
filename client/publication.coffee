@@ -106,6 +106,8 @@ class @Publication extends @Publication
       page.page.destroy()
     @_pdf.destroy() if @_pdf
 
+    $('#viewer .display-wrapper').empty()
+
   renderPage: (page) =>
     return if page.rendering
     page.rendering = true
