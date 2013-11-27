@@ -36,20 +36,22 @@
           height 400px
 
         .text-layer
-          color rgba(230,20,20,0.4)
+          //color rgba(230,20,20,0.4)
+          color transparent
           line-height 1
           white-space pre
           cursor text
 
-          /* We re-enable selection for text segments */
-          user-select text
-          -webkit-user-select text
-          -moz-user-select text
-          -o-user-select text
-          -ms-user-select text
-
           .text-layer-segment
             position absolute
+            //background-color rgba(180,170,0,0.2)
+
+            /* We re-enable selection for text layer */
+            user-select text
+            -webkit-user-select text
+            -moz-user-select text
+            -o-user-select text
+            -ms-user-select text
 
         .loading
           position absolute

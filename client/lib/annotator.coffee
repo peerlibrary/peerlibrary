@@ -95,6 +95,57 @@ class @Page
     #@_showSegments()
     #@_showTextSegments()
 
+  _distance: (position, area) =>
+    distanceXLeft = position.left - area.left
+    distanceXRight = position.left - (area.left + area.width)
+
+    distanceYTop = position.top - area.top
+    distanceYBottom = position.top - (area.top + area.height)
+
+    distanceX = if Math.abs(distanceXLeft) < Math.abs(distanceXRight) then distanceXLeft else distanceXRight
+    if position.left > area.left and position.left < area.left + area.width
+      distanceX = 0
+
+    distanceY = if Math.abs(distanceYTop) < Math.abs(distanceYBottom) then distanceYTop else distanceYBottom
+    if position.top > area.top and position.top < area.top + area.height
+      distanceY = 0
+
+    distanceX * distanceX + distanceY * distanceY
+
+  _findClosestSegment: (position) =>
+    closestSegmentIndex = -1
+    closestDistance = Number.MAX_VALUE
+
+    for segment, i in @textSegments
+      distance = @_distance position, segment.boundingBox
+      if distance < closestDistance
+        closestSegmentIndex = i
+        closestDistance = distance
+
+    [closestSegmentIndex, Math.sqrt(closestDistance)]
+
+  _findClosestSegmentFromEvent: (e) =>
+    $canvas = @$displayPage.find('canvas')
+
+    offset = $canvas.offset()
+    left = e.pageX - offset.left
+    top = e.pageY - offset.top
+    @_findClosestSegment
+      left: left
+      top: top
+
+  padTextSegment: (e) =>
+    [closestSegmentIndex, closestDistance] = @_findClosestSegmentFromEvent e
+    $closestSegmentDom = @textSegments[closestSegmentIndex].$domElement
+
+    @$displayPage.find('.text-layer-segment').css
+      padding: 0
+      margin: 0
+    $closestSegmentDom.css
+      marginLeft: -closestDistance - 10
+      marginTop: -closestDistance - 10
+      padding: closestDistance + 10
+
   render: =>
     assert @highlightsEnabled
 
@@ -107,20 +158,29 @@ class @Page
     $textLayerDummy.hide()
 
     divs = for segment in @textSegments
-      $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
+      segment.$domElement = $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
 
     # There is no use rendering so many divs to make browser useless
     # TODO: Report this to the server? Or should we simply discover such PDFs already on the server when processing them?
     @$displayPage.find('.text-layer').append divs if divs.length <= MAX_TEXT_LAYER_SEGMENTS_TO_RENDER
 
+    @$displayPage.on 'mousemove.annotator', @padTextSegment
+
     @rendering = false
 
   remove: =>
+    assert not @rendering
+
     $textLayerDummy = @$displayPage.find('.text-layer-dummy')
 
     return if $textLayerDummy.is(':visible')
 
+    @$displayPage.off 'mousemove.annotator'
+
     @$displayPage.find('.text-layer').empty()
+
+    for segment in @textSegments
+      segment.$domElement = null
 
     $textLayerDummy.show()
 
