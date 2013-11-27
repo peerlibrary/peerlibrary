@@ -34,7 +34,7 @@ class @Page
 
     appendText: (geom) =>
       segment = PDFJS.pdfTextSegment @textContent, textContentIndex, geom
-      @textSegments.push segment if segment.hasWidth
+      @textSegments.push segment if segment.width
 
       textContentIndex++
 
@@ -137,14 +137,22 @@ class @Page
   padTextSegment: (e) =>
     [closestSegmentIndex, closestDistance] = @_findClosestSegmentFromEvent e
     $closestSegmentDom = @textSegments[closestSegmentIndex].$domElement
+    angle = @textSegments[closestSegmentIndex].angle
+
+    padding = closestDistance + 10
+
+    # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
+    # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
+    left = padding * (Math.cos(angle) - Math.sin(angle))
+    top = padding * (Math.sin(angle) + Math.cos(angle))
 
     @$displayPage.find('.text-layer-segment').css
       padding: 0
       margin: 0
     $closestSegmentDom.css
-      marginLeft: -closestDistance - 10
-      marginTop: -closestDistance - 10
-      padding: closestDistance + 10
+      marginLeft: -left
+      marginTop: -top
+      padding: padding
 
   render: =>
     assert @highlightsEnabled

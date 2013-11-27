@@ -6,15 +6,15 @@ else
 
 PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
   fontHeight = geom.fontSize * Math.abs(geom.vScale)
-  canvasWidth = geom.canvasWidth * Math.abs(geom.hScale)
-  angle = geom.angle * (180 / Math.PI)
 
   segment =
     geom: geom
     text: textContent.bidiTexts[textContentIndex].str
     direction: textContent.bidiTexts[textContentIndex].dir
+    angle: geom.angle
     textContentIndex: textContentIndex
-    hasWidth: false
+    width: 0
+    canvasWidth: geom.canvasWidth * Math.abs(geom.hScale)
 
   segment.isWhitespace = !/\S/.test(segment.text)
 
@@ -26,15 +26,17 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
 
   unless segment.isWhitespace
     ctx.font = "#{ segment.style.fontSize }px #{ segment.style.fontFamily }";
-    width = ctx.measureText(segment.text).width
+    segment.width = ctx.measureText(segment.text).width
 
-    if width > 0
-      segment.hasWidth = true
-      segment.style.transform = "rotate(#{ angle }deg) scale(#{ canvasWidth / width }, 1)";
+    assert segment.width >= 0, segment.width
+
+    if segment.width
+      angle = geom.angle * (180 / Math.PI)
+      segment.style.transform = "rotate(#{ angle }deg) scale(#{ segment.canvasWidth / segment.width }, 1)";
       segment.style.transformOrigin = '0% 0%';
 
   segment.boundingBox =
-    width: canvasWidth
+    width: segment.canvasWidth
     height: fontHeight
     left: segment.style.left
     top: segment.style.top
