@@ -81,7 +81,7 @@ class @Background
     @ratio = window.devicePixelRatio or 1
 
     @stage = null
-    @triangles = []
+    @triangles = {}
     @vectors = {}
 
   destroy: =>
@@ -89,7 +89,7 @@ class @Background
 
     # To make sure memory is released
     @stage = null
-    @triangles = []
+    @triangles = {}
     @vectors = {}
 
   render: =>
@@ -124,10 +124,16 @@ class @Background
   generateTriangles: =>
     return unless @renderer
 
-    getVector = (x, y) =>
-      key = "#{ x },#{ y }"
-      @vectors[key] ?= new Vector x, y
+    getVector = (args...) =>
+      key = args.join ','
+      @vectors[key] ?= new Vector args...
       @vectors[key]
+
+    getTriangle = (args...) =>
+      key = args.join ','
+      [x1, y1, x2, y2, x3, y3] = args
+      @triangles[key] ?= new Triangle @, getVector(x1, y1), getVector(x2, y2), getVector(x3, y3)
+      @triangles[key]
 
     originX = -200
     originY = -200
@@ -147,12 +153,10 @@ class @Background
         o = i % 2
         e = 1 - i % 2
 
-        triangle = new Triangle(@, getVector(x, y + deltaY * o), getVector(x + deltaX / 2, y + deltaY * e), getVector(x + deltaX, y + deltaY * o))
-        @triangles.push triangle
+        triangle = getTriangle x, y + deltaY * o, x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o
         @stage.addChild triangle.graphics
 
-        triangle = new Triangle(@, getVector(x + deltaX / 2, y + deltaY * e), getVector(x + deltaX, y + deltaY * o), getVector(x + 3 * deltaX / 2, y + deltaY * e))
-        @triangles.push triangle
+        triangle = getTriangle x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o, x + 3 * deltaX / 2, y + deltaY * e
         @stage.addChild triangle.graphics
 
     return # To not have CoffeeScript return a result of for loop
@@ -161,7 +165,7 @@ class @Background
     return unless @renderer
 
     vector.update time for key, vector of @vectors
-    triangle.draw() for triangle in @triangles
+    triangle.draw() for key, triangle of @triangles
 
     @renderer.render @stage
 
