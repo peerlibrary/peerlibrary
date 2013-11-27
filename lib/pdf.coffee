@@ -6,6 +6,7 @@ else
 
 PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
   fontHeight = geom.fontSize * Math.abs(geom.vScale)
+  canvasWidth = geom.canvasWidth * Math.abs(geom.hScale)
 
   segment =
     geom: geom
@@ -14,15 +15,15 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
     angle: geom.angle
     textContentIndex: textContentIndex
     width: 0
-    canvasWidth: geom.canvasWidth * Math.abs(geom.hScale)
+    scale: 1
 
   segment.isWhitespace = !/\S/.test(segment.text)
 
   segment.style =
     fontSize: fontHeight
     fontFamily: geom.fontFamily
-    left: geom.x + fontHeight * Math.sin(geom.angle)
-    top: geom.y - fontHeight * Math.cos(geom.angle)
+    left: geom.x + fontHeight * Math.sin(segment.angle)
+    top: geom.y - fontHeight * Math.cos(segment.angle)
 
   unless segment.isWhitespace
     ctx.font = "#{ segment.style.fontSize }px #{ segment.style.fontFamily }";
@@ -31,29 +32,30 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
     assert segment.width >= 0, segment.width
 
     if segment.width
-      angle = geom.angle * (180 / Math.PI)
-      segment.style.transform = "rotate(#{ angle }deg) scale(#{ segment.canvasWidth / segment.width }, 1)";
+      angle = segment.angle * (180 / Math.PI)
+      segment.scale = canvasWidth / segment.width
+      segment.style.transform = "rotate(#{ angle }deg) scale(#{ segment.scale }, 1)";
       segment.style.transformOrigin = '0% 0%';
 
   segment.boundingBox =
-    width: segment.canvasWidth
+    width: canvasWidth
     height: fontHeight
     left: segment.style.left
     top: segment.style.top
 
   # When the angle is not 0, we rotate and compute the bounding box of the rotated segment
-  if geom.angle isnt 0.0
+  if segment.angle isnt 0.0
     x = [
       segment.boundingBox.left
-      segment.boundingBox.left + segment.boundingBox.width * Math.cos(geom.angle)
-      segment.boundingBox.left - segment.boundingBox.height * Math.sin(geom.angle)
-      segment.boundingBox.left + segment.boundingBox.width * Math.cos(geom.angle) - segment.boundingBox.height * Math.sin(geom.angle)
+      segment.boundingBox.left + segment.boundingBox.width * Math.cos(segment.angle)
+      segment.boundingBox.left - segment.boundingBox.height * Math.sin(segment.angle)
+      segment.boundingBox.left + segment.boundingBox.width * Math.cos(segment.angle) - segment.boundingBox.height * Math.sin(segment.angle)
     ]
     y = [
       segment.boundingBox.top
-      segment.boundingBox.top + segment.boundingBox.width * Math.sin(geom.angle)
-      segment.boundingBox.top + segment.boundingBox.height * Math.cos(geom.angle)
-      segment.boundingBox.top + segment.boundingBox.width * Math.sin(geom.angle) + segment.boundingBox.height * Math.cos(geom.angle)
+      segment.boundingBox.top + segment.boundingBox.width * Math.sin(segment.angle)
+      segment.boundingBox.top + segment.boundingBox.height * Math.cos(segment.angle)
+      segment.boundingBox.top + segment.boundingBox.width * Math.sin(segment.angle) + segment.boundingBox.height * Math.cos(segment.angle)
     ]
 
     segment.boundingBox.left = _.min(x)

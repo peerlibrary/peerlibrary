@@ -138,13 +138,15 @@ class @Page
     [closestSegmentIndex, closestDistance] = @_findClosestSegmentFromEvent e
     $closestSegmentDom = @textSegments[closestSegmentIndex].$domElement
     angle = @textSegments[closestSegmentIndex].angle
+    scale = @textSegments[closestSegmentIndex].scale
 
     padding = closestDistance + 10
 
     # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
     # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
-    left = padding * (Math.cos(angle) - Math.sin(angle))
-    top = padding * (Math.sin(angle) + Math.cos(angle))
+    # We scale x because we use scaling transformation along x-axis as well
+    left = padding * (scale * Math.cos(angle) - Math.sin(angle))
+    top = padding * (scale * Math.sin(angle) + Math.cos(angle))
 
     @$displayPage.find('.text-layer-segment').css
       padding: 0
