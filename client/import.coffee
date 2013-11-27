@@ -158,8 +158,12 @@ Meteor.startup ->
 
     if Meteor.personId()
       Session.set 'importOverlayActive', true
+      e.dataTransfer.effectAllowed = 'copy'
+      e.dataTransfer.dropEffect = 'copy'
     else
       Session.set 'loginOverlayActive', true
+      e.dataTransfer.effectAllowed = 'none'
+      e.dataTransfer.dropEffect = 'none'
 
 Template.loginOverlay.loginOverlayActive = ->
   Session.get 'loginOverlayActive'
@@ -167,6 +171,8 @@ Template.loginOverlay.loginOverlayActive = ->
 Template.loginOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+    e.dataTransfer.effectAllowed = 'none'
+    e.dataTransfer.dropEffect = 'none'
 
   'dragleave': (e, template) ->
     e.preventDefault()
@@ -182,6 +188,8 @@ Template.loginOverlay.events =
 Template.importOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+    e.dataTransfer.effectAllowed = 'copy'
+    e.dataTransfer.dropEffect = 'copy'
 
   'dragleave': (e, template) ->
     e.preventDefault()
