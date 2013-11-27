@@ -4,15 +4,16 @@ else
   # TODO: Is OK if size here is hard-coded? Is it too big? Is this even used on the server?
   ctx = new PDFJS.canvas(1000, 1000).getContext '2d'
 
-PDFJS.pdfTextSegment = (textContent, i, geom) ->
+PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
   fontHeight = geom.fontSize * Math.abs(geom.vScale)
   canvasWidth = geom.canvasWidth * Math.abs(geom.hScale)
   angle = geom.angle * (180 / Math.PI)
 
   segment =
     geom: geom
-    text: textContent.bidiTexts[i].str
-    direction: textContent.bidiTexts[i].dir
+    text: textContent.bidiTexts[textContentIndex].str
+    direction: textContent.bidiTexts[textContentIndex].dir
+    textContentIndex: textContentIndex
     hasWidth: false
 
   segment.isWhitespace = !/\S/.test(segment.text)

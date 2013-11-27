@@ -20,8 +20,12 @@ class @Page
     # Nothing really to do
 
   textLayer: =>
+    textContentIndex = 0
+
     beginLayout: =>
       @textSegmentsDone = false
+
+      textContentIndex = 0
 
     endLayout: =>
       @textSegmentsDone = true
@@ -29,7 +33,10 @@ class @Page
       @_enableHighligts()
 
     appendText: (geom) =>
-      @textSegments.push PDFJS.pdfTextSegment @textContent, @textSegments.length, geom
+      segment = PDFJS.pdfTextSegment @textContent, textContentIndex, geom
+      @textSegments.push segment if segment.hasWidth
+
+      textContentIndex++
 
   imageLayer: =>
     beginLayout: =>
@@ -72,7 +79,7 @@ class @Page
 
   # For debugging: draw divs with text for all text segments
   _showTextSegments: =>
-    divs = for segment in @textSegments when segment.hasWidth
+    divs = for segment in @textSegments
       $('<div/>').addClass('segment text-segment').css(segment.style).text(segment.text)
 
     @$displayPage.append divs
@@ -99,7 +106,7 @@ class @Page
 
     $textLayerDummy.hide()
 
-    divs = for segment in @textSegments when segment.hasWidth
+    divs = for segment in @textSegments
       $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
 
     # There is no use rendering so many divs to make browser useless
