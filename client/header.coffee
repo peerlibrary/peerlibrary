@@ -82,7 +82,7 @@ Template.searchInput.searchInvitation = ->
   if Session.get 'currentSearchQuery'
     Session.get 'currentSearchQuery'
   else
-    "Search knowledge and people"
+    "Search scholarly literature and people"
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')
