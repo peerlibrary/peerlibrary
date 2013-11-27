@@ -1,9 +1,11 @@
 @INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
 
 Meteor.Router.add
-  '/': ->
-    Session.set 'indexActive', true
-    'index'
+  '/':
+    as: 'index'
+    to: ->
+      Session.set 'indexActive', true
+      'index'
 
   '/p/:publicationId/:publicationSlug?':
     as: 'publication'
@@ -55,6 +57,9 @@ Meteor.Router.beforeRouting = ->
   Session.set 'currentPersonSlug', null
 
   # Overlays are special and we do not clear them while routing
+
+  # Close login buttons dialog box when moving between pages
+  Accounts._loginButtonsSession.closeDropdown()
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->
