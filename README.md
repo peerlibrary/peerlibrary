@@ -1,7 +1,7 @@
 PeerLibrary
 ===========
 
-Enriching the experience of open access scholarly literature.
+Capturing the global conversation on scholarly literature.
 
 http://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
