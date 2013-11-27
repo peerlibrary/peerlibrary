@@ -258,7 +258,7 @@ Meteor.methods
         #msc2010: record['msc-class']?[0].split(/\s*[,;]\s*|\s*\([^)]*\)\s*|\s+/).filter (x) -> x
         # Converts strings like "F.2.2; I.2.7" into ["F.2.2","I.2.7"]
         #acm1998: record['acm-class']?[0].split(/\s*[,;]\s*|\s+/).filter (x) -> x
-        foreignId: record._id[0]
+        foreignId: record.id[0]
         # TODO: Put foreign categories into tags?
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
