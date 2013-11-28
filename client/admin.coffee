@@ -1,7 +1,7 @@
 Deps.autorun ->
   if Session.equals 'adminActive', true
     Meteor.subscribe 'arxiv-pdfs'
-    Meteor.subscribe 'errors'
+    Meteor.subscribe 'logged-errors'
 
 Template.adminCheck.isAdmin = ->
   Meteor.person()?.isAdmin
@@ -23,7 +23,7 @@ Template.adminErrors.events
     throw new Error "Dummy error"
 
 Template.adminErrors.errors = ->
-  Errors.find {}
+  LoggedErrors.find {}
 
 Template.adminArXiv.events
   'click button.sync-arxiv-pdf-cache': (e, template) ->

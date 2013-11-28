@@ -1,6 +1,6 @@
 oldOnError = window.onerror
 window.onerror = (errorMsg, url, lineNumber) ->
-  Errors.insert
+  LoggedErrors.insert
     errorMsg: errorMsg
     url: url
     lineNumber: lineNumber

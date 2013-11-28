@@ -1,6 +1,6 @@
-@Errors = new Meteor.Collection 'Errors', transform: (doc) => new @Error doc
+@LoggedErrors = new Meteor.Collection 'LoggedErrors', transform: (doc) => new @LoggedError doc
 
-class @Error extends Document
+class @LoggedError extends Document
   # errorMsg: the error message
   # url: url that error ocurred on
   # lineNumber: line number in the code
@@ -11,4 +11,4 @@ class @Error extends Document
   # screenHeight: height of screen
 
   @Meta =>
-    collection: Errors
+    collection: LoggedErrors
