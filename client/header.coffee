@@ -11,17 +11,17 @@ Template.header.events =
 
   'click .search-button': (e, template) ->
     Session.set 'searchActive', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
   'change .search-input': (e, template) ->
     Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
   'keyup .search-input': (e, template) ->
     val = $(template.findAll '.search-input').val()
@@ -32,25 +32,25 @@ Template.header.events =
       Session.set 'searchActive', true
       Session.set 'searchFocused', true
 
-    naturalQueryChange val
+    simpleQueryChange val
 
   'paste .search-input': (e, template) ->
     Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
   'cut .search-input': (e, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
   'submit #search': (e, template) ->
     e.preventDefault()
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
 
 Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
