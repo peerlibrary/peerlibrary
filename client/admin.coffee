@@ -8,8 +8,8 @@ Template.adminCheck.isAdmin = ->
 
 Template.adminDevelopment.events
   'click button.sample-data': (e, template) ->
-    # TODO
-    return
+    Meteor.call 'sample-data', (error, result) ->
+      throw error if error
 
 Template.adminPublications.events
   'click button.process-pdfs': (e, template) ->

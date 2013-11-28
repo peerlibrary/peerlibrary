@@ -28,6 +28,15 @@ randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
 Meteor.methods
+  'sample-data': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    @unblock()
+
+    Meteor.call 'sync-arxiv-metadata'
+    Meteor.call 'sync-local-pdf-cache'
+    Meteor.call 'process-pdfs'
+
   'sync-arxiv-pdf-cache': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
