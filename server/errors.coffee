@@ -6,5 +6,12 @@ Errors.allow
     true
 
 Meteor.publish 'errors', ->
-  # TODO: Only allow admin users to subscribe to Errors
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    isAdmin: 1
+
+  return unless person?.isAdmin
+
   Errors.find {}

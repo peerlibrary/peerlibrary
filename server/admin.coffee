@@ -341,6 +341,14 @@ Meteor.methods
     Log.info "Done"
 
 Meteor.publish 'arxiv-pdfs', ->
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    isAdmin: 1
+
+  return unless person?.isAdmin
+
   ArXivPDFs.find {},
     sort: [
       ['processingStart', 'desc']
