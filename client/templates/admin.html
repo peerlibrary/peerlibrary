@@ -1,10 +1,17 @@
 <template name="admin">
   <div class="simple">
+    {{> adminCheck}}
     {{> adminDevelopment}}
     {{> adminPublications}}
     {{> adminErrors}}
     {{> adminSources}}
   </div>
+</template>
+
+<template name="adminCheck">
+  {{#unless isAdmin}}
+    <p class="warning">You are not logged in as an administrator!</p>
+  {{/unless}}
 </template>
 
 <template name="adminDevelopment">

@@ -4,10 +4,10 @@ Meteor.startup ->
   Log.info "Starting PeerLibrary"
 
   if Meteor.users.find({}, limit: 1).count() == 0
-    Log.info "Populating users"
+    Log.info "Populating dummy users"
 
     # Carl Sagan
-    Accounts.createUser
+    carlSaganUserId = Accounts.createUser
       email: 'sagan@berkeley.edu'
       username: 'carl-sagan'
       password: INITIAL_PASSWORD
@@ -77,8 +77,17 @@ Meteor.startup ->
       username: 'paul-feyerabend'
       password: INITIAL_PASSWORD
 
+    # Make Carl Sagan administrator
+    Persons.update
+      'user._id': carlSaganUserId
+    ,
+      $set:
+        isAdmin: true
+
     Log.info "Created users 'carl-sagan', 'hannah-arendt', 'paul-feyerabend' with password '#{ INITIAL_PASSWORD }'"
 
-    Log.info "You probably want to populate the database with some publications, you can do that in the admin interface at /admin"
+    Log.info "User 'carl-sagan' set as administrator!"
+
+    Log.info "You probably want to populate the database with some publications, which you can do in the admin interface at /admin, logged in as 'carl-sagan'"
 
   Log.info "Done"
