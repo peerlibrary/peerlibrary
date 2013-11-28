@@ -23,7 +23,7 @@ header
     text-decoration none
     line-height 45px
     font-size 22px
-    font-family "Signika Negative", sans-serif
+    font-family "Source Sans Pro", sans-serif
     background transparent
     display inline-block
     padding 0 20px
@@ -294,13 +294,11 @@ header.index-header
         font-size 24px
         background transparent
       input::-webkit-input-placeholder
-          font-family "Signika Negative", sans-serif
+          font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
-          font-weight 300
       input::-moz-placeholder
-          font-family "Signika Negative", sans-serif
+          font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
-          font-weight 300
 
   .search-wrapper:hover
     background transparent
@@ -310,15 +308,19 @@ header.index-header
 
   ul.top-menu
     a.login-link-text
-      border 1px solid rgba(20,20,20,0.8)
-      font-size 18px
-      line-height 18px
+      font-size 14px
+      font-weight 600
+      line-height 14px
       padding 8px 20px
       position absolute
       top 15px
       right 25px
-      color rgba(20,20,20,0.8)
+      color rgb(255,255,255)
+      background rgba(87,173,104,0.7)
       border-radius 4px
+      transition 0.2s
+    a.login-link-text:hover
+      background rgba(87,173,104,1)
 
 header.no-index-header
   .search-wrapper
