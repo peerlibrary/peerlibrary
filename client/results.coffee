@@ -27,8 +27,8 @@ Deps.autorun ->
     Session.set 'currentSearchQueryLoading', false
 
 Deps.autorun ->
-  if Session.get 'indexActive'
-    Meteor.subscribe 'search-available'
+  if Session.get 'searchActive'
+    Meteor.subscribe 'statistics'
 
 Template.results.created = ->
   $(window).on 'scroll.results', ->
@@ -151,16 +151,12 @@ Template.sidebarSearch.events =
     structuredQueryChange(sidebarIntoQuery template)
 
 Template.sidebarSearch.minPublicationDate = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  moment.utc(searchResult.minPublicationDate).year() if searchResult?.minPublicationDate
+  statistics = Statistics.findOne()
+  moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
 
 Template.sidebarSearch.maxPublicationDate = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  moment.utc(searchResult.maxPublicationDate).year() if searchResult?.maxPublicationDate
+  statistics = Statistics.findOne()
+  moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->
   # TODO: Set from structured query
