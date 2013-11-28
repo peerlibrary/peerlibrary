@@ -29,6 +29,8 @@ randomTimestamp = ->
 
 Meteor.methods
   'sync-arxiv-pdf-cache': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
     @unblock()
 
     if not Meteor.settings.AWS
@@ -142,6 +144,8 @@ Meteor.methods
     Log.info "Done"
 
   'sync-arxiv-metadata': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
     @unblock()
 
     Log.info "Syncing arXiv metadata"
@@ -285,6 +289,8 @@ Meteor.methods
     Meteor.call 'sync-local-pdf-cache' if count > 0
 
   'sync-local-pdf-cache': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
     @unblock()
 
     Log.info "Syncing local PDF cache"
@@ -303,6 +309,8 @@ Meteor.methods
     Meteor.call 'process-pdfs' if count > 0
 
   'process-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
     @unblock()
 
     Log.info "Processing pending PDFs"
