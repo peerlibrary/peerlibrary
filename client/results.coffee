@@ -116,6 +116,7 @@ Template.sidebarSearch.rendered = ->
   end = publicationDate.data('max') unless end
 
   slider = $(@findAll '#date-range').slider
+    disabled: true # TODO: For now disabled
     range: true
     min: publicationDate.data('min')
     max: publicationDate.data('max')
