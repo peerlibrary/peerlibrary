@@ -25,15 +25,17 @@ Template.adminErrors.events
 Template.adminErrors.errors = ->
   LoggedErrors.find {}
 
+Template.adminSources.events
+  'click button.sync-local-pdf-cache': (e, template) ->
+    Meteor.call 'sync-local-pdf-cache', (error, result) ->
+      throw error if error
+
 Template.adminArXiv.events
   'click button.sync-arxiv-pdf-cache': (e, template) ->
     Meteor.call 'sync-arxiv-pdf-cache', (error, result) ->
       throw error if error
   'click button.sync-arxiv-metadata': (e, template) ->
     Meteor.call 'sync-arxiv-metadata', (error, result) ->
-      throw error if error
-  'click button.sync-local-pdf-cache': (e, template) ->
-    Meteor.call 'sync-local-pdf-cache', (error, result) ->
       throw error if error
 
 Template.adminArXiv.PDFs = ->
