@@ -1,37 +1,63 @@
 <template name="admin">
-  {{> adminButtons}}
-  {{> errorTable}}
-  <ul>
-    {{#each arXivPDFs}}
-      {{> arXivPDF}}
-    {{/each}}
-  </ul>
+  <div class="simple">
+    {{> adminDevelopment}}
+    {{> adminPublications}}
+    {{> adminErrors}}
+    {{> adminSources}}
+  </div>
 </template>
 
-<template name="arXivPDF">
-  <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
+<template name="adminDevelopment">
+  <h2>Development</h2>
+  <div class="admin-buttons">
+    <button class="sample-data">Initialize database with sample data</button>
+  </div>
 </template>
 
-<template name="adminButtons">
-  <div class='admin-buttons' style='padding-top:300px'>
-    <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
-    <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
+<template name="adminPublications">
+  <h2>Publications</h2>
+  <div class="admin-buttons">
     <button class="sync-local-pdf-cache">Sync local PDF cache</button>
     <button class="process-pdfs">Process pending PDFs</button>
   </div>
 </template>
 
-<template name="errorTable">
-  <div class="log-table">
-    <h2>Error Log</h2>
-    <button class="dummy-error">Create Dummy Error</button>
-    {{#each errors}}
-      {{> errorTableItem}}
-    {{/each}}
+<template name="adminErrors">
+  <h2>Errors</h2>
+  <div class="admin-buttons">
+    <button class="dummy-error">Create a dummy error</button>
   </div>
+  <h3>Error Log</h3>
+  <ul class="admin-errors">
+    {{#each errors}}
+      {{> adminErrorsItem}}
+    {{/each}}
+  </ul>
 </template>
 
-<template name="errorTableItem">
+<template name="adminErrorsItem">
   <li>{{errorMsg}} | {{lineNumber}} | {{userAgent}} | {{screenWidth}} | {{screenHeight}} |
       {{windowWidth}} | {{windowHeight}}</li>
+</template>
+
+<template name="adminSources">
+  <h2>External Sources</h2>
+  {{> adminArXiv}}
+</template>
+
+<template name="adminArXiv">
+  <h3>ArXiv</h3>
+  <div class="admin-buttons">
+    <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
+    <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
+  </div>
+  <ul>
+    {{#each PDFs}}
+      {{> adminArXivPDFsItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="adminArXivPDFsItem">
+  <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
 </template>
