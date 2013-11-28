@@ -42,8 +42,10 @@
 </template>
 
 <template name="adminErrorsItem">
-  <li>{{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}} |
-      window {{windowWidth}}x{{windowHeight}}</li>
+  <li>
+    {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
+    | window {{windowWidth}}x{{windowHeight}}
+  </li>
 </template>
 
 <template name="adminSources">
