@@ -91,6 +91,9 @@ class @Publication extends @Publication
 
 Meteor.methods
   createPublication: (filename, sha256) ->
+    check filename, String
+    check sha256, String
+
     throw new Meteor.Error 403, "User is not signed in." unless Meteor.personId()
 
     existingPublication = Publications.findOne
@@ -248,6 +251,8 @@ Meteor.methods
           _id: publication._id
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
+  check slug, String
+
   return unless slug
 
   author = Persons.findOne
@@ -273,6 +278,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'publications-by-id', (id) ->
+  check id, String
+
   return unless id
 
   # TODO: Make this reactive
@@ -293,6 +300,8 @@ Meteor.publish 'publications-by-id', (id) ->
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'publications-by-ids', (ids) ->
+  check ids, [String]
+
   return unless ids?.length
 
   # TODO: Make this reactive

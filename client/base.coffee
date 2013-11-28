@@ -41,7 +41,6 @@ Meteor.Router.add
 
 Meteor.Router.beforeRouting = ->
   Session.set 'indexActive', false
-  Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
   Session.set 'currentSearchQuery', null
   Session.set 'currentSearchQueryCountPublications', 0
   Session.set 'currentSearchQueryCountPersons', 0

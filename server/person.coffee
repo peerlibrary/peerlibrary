@@ -39,6 +39,10 @@ class @Person extends @Person
       library: 1
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
+  check slug, String
+
+  return unless slug
+
   Persons.find
     $or: [
         slug: slug
