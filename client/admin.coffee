@@ -12,9 +12,6 @@ Template.adminDevelopment.events
     return
 
 Template.adminPublications.events
-  'click button.sync-local-pdf-cache': (e, template) ->
-    Meteor.call 'sync-local-pdf-cache', (error, result) ->
-      throw error if error
   'click button.process-pdfs': (e, template) ->
     Meteor.call 'process-pdfs', (error, result) ->
       throw error if error
@@ -34,6 +31,9 @@ Template.adminArXiv.events
       throw error if error
   'click button.sync-arxiv-metadata': (e, template) ->
     Meteor.call 'sync-arxiv-metadata', (error, result) ->
+      throw error if error
+  'click button.sync-local-pdf-cache': (e, template) ->
+    Meteor.call 'sync-local-pdf-cache', (error, result) ->
       throw error if error
 
 Template.adminArXiv.PDFs = ->

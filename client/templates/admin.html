@@ -24,7 +24,6 @@
 <template name="adminPublications">
   <h2>Publications</h2>
   <div class="admin-buttons">
-    <button class="sync-local-pdf-cache">Sync local PDF cache</button>
     <button class="process-pdfs">Process pending PDFs</button>
   </div>
 </template>
@@ -57,6 +56,7 @@
   <div class="admin-buttons">
     <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
     <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
+    <button class="sync-local-pdf-cache">Sync local PDF cache</button>
   </div>
   <ul>
     {{#each PDFs}}
