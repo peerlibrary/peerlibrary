@@ -1,6 +1,7 @@
 Deps.autorun ->
   if Session.equals 'adminActive', true
     Meteor.subscribe 'arxiv-pdfs'
+    Meteor.subscribe 'errors'
 
 Template.admin.arXivPDFs = ->
   ArXivPDFs.find {},
@@ -18,3 +19,11 @@ Template.adminButtons.events
     Meteor.call 'sync-local-pdf-cache'
   'click button.process-pdfs': (e, template) ->
     Meteor.call 'process-pdfs'
+
+Template.errorTable.events
+  # Creates a dummy error on button click
+  'click .dummy-error': (e, template) ->
+    throw new Error "Dummy error"
+
+Template.errorTable.errors = ->
+  Errors.find {}

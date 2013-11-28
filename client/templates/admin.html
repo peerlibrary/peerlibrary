@@ -1,5 +1,6 @@
 <template name="admin">
-  {{> adminButtons }}
+  {{> adminButtons}}
+  {{> errorTable}}
   <ul>
     {{#each arXivPDFs}}
       {{> arXivPDF}}
@@ -18,4 +19,19 @@
     <button class="sync-local-pdf-cache">Sync local PDF cache</button>
     <button class="process-pdfs">Process pending PDFs</button>
   </div>
+</template>
+
+<template name="errorTable">
+  <div class="log-table">
+    <h2>Error Log</h2>
+    <button class="dummy-error">Create Dummy Error</button>
+    {{#each errors}}
+      {{> errorTableItem}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="errorTableItem">
+  <li>{{errorMsg}} | {{lineNumber}} | {{userAgent}} | {{screenWidth}} | {{screenHeight}} |
+      {{windowWidth}} | {{windowHeight}}</li>
 </template>
