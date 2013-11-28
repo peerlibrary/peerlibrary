@@ -339,3 +339,10 @@ Meteor.methods
         Log.error "Error processing PDF:", error.stack or error.toString?() or error
 
     Log.info "Done"
+
+Meteor.publish 'arxiv-pdfs', ->
+  ArXivPDFs.find {},
+    sort: [
+      ['processingStart', 'desc']
+    ]
+    limit: 5
