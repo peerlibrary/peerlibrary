@@ -286,8 +286,6 @@ Meteor.methods
 
     Log.info "Done"
 
-    Meteor.call 'sync-local-pdf-cache' if count > 0
-
   'sync-local-pdf-cache': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
@@ -305,8 +303,6 @@ Meteor.methods
         Log.error "#{ error }"
 
     Log.info "Done"
-
-    Meteor.call 'process-pdfs' if count > 0
 
   'process-pdfs': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
