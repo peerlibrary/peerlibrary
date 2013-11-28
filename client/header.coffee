@@ -61,13 +61,6 @@ Template.header.indexHeader = ->
 Template.header.noIndexHeader = ->
   'no-index-header' if not Template.header.indexHeader()
 
-Template.header.created = ->
-  $(window).on 'scroll.header', ->
-    Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
-
-Template.header.destroyed = ->
-  $(window).off 'scroll.header'
-
 Template.searchInput.searchFocused = ->
   'search-focused' if Session.get 'searchFocused'
 
