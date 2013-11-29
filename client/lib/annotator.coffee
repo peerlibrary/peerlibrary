@@ -206,7 +206,7 @@ class @Page
       padding: 0
       margin: 0
 
-    # To make life easy, we apply padding all around the text segment DOM element,
+    # To make code simpler, we apply padding all around the text segment DOM element,
     # but then we have to counteract text content position change by set negative
     # margin. With this, text content stays in place, but DOM element gets a
     # necessary padding.
