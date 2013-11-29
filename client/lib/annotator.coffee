@@ -155,7 +155,7 @@ class @Page
       # so we at least make it a bit easier to the user. The only issue would be if
       # columns would be so close that those additional pixels would move into the left
       # column. This is unlikely if we keep the number small.
-      segmentIndex = index if segment.boundingBox.left <= position.left + 10 and segment.boundingBox.top <= position.top and index > segmentIndex
+      segmentIndex = index if segment.boundingBox.left <= position.left + 10 * SCALE and segment.boundingBox.top <= position.top and index > segmentIndex
 
     segmentIndex
 
@@ -194,7 +194,7 @@ class @Page
       # far away from the text segment, padding falls behind and does not reach mouse
       # position anymore.
       # Additionally, we add few pixels so that user can move mouse fast and still stay in.
-      padding = distance / scale + 20
+      padding = distance / scale + 20 * SCALE
 
       # Padding (and text) rotation transformation is done through CSS and
       # we have to match it for margin, so we compute here margin under rotation.
