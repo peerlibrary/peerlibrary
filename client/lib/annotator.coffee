@@ -95,66 +95,163 @@ class @Page
     #@_showSegments()
     #@_showTextSegments()
 
-  _distance: (position, area) =>
-    distanceXLeft = position.left - area.left
-    distanceXRight = position.left - (area.left + area.width)
+  _distanceX: (position, area) =>
+    return Number.POSITIVE_INFINITY unless area
 
-    distanceYTop = position.top - area.top
-    distanceYBottom = position.top - (area.top + area.height)
+    distanceXLeft = Math.abs(position.left - area.left)
+    distanceXRight = Math.abs(position.left - (area.left + area.width))
 
-    distanceX = if Math.abs(distanceXLeft) < Math.abs(distanceXRight) then distanceXLeft else distanceXRight
     if position.left > area.left and position.left < area.left + area.width
       distanceX = 0
+    else
+      distanceX = Math.min(distanceXLeft, distanceXRight)
 
-    distanceY = if Math.abs(distanceYTop) < Math.abs(distanceYBottom) then distanceYTop else distanceYBottom
+    distanceX
+
+  _distanceY: (position, area) =>
+    return Number.POSITIVE_INFINITY unless area
+
+    distanceYTop = Math.abs(position.top - area.top)
+    distanceYBottom = Math.abs(position.top - (area.top + area.height))
+
     if position.top > area.top and position.top < area.top + area.height
       distanceY = 0
+    else
+      distanceY = Math.min(distanceYTop, distanceYBottom)
 
-    distanceX * distanceX + distanceY * distanceY
+    distanceY
 
-  _findClosestSegment: (position) =>
-    closestSegmentIndex = -1
-    closestDistance = Number.MAX_VALUE
+  _distance: (position, area) =>
+    return Number.POSITIVE_INFINITY unless area
 
-    for segment, i in @textSegments
-      distance = @_distance position, segment.boundingBox
-      if distance < closestDistance
-        closestSegmentIndex = i
-        closestDistance = distance
+    distanceX = @_distanceX position, area
+    distanceY = @_distanceY position, area
 
-    [closestSegmentIndex, Math.sqrt(closestDistance)]
+    Math.sqrt(distanceX * distanceX + distanceY * distanceY)
 
-  _findClosestSegmentFromEvent: (e) =>
+  _eventToPosition: (e) =>
     $canvas = @$displayPage.find('canvas')
 
     offset = $canvas.offset()
-    left = e.pageX - offset.left
-    top = e.pageY - offset.top
-    @_findClosestSegment
-      left: left
-      top: top
 
-  padTextSegment: (e) =>
-    [closestSegmentIndex, closestDistance] = @_findClosestSegmentFromEvent e
-    $closestSegmentDom = @textSegments[closestSegmentIndex].$domElement
-    angle = @textSegments[closestSegmentIndex].angle
-    scale = @textSegments[closestSegmentIndex].scale
+    left: e.pageX - offset.left
+    top: e.pageY - offset.top
 
-    padding = closestDistance + 10
+  # Finds a text layer segment which is it to the left and up of the given position
+  # and has highest index. Highest index means it is latest in the text flow of the
+  # page. So we are searching for for latest text layer segment in text flow on the
+  # page before the given position. Left and up is what is intuitively right for
+  # text which flows left to right, top to bottom.
+  _findLastLeftUpTextSegment: (position) =>
+    segmentIndex = -1
+    for segment, index in @textSegments
+      segmentIndex = index if segment.boundingBox.left <= position.left and segment.boundingBox.top <= position.top and index > segmentIndex
 
-    # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
-    # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
-    # We scale x because we use scaling transformation along x-axis as well
-    left = padding * (scale * Math.cos(angle) - Math.sin(angle))
-    top = padding * (scale * Math.sin(angle) + Math.cos(angle))
+    segmentIndex
+
+  # Simple search for closest text layer segment by euclidean distance
+  _findClosestTextSegment: (position) =>
+    closestSegmentIndex = -1
+    closestDistance = Number.POSITIVE_INFINITY
+
+    for segment, index in @textSegments
+      distance = @_distance position, segment.boundingBox
+      if distance < closestDistance
+        closestSegmentIndex = index
+        closestDistance = distance
+
+    closestSegmentIndex
+
+  # Pads a text layer segment (identified by index) so that its padding comes
+  # under the position of the mouse. This makes text selection in browsers
+  # behave like mouse is still over the text layer segment DOM element, even
+  # when mouse is moved from it, for example, when dragging selection over empty
+  # space in pages where there are no text layer segments.
+  _padTextSegment: (position, index) =>
+    # If there are no text layer segments on the page, index will be -1.
+    # Then we just set padding and margin to 0, to be sure.
+    if index isnt -1
+      segment = @textSegments[index]
+      distance = @_distance position, segment.boundingBox
+      $dom = segment.$domElement
+
+      # Text layer segments can be rotated and scalled along x-axis
+      angle = segment.angle
+      scale = segment.scale
+
+      # Padding is scaled later on, so we apply scaling inversely here so that it is
+      # exact after scalling later on. Without that when scaling is < 1, when user moves
+      # far away from the text segment, padding falls behind and does not reach mouse
+      # position anymore.
+      # Additionally, we add few pixels so that user can move mouse fast and still stay in.
+      padding = distance / scale + 20
+
+      # Padding (and text) rotation transformation is done through CSS and
+      # we have to match it for margin, so we compute here margin under rotation.
+      # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
+      # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
+      # Additionally, we use CSS scaling transformation along x-axis on padding
+      # (and text), so we have to scale margin as well.
+      left = padding * (scale * Math.cos(angle) - Math.sin(angle))
+      top = padding * (scale * Math.sin(angle) + Math.cos(angle))
 
     @$displayPage.find('.text-layer-segment').css
       padding: 0
       margin: 0
-    $closestSegmentDom.css
-      marginLeft: -left
-      marginTop: -top
-      padding: padding
+
+    if index isnt -1
+      # To make life easy, we apply padding all around the text segment DOM element,
+      # but then we have to counteract text content position change by set negative
+      # margin. With this, text content stays in place, but DOM element gets a
+      # necessary padding.
+      $dom.css
+        marginLeft: -left
+        marginTop: -top
+        padding: padding
+
+  padTextSegments: (e) =>
+    position = @_eventToPosition e
+
+    # Find latest text layer segment in text flow on the page before the given position
+    segmentIndex = @_findLastLeftUpTextSegment position
+
+    # segmentIndex might be -1, but @_distanceY returns
+    # infinity in this case, so things work out
+    if @_distanceY(position, @textSegments[segmentIndex]?.boundingBox) is 0
+      # A clear case, we are directly over a segment y-wise. This means that
+      # we are really directly over a segment, or that segment is to the right
+      # of mouse position (because we searched for all segments to the left and
+      # up of the position). In any case, this is the segment we want to pad.
+      @_padTextSegment position, segmentIndex
+      return
+
+    # So we are close to the segment we want to pad, but we might currently have
+    # a segment which is in the middle of the text line above our position, so we
+    # search for the last text segment in that line, before it goes to the next
+    # (our, where our position is) line.
+    # On the other hand, segmentIndex might be -1 because we are on the left border
+    # of the page and there are no text segments to the left and up. So we as well
+    # do a search from the beginning of the page to the last text segment on the
+    # text line just above our position.
+    while @textSegments[segmentIndex + 1]
+      if @textSegments[segmentIndex + 1].boundingBox.top + @textSegments[segmentIndex + 1].boundingBox.height > position.top
+        break
+      else
+        segmentIndex++
+
+    # segmentIndex can still be -1 if there are no text segments before
+    # the mouse position, so let's simply find closest segment and pad that.
+    # Not necessary for Chrome. There you can start selecting without being
+    # over any text segment and it will correctly start when you move over
+    # one. But in Firefox you have to start selecting over a text segment
+    # (or padded text segment) to work correctly later on.
+    segmentIndex = @_findClosestTextSegment position if segmentIndex is -1
+
+    # segmentIndex can still be -1 if there are no text segments on
+    # the page at all, but we leave to @_padTextSegment to handle that
+    @_padTextSegment position, segmentIndex
+
+    return # To prevent CoffeScript returning something
 
   render: =>
     assert @highlightsEnabled
@@ -167,14 +264,16 @@ class @Page
 
     $textLayerDummy.hide()
 
-    divs = for segment in @textSegments
-      segment.$domElement = $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text)
+    divs = for segment, index in @textSegments
+      segment.$domElement = $('<div/>').addClass('text-layer-segment').css(segment.style).text(segment.text).data
+        pageNumber: @pageNumber
+        index: index
 
     # There is no use rendering so many divs to make browser useless
     # TODO: Report this to the server? Or should we simply discover such PDFs already on the server when processing them?
     @$displayPage.find('.text-layer').append divs if divs.length <= MAX_TEXT_LAYER_SEGMENTS_TO_RENDER
 
-    @$displayPage.on 'mousemove.annotator', @padTextSegment
+    @$displayPage.on 'mousemove.annotator', @padTextSegments
 
     @rendering = false
 
@@ -197,11 +296,22 @@ class @Page
 class @Annotator
   constructor: ->
     @_pages = []
+    @mouseDown = false
 
     $(window).on 'scroll.annotator', @checkRender
     $(window).on 'resize.annotator', @checkRender
 
+    $(document).on 'mousedown.annotator', =>
+      @mouseDown = true
+      return # To prevent CoffeScript returning something
+    $(document).on 'mouseup.annotator', =>
+      @mouseDown = false
+      return # To prevent CoffeScript returning something
+
   destroy: =>
+    $(document).off 'mousedown.annotator'
+    $(document).off 'mouseup.annotator'
+
     $(window).off 'scroll.annotator'
     $(window).off 'resize.annotator'
 
@@ -251,3 +361,5 @@ class @Annotator
 
     page.render() for page in pagesToRender
     page.remove() for page in pagesToRemove
+
+    return # To prevent CoffeScript returning something
