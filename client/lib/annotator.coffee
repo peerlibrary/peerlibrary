@@ -178,46 +178,42 @@ class @Page
   # when mouse is moved from it, for example, when dragging selection over empty
   # space in pages where there are no text layer segments.
   _padTextSegment: (position, index) =>
-    # If there are no text layer segments on the page, index will be -1.
-    # Then we just set padding and margin to 0, to be sure.
-    if index isnt -1
-      segment = @textSegments[index]
-      distance = @_distance position, segment.boundingBox
-      $dom = segment.$domElement
+    segment = @textSegments[index]
+    distance = @_distance position, segment.boundingBox
+    $dom = segment.$domElement
 
-      # Text layer segments can be rotated and scalled along x-axis
-      angle = segment.angle
-      scale = segment.scale
+    # Text layer segments can be rotated and scalled along x-axis
+    angle = segment.angle
+    scale = segment.scale
 
-      # Padding is scaled later on, so we apply scaling inversely here so that it is
-      # exact after scalling later on. Without that when scaling is < 1, when user moves
-      # far away from the text segment, padding falls behind and does not reach mouse
-      # position anymore.
-      # Additionally, we add few pixels so that user can move mouse fast and still stay in.
-      padding = distance / scale + 20 * SCALE
+    # Padding is scaled later on, so we apply scaling inversely here so that it is
+    # exact after scalling later on. Without that when scaling is < 1, when user moves
+    # far away from the text segment, padding falls behind and does not reach mouse
+    # position anymore.
+    # Additionally, we add few pixels so that user can move mouse fast and still stay in.
+    padding = distance / scale + 20 * SCALE
 
-      # Padding (and text) rotation transformation is done through CSS and
-      # we have to match it for margin, so we compute here margin under rotation.
-      # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
-      # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
-      # Additionally, we use CSS scaling transformation along x-axis on padding
-      # (and text), so we have to scale margin as well.
-      left = padding * (scale * Math.cos(angle) - Math.sin(angle))
-      top = padding * (scale * Math.sin(angle) + Math.cos(angle))
+    # Padding (and text) rotation transformation is done through CSS and
+    # we have to match it for margin, so we compute here margin under rotation.
+    # 2D vector rotation: http://www.siggraph.org/education/materials/HyperGraph/modeling/mod_tran/2drota.htm
+    # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
+    # Additionally, we use CSS scaling transformation along x-axis on padding
+    # (and text), so we have to scale margin as well.
+    left = padding * (scale * Math.cos(angle) - Math.sin(angle))
+    top = padding * (scale * Math.sin(angle) + Math.cos(angle))
 
     @$displayPage.find('.text-layer-segment').css
       padding: 0
       margin: 0
 
-    if index isnt -1
-      # To make life easy, we apply padding all around the text segment DOM element,
-      # but then we have to counteract text content position change by set negative
-      # margin. With this, text content stays in place, but DOM element gets a
-      # necessary padding.
-      $dom.css
-        marginLeft: -left
-        marginTop: -top
-        padding: padding
+    # To make life easy, we apply padding all around the text segment DOM element,
+    # but then we have to counteract text content position change by set negative
+    # margin. With this, text content stays in place, but DOM element gets a
+    # necessary padding.
+    $dom.css
+      marginLeft: -left
+      marginTop: -top
+      padding: padding
 
   padTextSegments: (e) =>
     position = @_eventToPosition e
@@ -258,8 +254,8 @@ class @Page
     segmentIndex = @_findClosestTextSegment position if segmentIndex is -1
 
     # segmentIndex can still be -1 if there are no text segments on
-    # the page at all, but we leave to @_padTextSegment to handle that
-    @_padTextSegment position, segmentIndex
+    # the page at all, then we do not have aynthing to do
+    @_padTextSegment position, segmentIndex if segmentIndex isnt -1
 
     return # To prevent CoffeScript returning something
 
