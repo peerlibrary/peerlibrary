@@ -206,9 +206,21 @@ class @Page
       padding: 0
       margin: 0
 
-    # To make code simpler, we apply padding all around the text segment DOM element,
-    # but then we have to counteract text content position change by set negative
-    # margin. With this, text content stays in place, but DOM element gets a
+    # Optimization if position is to the right and down of the segment. We do this
+    # because modifying both margin and padding slightly jitters text segment around
+    # because of rounding to pixel coordinates (text is scaled and rotated so margin
+    # and padding values do not fall nicely onto pixel coordinates).
+    if segment.boundingBox.left <= position.left and segment.boundingBox.top <= position.top
+      $dom.css
+        paddingRight: padding
+        paddingBottom: padding
+      return
+
+    # Otherwise we apply padding all around the text segment DOM element and do not
+    # really care where the mouse position is, we have to change both margin and
+    # padding anyway.
+    # We counteract text content position change introduced by padding by setting
+    # negative margin. With this, text content stays in place, but DOM element gets a
     # necessary padding.
     $dom.css
       marginLeft: -left
