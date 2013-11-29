@@ -145,7 +145,17 @@ class @Page
   _findLastLeftUpTextSegment: (position) =>
     segmentIndex = -1
     for segment, index in @textSegments
-      segmentIndex = index if segment.boundingBox.left <= position.left and segment.boundingBox.top <= position.top and index > segmentIndex
+      # We allow few additional pixels so that position can be slightly to the left
+      # of the text segment. This helps when user is with mouse between two columns
+      # of text. With this the text segment to the right (in the right column) is
+      # still selected when mouse is a bit to the left of the right column. Otherwise
+      # selection would immediatelly jump the the left column. Good text editors put
+      # this location when selection switches from right column to left column to the
+      # middle between columns, but we do not really have information about the columns
+      # so we at least make it a bit easier to the user. The only issue would be if
+      # columns would be so close that those additional pixels would move into the left
+      # column. This is unlikely if we keep the number small.
+      segmentIndex = index if segment.boundingBox.left <= position.left + 10 and segment.boundingBox.top <= position.top and index > segmentIndex
 
     segmentIndex
 
