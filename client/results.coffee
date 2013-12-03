@@ -93,6 +93,8 @@ Template.resultsLoad.events =
     searchLimitIncreasing = false # We want to force loading more in every case
     increaseSearchLimit 10
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
@@ -105,6 +107,8 @@ Template.publicationSearchResult.events =
     Meteor.subscribe 'publications-by-id', @_id, ->
       Deps.afterFlush ->
         $(template.findAll '.abstract').slideToggle(200)
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen
@@ -134,22 +138,28 @@ sidebarIntoQuery = (template) ->
 Template.sidebarSearch.events =
   'blur #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'change #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'keyup #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'paste #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'cut #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'submit #sidebar-search': (e, template) ->
     e.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
 Template.sidebarSearch.minPublicationDate = ->
   statistics = Statistics.findOne()
