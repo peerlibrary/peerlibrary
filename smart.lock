@@ -24,7 +24,9 @@
         "branch": "master"
       },
       "digest": {},
-      "peerdb": {}
+      "peerdb": {},
+      "useragent": {},
+      "collection-hooks": {}
     },
     "packages": {
       "router": {
@@ -106,6 +108,16 @@
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
         "tag": "v0.3.4",
         "commit": "8a5b4083bbd6f3b22f18eb9f1c229e7edbbadf85"
+      },
+      "useragent": {
+        "git": "https://github.com/awwx/meteor-useragent.git",
+        "tag": "v0.0.2",
+        "commit": "8737222105a50cfe484ccd09728bdfa7c35288a2"
+      },
+      "collection-hooks": {
+        "git": "https://github.com/matb33/meteor-collection-hooks.git",
+        "tag": "v0.5.4",
+        "commit": "7f286358af49ffc1a63e97354f2f306a911bacc0"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
