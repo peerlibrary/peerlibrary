@@ -384,17 +384,15 @@ Meteor.publish 'my-publications', ->
     removePublications removed
 
   handlePersons = Persons.find(
-    'user._id': @userId
+    _id: @personId
   ,
     fields:
       # id field is implicitly added
-      'user._id': 1
       library: 1
   ).observeChanges
     added: (id, fields) =>
       # There should be only one person with the id at every given moment
       assert.equal currentPersonId, null
-      assert.equal fields.user._id, @userId
 
       currentPersonId = id
       publishPublications _.pluck fields.library, '_id'
