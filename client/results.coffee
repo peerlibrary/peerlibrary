@@ -27,8 +27,8 @@ Deps.autorun ->
     Session.set 'currentSearchQueryLoading', false
 
 Deps.autorun ->
-  if Session.get 'indexActive'
-    Meteor.subscribe 'search-available'
+  if Session.get 'searchActive'
+    Meteor.subscribe 'statistics'
 
 Template.results.created = ->
   $(window).on 'scroll.results', ->
@@ -93,6 +93,8 @@ Template.resultsLoad.events =
     searchLimitIncreasing = false # We want to force loading more in every case
     increaseSearchLimit 10
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
@@ -106,6 +108,8 @@ Template.publicationSearchResult.events =
       Deps.afterFlush ->
         $(template.findAll '.abstract').slideToggle(200)
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen
     no_results_text: "No tag match"
@@ -116,6 +120,7 @@ Template.sidebarSearch.rendered = ->
   end = publicationDate.data('max') unless end
 
   slider = $(@findAll '#date-range').slider
+    disabled: true # TODO: For now disabled
     range: true
     min: publicationDate.data('min')
     max: publicationDate.data('max')
@@ -133,34 +138,36 @@ sidebarIntoQuery = (template) ->
 Template.sidebarSearch.events =
   'blur #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'change #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'keyup #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'paste #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'cut #title': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
   'submit #sidebar-search': (e, template) ->
     e.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
+    return # Make sure CoffeeScript does not return anything
 
 Template.sidebarSearch.minPublicationDate = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  moment.utc(searchResult.minPublicationDate).year() if searchResult?.minPublicationDate
+  statistics = Statistics.findOne()
+  moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
 
 Template.sidebarSearch.maxPublicationDate = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  moment.utc(searchResult.maxPublicationDate).year() if searchResult?.maxPublicationDate
+  statistics = Statistics.findOne()
+  moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->
   # TODO: Set from structured query

@@ -11,10 +11,14 @@ Template.adminDevelopment.events
     Meteor.call 'sample-data', (error, result) ->
       throw error if error
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminPublications.events
   'click button.process-pdfs': (e, template) ->
     Meteor.call 'process-pdfs', (error, result) ->
       throw error if error
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.adminErrors.events
   'click button.dummy-error': (e, template) ->
@@ -30,13 +34,20 @@ Template.adminSources.events
     Meteor.call 'sync-local-pdf-cache', (error, result) ->
       throw error if error
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminArXiv.events
   'click button.sync-arxiv-pdf-cache': (e, template) ->
     Meteor.call 'sync-arxiv-pdf-cache', (error, result) ->
       throw error if error
+
+    return # Make sure CoffeeScript does not return anything
+
   'click button.sync-arxiv-metadata': (e, template) ->
     Meteor.call 'sync-arxiv-metadata', (error, result) ->
       throw error if error
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.adminArXiv.PDFs = ->
   ArXivPDFs.find {},

@@ -77,8 +77,8 @@ class Triangle
 
 class @Background
   constructor: ->
-    @renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight)
-    @ratio = window.devicePixelRatio or 1
+    @renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
+    @computeRatio()
 
     @stage = null
     @triangles = {}
@@ -91,6 +91,17 @@ class @Background
     @stage = null
     @triangles = {}
     @vectors = {}
+
+  computeRatio: =>
+    devicePixelRatio = window.devicePixelRatio or 1
+    context = @renderer.gl or @renderer.context
+    backingStoreRatio = context.webkitBackingStorePixelRatio or
+                        context.mozBackingStorePixelRatio or
+                        context.msBackingStorePixelRatio or
+                        context.oBackingStorePixelRatio or
+                        context.backingStorePixelRatio or 1
+
+    @ratio = devicePixelRatio / backingStoreRatio
 
   render: =>
     @resizeView()
@@ -107,7 +118,7 @@ class @Background
   resizeView: =>
     return unless @renderer
 
-    @ratio = window.devicePixelRatio or 1
+    @computeRatio()
 
     width = window.innerWidth * @ratio
     height = window.innerHeight * @ratio
@@ -118,8 +129,8 @@ class @Background
       width: width
       height: height
     .css
-      width: width
-      height: height
+      width: window.innerWidth
+      height: window.innerHeight
 
   generateTriangles: =>
     return unless @renderer

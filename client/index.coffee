@@ -1,14 +1,12 @@
-Template.indexStatistics.publications = ->
-  searchResult = SearchResults.findOne
-    query: null
+Deps.autorun ->
+  if Session.get 'indexActive'
+    Meteor.subscribe 'statistics'
 
-  searchResult?.countPublications or 0
+Template.indexStatistics.publications = ->
+  Statistics.findOne()?.countPublications or 0
 
 Template.indexStatistics.persons = ->
-  searchResult = SearchResults.findOne
-    query: null
-
-  searchResult?.countPersons or 0
+  Statistics.findOne()?.countPersons or 0
 
 Template.index.searchActive = ->
   Session.get 'searchActive'
