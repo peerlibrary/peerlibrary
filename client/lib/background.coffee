@@ -115,6 +115,8 @@ class @Background
     @resizeView()
     @generateTriangles()
 
+    return # Make sure CoffeeScript does not return anything
+
   resizeView: =>
     return unless @renderer
 
