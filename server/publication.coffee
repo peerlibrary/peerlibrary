@@ -333,7 +333,7 @@ Meteor.publish 'my-publications', ->
   handlePublications = null
 
   removePublications = (ids) =>
-    for id of ids when currentPublications[id]
+    for id in ids when currentPublications[id]
       delete currentPublications[id]
       @removed 'Publications', id
 
