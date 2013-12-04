@@ -326,24 +326,24 @@ Meteor.publish 'my-publications', ->
   # There are moments when two observes are observing mostly similar list
   # of publications ids so it could happen that one is changing or removing
   # publication just while the other one is adding, so we are making sure
-  # using currentLibrary variable that we have a consistent view of the
+  # using currentPublications variable that we have a consistent view of the
   # publications we published
-  currentLibrary = {}
+  currentPublications = {}
   currentPersonId = null # Just for asserts
   handlePublications = null
 
   removePublications = (ids) =>
-    for id of ids when currentLibrary[id]
-      delete currentLibrary[id]
+    for id of ids when currentPublications[id]
+      delete currentPublications[id]
       @removed 'Publications', id
 
   publishPublications = (newLibrary) =>
     newLibrary ||= []
 
     added = {}
-    added[id] = true for id in _.difference newLibrary, _.keys(currentLibrary)
+    added[id] = true for id in _.difference newLibrary, _.keys(currentPublications)
     removed = {}
-    removed[id] = true for id in _.difference _.keys(currentLibrary), newLibrary
+    removed[id] = true for id in _.difference _.keys(currentPublications), newLibrary
 
     # Optimization, happens when a publication document is first deleted and
     # then removed from the library list in the person document
@@ -358,20 +358,20 @@ Meteor.publish 'my-publications', ->
       Publication.PUBLIC_FIELDS()
     ).observeChanges
       added: (id, fields) =>
-        return if currentLibrary[id]
-        currentLibrary[id] = true
+        return if currentPublications[id]
+        currentPublications[id] = true
 
         # We add only the newly added ones, others were added already before
         @added 'Publications', id, fields if added[id]
 
       changed: (id, fields) =>
-        return if not currentLibrary[id]
+        return if not currentPublications[id]
 
         @changed 'Publications', id, fields
 
       removed: (id) =>
-        return if not currentLibrary[id]
-        delete currentLibrary[id]
+        return if not currentPublications[id]
+        delete currentPublications[id]
 
         @removed 'Publications', id
 
@@ -413,7 +413,7 @@ Meteor.publish 'my-publications', ->
       handlePublications = null
 
       currentPersonId = null
-      removePublications _.pluck currentLibrary, '_id'
+      removePublications _.pluck currentPublications, '_id'
 
   @ready()
 
