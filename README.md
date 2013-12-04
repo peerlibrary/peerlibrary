@@ -103,6 +103,14 @@ You just have to manually initialize submodules we are using:
 
     git submodule update --init --recursive
 
+If you are getting Stylus errors like:
+
+    error: Stylus compiler error: client/css/_viewer.styl:2
+
+    failed to locate @import file variables.styl
+
+You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
+
 ### Debug mode ###
 
 To run PeerLibrary in the debug mode, you can run it with debug settings:
