@@ -1,7 +1,7 @@
 class @LoggedError extends @LoggedError
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
-    fields: {} # All
+    fields: {} # All, only admins have access
 
 LoggedErrors.allow
   insert: (userId, doc) ->
