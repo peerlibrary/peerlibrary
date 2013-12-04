@@ -142,6 +142,8 @@ class @Publication extends @Publication
       if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
         @renderPage page
 
+    return # Make sure CoffeeScript does not return anything
+
   destroy: =>
     console.debug "Destroying publication #{ @_id }"
 
@@ -258,9 +260,13 @@ Template.publicationAnnotationsItem.events =
 
     showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
 
+    return # Make sure CoffeeScript does not return anything
+
   'mouseleave .annotation': (e, template) ->
     unless _.isEqual Session.get('currentHighlight'), @location
       hideHiglight $('#viewer .display .display-text')
+
+    return # Make sure CoffeeScript does not return anything
 
   'click .annotation': (e, template) ->
     currentHighlight = true
@@ -269,6 +275,8 @@ Template.publicationAnnotationsItem.events =
       currentHighlight = false
 
     showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.highlighted = ->
   currentHighlight = Session.get 'currentHighlight'

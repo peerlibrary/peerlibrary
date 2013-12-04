@@ -146,6 +146,7 @@ hideOverlay = ->
 Meteor.startup ->
   $(document).on 'dragstart', (e) ->
     e.preventDefault()
+    return # Make sure CoffeeScript does not return anything
 
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
@@ -165,6 +166,8 @@ Meteor.startup ->
       e.dataTransfer.effectAllowed = 'none'
       e.dataTransfer.dropEffect = 'none'
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.loginOverlay.loginOverlayActive = ->
   Session.get 'loginOverlayActive'
 
@@ -174,16 +177,22 @@ Template.loginOverlay.events =
     e.dataTransfer.effectAllowed = 'none'
     e.dataTransfer.dropEffect = 'none'
 
+    return # Make sure CoffeeScript does not return anything
+
   'dragleave': (e, template) ->
     e.preventDefault()
 
     unless DRAGGING_OVER_DOM
       Session.set 'loginOverlayActive', false
 
+    return # Make sure CoffeeScript does not return anything
+
   'drop': (e, template) ->
     e.stopPropagation()
     e.preventDefault()
     Session.set 'loginOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.events =
   'dragover': (e, template) ->
@@ -191,11 +200,15 @@ Template.importOverlay.events =
     e.dataTransfer.effectAllowed = 'copy'
     e.dataTransfer.dropEffect = 'copy'
 
+    return # Make sure CoffeeScript does not return anything
+
   'dragleave': (e, template) ->
     e.preventDefault()
 
     if ImportingFiles.find().count() == 0 and not DRAGGING_OVER_DOM
       Session.set 'importOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
 
   'drop': (e, template) ->
     e.stopPropagation()
@@ -207,12 +220,17 @@ Template.importOverlay.events =
 
     _.each e.dataTransfer.files, importFile
 
+    return # Make sure CoffeeScript does not return anything
+
   'click': (e, template) ->
     hideOverlay()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
   $(document).on 'keyup.importOverlay', (e) ->
     hideOverlay() if e.keyCode is 27 # esc key
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->
   $(document).off 'keyup.importOverlay'
@@ -235,6 +253,7 @@ Deps.autorun ->
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
     Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    return # Make sure CoffeeScript does not return anything
   else
     Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
 
