@@ -88,6 +88,8 @@ class @Publication extends @Publication
       if canvasTop - 100 <= $(window).scrollTop() + $(window).height() and canvasBottom + 100 >= $(window).scrollTop()
         @renderPage page
 
+    return # Make sure CoffeeScript does not return anything
+
   destroy: =>
     console.debug "Destroying publication #{ @_id }"
 

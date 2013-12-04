@@ -35,6 +35,8 @@ Template.results.created = ->
     if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
       increaseSearchLimit 10
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.results.rendered = ->
   $(@findAll '.scrubber').iscrubber()
 
