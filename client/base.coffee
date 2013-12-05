@@ -1,7 +1,7 @@
 @INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
 
 setSession = (session) ->
-  session = _.defaults session,
+  session = _.defaults session or {},
     indexActive: false
     currentSearchQuery: null
     currentSearchQueryCountPublications: 0
