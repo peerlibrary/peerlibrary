@@ -7,11 +7,11 @@ Template._loginButtonsLoggedInDropdownActions.personSlug = ->
 
 # To close login buttons dialog box when clicking or focusing somewhere outside
 $(document).click (e) ->
-  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent.dialogBoxEvent
+  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent?.dialogBoxEvent
   return # Make sure CoffeeScript does not return anything
 
 $(document).focus (e) ->
-  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent.dialogBoxEvent
+  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent?.dialogBoxEvent
   return # Make sure CoffeeScript does not return anything
 
 # But if clicked inside, we mark the event so that dialog box is not closed
