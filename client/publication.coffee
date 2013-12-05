@@ -137,7 +137,6 @@ class @Publication extends @Publication
       console.error "Error rendering page #{ page.page.pageNumber }", args...
 
   # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
-  # TODO: Verify that it works after support for filtering fields on the client will be released in Meteor
   @SHOW_FIELDS: ->
     fields:
       foreignId: 1
@@ -150,7 +149,6 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  # TODO: Limit only to fields necessary to display publication so that it is not rerun on field changes
   publication = Publications.findOne Session.get('currentPublicationId'), Publication.SHOW_FIELDS()
 
   return unless publication
