@@ -159,12 +159,12 @@ Meteor.startup ->
 
     if Meteor.personId()
       Session.set 'importOverlayActive', true
-      e.dataTransfer.effectAllowed = 'copy'
-      e.dataTransfer.dropEffect = 'copy'
+      e.originalEvent.dataTransfer.effectAllowed = 'copy'
+      e.originalEvent.dataTransfer.dropEffect = 'copy'
     else
       Session.set 'loginOverlayActive', true
-      e.dataTransfer.effectAllowed = 'none'
-      e.dataTransfer.dropEffect = 'none'
+      e.originalEvent.dataTransfer.effectAllowed = 'none'
+      e.originalEvent.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
