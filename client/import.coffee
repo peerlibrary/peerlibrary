@@ -166,16 +166,16 @@ Meteor.startup ->
       e.originalEvent.dataTransfer.effectAllowed = 'copy'
       e.originalEvent.dataTransfer.dropEffect = 'copy'
     else
-      Session.set 'loginOverlayActive', true
+      Session.set 'signInOverlayActive', true
       e.originalEvent.dataTransfer.effectAllowed = 'none'
       e.originalEvent.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
-Template.loginOverlay.loginOverlayActive = ->
-  Session.get 'loginOverlayActive'
+Template.signInOverlay.signInOverlayActive = ->
+  Session.get 'signInOverlayActive'
 
-Template.loginOverlay.events =
+Template.signInOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
     e.dataTransfer.effectAllowed = 'none'
@@ -187,14 +187,14 @@ Template.loginOverlay.events =
     e.preventDefault()
 
     unless DRAGGING_OVER_DOM
-      Session.set 'loginOverlayActive', false
+      Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
   'drop': (e, template) ->
     e.stopPropagation()
     e.preventDefault()
-    Session.set 'loginOverlayActive', false
+    Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
