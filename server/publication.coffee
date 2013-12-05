@@ -258,7 +258,6 @@ publishUsingMyLibrary = (publish, selector, options) ->
   # using currentPublications variable that we have a consistent view of the
   # publications we published
   currentPublications = {}
-  currentPersonId = null # Just for asserts
   handlePublications = null
 
   publishPublications = (newLibrary) =>
@@ -300,32 +299,41 @@ publishUsingMyLibrary = (publish, selector, options) ->
       delete currentPublications[id]
       publish.removed 'Publications', id
 
-  handlePersons = Persons.find(
-    _id: publish.personId
-  ,
-    fields:
-      # id field is implicitly added
-      library: 1
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
+  currentPersonId = null # Just for asserts
 
-      currentPersonId = id
-      publishPublications _.pluck fields.library, '_id'
+  if publish.personId
+    handlePersons = Persons.find(
+      _id: publish.personId
+    ,
+      fields:
+        # id field is implicitly added
+        library: 1
+    ).observeChanges
+      added: (id, fields) =>
+        # There should be only one person with the id at every given moment
+        assert.equal currentPersonId, null
 
-    changed: (id, fields) =>
-      # Person should already be added
-      assert.equal currentPersonId, id
+        currentPersonId = id
+        publishPublications _.pluck fields.library, '_id'
 
-      publishPublications _.pluck fields.library, '_id'
+      changed: (id, fields) =>
+        # Person should already be added
+        assert.equal currentPersonId, id
 
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.equal currentPersonId, id
+        publishPublications _.pluck fields.library, '_id'
 
-      currentPersonId = null
-      publishPublications []
+      removed: (id) =>
+        # We cannot remove the person if we never added the person before
+        assert.equal currentPersonId, id
+
+        currentPersonId = null
+        publishPublications []
+
+  # If we get to here and currentPersonId was not set when initializing,
+  # we call publishPublications with empty list so that possibly something
+  # is published. If later on person is added, publishPublications will be
+  # simply called again.
+  publishPublications [] unless currentPersonId
 
   publish.ready()
 
@@ -393,37 +401,40 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   currentPersonId = null # Just for asserts
   lastLibrary = []
-  handlePersons = Persons.find(
-    _id: @personId
-  ,
-    fields:
-      # id field is implicitly added
-      library: 1
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
 
-      currentPersonId = id
-      lastLibrary = _.pluck fields.library, '_id'
-      publishPublications currentAuthorId, lastLibrary
+  if @personId
+    handlePersons = Persons.find(
+      _id: @personId
+    ,
+      fields:
+        # id field is implicitly added
+        library: 1
+    ).observeChanges
+      added: (id, fields) =>
+        # There should be only one person with the id at every given moment
+        assert.equal currentPersonId, null
 
-    changed: (id, fields) =>
-      # Person should already be added
-      assert.equal currentPersonId, id
+        currentPersonId = id
+        lastLibrary = _.pluck fields.library, '_id'
+        publishPublications currentAuthorId, lastLibrary
 
-      lastLibrary = _.pluck fields.library, '_id'
-      publishPublications currentAuthorId, lastLibrary
+      changed: (id, fields) =>
+        # Person should already be added
+        assert.equal currentPersonId, id
 
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.equal currentPersonId, id
+        lastLibrary = _.pluck fields.library, '_id'
+        publishPublications currentAuthorId, lastLibrary
 
-      currentPersonId = null
-      lastLibrary = []
-      publishPublications currentAuthorId, lastLibrary
+      removed: (id) =>
+        # We cannot remove the person if we never added the person before
+        assert.equal currentPersonId, id
+
+        currentPersonId = null
+        lastLibrary = []
+        publishPublications currentAuthorId, lastLibrary
 
   currentAuthorId = null # Just for asserts
+
   handleAuthors = Persons.find(
     slug: slug
   ,
