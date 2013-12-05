@@ -72,7 +72,7 @@ Meteor.Router.add
       setSession()
       'terms'
 
-  '/admin': ->
+  '/admin':
     as: 'admin'
     to: ->
       setSession
