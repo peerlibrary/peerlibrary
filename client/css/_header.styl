@@ -92,8 +92,11 @@ ul.top-menu
 
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   text-decoration none !important
-  background white
-  color blue-accent
+
+.no-index-header
+  ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+    background white
+    color blue-accent
 
 ul.top-menu li .accounts-dialog a:hover
   background transparent
@@ -321,6 +324,9 @@ header.index-header
 
   .container
     background-color transparent
+
+  .drop-files-to-import
+    text-align center
 
   ul.top-menu
     li > a, li a.login-link-text

@@ -193,6 +193,12 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
+Template.searchInput.events =
+  'click .drop-files-to-import': (e, template) ->
+    e.preventDefault()
+
+    $('ul.top-menu .import').click()
+
 Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'
 
