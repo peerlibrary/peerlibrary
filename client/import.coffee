@@ -257,7 +257,6 @@ Deps.autorun ->
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
     Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
-    return # Make sure CoffeeScript does not return anything
   else
     Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
 
