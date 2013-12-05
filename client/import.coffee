@@ -14,6 +14,10 @@ UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
+  ImportingFiles.update file._id,
+    $set:
+      status: "Verifying file"
+
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verifyPublication', publicationId, samplesData, (err) ->
