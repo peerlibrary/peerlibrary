@@ -8,11 +8,17 @@ LoggedErrors.allow
     # TODO: Check whether inserted document conforms to schema
     true
 
-LoggedErrors.before.insert (userId, doc) ->
+# Misuse insert validation to add additional fields on the server before insertion
+LoggedErrors.deny
+  # We have to disable transformation so that we have
+  # access to the document object which will be inserted
+  transform: null
+
+  insert: (userId, doc) ->
     doc.serverTime = moment.utc().toDate()
 
     # userAgent will not be changing, so we do not have to
-    # define it as a generated field, but can just parse it
+    # define it as a generated field, but can just parse it here
     doc.parsedUserAgent = parseUseragent doc.userAgent
 
     personId = Meteor.personId()
@@ -23,7 +29,9 @@ LoggedErrors.before.insert (userId, doc) ->
       doc.person =
         _id: personId
 
-    true
+    # We return false as we are not
+    # checking anything, just adding fields
+    false
 
 Meteor.publish 'logged-errors', ->
   currentLoggedErrors = {}

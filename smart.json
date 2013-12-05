@@ -23,7 +23,6 @@
     },
     "digest": {},
     "peerdb": {},
-    "useragent": {},
-    "collection-hooks": {}
+    "useragent": {}
   }
 }
