@@ -338,27 +338,118 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   return unless slug
 
-  author = Persons.findOne
-    slug: slug
+  currentPublications = {}
+  handlePublications = null
 
-  return unless author
+  publishPublications = (authorId, newLibrary) =>
+    newLibrary ||= []
 
-  # TODO: Make this reactive
-  person = Persons.findOne
+    initializing = true
+    initializedPublications = []
+
+    oldHandlePublications = handlePublications
+    if authorId
+      handlePublications = Publications.find(
+        'authors._id': authorId
+        $or: [
+          processed: true
+        ,
+          _id:
+            $in: newLibrary
+        ]
+      ,
+        Publication.PUBLIC_FIELDS()
+      ).observeChanges
+        added: (id, fields) =>
+          initializedPublications.push id if initializing
+
+          return if currentPublications[id]
+          currentPublications[id] = true
+
+          @added 'Publications', id, fields
+
+        changed: (id, fields) =>
+          return if not currentPublications[id]
+
+          @changed 'Publications', id, fields
+
+        removed: (id) =>
+          return if not currentPublications[id]
+          delete currentPublications[id]
+
+          @removed 'Publications', id
+
+    initializing = false
+
+    # We stop the handle after we established the new handle,
+    # so that any possible changes hapenning in the meantime
+    # were still processed by the old handle
+    oldHandlePublications.stop() if oldHandlePublications
+
+    # And then we remove those which are not published anymore
+    for id in _.difference _.keys(currentPublications), initializedPublications
+      delete currentPublications[id]
+      @removed 'Publications', id
+
+  currentPersonId = null # Just for asserts
+  lastLibrary = []
+  handlePersons = Persons.find(
     _id: @personId
   ,
-    library: 1
+    fields:
+      # id field is implicitly added
+      library: 1
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentPersonId, null
 
-  Publications.find
-    'authors._id': author._id
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
+      currentPersonId = id
+      lastLibrary = _.pluck fields.library, '_id'
+      publishPublications currentAuthorId, lastLibrary
+
+    changed: (id, fields) =>
+      # Person should already be added
+      assert.equal currentPersonId, id
+
+      lastLibrary = _.pluck fields.library, '_id'
+      publishPublications currentAuthorId, lastLibrary
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.equal currentPersonId, id
+
+      currentPersonId = null
+      lastLibrary = []
+      publishPublications currentAuthorId, lastLibrary
+
+  currentAuthorId = null # Just for asserts
+  handleAuthors = Persons.find(
+    slug: slug
   ,
-    Publication.PUBLIC_FIELDS()
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentAuthorId, null
+
+      currentAuthorId = id
+      publishPublications currentAuthorId, lastLibrary
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.equal currentAuthorId, id
+
+      currentAuthorId = null
+      publishPublications currentAuthorId, lastLibrary
+
+  @ready()
+
+  @onStop =>
+    handlePersons.stop() if handlePersons
+    handleAuthors.stop() if handleAuthors
+    handlePublications.stop() if handlePublications
 
 Meteor.publish 'publications-by-id', (id) ->
   check id, String
