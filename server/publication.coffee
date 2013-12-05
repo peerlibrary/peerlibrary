@@ -250,79 +250,8 @@ Meteor.methods
         library:
           _id: publication._id
 
-Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, String
-
-  return unless slug
-
-  author = Persons.findOne
-    slug: slug
-
-  return unless author
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    'authors._id': author._id
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'publications-by-id', (id) ->
-  check id, String
-
-  return unless id
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    _id: id
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'publications-by-ids', (ids) ->
-  check ids, [String]
-
-  return unless ids?.length
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    _id:
-      $in: ids
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'my-publications', ->
+# TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
+publishUsingMyLibrary = (publish, selector, options) ->
   # There are moments when two observes are observing mostly similar list
   # of publications ids so it could happen that one is changing or removing
   # publication just while the other one is adding, so we are making sure
@@ -332,59 +261,47 @@ Meteor.publish 'my-publications', ->
   currentPersonId = null # Just for asserts
   handlePublications = null
 
-  removePublications = (ids) =>
-    for id in ids when currentPublications[id]
-      delete currentPublications[id]
-      @removed 'Publications', id
-
   publishPublications = (newLibrary) =>
     newLibrary ||= []
 
-    added = {}
-    added[id] = true for id in _.difference newLibrary, _.keys(currentPublications)
-    removed = {}
-    removed[id] = true for id in _.difference _.keys(currentPublications), newLibrary
-
-    # Optimization, happens when a publication document is first deleted and
-    # then removed from the library list in the person document
-    if _.isEmpty(added) and _.isEmpty(removed)
-      return
+    initializing = true
+    initializedPublications = []
 
     oldHandlePublications = handlePublications
-    handlePublications = Publications.find(
-      _id:
-        $in: newLibrary
-    ,
-      Publication.PUBLIC_FIELDS()
-    ).observeChanges
+    handlePublications = Publications.find(selector(newLibrary), options).observeChanges
       added: (id, fields) =>
+        initializedPublications.push id if initializing
+
         return if currentPublications[id]
         currentPublications[id] = true
 
-        # We add only the newly added ones, others were added already before
-        @added 'Publications', id, fields if added[id]
+        publish.added 'Publications', id, fields
 
       changed: (id, fields) =>
         return if not currentPublications[id]
 
-        @changed 'Publications', id, fields
+        publish.changed 'Publications', id, fields
 
       removed: (id) =>
         return if not currentPublications[id]
         delete currentPublications[id]
 
-        @removed 'Publications', id
+        publish.removed 'Publications', id
+
+    initializing = false
 
     # We stop the handle after we established the new handle,
     # so that any possible changes hapenning in the meantime
     # were still processed by the old handle
     oldHandlePublications.stop() if oldHandlePublications
 
-    # And then we remove those who are not in the library anymore
-    removePublications removed
+    # And then we remove those which are not published anymore
+    for id in _.difference _.keys(currentPublications), initializedPublications
+      delete currentPublications[id]
+      publish.removed 'Publications', id
 
   handlePersons = Persons.find(
-    _id: @personId
+    _id: publish.personId
   ,
     fields:
       # id field is implicitly added
@@ -399,28 +316,184 @@ Meteor.publish 'my-publications', ->
 
     changed: (id, fields) =>
       # Person should already be added
-      assert.notEqual currentPersonId, null
+      assert.equal currentPersonId, id
 
       publishPublications _.pluck fields.library, '_id'
 
     removed: (id) =>
       # We cannot remove the person if we never added the person before
-      assert.notEqual currentPersonId, null
-
-      handlePublications.stop() if handlePublications
-      handlePublications = null
+      assert.equal currentPersonId, id
 
       currentPersonId = null
-      removePublications _.pluck currentPublications, '_id'
+      publishPublications []
+
+  publish.ready()
+
+  publish.onStop =>
+    handlePersons.stop() if handlePersons
+    handlePublications.stop() if handlePublications
+
+Meteor.publish 'publications-by-author-slug', (slug) ->
+  check slug, String
+
+  return unless slug
+
+  currentPublications = {}
+  handlePublications = null
+
+  publishPublications = (authorId, newLibrary) =>
+    newLibrary ||= []
+
+    initializing = true
+    initializedPublications = []
+
+    oldHandlePublications = handlePublications
+    if authorId
+      handlePublications = Publications.find(
+        'authors._id': authorId
+        $or: [
+          processed: true
+        ,
+          _id:
+            $in: newLibrary
+        ]
+      ,
+        Publication.PUBLIC_FIELDS()
+      ).observeChanges
+        added: (id, fields) =>
+          initializedPublications.push id if initializing
+
+          return if currentPublications[id]
+          currentPublications[id] = true
+
+          @added 'Publications', id, fields
+
+        changed: (id, fields) =>
+          return if not currentPublications[id]
+
+          @changed 'Publications', id, fields
+
+        removed: (id) =>
+          return if not currentPublications[id]
+          delete currentPublications[id]
+
+          @removed 'Publications', id
+
+    initializing = false
+
+    # We stop the handle after we established the new handle,
+    # so that any possible changes hapenning in the meantime
+    # were still processed by the old handle
+    oldHandlePublications.stop() if oldHandlePublications
+
+    # And then we remove those which are not published anymore
+    for id in _.difference _.keys(currentPublications), initializedPublications
+      delete currentPublications[id]
+      @removed 'Publications', id
+
+  currentPersonId = null # Just for asserts
+  lastLibrary = []
+  handlePersons = Persons.find(
+    _id: @personId
+  ,
+    fields:
+      # id field is implicitly added
+      library: 1
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentPersonId, null
+
+      currentPersonId = id
+      lastLibrary = _.pluck fields.library, '_id'
+      publishPublications currentAuthorId, lastLibrary
+
+    changed: (id, fields) =>
+      # Person should already be added
+      assert.equal currentPersonId, id
+
+      lastLibrary = _.pluck fields.library, '_id'
+      publishPublications currentAuthorId, lastLibrary
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.equal currentPersonId, id
+
+      currentPersonId = null
+      lastLibrary = []
+      publishPublications currentAuthorId, lastLibrary
+
+  currentAuthorId = null # Just for asserts
+  handleAuthors = Persons.find(
+    slug: slug
+  ,
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentAuthorId, null
+
+      currentAuthorId = id
+      publishPublications currentAuthorId, lastLibrary
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.equal currentAuthorId, id
+
+      currentAuthorId = null
+      publishPublications currentAuthorId, lastLibrary
 
   @ready()
 
   @onStop =>
     handlePersons.stop() if handlePersons
+    handleAuthors.stop() if handleAuthors
     handlePublications.stop() if handlePublications
 
+Meteor.publish 'publications-by-id', (id) ->
+  check id, String
+
+  return unless id
+
+  publishUsingMyLibrary @, (library) =>
+    _id: id
+    $or: [
+      processed: true
+    ,
+      _id:
+        $in: library
+    ]
+  ,
+    Publication.PUBLIC_FIELDS()
+
+Meteor.publish 'publications-by-ids', (ids) ->
+  check ids, [String]
+
+  return unless ids?.length
+
+  publishUsingMyLibrary @, (library) =>
+    _id:
+      $in: ids
+    $or: [
+      processed: true
+    ,
+      _id:
+        $in: library
+    ]
+  ,
+    Publication.PUBLIC_FIELDS()
+
+Meteor.publish 'my-publications', ->
+  publishUsingMyLibrary @, (library) =>
+    _id:
+      $in: library
+  ,
+    Publication.PUBLIC_FIELDS()
+
 # We could try to combine my-publications and my-publications-importing,
-# but it is easier to have two and leave to Meteor to merge them together
+# but it is easier to have two and leave to Meteor to merge them together,
+# because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
   Publications.find
     'importing.person._id': @personId
