@@ -365,19 +365,13 @@ Meteor.publish 'publications-by-id', (id) ->
 
   return unless id
 
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
+  publishUsingMyLibrary @, (library) =>
     _id: id
     $or: [
       processed: true
     ,
       _id:
-        $in: _.pluck person?.library, '_id'
+        $in: library
     ]
   ,
     Publication.PUBLIC_FIELDS()
@@ -387,20 +381,14 @@ Meteor.publish 'publications-by-ids', (ids) ->
 
   return unless ids?.length
 
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
+  publishUsingMyLibrary @, (library) =>
     _id:
       $in: ids
     $or: [
       processed: true
     ,
       _id:
-        $in: _.pluck person?.library, '_id'
+        $in: library
     ]
   ,
     Publication.PUBLIC_FIELDS()
