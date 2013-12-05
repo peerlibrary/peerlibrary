@@ -172,6 +172,27 @@ Meteor.startup ->
 
     return # Make sure CoffeeScript does not return anything
 
+Template.importButton.events =
+  'click .import': (e, template) ->
+    e.preventDefault()
+
+    if Meteor.personId()
+      $(template.findAll '.import-file-input').click()
+    else
+      Session.set 'signInOverlayActive', true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'change input.import-file-input': (e, template) ->
+    e.preventDefault()
+
+    return if e.target.files?.length is 0
+
+    Session.set 'importOverlayActive', true
+    _.each e.target.files, importFile
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'
 
@@ -193,6 +214,12 @@ Template.signInOverlay.events =
 
   'drop': (e, template) ->
     e.stopPropagation()
+    e.preventDefault()
+    Session.set 'signInOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click': (e, template) ->
     e.preventDefault()
     Session.set 'signInOverlayActive', false
 

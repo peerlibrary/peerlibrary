@@ -15,6 +15,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> importButton}}
           {{!
             <li class="explore pull-right">
               <a href="#">Explore</a>
@@ -58,4 +59,13 @@
   <li class="login pull-right">
     {{loginButtons align="right"}}
   </li>
+</template>
+
+<template name="importButton">
+  <li class="import pull-right">
+    <a href="#">Import</a>
+  </li>
+  {{#constant}}
+    <input class="import-file-input" type="file" multiple="multiple" />
+  {{/constant}}
 </template>
