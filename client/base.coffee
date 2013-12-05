@@ -22,7 +22,7 @@ setSession = (session) ->
 
   # Overlays are special and we do not clear them while routing
 
-  # Close login buttons dialog box when moving between pages
+  # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()
 
 Meteor.Router.add

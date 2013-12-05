@@ -5,7 +5,7 @@ Template.displayIcon.userIconUrl = ->
 Template._loginButtonsLoggedInDropdownActions.personSlug = ->
   Meteor.person()?.slug
 
-# To close login buttons dialog box when clicking or focusing somewhere outside
+# To close sign in buttons dialog box when clicking or focusing somewhere outside
 $(document).click (e) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
