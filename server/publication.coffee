@@ -250,78 +250,6 @@ Meteor.methods
         library:
           _id: publication._id
 
-Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, String
-
-  return unless slug
-
-  author = Persons.findOne
-    slug: slug
-
-  return unless author
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    'authors._id': author._id
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'publications-by-id', (id) ->
-  check id, String
-
-  return unless id
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    _id: id
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'publications-by-ids', (ids) ->
-  check ids, [String]
-
-  return unless ids?.length
-
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
-    _id:
-      $in: ids
-    $or: [
-      processed: true
-    ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
-  ,
-    Publication.PUBLIC_FIELDS()
-
 # TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
 publishUsingMyLibrary = (publish, selector, options) ->
   # There are moments when two observes are observing mostly similar list
@@ -404,6 +332,78 @@ publishUsingMyLibrary = (publish, selector, options) ->
   publish.onStop =>
     handlePersons.stop() if handlePersons
     handlePublications.stop() if handlePublications
+
+Meteor.publish 'publications-by-author-slug', (slug) ->
+  check slug, String
+
+  return unless slug
+
+  author = Persons.findOne
+    slug: slug
+
+  return unless author
+
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
+  Publications.find
+    'authors._id': author._id
+    $or: [
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
+    ]
+  ,
+    Publication.PUBLIC_FIELDS()
+
+Meteor.publish 'publications-by-id', (id) ->
+  check id, String
+
+  return unless id
+
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
+  Publications.find
+    _id: id
+    $or: [
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
+    ]
+  ,
+    Publication.PUBLIC_FIELDS()
+
+Meteor.publish 'publications-by-ids', (ids) ->
+  check ids, [String]
+
+  return unless ids?.length
+
+  # TODO: Make this reactive
+  person = Persons.findOne
+    _id: @personId
+  ,
+    library: 1
+
+  Publications.find
+    _id:
+      $in: ids
+    $or: [
+      processed: true
+    ,
+      _id:
+        $in: _.pluck person?.library, '_id'
+    ]
+  ,
+    Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'my-publications', ->
   publishUsingMyLibrary @, (library) =>
