@@ -195,7 +195,6 @@ Template.importButton.events =
 
 Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'
->>>>>>> master
 
 Template.signInOverlay.events =
   'dragover': (e, template) ->
