@@ -45,7 +45,7 @@ Meteor.Router.add
     as: 'profile'
     to: (personSlug) ->
       setSession
-        currentPersonSlug: currentPersonSlug
+        currentPersonSlug: personSlug
       'profile'
 
   '/about':
