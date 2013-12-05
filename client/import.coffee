@@ -14,6 +14,10 @@ UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
+  ImportingFiles.update file._id,
+    $set:
+      status: "Verifying file"
+
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verifyPublication', publicationId, samplesData, (err) ->
@@ -159,12 +163,12 @@ Meteor.startup ->
 
     if Meteor.personId()
       Session.set 'importOverlayActive', true
-      e.dataTransfer.effectAllowed = 'copy'
-      e.dataTransfer.dropEffect = 'copy'
+      e.originalEvent.dataTransfer.effectAllowed = 'copy'
+      e.originalEvent.dataTransfer.dropEffect = 'copy'
     else
       Session.set 'loginOverlayActive', true
-      e.dataTransfer.effectAllowed = 'none'
-      e.dataTransfer.dropEffect = 'none'
+      e.originalEvent.dataTransfer.effectAllowed = 'none'
+      e.originalEvent.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
@@ -253,7 +257,6 @@ Deps.autorun ->
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
     Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
-    return # Make sure CoffeeScript does not return anything
   else
     Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
 

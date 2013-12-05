@@ -56,7 +56,7 @@ On Debian you can install:
 
 ### Run it! ###
 
-From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
+From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) then run a development instance of PeerLibrary:
 
     mrt
 
@@ -93,6 +93,23 @@ installed among the dependencies, and `npm` gets confused with versions when upg
 version with the command:
 
     rm -rf ~/.meteorite/packages/pdf.js
+
+If you have not cloned recursively (`git clone --recursive ...`), you will at some point get a such or similar error:
+
+    While building package `blob`:
+    error: File not found: Blob/Blob.js
+
+You just have to manually initialize submodules we are using:
+
+    git submodule update --init --recursive
+
+If you are getting Stylus errors like:
+
+    error: Stylus compiler error: client/css/_viewer.styl:2
+
+    failed to locate @import file variables.styl
+
+You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
 
 ### Debug mode ###
 
