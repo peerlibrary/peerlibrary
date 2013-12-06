@@ -269,7 +269,7 @@ class @Page
     # the page at all, then we do not have aynthing to do
     @_padTextSegment position, segmentIndex if segmentIndex isnt -1
 
-    return # To prevent CoffeScript returning something
+    return # Make sure CoffeeScript does not return anything
 
   render: =>
     assert @highlightsEnabled
@@ -321,10 +321,10 @@ class @Annotator
 
     $(document).on 'mousedown.annotator', =>
       @mouseDown = true
-      return # To prevent CoffeScript returning something
+      return # Make sure CoffeeScript does not return anything
     $(document).on 'mouseup.annotator', =>
       @mouseDown = false
-      return # To prevent CoffeScript returning something
+      return # Make sure CoffeeScript does not return anything
 
   destroy: =>
     $(document).off 'mousedown.annotator'
@@ -380,4 +380,4 @@ class @Annotator
     page.render() for page in pagesToRender
     page.remove() for page in pagesToRemove
 
-    return # To prevent CoffeScript returning something
+    return # Make sure CoffeeScript does not return anything

@@ -4,24 +4,34 @@ Template.header.events =
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
+    return # Make sure CoffeeScript does not return anything
+
   'click .search-input': (e, template) ->
     # Only if focused on no-index header
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
+    return # Make sure CoffeeScript does not return anything
+
   'click .search-button': (e, template) ->
     Session.set 'searchActive', true
     simpleQueryChange $(template.findAll '.search-input').val()
 
+    return # Make sure CoffeeScript does not return anything
+
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
     simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'change .search-input': (e, template) ->
     Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'keyup .search-input': (e, template) ->
     val = $(template.findAll '.search-input').val()
@@ -34,16 +44,22 @@ Template.header.events =
 
     simpleQueryChange val
 
+    return # Make sure CoffeeScript does not return anything
+
   'paste .search-input': (e, template) ->
     Meteor.Router.to Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     simpleQueryChange $(template.findAll '.search-input').val()
 
+    return # Make sure CoffeeScript does not return anything
+
   'cut .search-input': (e, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'submit #search': (e, template) ->
     e.preventDefault()
@@ -51,6 +67,8 @@ Template.header.events =
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.header.development = ->
   'development' unless Meteor.settings?.public?.production

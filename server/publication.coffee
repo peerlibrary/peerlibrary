@@ -94,7 +94,7 @@ Meteor.methods
     check filename, String
     check sha256, String
 
-    throw new Meteor.Error 403, "User is not signed in." unless Meteor.personId()
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     existingPublication = Publications.findOne
       sha256: sha256
@@ -250,51 +250,230 @@ Meteor.methods
         library:
           _id: publication._id
 
+# TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
+publishUsingMyLibrary = (publish, selector, options) ->
+  # There are moments when two observes are observing mostly similar list
+  # of publications ids so it could happen that one is changing or removing
+  # publication just while the other one is adding, so we are making sure
+  # using currentPublications variable that we have a consistent view of the
+  # publications we published
+  currentPublications = {}
+  handlePublications = null
+
+  publishPublications = (newLibrary) =>
+    newLibrary ||= []
+
+    initializing = true
+    initializedPublications = []
+
+    oldHandlePublications = handlePublications
+    handlePublications = Publications.find(selector(newLibrary), options).observeChanges
+      added: (id, fields) =>
+        initializedPublications.push id if initializing
+
+        return if currentPublications[id]
+        currentPublications[id] = true
+
+        publish.added 'Publications', id, fields
+
+      changed: (id, fields) =>
+        return if not currentPublications[id]
+
+        publish.changed 'Publications', id, fields
+
+      removed: (id) =>
+        return if not currentPublications[id]
+        delete currentPublications[id]
+
+        publish.removed 'Publications', id
+
+    initializing = false
+
+    # We stop the handle after we established the new handle,
+    # so that any possible changes hapenning in the meantime
+    # were still processed by the old handle
+    oldHandlePublications.stop() if oldHandlePublications
+
+    # And then we remove those which are not published anymore
+    for id in _.difference _.keys(currentPublications), initializedPublications
+      delete currentPublications[id]
+      publish.removed 'Publications', id
+
+  currentPersonId = null # Just for asserts
+
+  if publish.personId
+    handlePersons = Persons.find(
+      _id: publish.personId
+    ,
+      fields:
+        # id field is implicitly added
+        library: 1
+    ).observeChanges
+      added: (id, fields) =>
+        # There should be only one person with the id at every given moment
+        assert.equal currentPersonId, null
+
+        currentPersonId = id
+        publishPublications _.pluck fields.library, '_id'
+
+      changed: (id, fields) =>
+        # Person should already be added
+        assert.equal currentPersonId, id
+
+        publishPublications _.pluck fields.library, '_id'
+
+      removed: (id) =>
+        # We cannot remove the person if we never added the person before
+        assert.equal currentPersonId, id
+
+        currentPersonId = null
+        publishPublications []
+
+  # If we get to here and currentPersonId was not set when initializing,
+  # we call publishPublications with empty list so that possibly something
+  # is published. If later on person is added, publishPublications will be
+  # simply called again.
+  publishPublications [] unless currentPersonId
+
+  publish.ready()
+
+  publish.onStop =>
+    handlePersons.stop() if handlePersons
+    handlePublications.stop() if handlePublications
+
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, String
 
   return unless slug
 
-  author = Persons.findOne
-    slug: slug
+  currentPublications = {}
+  handlePublications = null
 
-  return unless author
+  publishPublications = (authorId, newLibrary) =>
+    newLibrary ||= []
 
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
+    initializing = true
+    initializedPublications = []
 
-  Publications.find
-    'authors._id': author._id
-    $or: [
-      processed: true
+    oldHandlePublications = handlePublications
+    if authorId
+      handlePublications = Publications.find(
+        'authors._id': authorId
+        $or: [
+          processed: true
+        ,
+          _id:
+            $in: newLibrary
+        ]
+      ,
+        Publication.PUBLIC_FIELDS()
+      ).observeChanges
+        added: (id, fields) =>
+          initializedPublications.push id if initializing
+
+          return if currentPublications[id]
+          currentPublications[id] = true
+
+          @added 'Publications', id, fields
+
+        changed: (id, fields) =>
+          return if not currentPublications[id]
+
+          @changed 'Publications', id, fields
+
+        removed: (id) =>
+          return if not currentPublications[id]
+          delete currentPublications[id]
+
+          @removed 'Publications', id
+
+    initializing = false
+
+    # We stop the handle after we established the new handle,
+    # so that any possible changes hapenning in the meantime
+    # were still processed by the old handle
+    oldHandlePublications.stop() if oldHandlePublications
+
+    # And then we remove those which are not published anymore
+    for id in _.difference _.keys(currentPublications), initializedPublications
+      delete currentPublications[id]
+      @removed 'Publications', id
+
+  currentPersonId = null # Just for asserts
+  lastLibrary = []
+
+  if @personId
+    handlePersons = Persons.find(
+      _id: @personId
     ,
-      _id:
-        $in: _.pluck person?.library, '_id'
-    ]
+      fields:
+        # id field is implicitly added
+        library: 1
+    ).observeChanges
+      added: (id, fields) =>
+        # There should be only one person with the id at every given moment
+        assert.equal currentPersonId, null
+
+        currentPersonId = id
+        lastLibrary = _.pluck fields.library, '_id'
+        publishPublications currentAuthorId, lastLibrary
+
+      changed: (id, fields) =>
+        # Person should already be added
+        assert.equal currentPersonId, id
+
+        lastLibrary = _.pluck fields.library, '_id'
+        publishPublications currentAuthorId, lastLibrary
+
+      removed: (id) =>
+        # We cannot remove the person if we never added the person before
+        assert.equal currentPersonId, id
+
+        currentPersonId = null
+        lastLibrary = []
+        publishPublications currentAuthorId, lastLibrary
+
+  currentAuthorId = null # Just for asserts
+
+  handleAuthors = Persons.find(
+    slug: slug
   ,
-    Publication.PUBLIC_FIELDS()
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id, fields) =>
+      # There should be only one person with the id at every given moment
+      assert.equal currentAuthorId, null
+
+      currentAuthorId = id
+      publishPublications currentAuthorId, lastLibrary
+
+    removed: (id) =>
+      # We cannot remove the person if we never added the person before
+      assert.equal currentAuthorId, id
+
+      currentAuthorId = null
+      publishPublications currentAuthorId, lastLibrary
+
+  @ready()
+
+  @onStop =>
+    handlePersons.stop() if handlePersons
+    handleAuthors.stop() if handleAuthors
+    handlePublications.stop() if handlePublications
 
 Meteor.publish 'publications-by-id', (id) ->
   check id, String
 
   return unless id
 
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
+  publishUsingMyLibrary @, (library) =>
     _id: id
     $or: [
       processed: true
     ,
       _id:
-        $in: _.pluck person?.library, '_id'
+        $in: library
     ]
   ,
     Publication.PUBLIC_FIELDS()
@@ -304,125 +483,28 @@ Meteor.publish 'publications-by-ids', (ids) ->
 
   return unless ids?.length
 
-  # TODO: Make this reactive
-  person = Persons.findOne
-    _id: @personId
-  ,
-    library: 1
-
-  Publications.find
+  publishUsingMyLibrary @, (library) =>
     _id:
       $in: ids
     $or: [
       processed: true
     ,
       _id:
-        $in: _.pluck person?.library, '_id'
+        $in: library
     ]
   ,
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'my-publications', ->
-  # There are moments when two observes are observing mostly similar list
-  # of publications ids so it could happen that one is changing or removing
-  # publication just while the other one is adding, so we are making sure
-  # using currentLibrary variable that we have a consistent view of the
-  # publications we published
-  currentLibrary = {}
-  currentPersonId = null # Just for asserts
-  handlePublications = null
-
-  removePublications = (ids) =>
-    for id of ids when currentLibrary[id]
-      delete currentLibrary[id]
-      @removed 'Publications', id
-
-  publishPublications = (newLibrary) =>
-    newLibrary ||= []
-
-    added = {}
-    added[id] = true for id in _.difference newLibrary, _.keys(currentLibrary)
-    removed = {}
-    removed[id] = true for id in _.difference _.keys(currentLibrary), newLibrary
-
-    # Optimization, happens when a publication document is first deleted and
-    # then removed from the library list in the person document
-    if _.isEmpty(added) and _.isEmpty(removed)
-      return
-
-    oldHandlePublications = handlePublications
-    handlePublications = Publications.find(
-      _id:
-        $in: newLibrary
-    ,
-      Publication.PUBLIC_FIELDS()
-    ).observeChanges
-      added: (id, fields) =>
-        return if currentLibrary[id]
-        currentLibrary[id] = true
-
-        # We add only the newly added ones, others were added already before
-        @added 'Publications', id, fields if added[id]
-
-      changed: (id, fields) =>
-        return if not currentLibrary[id]
-
-        @changed 'Publications', id, fields
-
-      removed: (id) =>
-        return if not currentLibrary[id]
-        delete currentLibrary[id]
-
-        @removed 'Publications', id
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandlePublications.stop() if oldHandlePublications
-
-    # And then we remove those who are not in the library anymore
-    removePublications removed
-
-  handlePersons = Persons.find(
-    'user._id': @userId
+  publishUsingMyLibrary @, (library) =>
+    _id:
+      $in: library
   ,
-    fields:
-      # id field is implicitly added
-      'user._id': 1
-      library: 1
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
-      assert.equal fields.user._id, @userId
-
-      currentPersonId = id
-      publishPublications _.pluck fields.library, '_id'
-
-    changed: (id, fields) =>
-      # Person should already be added
-      assert.notEqual currentPersonId, null
-
-      publishPublications _.pluck fields.library, '_id'
-
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.notEqual currentPersonId, null
-
-      handlePublications.stop() if handlePublications
-      handlePublications = null
-
-      currentPersonId = null
-      removePublications _.pluck currentLibrary, '_id'
-
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handlePublications.stop() if handlePublications
+    Publication.PUBLIC_FIELDS()
 
 # We could try to combine my-publications and my-publications-importing,
-# but it is easier to have two and leave to Meteor to merge them together
+# but it is easier to have two and leave to Meteor to merge them together,
+# because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
   Publications.find
     'importing.person._id': @personId
