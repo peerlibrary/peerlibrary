@@ -1,7 +1,7 @@
 @Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
 
 class @Person extends Document
-  # user: (null if unregistered)
+  # user: (null if without user account)
   #   _id
   #   username
   # slug: unique slug for URL

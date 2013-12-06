@@ -94,7 +94,7 @@ Meteor.methods
     check filename, String
     check sha256, String
 
-    throw new Meteor.Error 403, "User is not signed in." unless Meteor.personId()
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     existingPublication = Publications.findOne
       sha256: sha256

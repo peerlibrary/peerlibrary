@@ -91,9 +91,16 @@ ul.top-menu
       visibility visible
 
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
-  background white
-  color blue-accent
   text-decoration none !important
+
+.no-index-header
+  ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+    background white
+    color blue-accent
+
+ul.top-menu li .accounts-dialog a:hover
+  background transparent
+  color white
 
 span.cursor
   animation blink 1s linear 0s infinite
@@ -170,7 +177,7 @@ span.cursor
     -ms-transform rotate(-10deg)
 
 /*
-Sign up buttons
+Sign in buttons
 =============== */
 
 #login-buttons
@@ -218,6 +225,9 @@ Sign up buttons
       border-color rgb(81,167,232)
       box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
+    .loading
+      display none
+
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding 0 20px
 
@@ -237,7 +247,6 @@ Auth buttons
 ============ */
 
 .login-button
-  margin-top 30px
   padding 5px 20px
   background #68E468
   text-align center
@@ -245,6 +254,9 @@ Auth buttons
   color white
   cursor pointer
   transition all 0.15s ease-in 0s
+
+.login-button-form-submit
+  margin-top 30px
 
 .login-button:hover
   background #7BC97B
@@ -254,8 +266,15 @@ Auth buttons
   text-align center
 
 .user-icon
-  width 25px
-  height 25px
+  width 24px
+  height 24px
+
+/*
+Import button
+============= */
+
+input.import-file-input
+  display none
 
 /* Index header
 =============== */
@@ -306,21 +325,32 @@ header.index-header
   .container
     background-color transparent
 
+  .drop-files-to-import
+    text-align center
+
   ul.top-menu
-    a.login-link-text
+    li > a, li a.login-link-text
       font-size 14px
       font-weight 600
       line-height 14px
       padding 8px 20px
-      position absolute
-      top 15px
-      right 25px
+      margin-top 15px
+      margin-right 15px
       color rgb(255,255,255)
       background rgba(87,173,104,0.7)
       border-radius 4px
       transition 0.2s
-    a.login-link-text:hover
+
+    li > a:hover, li a.login-link-text:hover
       background rgba(87,173,104,1)
+
+    li a.login-link-text
+      margin-right 25px
+
+  .user-icon
+    margin-top -5px
+    margin-bottom -5px
+    vertical-align top
 
 header.no-index-header
   .search-wrapper
