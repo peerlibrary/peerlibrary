@@ -1,7 +1,7 @@
 @INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
 
 setSession = (session) ->
-  session = _.defaults session,
+  session = _.defaults session or {},
     indexActive: false
     currentSearchQuery: null
     currentSearchQueryCountPublications: 0
@@ -22,7 +22,7 @@ setSession = (session) ->
 
   # Overlays are special and we do not clear them while routing
 
-  # Close login buttons dialog box when moving between pages
+  # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()
 
 Meteor.Router.add
@@ -45,7 +45,7 @@ Meteor.Router.add
     as: 'profile'
     to: (personSlug) ->
       setSession
-        currentPersonSlug: currentPersonSlug
+        currentPersonSlug: personSlug
       'profile'
 
   '/about':
@@ -72,7 +72,7 @@ Meteor.Router.add
       setSession()
       'terms'
 
-  '/admin': ->
+  '/admin':
     as: 'admin'
     to: ->
       setSession
