@@ -22,6 +22,7 @@
       "git": "https://github.com/EventedMind/meteor-file.git"
     },
     "digest": {},
-    "peerdb": {}
+    "peerdb": {},
+    "useragent": {}
   }
 }
