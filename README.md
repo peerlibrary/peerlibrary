@@ -63,15 +63,13 @@ From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) t
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
 your local development instance.
 
-To demo the tool, you will need to populate your instance of the database with publications. Go to
-[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of
-buttons in the center of the screen that will allow you to cache publications.
-Click on the second button, _Sync arXiv metadata_, to begin the syncing process. The process
-will automatically proceed to caching and processing PDFs. Publications that make it all
-the way through "processing" will be searchable at your [http://localhost:3000/](http://localhost:3000/).
-
-Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can
-click the button in the admin interface for the process which you previously left off on.
+To demo the tool, you will need to populate your instance of the database with publications.
+At first run it was already populated with dummy users `carl-sagan`, `hannah-arendt`,
+`paul-feyerabend` with password `hello`. User `carl-sagan` was set as administrator.
+Log in as `carl-sagan` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
+Click on the _Initialize database with sample data_ button, to initialize the database with
+the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
+and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
 ### Troubleshooting ###
 

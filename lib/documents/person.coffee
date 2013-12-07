@@ -9,6 +9,7 @@ class @Person extends Document
   # created: creation timestamp
   # foreNames
   # lastName
+  # isAdmin: boolean, is user an administrator or not
   # work
   #   position (e.g. Professor of Theoretical Physics)
   #   institution (e.g. University of California, Berkeley)
