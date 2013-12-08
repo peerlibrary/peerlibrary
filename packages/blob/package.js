@@ -12,6 +12,6 @@ Package.describe({
 
 Package.on_test(function (api) {
   api.add_files([
-    'Blob/Blob.js',
+    'Blob/Blob.js'
   ], 'client', {bare: true});
 });

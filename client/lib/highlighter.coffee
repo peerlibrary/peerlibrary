@@ -328,7 +328,7 @@ class @Highlighter
   constructor: ->
     @_pages = []
     @_numPages = null
-    @_mapper = null
+    @_annotator = null
     @mouseDown = false
 
     $(window).on 'scroll.highlighter', @checkRender
@@ -351,8 +351,9 @@ class @Highlighter
     page.destroy() for page in @_pages
     @_pages = []
     @_numPages = null # To disable any asynchronous _checkHighlighting
-    @_mapper.destroy() if @_mapper
-    @_mapper = null # To release any memory
+    # TODO: Clean-up after Annotator
+    #@_annotator.destroy() if @_annotator
+    @_annotator = null # To release any memory
 
   setNumPages: (@_numPages) =>
 
@@ -418,13 +419,22 @@ class @Highlighter
 
     return unless _.every @_pages, (page) -> page.hasTextContent()
 
-    @_mapper = new PDFTextMapper @
-    @_mapper.scan()
+    #@_mapper = new PDFTextMapper @
+    #@_mapper.scan()
+
+    @_annotator = new Annotator @
+
+    @_annotator.addPlugin 'TextHighlights'
+    @_annotator.addPlugin 'DomTextMapper'
+    @_annotator.addPlugin 'TextAnchors'
+    @_annotator.addPlugin 'PeerLibraryPDF'
+
+    @_annotator._scan()
 
   pageRendered: (page) =>
     # We update the mapper for new page
-    @_mapper.pageRendered page.pageNumber
+    @_annotator.domMapper.pageRendered page.pageNumber
 
   pageRemoved: (page) =>
     # We update the mapper for removed page
-    @_mapper.pageRendered page.pageNumber
+    @_annotator.domMapper.pageRendered page.pageNumber

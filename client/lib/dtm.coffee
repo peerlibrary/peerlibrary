@@ -1,4 +1,4 @@
-class @PDFTextMapper extends PageTextMapperCore
+class PDFTextMapper extends PageTextMapperCore
   # Are we working with a PDF document?
   @applicable: =>
     true
@@ -7,7 +7,7 @@ class @PDFTextMapper extends PageTextMapperCore
 
   # Get the number of pages
   getPageCount: =>
-    @highlighter.getNumPages()
+    @_highlighter.getNumPages()
 
   # Where are we in the document?
   getPageIndex: =>
@@ -19,13 +19,13 @@ class @PDFTextMapper extends PageTextMapperCore
 
   # Determine whether a given page has been rendered
   _isPageRendered: (index) =>
-    @highlighter.isPageRendered index + 1
+    @_highlighter.isPageRendered index + 1
 
   # Get the root DOM node of a given page
   getRootNodeForPage: (index) ->
-    @highlighter.getTextLayer index + 1
+    @_highlighter.getTextLayer index + 1
 
-  constructor: (@highlighter) ->
+  constructor: (@_highlighter) ->
     @pageInfo = []
 
   destroyed: =>
@@ -65,7 +65,7 @@ class @PDFTextMapper extends PageTextMapperCore
   # Extract the text from the PDF
   scan: =>
     @pageInfo = for pageNumber in [1..@getPageCount()]
-      content: @highlighter.extractText pageNumber
+      content: @_highlighter.extractText pageNumber
 
     @_finishScan()
 
@@ -79,7 +79,19 @@ class @PDFTextMapper extends PageTextMapperCore
 
   # Look up the page for a given DOM node
   getPageForNode: (node) =>
-    assert $(node).hasClass('text-layer-segment')
-
-    index = $(node).data('pageNumber') - 1
+    index = $(node).closest('.text-layer-segment').data('pageNumber') - 1
     @pageInfo[index]
+
+# Annotator plugin for annotating documents handled by PDF.js
+class Annotator.Plugin.PeerLibraryPDF extends Annotator.Plugin
+  pluginInit: =>
+    # We need dom-text-mapper
+    unless @annotator.plugins.DomTextMapper
+      throw new Error "The PeerLibrary PDF Annotator plugin requires the DomTextMapper plugin."
+
+    @annotator.documentAccessStrategies.unshift
+      # Strategy to handle PeerLibrary PDF documents
+      name: 'PeerLibrary PDF'
+      mapper: PDFTextMapper
+      init: =>
+        @annotator.domMapper._highlighter = @annotator._highlighter

@@ -8,11 +8,11 @@ Package.on_use(function (api) {
   api.export('DTM');
 
   api.add_files([
-    'dom-text-mapper/src/dom_text_mapper.coffee',
-    'dom-text-mapper/src/page_text_mapper_core.coffee',
     'dom-text-matcher/lib/diff_match_patch/diff_match_patch_uncompressed.js',
     'dom-text-matcher/src/text_match_engines.coffee',
+    'dom-text-mapper/src/dom_text_mapper.coffee',
     'dom-text-matcher/src/dom_text_matcher.coffee',
+    'dom-text-mapper/src/page_text_mapper_core.coffee',
     'dtm.coffee'
   ], ['client', 'server']);
 });

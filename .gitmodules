@@ -10,3 +10,7 @@
 	path = packages/dom-text-mapper/dom-text-matcher
 	url = git://github.com/peerlibrary/dom-text-matcher.git
 	branch = peerlibrary
+[submodule "packages/annotator/annotator"]
+	path = packages/annotator/annotator
+	url = git://github.com/peerlibrary/annotator.git
+	branch = peerlibrary
