@@ -314,6 +314,7 @@ class @Page
 class @Annotator
   constructor: ->
     @_pages = []
+    @_currentPageNumber = null
     @mouseDown = false
 
     $(window).on 'scroll.annotator', @checkRender
@@ -335,6 +336,9 @@ class @Annotator
 
     page.destroy() for page in @_pages
     @_pages = []
+
+  getCurrentPageNumber: =>
+    @_currentPageNumber
 
   setPage: (pdfPage) =>
     # Initialize the page
@@ -379,5 +383,19 @@ class @Annotator
 
     page.render() for page in pagesToRender
     page.remove() for page in pagesToRemove
+
+    documentMiddle = $(window).scrollTop() + $(window).height() / 2
+    currentPageDistance = Number.POSITIVE_INFINITY
+    for page in @_pages
+      $canvas = page.$displayPage.find('canvas')
+
+      pageMiddle = $canvas.offset().top + $canvas.height() / 2
+      distance = documentMiddle - pageMiddle
+      if Math.abs(distance) < currentPageDistance
+        currentPageDistance = Math.abs(distance)
+        @_currentPageNumber = page.pageNumber
+      else if distance < 0
+        # We passed documentMiddle and distance is not smaller anymore
+        break
 
     return # Make sure CoffeeScript does not return anything
