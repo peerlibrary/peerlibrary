@@ -334,10 +334,10 @@ class @Highlighter
     $(window).on 'scroll.highlighter', @checkRender
     $(window).on 'resize.highlighter', @checkRender
 
-    $(document).on 'mousedown.highlighter', =>
-      @mouseDown = true
+    $(document).on 'mousedown.highlighter', (e) =>
+      @mouseDown = true if e.which is 1 # Left mouse button
       return # Make sure CoffeeScript does not return anything
-    $(document).on 'mouseup.highlighter', =>
+    $(document).on 'mouseup.highlighter', (e) =>
       @mouseDown = false
       return # Make sure CoffeeScript does not return anything
 
