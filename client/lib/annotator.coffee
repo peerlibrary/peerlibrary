@@ -32,7 +32,6 @@ class @Annotator extends Annotator
 
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
-      console.log e.which
       @checkForStartSelection e if e.which is 1 # Left mouse button
       return # Make sure CoffeeScript does not return anything
 
