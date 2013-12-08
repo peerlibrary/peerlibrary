@@ -33,3 +33,4 @@ peerdb
 logging
 audit-argument-checks
 useragent
+dom-text-mapper

@@ -38,6 +38,8 @@ class @Publication extends @Publication
       # To make sure we are starting with empty slate
       $('#viewer .display-wrapper').empty()
 
+      @_annotator.setNumPages @_pdf.numPages
+
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
         $textLayer = $('<div/>').addClass('text-layer')

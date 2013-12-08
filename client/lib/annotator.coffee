@@ -1,4 +1,6 @@
 MAX_TEXT_LAYER_SEGMENTS_TO_RENDER = 100000
+WHITESPACE_REGEX = /\s+/g
+TRIM_WHITESPACE_REGEX = /^\s+|\s+$/gm
 
 class @Page
   constructor: (@annotator, @pdfPage) ->
@@ -56,11 +58,11 @@ class @Page
   extractText: =>
     return @_extractedText unless @_extractedText is null
 
-    text = ''
-    for t in @textContent.bidiTexts
-      text += t.str
+    text = (t.str for t in @textContent.bidiTexts).join ' '
 
-    # TODO: Clean-up the text: remove double whitespaces
+    # Remove multiple whitespace characters and trim them away
+    text = text.replace(WHITESPACE_REGEX, ' ').replace(TRIM_WHITESPACE_REGEX, '')
+
     # TODO: Clean-up the text: remove hypenation
 
     @_extractedText = text
@@ -271,6 +273,13 @@ class @Page
 
     return # Make sure CoffeeScript does not return anything
 
+  isRendered: =>
+    return false unless @highlightsEnabled
+
+    return false if @rendering
+
+    not @$displayPage.find('.text-layer-dummy').is(':visible')
+
   render: =>
     assert @highlightsEnabled
 
@@ -295,6 +304,8 @@ class @Page
 
     @rendering = false
 
+    @annotator.pageRendered @
+
   remove: =>
     assert not @rendering
 
@@ -311,10 +322,13 @@ class @Page
 
     $textLayerDummy.show()
 
+    @annotator.pageRemoved @
+
 class @Annotator
   constructor: ->
     @_pages = []
-    @_currentPageNumber = null
+    @_numPages = null
+    @_mapper = null
     @mouseDown = false
 
     $(window).on 'scroll.annotator', @checkRender
@@ -336,9 +350,14 @@ class @Annotator
 
     page.destroy() for page in @_pages
     @_pages = []
+    @_numPages = null # To disable any asynchronous _checkAnnotation
+    @_mapper.destroy() if @_mapper
+    @_mapper = null # To release any memory
 
-  getCurrentPageNumber: =>
-    @_currentPageNumber
+  setNumPages: (@_numPages) =>
+
+  getNumPages: =>
+    @_numPages
 
   setPage: (pdfPage) =>
     # Initialize the page
@@ -347,8 +366,13 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
+    @_checkAnnotation()
+
   hasTextContent: (pageNumber) =>
     @_pages[pageNumber - 1]?.hasTextContent()
+
+  getTextLayer: (pageNumber) =>
+    @_pages[pageNumber - 1].$displayPage.find('.text-layer').get(0)
 
   extractText: (pageNumber) =>
     @_pages[pageNumber - 1].extractText()
@@ -384,18 +408,23 @@ class @Annotator
     page.render() for page in pagesToRender
     page.remove() for page in pagesToRemove
 
-    documentMiddle = $(window).scrollTop() + $(window).height() / 2
-    currentPageDistance = Number.POSITIVE_INFINITY
-    for page in @_pages
-      $canvas = page.$displayPage.find('canvas')
-
-      pageMiddle = $canvas.offset().top + $canvas.height() / 2
-      distance = documentMiddle - pageMiddle
-      if Math.abs(distance) < currentPageDistance
-        currentPageDistance = Math.abs(distance)
-        @_currentPageNumber = page.pageNumber
-      else if distance < 0
-        # We passed documentMiddle and distance is not smaller anymore
-        break
-
     return # Make sure CoffeeScript does not return anything
+
+  isPageRendered: (pageNumber) =>
+    @_pages[pageNumber - 1]?.isRendered()
+
+  _checkAnnotation: =>
+    return unless @_pages.length is @_numPages
+
+    return unless _.every @_pages, (page) -> page.hasTextContent()
+
+    @_mapper = new PDFTextMapper @
+    @_mapper.scan()
+
+  pageRendered: (page) =>
+    # We update the mapper for new page
+    @_mapper.pageRendered page.pageNumber
+
+  pageRemoved: (page) =>
+    # We update the mapper for removed page
+    @_mapper.pageRendered page.pageNumber
