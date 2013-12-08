@@ -2,8 +2,8 @@ MAX_TEXT_LAYER_SEGMENTS_TO_RENDER = 100000
 WHITESPACE_REGEX = /\s+/g
 TRIM_WHITESPACE_REGEX = /^\s+|\s+$/gm
 
-class @Page
-  constructor: (@annotator, @pdfPage) ->
+class Page
+  constructor: (@highlighter, @pdfPage) ->
     @pageNumber = @pdfPage.pageNumber
 
     @textContent = null
@@ -300,11 +300,11 @@ class @Page
     # TODO: Report this to the server? Or should we simply discover such PDFs already on the server when processing them?
     @$displayPage.find('.text-layer').append divs if divs.length <= MAX_TEXT_LAYER_SEGMENTS_TO_RENDER
 
-    @$displayPage.on 'mousemove.annotator', @padTextSegments
+    @$displayPage.on 'mousemove.highlighter', @padTextSegments
 
     @rendering = false
 
-    @annotator.pageRendered @
+    @highlighter.pageRendered @
 
   remove: =>
     assert not @rendering
@@ -313,7 +313,7 @@ class @Page
 
     return if $textLayerDummy.is(':visible')
 
-    @$displayPage.off 'mousemove.annotator'
+    @$displayPage.off 'mousemove.highlighter'
 
     @$displayPage.find('.text-layer').empty()
 
@@ -322,35 +322,35 @@ class @Page
 
     $textLayerDummy.show()
 
-    @annotator.pageRemoved @
+    @highlighter.pageRemoved @
 
-class @Annotator
+class @Highlighter
   constructor: ->
     @_pages = []
     @_numPages = null
     @_mapper = null
     @mouseDown = false
 
-    $(window).on 'scroll.annotator', @checkRender
-    $(window).on 'resize.annotator', @checkRender
+    $(window).on 'scroll.highlighter', @checkRender
+    $(window).on 'resize.highlighter', @checkRender
 
-    $(document).on 'mousedown.annotator', =>
+    $(document).on 'mousedown.highlighter', =>
       @mouseDown = true
       return # Make sure CoffeeScript does not return anything
-    $(document).on 'mouseup.annotator', =>
+    $(document).on 'mouseup.highlighter', =>
       @mouseDown = false
       return # Make sure CoffeeScript does not return anything
 
   destroy: =>
-    $(document).off 'mousedown.annotator'
-    $(document).off 'mouseup.annotator'
+    $(document).off 'mousedown.highlighter'
+    $(document).off 'mouseup.highlighter'
 
-    $(window).off 'scroll.annotator'
-    $(window).off 'resize.annotator'
+    $(window).off 'scroll.highlighter'
+    $(window).off 'resize.highlighter'
 
     page.destroy() for page in @_pages
     @_pages = []
-    @_numPages = null # To disable any asynchronous _checkAnnotation
+    @_numPages = null # To disable any asynchronous _checkHighlighting
     @_mapper.destroy() if @_mapper
     @_mapper = null # To release any memory
 
@@ -366,7 +366,7 @@ class @Annotator
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
 
-    @_checkAnnotation()
+    @_checkHighlighting()
 
   hasTextContent: (pageNumber) =>
     @_pages[pageNumber - 1]?.hasTextContent()
@@ -413,7 +413,7 @@ class @Annotator
   isPageRendered: (pageNumber) =>
     @_pages[pageNumber - 1]?.isRendered()
 
-  _checkAnnotation: =>
+  _checkHighlighting: =>
     return unless @_pages.length is @_numPages
 
     return unless _.every @_pages, (page) -> page.hasTextContent()

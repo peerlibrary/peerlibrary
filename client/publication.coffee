@@ -5,7 +5,7 @@ class @Publication extends @Publication
     super args...
 
     @_pages = null
-    @_annotator = null
+    @_highlighter = null
 
   _viewport: (page) =>
     scale = SCALE
@@ -29,7 +29,7 @@ class @Publication extends @Publication
 
     @_pagesDone = 0
     @_pages = []
-    @_annotator = new Annotator
+    @_highlighter = new Highlighter
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -38,7 +38,7 @@ class @Publication extends @Publication
       # To make sure we are starting with empty slate
       $('#viewer .display-wrapper').empty()
 
-      @_annotator.setNumPages @_pdf.numPages
+      @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
@@ -75,7 +75,7 @@ class @Publication extends @Publication
               rendering: false
             @_pagesDone++
 
-            @_annotator.setPage pdfPage
+            @_highlighter.setPage pdfPage
 
             @_getTextContent pdfPage
 
@@ -102,7 +102,7 @@ class @Publication extends @Publication
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      @_annotator.setTextContent pdfPage.pageNumber, textContent
+      @_highlighter.setTextContent pdfPage.pageNumber, textContent
 
       # Good initial font size, we want text to cover whole page,
       # but if there is not much text to begin with, we should not
@@ -110,7 +110,7 @@ class @Publication extends @Publication
       fontSize = 21
 
       $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
-      $textLayerDummy = $('<div/>').addClass('text-layer-dummy').css('font-size', fontSize).text(@_annotator.extractText pdfPage.pageNumber)
+      $textLayerDummy = $('<div/>').addClass('text-layer-dummy').css('font-size', fontSize).text(@_highlighter.extractText pdfPage.pageNumber)
       $displayPage.append($textLayerDummy)
 
       while $textLayerDummy.outerHeight(true) > $displayPage.height() and fontSize > 1
@@ -134,7 +134,7 @@ class @Publication extends @Publication
       # When rendering we also set text segment locations for what we need text
       # content to be already available, so if we are before text content has
       # been set, we skip (it will be retried after text content is set)
-      continue unless @_annotator.hasTextContent page.pageNumber
+      continue unless @_highlighter.hasTextContent page.pageNumber
 
       $canvas = $("#display-page-#{ page.pageNumber } canvas")
 
@@ -159,8 +159,8 @@ class @Publication extends @Publication
     @_pdf.destroy() if @_pdf
 
     # To make sure it is cleaned up
-    @_annotator.destroy() if @_annotator
-    @_annotator = null
+    @_highlighter.destroy() if @_highlighter
+    @_highlighter = null
 
     # Clean DOM
     $('#viewer .display-wrapper').empty()
@@ -186,8 +186,8 @@ class @Publication extends @Publication
 
     renderContext =
       canvasContext: $canvas.get(0).getContext '2d'
-      textLayer: @_annotator.textLayer page.pageNumber
-      imageLayer: @_annotator.imageLayer page.pageNumber
+      textLayer: @_highlighter.textLayer page.pageNumber
+      imageLayer: @_highlighter.imageLayer page.pageNumber
       viewport: @_viewport page
 
     page.pdfPage.render(renderContext).then =>
@@ -199,7 +199,7 @@ class @Publication extends @Publication
       $("#display-page-#{ page.pageNumber } .loading").hide()
 
       # Maybe we have to render text layer as well
-      @_annotator.checkRender()
+      @_highlighter.checkRender()
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)

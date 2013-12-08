@@ -7,7 +7,7 @@ class @PDFTextMapper extends PageTextMapperCore
 
   # Get the number of pages
   getPageCount: =>
-    @annotator.getNumPages()
+    @highlighter.getNumPages()
 
   # Where are we in the document?
   getPageIndex: =>
@@ -19,13 +19,13 @@ class @PDFTextMapper extends PageTextMapperCore
 
   # Determine whether a given page has been rendered
   _isPageRendered: (index) =>
-    @annotator.isPageRendered index + 1
+    @highlighter.isPageRendered index + 1
 
   # Get the root DOM node of a given page
   getRootNodeForPage: (index) ->
-    @annotator.getTextLayer index + 1
+    @highlighter.getTextLayer index + 1
 
-  constructor: (@annotator) ->
+  constructor: (@highlighter) ->
     @pageInfo = []
 
   destroyed: =>
@@ -65,7 +65,7 @@ class @PDFTextMapper extends PageTextMapperCore
   # Extract the text from the PDF
   scan: =>
     @pageInfo = for pageNumber in [1..@getPageCount()]
-      content: @annotator.extractText pageNumber
+      content: @highlighter.extractText pageNumber
 
     @_finishScan()
 
