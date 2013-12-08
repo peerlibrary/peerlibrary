@@ -20,6 +20,8 @@ class @Annotator extends Annotator
     @wrapper = $(document)
 
   onSuccessfulSelection: (event, immediate) =>
+    time = new Date().valueOf()
+
     # Store the selected targets
     @selectedTargets = event.targets
 
@@ -27,6 +29,8 @@ class @Annotator extends Annotator
 
     # Extract the quotation and serialize the ranges
     annotation = @setupAnnotation annotation
+
+    console.log "Time (s):", (new Date().valueOf() - time) / 1000
 
     # TODO: Do something with annotation
     console.log annotation
