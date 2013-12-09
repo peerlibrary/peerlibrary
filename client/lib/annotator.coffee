@@ -18,6 +18,11 @@ class @Annotator extends Annotator
   _setupViewer: =>
     # Overridden and disabled
 
+    @ # For chaining
+
+  _setupEditor: =>
+    # Overridden and disabled
+
   _setupDynamicStyle: =>
     # Overridden and disabled
 
