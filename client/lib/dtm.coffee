@@ -11,10 +11,12 @@ class PDFTextMapper extends PageTextMapperCore
 
   # Where are we in the document?
   getPageIndex: =>
+    # Ignoring, because used only by Hypothes.is heatmap
     throw new Error "Not implemented"
 
   # Jump to a given page
   setPageIndex: (index) =>
+    # Ignoring, because used only by Hypothes.is heatmap
     throw new Error "Not implemented"
 
   # Determine whether a given page has been rendered
@@ -31,6 +33,8 @@ class PDFTextMapper extends PageTextMapperCore
   destroyed: =>
     @pageInfo = []
 
+    # TODO: Remove events
+
   pageRendered: (pageNumber) =>
     assert @pageInfo.length
 
@@ -42,25 +46,28 @@ class PDFTextMapper extends PageTextMapperCore
     # Forget info about the new DOM subtree
     @_unmapPage @pageInfo[pageNumber - 1]
 
-# TODO: What to do with this code? Why is domChange triggered on cross-page selections?
-#  setEvents: ->
-#    # Do something about cross-page selections
-#    viewer = document.getElementById "viewer"
-#    viewer.addEventListener "domChange", (event) =>
-#      node = event.srcElement
-#      data = event.data
-#      if "viewer" is node.getAttribute? "id"
-#        console.log "Detected cross-page change event."
-#        # This event escaped the pages.
-#        # Must be a cross-page selection.
-#        if data.start? and data.end?
-#          startPage = @getPageForNode data.start
-#          endPage = @getPageForNode data.end
-#          for index in [ startPage.index .. endPage.index ]
-#            #console.log "Should rescan page #" + index
-#            @_updateMap @pageInfo[index]
-#
-#    $(PDFView.container).on 'scroll', => @_onScroll()
+  setEvents: =>
+    # Do something about cross-page selections
+    @_annotator.wrapper.on 'domChange', (e) =>
+      data = e.data or e.originalEvent.data
+
+      return unless e.target is e.currentTarget
+
+      console.log "Detected cross-page change event."
+
+      # This event escaped the pages
+      # Must be a cross-page selection
+      return unless data.start? and data.end?
+
+      startPage = @getPageForNode data.start
+      endPage = @getPageForNode data.end
+      for index in [startPage.index..endPage.index]
+        @_updateMap @pageInfo[index]
+
+      return # Make sure CoffeeScript does not return anything
+
+    # Ignoring, because used only by Hypothes.is heatmap
+    #$(document).on 'scroll', (e) => @_onScroll()
 
   # Extract the text from the PDF
   scan: =>
@@ -94,4 +101,6 @@ class Annotator.Plugin.PeerLibraryPDF extends Annotator.Plugin
       name: 'PeerLibrary PDF'
       mapper: PDFTextMapper
       init: =>
+        @annotator.domMapper._annotator = @annotator
         @annotator.domMapper._highlighter = @annotator._highlighter
+        @annotator.domMapper.setEvents()
