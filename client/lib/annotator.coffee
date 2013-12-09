@@ -23,8 +23,12 @@ class @Annotator extends Annotator
   _setupEditor: =>
     # Overridden and disabled
 
+    @ # For chaining
+
   _setupDynamicStyle: =>
     # Overridden and disabled
+
+    @ # For chaining
 
   startViewerHideTimer: =>
     # Overridden and disabled
@@ -35,12 +39,14 @@ class @Annotator extends Annotator
   _setupWrapper: =>
     @wrapper = $(document)
 
+    @ # For chaining
+
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
       @checkForStartSelection e if e.which is 1 # Left mouse button
       return # Make sure CoffeeScript does not return anything
 
-    @
+    @ # For chaining
 
   checkForStartSelection: (event) =>
     super
