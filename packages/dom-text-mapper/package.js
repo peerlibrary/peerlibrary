@@ -5,7 +5,11 @@ Package.describe({
 Package.on_use(function (api) {
   api.use(['coffeescript'], ['client', 'server']);
 
-  api.export('DTM');
+  api.export([
+    'DomTextMapper',
+    'PageTextMapperCore',
+    'DomTextMatcher'
+  ]);
 
   api.add_files([
     'dom-text-matcher/lib/diff_match_patch/diff_match_patch_uncompressed.js',

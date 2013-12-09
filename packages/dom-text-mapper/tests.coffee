@@ -1,12 +1,24 @@
 Tinytest.add 'dom-text-mapper', (test) ->
   isDefined = false
   try
-    DTM
+    DomTextMapper
     isDefined = true
 
-  test.isTrue isDefined, "DTM is not defined"
-  test.isTrue Package['dom-text-mapper'].DTM, "Package.dom-text-mapper.DTM is not defined"
+  test.isTrue isDefined, "DomTextMapper is not defined"
+  test.isTrue Package['dom-text-mapper'].DomTextMapper, "Package.dom-text-mapper.DomTextMapper is not defined"
 
-  test.isTrue DTM.DomTextMapper, "DTM.DomTextMapper is not defined"
-  test.isTrue DTM.PageTextMapperCore, "DTM.PageTextMapperCore is not defined"
-  test.isTrue DTM.DomTextMatcher, "DTM.DomTextMatcher is not defined"
+  isDefined = false
+  try
+    PageTextMapperCore
+    isDefined = true
+
+  test.isTrue isDefined, "PageTextMapperCore is not defined"
+  test.isTrue Package['dom-text-mapper'].PageTextMapperCore, "Package.dom-text-mapper.PageTextMapperCore is not defined"
+
+  isDefined = false
+  try
+    DomTextMatcher
+    isDefined = true
+
+  test.isTrue isDefined, "DomTextMatcher is not defined"
+  test.isTrue Package['dom-text-mapper'].DomTextMatcher, "Package.dom-text-mapper.DomTextMatcher is not defined"
