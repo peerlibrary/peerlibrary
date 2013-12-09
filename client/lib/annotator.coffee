@@ -62,7 +62,7 @@ class @Annotator extends Annotator
     # Store the selected targets
     @selectedTargets = event.targets
 
-    return false unless @confirmSelection event
+    return unless @confirmSelection event
 
     time = new Date().valueOf()
 
@@ -76,4 +76,9 @@ class @Annotator extends Annotator
     # TODO: Do something with annotation
     console.log annotation
 
-    true
+    return # Make sure CoffeeScript does not return anything
+
+  onFailedSelection: (event) =>
+    super
+
+    return # Make sure CoffeeScript does not return anything
