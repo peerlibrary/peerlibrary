@@ -11,7 +11,7 @@ class @Annotator extends Annotator
   mousePosition: null
 
   constructor: (@_highlighter) ->
-    super null,
+    super $('.display-wrapper'),
       noScan: true
     delete @options.noScan
 
@@ -37,7 +37,7 @@ class @Annotator extends Annotator
     # Overridden and disabled
 
   _setupWrapper: =>
-    @wrapper = $(document)
+    @wrapper = $(@element)
 
     @ # For chaining
 
