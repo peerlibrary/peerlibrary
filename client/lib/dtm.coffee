@@ -61,8 +61,10 @@ class PDFTextMapper extends PageTextMapperCore
 
       startPage = @getPageForNode data.start
       endPage = @getPageForNode data.end
-      for index in [startPage.index..endPage.index]
-        @_updateMap @pageInfo[index]
+      # Update start and end page, where start and end of selection
+      # possibly split text content of a text layer segmetn into two
+      @_updateMap @pageInfo[startPage.index]
+      @_updateMap @pageInfo[endPage.index] unless startPage.index is endPage.index
 
       return # Make sure CoffeeScript does not return anything
 
