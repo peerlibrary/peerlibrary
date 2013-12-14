@@ -29,7 +29,7 @@ Contributing code
 -----------------
 
 If you would like to start contributing code and are searching for some ideas:
-* Check the [roadmap and milestones](https://github.com/peerlibrary/peerlibrary/issues/milestones) and related open tickets. See especially the `for-new-contributors` label and [Parallel milestone](https://github.com/peerlibrary/peerlibrary/issues?milestone=9&state=open). Parallel milestone contains all tickets which are not time critical and are thus suitable for new contributors. If you would like to work on a ticket, assign yourself to that ticket and make a comment about your intent.
+* Check the [roadmap and milestones](https://github.com/peerlibrary/peerlibrary/issues/milestones) and related open tickets. See especially the `for-new-contributors` label and [Parallel milestone](https://github.com/peerlibrary/peerlibrary/issues?labels=for+new+contributors&milestone=9&page=1&state=open). Parallel milestone contains all tickets which are not time critical and are thus suitable for new contributors. If you would like to work on a ticket, assign yourself to that ticket and make a comment about your intent.
 * Check `TODO` comments in the code: there are quite a number of them which are of the "here is a dirty hack, do a real implementation" kind, which are a good way to start contributing. Some other TODOs will require waiting/coordination for other things to be done first.
 * While reading the code if you do not understand anything, feel free to ask and then contribute a comment describing the code so that the next person will understand.
 * Sometimes there are stylistic or other non-critical issues with the code. Feel free to improve it.
