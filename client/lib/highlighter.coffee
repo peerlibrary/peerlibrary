@@ -419,9 +419,6 @@ class @Highlighter
 
     return unless _.every @_pages, (page) -> page.hasTextContent()
 
-    #@_mapper = new PDFTextMapper @
-    #@_mapper.scan()
-
     @_annotator = new Annotator @
 
     @_annotator.addPlugin 'TextHighlights'
@@ -429,12 +426,16 @@ class @Highlighter
     @_annotator.addPlugin 'TextAnchors'
     @_annotator.addPlugin 'PeerLibraryPDF'
 
+    # Because TextHighlights is loaded after TextAnchors, we have to manually
+    # set Annotator.TextHighlight value in TextAnchors plugin instance
+    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
+
     @_annotator._scan()
 
   pageRendered: (page) =>
     # We update the mapper for new page
-    @_annotator.domMapper.pageRendered page.pageNumber
+    @_annotator?.domMapper?.pageRendered page.pageNumber
 
   pageRemoved: (page) =>
     # We update the mapper for removed page
-    @_annotator.domMapper.pageRendered page.pageNumber
+    @_annotator?.domMapper?.pageRemoved page.pageNumber

@@ -42,13 +42,15 @@ class @Publication extends @Publication
 
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $highlightsLayer = $('<div/>').addClass('highlights-layer')
         $textLayer = $('<div/>').addClass('text-layer')
+        $controlsLayer = $('<div/>').addClass('controls-layer')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $('<div/>').addClass(
           'display-page'
         ).attr(
           id: "display-page-#{ pageNumber }"
-        ).append($canvas).append($textLayer).append($loading).appendTo('#viewer .display-wrapper')
+        ).append($canvas).append($highlightsLayer).append($textLayer).append($controlsLayer).append($loading).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (pdfPage) =>

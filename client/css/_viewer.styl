@@ -36,23 +36,27 @@
           width 400px
           height 400px
 
-        .text-layer
+        .highlights-layer, .text-layer, .controls-layer
           //color rgba(230,20,20,0.4)
           color transparent
           line-height 1
           white-space pre
           cursor text
 
-          .text-layer-segment
-            position absolute
-            //background-color rgba(180,170,0,0.2)
+        .highlights-layer .highlights-layer-segment
+          position absolute
+          background-color rgba(180,170,0,0.2)
 
-            /* We re-enable selection for text layer */
-            user-select text
-            -webkit-user-select text
-            -moz-user-select text
-            -o-user-select text
-            -ms-user-select text
+        .text-layer .text-layer-segment
+          position absolute
+          //background-color rgba(180,170,0,0.2)
+
+          /* We re-enable selection for text layer */
+          user-select text
+          -webkit-user-select text
+          -moz-user-select text
+          -o-user-select text
+          -ms-user-select text
 
         .loading
           position absolute
