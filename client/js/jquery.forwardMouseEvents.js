@@ -22,6 +22,8 @@
 
                 if (relatedTarget)
                     newEvent.relatedTarget = relatedTarget;
+                else if (newEvent.relatedTarget)
+                    delete newEvent.relatedTarget;
 
                 var $commonAncestor = $this.parents().has($elem).first();
 
