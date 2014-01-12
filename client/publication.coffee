@@ -43,7 +43,8 @@ class @Publication extends @Publication
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
-        $textLayer = $('<div/>').addClass('text-layer')
+        # We enable forwarding of mouse events from text layer to highlights layer
+        $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
         $controlsLayer = $('<div/>').addClass('controls-layer')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
         $('<div/>').addClass(
