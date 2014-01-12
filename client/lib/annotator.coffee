@@ -2,6 +2,9 @@ WHITESPACE_REGEX = /\s+/g
 
 class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
   checkForEndSelection: (event={}) =>
+    # We are ignoring forwarded events
+    return if event.forwardedEvent
+
     event.previousMousePosition = @annotator.mousePosition
     @annotator.mousePosition = null
 
@@ -43,7 +46,7 @@ class @Annotator extends Annotator
 
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
-      @checkForStartSelection e if e.which is 1 # Left mouse button
+      @checkForStartSelection e if e.which is 1 and not e.forwardedEvent # Left mouse button and not a forwarded event
       return # Make sure CoffeeScript does not return anything
 
     @ # For chaining

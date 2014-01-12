@@ -12,6 +12,7 @@
             event.target = $elem[0];
             event.type = eventType;
             event.originalEvent = null;
+            event.forwardedEvent = true;
 
             if (relatedTarget)
                 event.relatedTarget = relatedTarget;
@@ -23,6 +24,7 @@
             event.originalEvent = originalEvent;
             event.target = originalTarget;
             event.relatedTarget = originalRelatedTarget;
+            delete event.forwardedEvent;
         }
     }
 
