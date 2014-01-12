@@ -41,6 +41,8 @@
                 $lastT = null;
             }
         }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
+            // Assumption, event should already be made by a browser on underlying elements if $this is not visible
+            // And we hide and show $this below, so we do not want it to appear if hidden initially
             if (!$this.is(':visible'))
                 return;
 
