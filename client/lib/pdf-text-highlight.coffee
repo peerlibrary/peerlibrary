@@ -6,7 +6,7 @@ class PDFTextHighlight extends Annotator.Highlight
   constructor: (anchor, pageIndex, normedRange) ->
     super anchor, pageIndex
 
-    @_segments = []
+    @_$highlight = $()
     @_createHighlight normedRange
 
   _createHighlight: (normedRange) =>
@@ -35,7 +35,7 @@ class PDFTextHighlight extends Annotator.Highlight
     # Chrome it returns both text node and div node rects, so too many rects.
     # To assure cross browser compatibilty, we compute positions of text nodes
     # in a range manually.
-    @_segments = for node in normedRange.textNodes()
+    segments = for node in normedRange.textNodes()
       $node = $(node)
       $wrap = $node.wrap('<span/>').parent()
       rect = $wrap.get(0).getBoundingClientRect()
@@ -47,6 +47,8 @@ class PDFTextHighlight extends Annotator.Highlight
         width: rect.width
         height: rect.height
 
+    @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(segments)
+
     # Restore selection
     if savedRanges.length
       selection = window.getSelection();
@@ -54,7 +56,7 @@ class PDFTextHighlight extends Annotator.Highlight
       for range in savedRanges
         selection.addRange range.toRange()
 
-    $layer.append @_segments
+    $layer.append @_$highlight
 
   # React to changes in the underlying annotation
   annotationUpdated: =>
@@ -63,11 +65,11 @@ class PDFTextHighlight extends Annotator.Highlight
 
   # Remove all traces of this highlight from the document
   removeFromDocument: =>
-    $(@_segments).remove()
+    $(@_$highlight).remove()
 
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
-    @_segments
+    @_$highlight
 
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>
