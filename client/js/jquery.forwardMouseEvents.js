@@ -3,6 +3,9 @@
 
 (function ($) {
     function trigger($elem, eventType, event, relatedTarget) {
+        // TODO: Instead of using forwardedEvent, we should see if $elem has any common parent with $this and prevent propagation from that parent on, so that the event would not bubble twice from the common parent on
+        // TODO: Don't propagate if prevent propagation was set to true
+
         var originalType = event.type,
             originalEvent = event.originalEvent,
             originalTarget = event.target,
