@@ -2,79 +2,82 @@
 // http://e-infotainment.com/projects/interface-query/
 
 (function ($) {
-    function trigger($elem, eventType, event, relatedTarget) {
-        // TODO: Instead of using forwardedEvent, we should see if $elem has any common parent with $this and prevent propagation from that parent on, so that the event would not bubble twice from the common parent on
-        // TODO: Don't propagate if prevent propagation was set to true
-
-        var originalType = event.type,
-            originalEvent = event.originalEvent,
-            originalTarget = event.target,
-            originalRelatedTarget = event.relatedTarget;
-
-        try {
-            event.target = $elem[0];
-            event.type = eventType;
-            event.originalEvent = null;
-            event.forwardedEvent = true;
-
-            if (relatedTarget)
-                event.relatedTarget = relatedTarget;
-
-            $elem.trigger(event);
-        }
-        finally {
-            event.type = originalType;
-            event.originalEvent = originalEvent;
-            event.target = originalTarget;
-            event.relatedTarget = originalRelatedTarget;
-            delete event.forwardedEvent;
-        }
-    }
-
     $.fn.forwardMouseEvents = function () {
-        var $this = this,
-            $lastT = null;
-
-        $this.on('mouseleave', function (e) {
-            if ($lastT && e.relatedTarget !== $lastT[0]) {
-                trigger($lastT, 'mouseout', e, e.relatedTarget);
+        // Assure we are processing one element at the time
+        this.each(function (i, el) {
+            var $this = $(this),
                 $lastT = null;
+
+            function trigger($elem, eventType, event, relatedTarget) {
+                // TODO: Instead of using forwardedEvent, we should see if $elem has any common parent with $this and prevent propagation from that parent on, so that the event would not bubble twice from the common parent on
+                // TODO: Don't propagate if prevent propagation was set to true
+
+                var originalType = event.type,
+                    originalEvent = event.originalEvent,
+                    originalTarget = event.target,
+                    originalRelatedTarget = event.relatedTarget;
+
+                try {
+                    event.target = $elem[0];
+                    event.type = eventType;
+                    event.originalEvent = null;
+                    event.forwardedEvent = true;
+
+                    if (relatedTarget)
+                        event.relatedTarget = relatedTarget;
+
+                    $elem.trigger(event);
+                }
+                finally {
+                    event.type = originalType;
+                    event.originalEvent = originalEvent;
+                    event.target = originalTarget;
+                    event.relatedTarget = originalRelatedTarget;
+                    delete event.forwardedEvent;
+                }
             }
-        }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
-            // Assumption, event should already be made by a browser on underlying elements if $this is not visible
-            // And we hide and show $this below, so we do not want it to appear if hidden initially
-            if (!$this.is(':visible'))
-                return;
 
-            var be = e.originalEvent,
-                et = be.type,
-                mx = be.clientX,
-                my = be.clientY,
-                $t;
-
-            $this.hide();
-            $t = $(document.elementFromPoint(mx, my));
-            $this.show();
-
-            if (!$t) {
-                if ($lastT) {
-                    trigger($lastT, 'mouseout', e);
+            $this.on('mouseleave', function (e) {
+                if ($lastT && e.relatedTarget !== $lastT[0]) {
+                    trigger($lastT, 'mouseout', e, e.relatedTarget);
                     $lastT = null;
                 }
-                return;
-            }
+            }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
+                // Assumption, event should already be made by a browser on underlying elements if $this is not visible
+                // And we hide and show $this below, so we do not want it to appear if hidden initially
+                if (!$this.is(':visible'))
+                    return;
 
-            trigger($t, et, e);
+                var be = e.originalEvent,
+                    et = be.type,
+                    mx = be.clientX,
+                    my = be.clientY,
+                    $t;
 
-            if (!$lastT || $t[0] !== $lastT[0]) {
-                if ($lastT) {
-                    trigger($lastT, 'mouseout', e, $t[0]);
+                $this.hide();
+                $t = $(document.elementFromPoint(mx, my));
+                $this.show();
+
+                if (!$t) {
+                    if ($lastT) {
+                        trigger($lastT, 'mouseout', e);
+                        $lastT = null;
+                    }
+                    return;
                 }
-                trigger($t, 'mouseover', e, $lastT ? $lastT[0] : $this[0]);
-            }
-            $lastT = $t;
+
+                trigger($t, et, e);
+
+                if (!$lastT || $t[0] !== $lastT[0]) {
+                    if ($lastT) {
+                        trigger($lastT, 'mouseout', e, $t[0]);
+                    }
+                    trigger($t, 'mouseover', e, $lastT ? $lastT[0] : $this[0]);
+                }
+                $lastT = $t;
+            });
         });
 
-        return $this;
+        return this;
     };
 })(jQuery);
