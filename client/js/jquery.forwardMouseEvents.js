@@ -95,6 +95,7 @@
             });
         });
 
+        // For chaining
         return this;
     };
 })(jQuery);
