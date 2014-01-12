@@ -16,7 +16,6 @@
             if (relatedTarget)
                 event.relatedTarget = relatedTarget;
 
-
             $elem.trigger(event);
         }
         finally {
@@ -33,8 +32,10 @@
 
         $this.on('mouseleave', function (e) {
             if ($lastT) {
-                trigger($lastT, 'mouseout', e, $this[0]);
-                $lastT = null;
+                if (e.relatedTarget !== $lastT[0]) {
+                    trigger($lastT, 'mouseout', e, e.relatedTarget);
+                    $lastT = null;
+                }
             }
         }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
             if (!$this.is(':visible'))
