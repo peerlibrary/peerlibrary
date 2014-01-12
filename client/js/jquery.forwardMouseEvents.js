@@ -65,10 +65,9 @@
                 if (!$this.is(':visible'))
                     return;
 
-                var be = e.originalEvent,
-                    et = be.type,
-                    mx = be.clientX,
-                    my = be.clientY,
+                var et = e.type,
+                    mx = e.clientX,
+                    my = e.clientY,
                     $t;
 
                 $this.hide();
