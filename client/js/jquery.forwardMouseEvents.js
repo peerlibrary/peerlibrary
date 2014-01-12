@@ -9,8 +9,9 @@
                 $lastT = null;
 
             function trigger($elem, eventType, event, relatedTarget) {
-                // TODO: Instead of using forwardedEvent, we should see if $elem has any common parent with $this and prevent propagation from that parent on, so that the event would not bubble twice from the common parent on
-                // TODO: Don't propagate if prevent propagation was set to true
+                // We do not want to forward an event which has been marked to not be propagated
+                if (event.isPropagationStopped() || event.isImmediatePropagationStopped())
+                    return;
 
                 var originalType = event.type,
                     originalEvent = event.originalEvent,
