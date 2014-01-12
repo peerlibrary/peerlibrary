@@ -53,6 +53,11 @@
                 if (!$this.is(':visible'))
                     return;
 
+                // Workaround for a bug in Chrome which retriggers mousemove because of the document.elementFromPoint call below
+                // See http://code.google.com/p/chromium/issues/detail?id=333623
+                if (e.type === 'mousemove' && e.originalEvent.webkitMovementX === 0 && e.originalEvent.webkitMovementY === 0)
+                    return;
+
                 var et = e.type,
                     mx = e.clientX,
                     my = e.clientY,
