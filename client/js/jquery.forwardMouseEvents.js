@@ -32,7 +32,10 @@
                         var eventName = eventType + '.forwarding';
                         // Install the event handler on the common ancestor and prevent forwarded
                         // events from propagating further (original event propagates on that path already)
-                        $commonAncestor.off(eventName).on(eventName, function (e) {
+                        // Use jQuery.bind-first's onFirst to assure we are first handler to be
+                        // called on common ancestor to be able to prevent immediate propagation
+                        // completly (original event propagates on common ancestor itself as well)
+                        $commonAncestor.off(eventName).onFirst(eventName, function (e) {
                             if (e.forwardedEvent) {
                                 e.stopImmediatePropagation();
                             }
