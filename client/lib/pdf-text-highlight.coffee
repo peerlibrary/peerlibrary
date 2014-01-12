@@ -13,7 +13,7 @@ class PDFTextHighlight extends Annotator.Highlight
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
 
-    $layer = $(normedRange.commonAncestor).prev('.highlights-layer')
+    $layer = $(normedRange.commonAncestor).closest('.text-layer').prev('.highlights-layer')
     offset = $layer.offsetParent().offset()
 
     # In measuring text nodes positions below we confuse current selection,
