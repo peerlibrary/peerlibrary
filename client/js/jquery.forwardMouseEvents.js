@@ -13,45 +13,33 @@
                 if (event.isPropagationStopped() || event.isImmediatePropagationStopped())
                     return;
 
-                var originalType = event.type,
-                    originalEvent = event.originalEvent,
-                    originalTarget = event.target,
-                    originalRelatedTarget = event.relatedTarget;
+                var newEvent = $.extend({}, event, {
+                    'target': $elem[0],
+                    'type': eventType,
+                    'originalEvent': null,
+                    'forwardedEvent': true
+                });
+
+                if (relatedTarget)
+                    newEvent.relatedTarget = relatedTarget;
 
                 var $commonAncestor = $this.parents().has($elem).first();
 
-                try {
-                    event.target = $elem[0];
-                    event.type = eventType;
-                    event.originalEvent = null;
-                    event.forwardedEvent = true;
-
-                    if (relatedTarget)
-                        event.relatedTarget = relatedTarget;
-
-                    if ($commonAncestor.length) {
-                        var eventName = eventType + '.forwarding';
-                        // Install the event handler on the common ancestor and prevent forwarded
-                        // events from propagating further (original event propagates on that path already)
-                        // Use jQuery.bind-first's onFirst to assure we are first handler to be
-                        // called on common ancestor to be able to prevent immediate propagation
-                        // completly (original event propagates on common ancestor itself as well)
-                        $commonAncestor.off(eventName).onFirst(eventName, function (e) {
-                            if (e.forwardedEvent) {
-                                e.stopImmediatePropagation();
-                            }
-                        })
-                    }
-
-                    $elem.trigger(event);
+                if ($commonAncestor.length) {
+                    var eventName = eventType + '.forwarding';
+                    // Install the event handler on the common ancestor and prevent forwarded
+                    // events from propagating further (original event propagates on that path already)
+                    // Use jQuery.bind-first's onFirst to assure we are first handler to be
+                    // called on common ancestor to be able to prevent immediate propagation
+                    // completely (original event propagates on common ancestor itself as well)
+                    $commonAncestor.off(eventName).onFirst(eventName, function (e) {
+                        if (e.forwardedEvent) {
+                            e.stopImmediatePropagation();
+                        }
+                    })
                 }
-                finally {
-                    event.type = originalType;
-                    event.originalEvent = originalEvent;
-                    event.target = originalTarget;
-                    event.relatedTarget = originalRelatedTarget;
-                    delete event.forwardedEvent;
-                }
+
+                $elem.trigger(newEvent);
             }
 
             $this.on('mouseleave', function (e) {
