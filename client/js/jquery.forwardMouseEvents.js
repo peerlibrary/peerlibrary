@@ -17,6 +17,8 @@
                     originalTarget = event.target,
                     originalRelatedTarget = event.relatedTarget;
 
+                var $commonAncestor = $this.parents().has($elem).first();
+
                 try {
                     event.target = $elem[0];
                     event.type = eventType;
@@ -25,6 +27,17 @@
 
                     if (relatedTarget)
                         event.relatedTarget = relatedTarget;
+
+                    if ($commonAncestor.length) {
+                        var eventName = eventType + '.forwarding';
+                        // Install the event handler on the common ancestor and prevent forwarded
+                        // events from propagating further (original event propagates on that path already)
+                        $commonAncestor.off(eventName).on(eventName, function (e) {
+                            if (e.forwardedEvent) {
+                                e.stopImmediatePropagation();
+                            }
+                        })
+                    }
 
                     $elem.trigger(event);
                 }
