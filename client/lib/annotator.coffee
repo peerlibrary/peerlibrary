@@ -1,9 +1,10 @@
 WHITESPACE_REGEX = /\s+/g
 
 class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
-  checkForEndSelection: (event={}) =>
-    event.previousMousePosition = @annotator.mousePosition
-    @annotator.mousePosition = null
+  checkForEndSelection: (event) =>
+    if event
+      event.previousMousePosition = @annotator.mousePosition
+      @annotator.mousePosition = null
 
     super event
 
@@ -51,13 +52,21 @@ class @Annotator extends Annotator
   checkForStartSelection: (event) =>
     super
 
-    @mousePosition =
-      pageX: event.pageX
-      pageY: event.pageY
+    # Not sure when event will not be defined, but parent
+    # implementation takes that into the consideration
+    if event
+      @mousePosition =
+        pageX: event.pageX
+        pageY: event.pageY
+
+    # We are starting a new selection, so deselect any selected highlight
+    for highlight in @getHighlights()
+      highlight.deselect()
 
   confirmSelection: (event) =>
     return true unless @selectedTargets.length is 1
 
+    # event.previousMousePosition might not exist if checkForEndSelection was called manually without an event object
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
     quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
@@ -70,6 +79,9 @@ class @Annotator extends Annotator
     true
 
   onSuccessfulSelection: (event, immediate) =>
+    assert event
+    assert event.targets
+
     # Store the selected targets
     @selectedTargets = event.targets
 
@@ -81,6 +93,14 @@ class @Annotator extends Annotator
 
     # Extract the quotation and serialize the ranges
     annotation = @setupAnnotation annotation
+
+    # Remove existing selection (the one we just made)
+    selection = window.getSelection()
+    selection.removeAllRanges()
+
+    # And re-select it as a selected highlight
+    for highlight in @getHighlights [annotation]
+      highlight.select()
 
     console.log "Time (s):", (new Date().valueOf() - time) / 1000
 
