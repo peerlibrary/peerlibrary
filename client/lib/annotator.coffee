@@ -68,7 +68,10 @@ class @Annotator extends Annotator
       # If mousedown happened outside any selected highlight, we deselect highlights
       @deselectAllHighlights() unless inAnySelectedHighlight
 
-      if e.which is 1 # Left mouse button
+      # Left mouse button and mousedown happened on a target inside a display-page
+      # (We have mousedown evente handler on document to be able to always deselect,
+      # but then we have to manually determine if event target is inside a display-page)
+      if e.which is 1 and $(e.target).parents().is('.display-page')
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
