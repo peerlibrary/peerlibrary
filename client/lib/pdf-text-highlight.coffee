@@ -13,6 +13,33 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_createHighlight()
 
+  _boundingBox: (segments) =>
+    box = _.clone segments[0]
+
+    for segment in segments[1..]
+      if segment.left < box.left
+        box.width += box.left - segment.left
+        box.left = segment.left
+      if segment.top < box.top
+        box.height += box.top - segment.top
+        box.top = segment.top
+      if segment.left + segment.width > box.left + box.width
+        box.width = segment.left + segment.width - box.left
+      if segment.top + segment.height > box.top + box.height
+        box.height = segment.top + segment.height - box.top
+
+    box
+
+  _wrapIntoBox: (segments) =>
+    box = @_boundingBox segments
+
+    # Making segments relative to the bounding box
+    for segment in segments
+      segment.left -= box.left
+      segment.top -= box.top
+
+    box
+
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
@@ -31,13 +58,26 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = $wrap.get(0).getBoundingClientRect()
       $node.unwrap()
 
-      $('<div/>').addClass('highlights-layer-segment').css
-        left: rect.left + scrollLeft - offset.left
-        top: rect.top + scrollTop - offset.top
-        width: rect.width
-        height: rect.height
+      left: rect.left + scrollLeft - offset.left
+      top: rect.top + scrollTop - offset.top
+      width: rect.width
+      height: rect.height
 
-    @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(segments)
+    box = @_wrapIntoBox segments
+
+    @_$highlight = $('<div/>').addClass('highlights-layer-highlight').css(box).append(
+      $('<div/>').addClass('highlights-layer-segment').css(segment) for segment in segments
+    )
+
+    @_$highlight.on 'click.highlight', (e) =>
+      @anchor.annotator.deselectAllHighlights()
+      @select()
+
+    @_$highlight.on 'mouseenter.highlight', (e) =>
+      @_$highlight.addClass 'hovered'
+
+    @_$highlight.on 'mouseleave.highlight', (e) =>
+      @_$highlight.removeClass 'hovered'
 
     @_$highlightsLayer.append @_$highlight
 

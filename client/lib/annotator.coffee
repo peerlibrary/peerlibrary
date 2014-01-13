@@ -49,6 +49,10 @@ class @Annotator extends Annotator
 
     @ # For chaining
 
+  deselectAllHighlights: =>
+    for highlight in @getHighlights()
+      highlight.deselect()
+
   checkForStartSelection: (event) =>
     super
 
@@ -60,8 +64,7 @@ class @Annotator extends Annotator
         pageY: event.pageY
 
     # We are starting a new selection, so deselect any selected highlight
-    for highlight in @getHighlights()
-      highlight.deselect()
+    @deselectAllHighlights()
 
   confirmSelection: (event) =>
     return true unless @selectedTargets.length is 1
@@ -95,8 +98,7 @@ class @Annotator extends Annotator
     annotation = @setupAnnotation annotation
 
     # Remove existing selection (the one we just made)
-    selection = window.getSelection()
-    selection.removeAllRanges()
+    @deselectAllHighlights()
 
     # And re-select it as a selected highlight
     for highlight in @getHighlights [annotation]

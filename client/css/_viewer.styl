@@ -42,9 +42,19 @@
           white-space pre
           cursor text
 
+        .highlights-layer .highlights-layer-highlight
+          position absolute
+
         .highlights-layer .highlights-layer-segment
           position absolute
           background-color highlight-color
+
+        .highlights-layer .highlights-layer-highlight.hovered
+          box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+          transition 0.2s
+
+        .highlights-layer .highlights-layer-highlight.selected .highlights-layer-segment
+          background-color transparent
 
         .text-layer
           .text-layer-segment
@@ -56,19 +66,6 @@
             -moz-user-select text
             -o-user-select text
             -ms-user-select text
-
-          .text-layer-segment::-moz-selection
-            background highlight-color
-
-          .text-layer-segment::selection
-            background highlight-color
-
-        .text-layer.highlight-selected
-          .text-layer-segment::-moz-selection
-            background transparent
-
-          .text-layer-segment::selection
-            background transparent
 
         .loading
           position absolute
