@@ -2,13 +2,26 @@ WHITESPACE_REGEX = /\s+/g
 
 class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
   checkForEndSelection: (event) =>
+    # Just to be sure we reset the variable
+    @mouseStartingInsideSelectedHighlight = false
+
     if event
+      return unless @annotator.mouseIsDown
+
+      return unless event.which is 1 # Left mouse button
+
       event.previousMousePosition = @annotator.mousePosition
       @annotator.mousePosition = null
+
+      # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
+      # we prevent default to prevent deselection of the highlight
+      if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
+        event.preventDefault()
 
     super event
 
 class @Annotator extends Annotator
+  mouseStartingInsideSelectedHighlight: false
   mousePosition: null
 
   constructor: (@_highlighter) ->
@@ -42,16 +55,41 @@ class @Annotator extends Annotator
 
     @ # For chaining
 
+  _inAnySelectedHighlight: (clientX, clientY) =>
+    for highlight in @getHighlights() when highlight.isSelected()
+      return true if highlight.in clientX, clientY
+
+    false
+
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
-      @checkForStartSelection e if e.which is 1 # Left mouse button
+      inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
+
+      # If mousedown happened outside any selected highlight, we deselect highlights
+      @deselectAllHighlights() unless inAnySelectedHighlight
+
+      if e.which is 1 # Left mouse button
+        # To be able to correctly deselect in mousemove handler
+        @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
+
+        @checkForStartSelection e
+
+      return # Make sure CoffeeScript does not return anything
+
+    $(document).on 'mousemove': (e) =>
+      # We started moving for a new selection, so deselect any selected highlight
+      if @mouseIsDown and @mouseStartingInsideSelectedHighlight
+        # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible
+        @mouseStartingInsideSelectedHighlight = false
+
+        @deselectAllHighlights()
+
       return # Make sure CoffeeScript does not return anything
 
     @ # For chaining
 
   deselectAllHighlights: =>
-    for highlight in @getHighlights()
-      highlight.deselect()
+    highlight.deselect() for highlight in @getHighlights()
 
   checkForStartSelection: (event) =>
     super
@@ -63,13 +101,11 @@ class @Annotator extends Annotator
         pageX: event.pageX
         pageY: event.pageY
 
-    # We are starting a new selection, so deselect any selected highlight
-    @deselectAllHighlights()
-
   confirmSelection: (event) =>
     return true unless @selectedTargets.length is 1
 
     # event.previousMousePosition might not exist if checkForEndSelection was called manually without an event object
+    # We ignore if mouse movement was to small to select really anything meaningful
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
     quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
@@ -113,5 +149,7 @@ class @Annotator extends Annotator
 
   onFailedSelection: (event) =>
     super
+
+    @deselectAllHighlights()
 
     return # Make sure CoffeeScript does not return anything

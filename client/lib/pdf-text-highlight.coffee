@@ -115,6 +115,13 @@ class PDFTextHighlight extends Annotator.Highlight
   isSelected: =>
     @_$highlight.hasClass 'selected'
 
+  in: (clientX, clientY) =>
+    @_$highlight.find('.highlights-layer-segment').is (i) ->
+      # @ (this) is here a segment, DOM element
+      rect = @.getBoundingClientRect()
+
+      rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
+
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
     @_$highlight
