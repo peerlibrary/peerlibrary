@@ -2,13 +2,16 @@
 // http://e-infotainment.com/projects/interface-query/
 
 (function ($) {
+    var globalId = 1;
+
     $.fn.forwardMouseEvents = function () {
         // Assure we are processing one element at the time
         this.each(function (i, el) {
-            var $this = $(this),
+            var localId = globalId++,
+                $this = $(this),
                 $lastT = null;
 
-            function trigger($elem, eventType, event, relatedTarget) {
+            function trigger($elementsAbove, $elem, eventType, event, relatedTarget) {
                 // We do not want to forward an event which has been marked to not be propagated
                 if (event.isPropagationStopped() || event.isImmediatePropagationStopped())
                     return;
@@ -17,7 +20,8 @@
                     'target': $elem[0],
                     'type': eventType,
                     'originalEvent': null,
-                    'forwardedEvent': true
+                    'forwardedEventId': localId,
+                    'elementsAbove': $elementsAbove
                 });
 
                 if (relatedTarget)
@@ -25,17 +29,20 @@
                 else if (newEvent.relatedTarget)
                     delete newEvent.relatedTarget;
 
-                var $commonAncestor = $this.parents().has($elem).first();
+                var $commonAncestor = $();
+                $elementsAbove.each(function (i, el) {
+                    $commonAncestor = $commonAncestor.add($(el).parents().has($elem).first());
+                });
 
                 if ($commonAncestor.length) {
-                    var eventName = eventType + '.forwarding';
+                    var eventName = eventType + '.forwarding-' + localId;
                     // Install the event handler on the common ancestor and prevent forwarded
                     // events from propagating further (original event propagates on that path already)
                     // Use jQuery.bind-first's onFirst to assure we are first handler to be
                     // called on common ancestor to be able to prevent immediate propagation
                     // completely (original event propagates on common ancestor itself as well)
                     $commonAncestor.off(eventName).onFirst(eventName, function (e) {
-                        if (e.forwardedEvent) {
+                        if (e.forwardedEventId === localId) {
                             e.stopImmediatePropagation();
                         }
                     })
@@ -46,7 +53,7 @@
 
             $this.on('mouseleave', function (e) {
                 if ($lastT && e.relatedTarget !== $lastT[0]) {
-                    trigger($lastT, 'mouseout', e, e.relatedTarget);
+                    trigger($(), $lastT, 'mouseout', e, e.relatedTarget);
                     $lastT = null;
                 }
             }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
@@ -57,33 +64,36 @@
 
                 // Workaround for a bug in Chrome which retriggers mousemove because of the document.elementFromPoint call below
                 // See http://code.google.com/p/chromium/issues/detail?id=333623
-                if (e.type === 'mousemove' && e.originalEvent.webkitMovementX === 0 && e.originalEvent.webkitMovementY === 0)
+                if (e.type === 'mousemove' && e.originalEvent && e.originalEvent.webkitMovementX === 0 && e.originalEvent.webkitMovementY === 0)
                     return;
 
                 var et = e.type,
                     mx = e.clientX,
                     my = e.clientY,
+                    $ea = e.elementsAbove || $(),
                     $t;
 
-                $this.hide();
+                $ea = $ea.add($this);
+
+                $ea.hide();
                 $t = $(document.elementFromPoint(mx, my));
-                $this.show();
+                $ea.show();
 
                 if (!$t) {
                     if ($lastT) {
-                        trigger($lastT, 'mouseout', e);
+                        trigger($ea, $lastT, 'mouseout', e);
                         $lastT = null;
                     }
                     return;
                 }
 
-                trigger($t, et, e);
+                trigger($ea, $t, et, e);
 
                 if (!$lastT || $t[0] !== $lastT[0]) {
                     if ($lastT) {
-                        trigger($lastT, 'mouseout', e, $t[0]);
+                        trigger($ea, $lastT, 'mouseout', e, $t[0]);
                     }
-                    trigger($t, 'mouseover', e, $lastT ? $lastT[0] : $this[0]);
+                    trigger($ea, $t, 'mouseover', e, $lastT ? $lastT[0] : $this[0]);
                 }
                 $lastT = $t;
             });
