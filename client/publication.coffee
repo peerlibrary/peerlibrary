@@ -41,17 +41,26 @@ class @Publication extends @Publication
       @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
-        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
         # We enable forwarding of mouse events from text layer to highlights layer
         $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
         $controlsLayer = $('<div/>').addClass('controls-layer')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
+
         $('<div/>').addClass(
           'display-page'
         ).attr(
           id: "display-page-#{ pageNumber }"
-        ).append($canvas).append($highlightsLayer).append($textLayer).append($controlsLayer).append($loading).appendTo('#viewer .display-wrapper')
+        ).append(
+          $displayCanvas,
+          $highlightsCanvas,
+          $highlightsLayer,
+          $textLayer,
+          $controlsLayer,
+          $loading,
+        ).appendTo('#viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (pdfPage) =>
@@ -64,7 +73,7 @@ class @Publication extends @Publication
               pdfPage: pdfPage # Dummy page object
 
             $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
-            $canvas = $displayPage.find('canvas')
+            $canvas = $displayPage.find('canvas') # Both display and highlights canvases
             $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
               width: viewport.width

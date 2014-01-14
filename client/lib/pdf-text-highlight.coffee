@@ -8,10 +8,71 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_$textLayer = $(@normedRange.commonAncestor).closest('.text-layer')
     @_$highlightsLayer = @_$textLayer.prev('.highlights-layer')
+    @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
 
+    @_hover = null
     @_$highlight = null
 
     @_createHighlight()
+
+  _precomputeHover: (segments) =>
+    # For now compute simply a bounding box
+    # TODO: Compute a better polygon around all segments
+
+    @_hover = _.clone segments[0]
+
+    for segment in segments[1..]
+      if segment.left < @_hover.left
+        @_hover.width += @_hover.left - segment.left
+        @_hover.left = segment.left
+      if segment.top < @_hover.top
+        @_hover.height += @_hover.top - segment.top
+        @_hover.top = segment.top
+      if segment.left + segment.width > @_hover.left + @_hover.width
+        @_hover.width = segment.left + segment.width - @_hover.left
+      if segment.top + segment.height > @_hover.top + @_hover.height
+        @_hover.height = segment.top + segment.height - @_hover.top
+
+    # Round to have integer coordinates on canvas
+    @_hover.width += @_hover.left - Math.round(@_hover.left)
+    @_hover.left = Math.round(@_hover.left)
+    @_hover.width = Math.round(@_hover.width)
+    @_hover.height += @_hover.top - Math.round(@_hover.top)
+    @_hover.top = Math.round(@_hover.top)
+    @_hover.height = Math.round(@_hover.height)
+
+    return # Don't return the result of the for loop
+
+  _drawHover: =>
+    context = @_highlightsCanvas.getContext('2d')
+
+    # Style used in variables.styl as well, keep it in sync
+    # TODO: Ignoring rounded 2px border radius, implement
+
+    context.save()
+
+    context.lineWidth = 1
+    # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
+    context.strokeStyle = 'rgba(14,41,57,0.32)'
+    context.shadowColor = 'rgba(14,41,57,1.0)'
+    context.shadowBlur = 5
+    context.shadowOffsetX = 0
+    context.shadowOffsetY = 2
+
+    context.beginPath()
+    context.rect @_hover.left - 1, @_hover.top - 1, @_hover.width + 2, @_hover.height + 2
+    context.closePath()
+
+    context.stroke()
+
+    # As shadow is drawn both on inside and outside, we clear inside to give a nice 3D effect
+    context.clearRect @_hover.left, @_hover.top, @_hover.width, @_hover.height
+
+    context.restore()
+
+  _hideHover: =>
+    context = @_highlightsCanvas.getContext('2d')
+    context.clearRect 0, 0, @_highlightsCanvas.width, @_highlightsCanvas.height
 
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
@@ -36,6 +97,8 @@ class PDFTextHighlight extends Annotator.Highlight
       width: rect.width
       height: rect.height
 
+    @_precomputeHover segments
+
     @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(
       $('<div/>').addClass('highlights-layer-segment').css(segment) for segment in segments
     )
@@ -47,9 +110,11 @@ class PDFTextHighlight extends Annotator.Highlight
 
       'mouseenter.highlight': (e) =>
         @_$highlight.addClass 'hovered'
+        @_drawHover()
 
       'mouseleave.highlight': (e) =>
         @_$highlight.removeClass 'hovered'
+        @_hideHover()
 
     @_$highlightsLayer.append @_$highlight
 

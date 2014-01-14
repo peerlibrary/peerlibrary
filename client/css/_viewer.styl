@@ -29,12 +29,17 @@
         text-align center
         overflow hidden
 
-        canvas
+        .display-canvas
           background rgba(255,255,255,1.0)
 
         .display-canvas-loading
           width 400px
           height 400px
+
+        .highlights-canvas
+          position absolute
+          left 0
+          top 0
 
         .highlights-layer, .text-layer, .controls-layer
           color transparent
@@ -144,12 +149,15 @@
       background white
       padding 20px
       margin 10px 0
+
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
       border-radius 2px
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+      box-shadow 0 0 0 1px box-shadow-border
       transition 0.2s
 
     li:hover
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
   .annotation:hover
     background-color rgba(255,0,0,0.3)
