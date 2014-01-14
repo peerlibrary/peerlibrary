@@ -2,9 +2,7 @@
 // http://e-infotainment.com/projects/interface-query/
 
 (function ($) {
-    var globalId = 1,
-        queue = [],
-        stoppedEvents = [];
+    var globalId = 1;
 
     $.fn.forwardMouseEvents = function () {
         // Assure we are processing one element at the time
@@ -33,12 +31,10 @@
                     }
                 });
 
-                if (relatedTarget) {
+                if (relatedTarget)
                     newEvent.relatedTarget = relatedTarget;
-                }
-                else if (newEvent.relatedTarget) {
+                else if (newEvent.relatedTarget)
                     delete newEvent.relatedTarget;
-                }
 
                 var $commonAncestor = $();
                 $elementsAbove.each(function (i, el) {
@@ -59,50 +55,13 @@
                     })
                 }
 
-                //$elem.trigger(newEvent);
-                queue.push({
-                    '$elem': $elem,
-                    'event': newEvent
-                });
-            }
-
-            function processQueue(event) {
-                if (event.forwardedEventId)
-                    return;
-
-                while (queue.length) {
-                    var q = queue.shift();
-
-                    var forwardingStopped = false;
-                    $.each(stoppedEvents, function (i, s) {
-                        if (s.eventType === q.event.type && q.event.elementsAbove.has(s.$elem).length) {
-                            forwardingStopped = true;
-                            return false; // Break
-                        }
-                    });
-
-                    if (!forwardingStopped) {
-                        q.$elem.trigger(q.event);
-
-                        if (q.event.forwardingStopped) {
-                            stoppedEvents.push({
-                              '$elem': q.$elem,
-                              'eventType': q.event.type
-                            });
-                        }
-                    }
-                }
-
-                // We clear stoppedEvents after queue run
-                stoppedEvents = [];
+                $elem.trigger(newEvent);
             }
 
             $this.on('mouseleave', function (e) {
                 if ($lastT && e.relatedTarget !== $lastT[0]) {
                     trigger($(), $lastT, 'mouseout', e, e.relatedTarget);
                     $lastT = null;
-
-                    processQueue(e);
                 }
             }).on('mousemove mousedown mouseup mousewheel click dblclick', function (e) {
                 // Assumption, event should already be made by a browser on underlying elements if $this is not visible
@@ -131,8 +90,6 @@
                     if ($lastT) {
                         trigger($ea, $lastT, 'mouseout', e);
                         $lastT = null;
-
-                        processQueue(e);
                     }
                     return;
                 }
@@ -146,8 +103,6 @@
                     trigger($ea, $t, 'mouseover', e, $lastT ? $lastT[0] : $this[0]);
                 }
                 $lastT = $t;
-
-                processQueue(e);
             });
         });
 
