@@ -10,10 +10,19 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$highlightsLayer = @_$textLayer.prev('.highlights-layer')
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
 
+    @_area = null
     @_hover = null
     @_$highlight = null
 
     @_createHighlight()
+
+  _computeArea: (segments) =>
+    @_area = 0
+
+    for segment in segments
+      @_area += segment.width * segment.height
+
+    return # Don't return the result of the for loop
 
   _precomputeHover: (segments) =>
     # For now compute simply a bounding box
@@ -74,6 +83,15 @@ class PDFTextHighlight extends Annotator.Highlight
     context = @_highlightsCanvas.getContext('2d')
     context.clearRect 0, 0, @_highlightsCanvas.width, @_highlightsCanvas.height
 
+  _sortHighlights: =>
+    @_$highlightsLayer.find('.highlights-layer-highlight').detach().sort(
+      (a, b) =>
+        # Heuristics, we put smaller highlights later in DOM tree which means they will have higher z-index
+        # The motivation here is that we want higher the highlight which leaves more area to the user to select the other highlight by not covering it
+        # TODO: Should we improve here? For example, compare size of (A-B) and size of (B-A), where A-B is A with (A intersection B) removed
+        $(b).data('highlight')._area - $(a).data('highlight')._area
+    ).appendTo(@_$highlightsLayer)
+
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
@@ -97,6 +115,7 @@ class PDFTextHighlight extends Annotator.Highlight
       width: rect.width
       height: rect.height
 
+    @_computeArea segments
     @_precomputeHover segments
 
     @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(
@@ -116,7 +135,11 @@ class PDFTextHighlight extends Annotator.Highlight
         @_$highlight.removeClass 'hovered'
         @_hideHover()
 
+    @_$highlight.data 'highlight', @
+
     @_$highlightsLayer.append @_$highlight
+
+    @_sortHighlights()
 
   # React to changes in the underlying annotation
   annotationUpdated: =>
