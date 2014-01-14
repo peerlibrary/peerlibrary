@@ -12,8 +12,8 @@
                 $lastT = null;
 
             function trigger($elementsAbove, $elem, eventType, event, relatedTarget) {
-                // We do not want to forward an event which has been marked to not be propagated
-                if (event.isPropagationStopped() || event.isImmediatePropagationStopped())
+                // We do not want to forward an event which has been marked to not be forwarded or propagated
+                if ((event.isForwardingStopped && event.isForwardingStopped()) || event.isPropagationStopped() || event.isImmediatePropagationStopped())
                     return;
 
                 var newEvent = $.extend({}, event, {
@@ -21,7 +21,14 @@
                     'type': eventType,
                     'originalEvent': null,
                     'forwardedEventId': localId,
-                    'elementsAbove': $elementsAbove
+                    'elementsAbove': $elementsAbove,
+                    'forwardingStopped': false,
+                    'isForwardingStopped': function () {
+                        return newEvent.forwardingStopped;
+                    },
+                    'stopForwarding': function () {
+                        newEvent.forwardingStopped = true;
+                    }
                 });
 
                 if (relatedTarget)
