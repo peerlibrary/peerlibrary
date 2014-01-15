@@ -97,7 +97,7 @@ class PDFTextHighlight extends Annotator.Highlight
         $(b).data('highlight')._area - $(a).data('highlight')._area
     ).appendTo(@_$highlightsLayer)
 
-  _showControls: =>
+  _showControl: =>
     @_$highlightsControl.find('.control').css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
@@ -107,7 +107,7 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     ).show()
 
-  _hideControls: =>
+  _hideControl: =>
     @_$highlightsControl.find('.control').hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
@@ -122,9 +122,9 @@ class PDFTextHighlight extends Annotator.Highlight
 
   # We process mouseover and mouseout manually to trigger custom mouseenter and mouseleave events.
   # The difference is that we do $.contains($highlightAndControl, related) instead of $.contains(target, related).
-  # We check if related is a child of highlight or controls, and not checking only for one of those.
+  # We check if related is a child of highlight or control, and not checking only for one of those.
   # This is necessary so that mouseleave event is not made when user moves mouse from a highlight
-  # to controls. jQuery's mouseleave is made because target is not the same as $highlightAndControl.
+  # to a control. jQuery's mouseleave is made because target is not the same as $highlightAndControl.
   _hoverHandler: (e) =>
     $highlightAndControl = @_$highlight.add(@_$highlightsControl)
 
@@ -145,14 +145,14 @@ class PDFTextHighlight extends Annotator.Highlight
   _mouseenterHandler: (e) =>
     # We have to check if highlight already is marked as hovered because of mouse events forwarding
     # we use, which makes the event be send twice, once when mouse really hovers the highlight, and
-    # another time when user moves from highlight to controls - in fact mouseover handler above
+    # another time when user moves from a highlight to a control - in fact mouseover handler above
     # gets text layer as related target (instead of underlying highlight) so it makes a second event.
     # This would be complicated to solve, so it is easier to simply have this check here.
     return if @_$highlight.hasClass 'hovered'
 
     @_$highlight.addClass 'hovered'
     @_drawHover()
-    @_showControls()
+    @_showControl()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -162,7 +162,7 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_$highlight.removeClass 'hovered'
     @_hideHover()
-    @_hideControls()
+    @_hideControl()
 
     return # Make sure CoffeeScript does not return anything
 
