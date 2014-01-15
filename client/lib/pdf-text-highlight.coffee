@@ -98,14 +98,17 @@ class PDFTextHighlight extends Annotator.Highlight
     ).appendTo(@_$highlightsLayer)
 
   _showControl: =>
-    @_$highlightsControl.find('.control').css(
+    $control = @_$highlightsControl.find('.control')
+    $control.css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
     ).on(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
-    ).show()
+    )
+    $control.find('.meta-content').html(Template.highlightsControl())
+    $control.show()
 
   _hideControl: =>
     @_$highlightsControl.find('.control').hide().off(

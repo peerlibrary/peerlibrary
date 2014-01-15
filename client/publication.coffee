@@ -49,7 +49,7 @@ class @Publication extends @Publication
         $highlightsControl = $('<div/>').addClass('highlights-control').append(
           $('<div/>').addClass('meta-menu control').append(
             $('<i/>').addClass('icon-menu'),
-            $('<div/>').addClass('"meta-content'),
+            $('<div/>').addClass('meta-content'),
           )
         )
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
