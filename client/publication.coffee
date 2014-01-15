@@ -156,7 +156,7 @@ Deps.autorun ->
   # currentPublicationSlug is null if slug is not present in URL, so we use
   # null when publication.slug is empty string to prevent infinite looping
   unless Session.equals 'currentPublicationSlug', (publication.slug or null)
-    Meteor.Router.to Meteor.Router.publicationPath publication._id, publication.slug
+    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
     return
 
   # Maybe we don't yet have whole publication object available

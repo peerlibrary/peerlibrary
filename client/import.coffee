@@ -289,9 +289,9 @@ Deps.autorun ->
 
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
-    Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
-    Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
 
   Session.set 'importOverlayActive', false
 
