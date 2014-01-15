@@ -114,7 +114,7 @@ class @Annotator extends Annotator
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
     quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
-    # Quote should be non-empty string
+    # Quote should be a non-empty string
     return false unless quote
 
     # Quote should not be empty when we remove all whitespace
