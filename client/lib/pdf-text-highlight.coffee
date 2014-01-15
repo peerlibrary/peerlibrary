@@ -9,8 +9,10 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$textLayer = $(@normedRange.commonAncestor).closest('.text-layer')
     @_$highlightsLayer = @_$textLayer.prev('.highlights-layer')
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
+    @_$highlightsControl = @_$textLayer.next('.highlights-control')
 
     @_area = null
+    @_box = null
     @_hover = null
     @_$highlight = null
 
@@ -24,23 +26,26 @@ class PDFTextHighlight extends Annotator.Highlight
 
     return # Don't return the result of the for loop
 
-  _precomputeHover: (segments) =>
-    # For now compute simply a bounding box
-    # TODO: Compute a better polygon around all segments
-
-    @_hover = _.clone segments[0]
+  _boundingBox: (segments) =>
+    @_box = _.clone segments[0]
 
     for segment in segments[1..]
-      if segment.left < @_hover.left
-        @_hover.width += @_hover.left - segment.left
-        @_hover.left = segment.left
-      if segment.top < @_hover.top
-        @_hover.height += @_hover.top - segment.top
-        @_hover.top = segment.top
-      if segment.left + segment.width > @_hover.left + @_hover.width
-        @_hover.width = segment.left + segment.width - @_hover.left
-      if segment.top + segment.height > @_hover.top + @_hover.height
-        @_hover.height = segment.top + segment.height - @_hover.top
+      if segment.left < @_box.left
+        @_box.width += @_box.left - segment.left
+        @_box.left = segment.left
+      if segment.top < @_box.top
+        @_box.height += @_box.top - segment.top
+        @_box.top = segment.top
+      if segment.left + segment.width > @_box.left + @_box.width
+        @_box.width = segment.left + segment.width - @_box.left
+      if segment.top + segment.height > @_box.top + @_box.height
+        @_box.height = segment.top + segment.height - @_box.top
+
+  _precomputeHover: (segments) =>
+    # For now reuse simply a bounding box
+    # TODO: Compute a better polygon around all segments
+
+    @_hover = _.clone @_box
 
     # Round to have integer coordinates on canvas
     @_hover.width += @_hover.left - Math.round(@_hover.left)
@@ -92,6 +97,15 @@ class PDFTextHighlight extends Annotator.Highlight
         $(b).data('highlight')._area - $(a).data('highlight')._area
     ).appendTo(@_$highlightsLayer)
 
+  _showControls: =>
+    @_$highlightsControl.find('.control').css(
+      left: @_box.left + @_box.width + 1 # + 1 to not overlap border
+      top: @_box.top - 2 # - 1 to align with fake border we style
+    ).show()
+
+  _hideControls: =>
+    @_$highlightsControl.find('.control').hide()
+
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
@@ -116,24 +130,66 @@ class PDFTextHighlight extends Annotator.Highlight
       height: rect.height
 
     @_computeArea segments
+    @_boundingBox segments
     @_precomputeHover segments
 
     @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(
       $('<div/>').addClass('highlights-layer-segment').css(segment) for segment in segments
     )
 
-    @_$highlight.find('.highlights-layer-segment').on
+    $highlightAndControl = @_$highlight.on(
       'click.highlight': (e) =>
         @anchor.annotator.deselectAllHighlights()
         @select()
 
-      'mouseenter.highlight': (e) =>
+        return # Make sure CoffeeScript does not return anything
+
+    ).add(@_$highlightsControl)
+
+    $highlightAndControl.on
+      # We process mouseover and mouseout manually to trigger custom mouseenter and mouseleave events.
+      # The difference is that we do $.contains($highlightAndControl, related) instead of $.contains(@, related).
+      # We check if related is a child of highlight or controls, and not checking only for one of those.
+      # This is necessary so that mouseleave event is not made when user moves mouse from a highlight
+      # to controls. jQuery's mouseleave is made because @ is not the same as $highlightAndControl.
+      'mouseover.highlight mouseout.highlight': (e) =>
+        target = e.target
+        related = e.relatedTarget
+
+        # No relatedTarget if the mouse left/entered the browser window
+        if not related or (not $highlightAndControl.is(related) and not $highlightAndControl.has(related).length)
+          if e.type is 'mouseover'
+            e.type = 'mouseenter-highlight'
+            $(target).trigger e
+            e.type = 'mouseover'
+          else if e.type is 'mouseout'
+            e.type = 'mouseleave-highlight'
+            $(target).trigger e
+            e.type = 'mouseout'
+
+      'mouseenter-highlight': (e) =>
+        # We have to check if highlight already is marked as hovered because of mouse events forwarding
+        # we use, which makes the event be send twice, once when mouse really hovers the highlight, and
+        # another time when user moves from highlight to controls - in fact mouseover handler above
+        # gets text layer as related target (instead of underlying highlight) so it makes a second event.
+        # This would be complicated to solve, so it is easier to simply have this check here.
+        return if @_$highlight.hasClass 'hovered'
+
         @_$highlight.addClass 'hovered'
         @_drawHover()
+        @_showControls()
 
-      'mouseleave.highlight': (e) =>
+        return # Make sure CoffeeScript does not return anything
+
+      'mouseleave-highlight': (e) =>
+        # Probably not really necessary to check if highlight already marked as hovered but to match check above
+        return unless @_$highlight.hasClass 'hovered'
+
         @_$highlight.removeClass 'hovered'
         @_hideHover()
+        @_hideControls()
+
+        return # Make sure CoffeeScript does not return anything
 
     @_$highlight.data 'highlight', @
 

@@ -41,8 +41,10 @@
           left 0
           top 0
 
-        .highlights-layer, .text-layer, .controls-layer
+        .highlights-layer, .text-layer, .highlights-control
           color transparent
+
+        .text-layer
           line-height 1
           white-space pre
           cursor text
@@ -64,6 +66,22 @@
             -moz-user-select text
             -o-user-select text
             -ms-user-select text
+
+        .highlights-control .meta-menu.control
+          position absolute
+          display none
+          width 20px
+          height 18px
+          padding 5px
+          z-index 200
+          text-align left
+
+          i.icon-menu
+            font-size 13px
+
+        .highlights-control .meta-menu.control:hover
+          width 150px
+          min-height 220px
 
         .loading
           position absolute
@@ -113,11 +131,12 @@
     font-size 20px
     color white
 
-  .meta-description
+  .meta-content
     display none
     color white
     padding 5px
 
+  .meta-content.description
     .authors
       span::after
         content ","
@@ -130,7 +149,7 @@
   width 300px
   min-height 420px
 
-  .meta-description
+  .meta-content
     display block
 
 /* Annotations

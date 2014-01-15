@@ -20,6 +20,8 @@ class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
 
     super event
 
+    return # Make sure CoffeeScript does not return anything
+
 class @Annotator extends Annotator
   mouseStartingInsideSelectedHighlight: false
   mousePosition: null

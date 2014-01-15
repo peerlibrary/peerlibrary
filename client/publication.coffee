@@ -46,7 +46,12 @@ class @Publication extends @Publication
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
         # We enable forwarding of mouse events from text layer to highlights layer
         $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
-        $controlsLayer = $('<div/>').addClass('controls-layer')
+        $highlightsControl = $('<div/>').addClass('highlights-control').append(
+          $('<div/>').addClass('meta-menu control').append(
+            $('<i/>').addClass('icon-menu'),
+            $('<div/>').addClass('"meta-content'),
+          )
+        )
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
 
         $('<div/>').addClass(
@@ -58,7 +63,7 @@ class @Publication extends @Publication
           $highlightsCanvas,
           $highlightsLayer,
           $textLayer,
-          $controlsLayer,
+          $highlightsControl,
           $loading,
         ).appendTo('#viewer .display-wrapper')
 
