@@ -45,8 +45,8 @@
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
-        "tag": "v1.5.0.3",
-        "commit": "6745d769dc64660ccd349c33f9ebaf1583b0961a"
+        "tag": "v1.5.1.1",
+        "commit": "63efa4ebbe9986bd875f69d5fdf3248c5c44159e"
       },
       "tar": {
         "git": "https://github.com/peerlibrary/meteor-tar.git",
