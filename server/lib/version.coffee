@@ -4,9 +4,9 @@ child_process = Npm.require 'child_process'
 execFileSync = (file, args, opts) ->
   future = new Future
 
-  child_process.execFile file, args, opts, (err, stdout, stderr) ->
+  child_process.execFile file, args, opts, (error, stdout, stderr) ->
     future.return
-      success: not err
+      success: not error
       stdout: stdout
       stderr: stderr
 

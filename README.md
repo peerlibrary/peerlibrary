@@ -17,8 +17,9 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl https://install.meteor.com | sh
 
-To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin` to your
-environment `PATH` variable. For example, by running:
+If you do not have [node.js](http://nodejs.org) installed on your system, you can use one
+provided by Meteor. To add it into your environment, add `~/.meteor/tools/latest/bin` to
+your environment `PATH` variable. For example, by running:
 
     export PATH=~/.meteor/tools/latest/bin:$PATH
 
@@ -26,7 +27,7 @@ To add tools to you shell permanently, run:
 
     echo 'export PATH=~/.meteor/tools/latest/bin:$PATH' >> ~/.bash_profile
 
-Maybe on your system you have to add the lien to `~/.profile` file instead.
+Maybe on your system you have to add the line to `~/.profile` file instead.
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
