@@ -142,8 +142,7 @@ class @Annotator extends Annotator
     @deselectAllHighlights()
 
     # And re-select it as a selected highlight
-    for highlight in @getHighlights [annotation]
-      highlight.select()
+    highlight.select() for highlight in @getHighlights [annotation]
 
     console.log "Time (s):", (new Date().valueOf() - time) / 1000
 

@@ -238,8 +238,7 @@ class PDFTextHighlight extends Annotator.Highlight
     $('.text-layer').removeClass 'highlight-selected'
 
     # And re-select highlights marked as selected
-    for highlight in @anchor.annotator.getHighlights()
-      highlight.select() if highlight.isSelected()
+    highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
 
   isSelected: =>
     @_$highlight.hasClass 'selected'
