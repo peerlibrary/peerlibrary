@@ -44,19 +44,19 @@
         .highlights-layer, .text-layer, .highlights-control
           color transparent
 
+        .highlights-layer
+          .highlights-layer-segment
+            position absolute
+            background-color highlight-color
+
+          .highlights-layer-highlight.selected .highlights-layer-segment
+            background-color transparent
+
         .text-layer
           line-height 1
           white-space pre
           cursor text
 
-        .highlights-layer .highlights-layer-segment
-          position absolute
-          background-color highlight-color
-
-        .highlights-layer .highlights-layer-highlight.selected .highlights-layer-segment
-          background-color transparent
-
-        .text-layer
           .text-layer-segment
             position absolute
 
@@ -67,21 +67,22 @@
             -o-user-select text
             -ms-user-select text
 
-        .highlights-control .meta-menu.control
-          position absolute
-          display none
-          width 20px
-          height 18px
-          padding 5px
-          z-index 200
-          text-align left
+        .highlights-control
+          .meta-menu.control
+            position absolute
+            display none
+            width 20px
+            height 18px
+            padding 5px
+            z-index 200
+            text-align left
 
-          i.icon-menu
-            font-size 13px
+            i.icon-menu
+              font-size 13px
 
-        .highlights-control .meta-menu.control:hover
-          width 150px
-          min-height 220px
+          .meta-menu.control:hover
+            width 150px
+            min-height 220px
 
         .loading
           position absolute
