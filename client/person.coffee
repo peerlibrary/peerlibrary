@@ -23,8 +23,7 @@ Deps.autorun ->
   return unless person
 
   # Assure URL is canonical
-  unless slug is person.slug
-    Meteor.Router.to Meteor.Router.profilePath person.slug
+  Meteor.Router.toNew Meteor.Router.profilePath person.slug unless slug is person.slug
 
 Template.profile.person = ->
   Persons.findOne
