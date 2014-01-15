@@ -20,12 +20,12 @@ verifyFile = (file, fileContent, publicationId, samples) ->
 
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
-  Meteor.call 'verifyPublication', publicationId, samplesData, (err) ->
-    if err
+  Meteor.call 'verifyPublication', publicationId, samplesData, (error) ->
+    if error
       ImportingFiles.update file._id,
         $set:
           errored: true
-          status: err.toString()
+          status: error.toString()
       return
 
     ImportingFiles.update file._id,
@@ -41,12 +41,12 @@ uploadFile = (file, publicationId) ->
     size: UPLOAD_CHUNK_SIZE,
     publicationId: publicationId
   ,
-    (err) ->
-      if err
+    (error) ->
+      if error
         ImportingFiles.update file._id,
           $set:
             errored: true
-            status: err.toString()
+            status: error.toString()
         return
 
       ImportingFiles.update file._id,
@@ -87,12 +87,12 @@ importFile = (file) ->
         $set:
           sha256: sha256
 
-      Meteor.call 'createPublication', file.name, sha256, (err, result) ->
-        if err
+      Meteor.call 'createPublication', file.name, sha256, (error, result) ->
+        if error
           ImportingFiles.update file._id,
             $set:
               errored: true
-              status: err.toString()
+              status: error.toString()
           return
 
         if result.already
@@ -117,8 +117,8 @@ importFile = (file) ->
     errored: false
   ,
     # We are using callback to make sure ImportingFiles really has the file now
-    (err, id) ->
-      throw err if err
+    (error, id) ->
+      throw error if error
 
       # So that meteor-file knows what to update
       file._id = id
