@@ -232,6 +232,7 @@ class @Publication extends @Publication
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->

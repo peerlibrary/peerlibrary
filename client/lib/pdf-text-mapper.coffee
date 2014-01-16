@@ -78,6 +78,9 @@ class PDFTextMapper extends PageTextMapperCore
 
     @_finishScan()
 
+    # We are not returning any promise
+    null
+
   # This is called when scanning is finished
   _finishScan: =>
     # Do some besic calculations with the content

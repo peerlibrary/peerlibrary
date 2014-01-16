@@ -31,6 +31,8 @@ class @Annotator extends Annotator
       noScan: true
     delete @options.noScan
 
+    @_annotations = {}
+
   _setupViewer: =>
     # Overridden and disabled
 
@@ -95,6 +97,16 @@ class @Annotator extends Annotator
 
   deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
+    @updateLocation()
+
+  updateLocation: =>
+    location = null
+    for highlight in @getHighlights() when highlight.isSelected()
+      location = highlight.updateLocation location
+
+    # If location was not set, then highlight.updateLocation was never
+    # called, so let's update location to publication path
+    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug') unless location
 
   checkForStartSelection: (event) =>
     super
@@ -122,6 +134,9 @@ class @Annotator extends Annotator
 
     true
 
+  canCreateHighlight: =>
+    Meteor.personId()
+
   onSuccessfulSelection: (event, immediate) =>
     assert event
     assert event.targets
@@ -131,7 +146,9 @@ class @Annotator extends Annotator
 
     return unless @confirmSelection event
 
-    time = new Date().valueOf()
+    return unless @canCreateHighlight()
+
+    #time = new Date().valueOf()
 
     annotation = @createAnnotation()
 
@@ -144,10 +161,10 @@ class @Annotator extends Annotator
     # And re-select it as a selected highlight
     highlight.select() for highlight in @getHighlights [annotation]
 
-    console.log "Time (s):", (new Date().valueOf() - time) / 1000
+    # TODO: Optimize time it takes to create a new highlight, for example, if you select whole PDF page it takes quite some time (> 1s) currently
+    #console.log "Time (s):", (new Date().valueOf() - time) / 1000
 
-    # TODO: Do something with annotation
-    console.log annotation
+    @_insertHighlight annotation
 
     return # Make sure CoffeeScript does not return anything
 
@@ -157,3 +174,72 @@ class @Annotator extends Annotator
     @deselectAllHighlights()
 
     return # Make sure CoffeeScript does not return anything
+
+  getHref: =>
+    path = Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    Meteor.absoluteUrl path.replace /^\//, '' # We have to remove leading / for Meteor.absoluteUrl
+
+  createAnnotation: ->
+    annotation = super
+
+    annotation._id = Random.id()
+
+    annotation
+
+  hasAnnotation: (id) ->
+    id of @_annotations
+
+  setupAnnotation: (annotation) ->
+    annotation = super
+
+    @_annotations[annotation._id] = annotation
+
+    annotation
+
+  deleteAnnotation: (annotation) ->
+    annotation = super
+
+    delete @_annotations[annotation._id]
+
+    annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _insertHighlight: (annotation) =>
+    # Populate with some of our fields
+    annotation.author =
+      _id: Meteor.personId()
+    annotation.publication =
+      _id: Session.get 'currentPublicationId'
+
+    Highlights.insert _.pick(annotation, '_id', 'author', 'publication', 'quote', 'target'), (error, id) =>
+      if error
+        # TODO: Delete created annotation
+        throw error
+
+      # TODO: Should we update also other fields (like full author, created timestamp)
+      # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
+
+      @updateLocation()
+
+    annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _addHighlight: (id, fields) =>
+    fields._id = id
+    @setupAnnotation fields
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _changeHighlight: (id, fields) =>
+    # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
+
+    annotation = _.extend @_annotations[id], fields
+    @updateAnnotation annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _removeHighlight: (id) =>
+    annotation = @_annotations[id]
+    @deleteAnnotation annotation if annotation

@@ -328,8 +328,20 @@ class @Highlighter
   constructor: ->
     @_pages = []
     @_numPages = null
-    @_annotator = null
     @mouseDown = false
+
+    @_highlightsHandle = null
+
+    @_annotator = new Annotator @
+
+    @_annotator.addPlugin 'TextHighlights'
+    @_annotator.addPlugin 'DomTextMapper'
+    @_annotator.addPlugin 'TextAnchors'
+    @_annotator.addPlugin 'PeerLibraryPDF'
+
+    # Because TextHighlights is loaded after TextAnchors, we have to manually
+    # set Annotator.TextHighlight value in TextAnchors plugin instance
+    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
 
     $(window).on 'scroll.highlighter', @checkRender
     $(window).on 'resize.highlighter', @checkRender
@@ -337,6 +349,9 @@ class @Highlighter
   destroy: =>
     $(window).off 'scroll.highlighter'
     $(window).off 'resize.highlighter'
+
+    # We stop the handle here and not just leave it to Deps.autorun to do it to cleanup in the right order
+    @_highlightsHandle.stop if @_highlightsHandle
 
     page.destroy() for page in @_pages
     @_pages = []
@@ -409,18 +424,17 @@ class @Highlighter
 
     return unless _.every @_pages, (page) -> page.hasTextContent()
 
-    @_annotator = new Annotator @
-
-    @_annotator.addPlugin 'TextHighlights'
-    @_annotator.addPlugin 'DomTextMapper'
-    @_annotator.addPlugin 'TextAnchors'
-    @_annotator.addPlugin 'PeerLibraryPDF'
-
-    # Because TextHighlights is loaded after TextAnchors, we have to manually
-    # set Annotator.TextHighlight value in TextAnchors plugin instance
-    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
-
     @_annotator._scan()
+
+    @_highlightsHandle = Highlights.find(
+      'publication._id': Session.get 'currentPublicationId'
+    ).observeChanges
+      added: (id, fields) =>
+        @addHighlight id, fields
+      changed: (id, fields) =>
+        @changeHighlight id, fields
+      removed: (id) =>
+        @removeHighlight id
 
   pageRendered: (page) =>
     # We update the mapper for new page
@@ -429,3 +443,15 @@ class @Highlighter
   pageRemoved: (page) =>
     # We update the mapper for removed page
     @_annotator?.domMapper?.pageRemoved page.pageNumber
+
+  addHighlight: (id, fields) =>
+    if @_annotator.hasAnnotation id
+      @changeHighlight id, fields
+    else
+      @_annotator._addHighlight id, fields
+
+  changeHighlight: (id, fields) =>
+    @_annotator._changeHighlight id, fields
+
+  removeHighlight: (id) =>
+    @_annotator._removeHighlight id
