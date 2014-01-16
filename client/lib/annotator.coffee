@@ -213,9 +213,8 @@ class @Annotator extends Annotator
       _id: Session.get 'currentPublicationId'
 
     Highlights.insert _.pick(annotation, '_id', 'author', 'publication', 'quote', 'target'), (error, id) =>
-      if error
-        # TODO: Delete created annotation
-        throw error
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      throw error if error
 
       # TODO: Should we update also other fields (like full author, created timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
