@@ -59,6 +59,12 @@ class @Annotator extends Annotator
 
     @ # For chaining
 
+  _inAnyHighlight: (clientX, clientY) =>
+    for highlight in @getHighlights()
+      return true if highlight.in clientX, clientY
+
+    false
+
   _inAnySelectedHighlight: (clientX, clientY) =>
     for highlight in @getHighlights() when highlight.isSelected()
       return true if highlight.in clientX, clientY
@@ -97,7 +103,6 @@ class @Annotator extends Annotator
 
   deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
-    @updateLocation()
 
   updateLocation: =>
     location = null
@@ -171,7 +176,15 @@ class @Annotator extends Annotator
   onFailedSelection: (event) =>
     super
 
+    # If click (mousedown coordinates same as mouseup coordinates) is on a highlight, we do not
+    # do anything because click event will be made as well, which will select the new highlight.
+    # This assures we do not first deselect (and update location to publication location) just
+    # to select another highlight immediately afterwards (and update location again to highlight).
+    return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
+
+    # Otherwise we deselect any existing selected highlight
     @deselectAllHighlights()
+    @updateLocation()
 
     return # Make sure CoffeeScript does not return anything
 
