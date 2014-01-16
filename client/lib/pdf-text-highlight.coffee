@@ -118,9 +118,7 @@ class PDFTextHighlight extends Annotator.Highlight
     )
 
   _clickHandler: (e) =>
-    @anchor.annotator.deselectAllHighlights()
-    @select()
-    @anchor.annotator.updateLocation()
+    @anchor.annotator._selectHighlight @annotation._id
 
     return # Make sure CoffeeScript does not return anything
 
@@ -258,9 +256,7 @@ class PDFTextHighlight extends Annotator.Highlight
   updateLocation: (location) =>
     return null unless @isSelected()
 
-    # Maybe it is only latency compensated highlight and we do not yet have its
-    # _id, skip, updateLocation will be called again when we get _id
-    return null unless @annotation._id
+    assert @annotation._id
 
     newLocation = Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @annotation._id
     if location

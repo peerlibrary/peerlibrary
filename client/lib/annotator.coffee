@@ -216,8 +216,15 @@ class @Annotator extends Annotator
 
     annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
+  ############################################################################
+  # We are using Annotator's annotations as highlights, so while annotation  #
+  # objects inside Annotator's code are annotations, from the perspective of #
+  # PeerLibrary highlighter they are highlights. All API functions from here #
+  # on are to bridge PeerLibrary highlighter with Annotator. They get        #
+  # highlighter documents from PeerLibrary and map them to Annotator's       #
+  # annotations.                                                             #
+  ############################################################################
+
   _insertHighlight: (annotation) =>
     # Populate with some of our fields
     annotation.author =
@@ -236,22 +243,28 @@ class @Annotator extends Annotator
 
     annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _addHighlight: (id, fields) =>
     fields._id = id
     @setupAnnotation fields
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _changeHighlight: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _removeHighlight: (id) =>
     annotation = @_annotations[id]
     @deleteAnnotation annotation if annotation
+
+  _selectHighlight: (id) =>
+    if id and @_annotations[id]
+      highlights = @getHighlights [@_annotations[id]]
+      unless _.every highlights, ((h) -> h.isSelected())
+        @deselectAllHighlights()
+        highlight.select() for highlight in highlights
+    else
+      @deselectAllHighlights()
+
+    # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
+    @updateLocation()
