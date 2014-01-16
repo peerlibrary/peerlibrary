@@ -34,14 +34,6 @@ Meteor.Router.add
         indexActive: true
       'index'
 
-  '/p/:publicationId/:publicationSlug?':
-    as: 'publication'
-    to: (publicationId, publicationSlug) ->
-      setSession
-        currentPublicationId: publicationId
-        currentPublicationSlug: publicationSlug
-      'publication'
-
   '/p/:publicationId/:publicationSlug?/h/:highlightId':
     as: 'highlight'
     to: (publicationId, publicationSlug, highlightId) ->
@@ -49,6 +41,14 @@ Meteor.Router.add
         currentPublicationId: publicationId
         currentPublicationSlug: publicationSlug
         currentHighlightId: highlightId
+      'publication'
+
+  '/p/:publicationId/:publicationSlug?':
+    as: 'publication'
+    to: (publicationId, publicationSlug) ->
+      setSession
+        currentPublicationId: publicationId
+        currentPublicationSlug: publicationSlug
       'publication'
 
   '/u/:personSlug':
