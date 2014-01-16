@@ -31,6 +31,8 @@ class @Annotator extends Annotator
       noScan: true
     delete @options.noScan
 
+    @_annotations = {}
+
   _setupViewer: =>
     # Overridden and disabled
 
@@ -56,6 +58,12 @@ class @Annotator extends Annotator
     @wrapper = $(@element)
 
     @ # For chaining
+
+  _inAnyHighlight: (clientX, clientY) =>
+    for highlight in @getHighlights()
+      return true if highlight.in clientX, clientY
+
+    false
 
   _inAnySelectedHighlight: (clientX, clientY) =>
     for highlight in @getHighlights() when highlight.isSelected()
@@ -96,6 +104,15 @@ class @Annotator extends Annotator
   deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
+  updateLocation: =>
+    location = null
+    for highlight in @getHighlights() when highlight.isSelected()
+      location = highlight.updateLocation location
+
+    # If location was not set, then highlight.updateLocation was never
+    # called, so let's update location to publication path
+    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug') unless location
+
   checkForStartSelection: (event) =>
     super
 
@@ -122,6 +139,9 @@ class @Annotator extends Annotator
 
     true
 
+  canCreateHighlight: =>
+    Meteor.personId()
+
   onSuccessfulSelection: (event, immediate) =>
     assert event
     assert event.targets
@@ -131,7 +151,9 @@ class @Annotator extends Annotator
 
     return unless @confirmSelection event
 
-    time = new Date().valueOf()
+    return unless @canCreateHighlight()
+
+    #time = new Date().valueOf()
 
     annotation = @createAnnotation()
 
@@ -144,16 +166,92 @@ class @Annotator extends Annotator
     # And re-select it as a selected highlight
     highlight.select() for highlight in @getHighlights [annotation]
 
-    console.log "Time (s):", (new Date().valueOf() - time) / 1000
+    # TODO: Optimize time it takes to create a new highlight, for example, if you select whole PDF page it takes quite some time (> 1s) currently
+    #console.log "Time (s):", (new Date().valueOf() - time) / 1000
 
-    # TODO: Do something with annotation
-    console.log annotation
+    @_insertHighlight annotation
 
     return # Make sure CoffeeScript does not return anything
 
   onFailedSelection: (event) =>
     super
 
+    # If click (mousedown coordinates same as mouseup coordinates) is on a highlight, we do not
+    # do anything because click event will be made as well, which will select the new highlight.
+    # This assures we do not first deselect (and update location to publication location) just
+    # to select another highlight immediately afterwards (and update location again to highlight).
+    return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
+
+    # Otherwise we deselect any existing selected highlight
     @deselectAllHighlights()
+    @updateLocation()
 
     return # Make sure CoffeeScript does not return anything
+
+  getHref: =>
+    path = Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    Meteor.absoluteUrl path.replace /^\//, '' # We have to remove leading / for Meteor.absoluteUrl
+
+  createAnnotation: ->
+    annotation = super
+
+    annotation._id = Random.id()
+
+    annotation
+
+  hasAnnotation: (id) ->
+    id of @_annotations
+
+  setupAnnotation: (annotation) ->
+    annotation = super
+
+    @_annotations[annotation._id] = annotation
+
+    annotation
+
+  deleteAnnotation: (annotation) ->
+    annotation = super
+
+    delete @_annotations[annotation._id]
+
+    annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _insertHighlight: (annotation) =>
+    # Populate with some of our fields
+    annotation.author =
+      _id: Meteor.personId()
+    annotation.publication =
+      _id: Session.get 'currentPublicationId'
+
+    Highlights.insert _.pick(annotation, '_id', 'author', 'publication', 'quote', 'target'), (error, id) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      throw error if error
+
+      # TODO: Should we update also other fields (like full author, created timestamp)
+      # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
+
+      @updateLocation()
+
+    annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _addHighlight: (id, fields) =>
+    fields._id = id
+    @setupAnnotation fields
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _changeHighlight: (id, fields) =>
+    # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
+
+    annotation = _.extend @_annotations[id], fields
+    @updateAnnotation annotation
+
+  # We are using Annotator's annotations as highlights, so while
+  # input is an annotation object, we store it as a highlight
+  _removeHighlight: (id) =>
+    annotation = @_annotations[id]
+    @deleteAnnotation annotation if annotation

@@ -141,6 +141,7 @@ class PDFTextHighlight extends Annotator.Highlight
   _clickHandler: (e) =>
     @anchor.annotator.deselectAllHighlights()
     @select()
+    @anchor.annotator.updateLocation()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -233,8 +234,8 @@ class PDFTextHighlight extends Annotator.Highlight
 
   # React to changes in the underlying annotation
   annotationUpdated: =>
-    # TODO: What to do when it is updated? What information do we get when it is updated?
-    #console.log "In HL", @, "annotation has been updated.", arguments
+    # TODO: What to do when it is updated? Can we plug in reactivity somehow? To update template automatically?
+    #console.log "In HL", @, "annotation has been updated."
 
   # Remove all traces of this highlight from the document
   removeFromDocument: =>
@@ -270,6 +271,26 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = @.getBoundingClientRect()
 
       rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
+
+  # If we pass location, it is tested to be the same as location for current highlight.
+  # This is useful when looping over all selected highlights and we want to make to
+  # assert that all of them belong to the same _id. See Annotator.updateLocation
+  # for example of use.
+  updateLocation: (location) =>
+    return null unless @isSelected()
+
+    # Maybe it is only latency compensated highlight and we do not yet have its
+    # _id, skip, updateLocation will be called again when we get _id
+    return null unless @annotation._id
+
+    newLocation = Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @annotation._id
+    if location
+      # Testing that all currently selected highligts are part of the same annotation
+      assert.equal newLocation, location
+    else
+      Meteor.Router.toNew newLocation
+
+    newLocation
 
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
