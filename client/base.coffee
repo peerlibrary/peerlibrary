@@ -42,7 +42,7 @@ Meteor.Router.add
         currentPublicationSlug: publicationSlug
       'publication'
 
-  '/p/:publicationId/:publicationSlug?/h/:highlightId?':
+  '/p/:publicationId/:publicationSlug?/h/:highlightId':
     as: 'highlight'
     to: (publicationId, publicationSlug, highlightId) ->
       setSession
