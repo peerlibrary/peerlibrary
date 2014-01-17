@@ -232,7 +232,12 @@ class @Annotator extends Annotator
     annotation.publication =
       _id: Session.get 'currentPublicationId'
 
-    Highlights.insert _.pick(annotation, '_id', 'author', 'publication', 'quote', 'target'), (error, id) =>
+    # Remove fields we do not want to store into the database
+    highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
+    highlight.target = _.map highlight.target, (t) =>
+      _.pick t, 'source', 'selector'
+
+    Highlights.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
 
