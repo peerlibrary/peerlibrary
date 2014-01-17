@@ -209,6 +209,8 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_sortHighlights()
 
+    @select() if @anchor.annotator.selectedAnnotationId is @annotation._id
+
   # React to changes in the underlying annotation
   annotationUpdated: =>
     # TODO: What to do when it is updated? Can we plug in reactivity somehow? To update template automatically?
@@ -218,6 +220,7 @@ class PDFTextHighlight extends Annotator.Highlight
   removeFromDocument: =>
     $(@_$highlight).remove()
 
+  # Just a helper function to draw highlight selected and make it selected by the browser, use annotator._selectHighlight to select
   select: =>
     selection = window.getSelection()
     selection.addRange @normedRange.toRange()
@@ -225,6 +228,7 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$textLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
 
+  # Just a helper function to draw highlight unselected and make it unselected by the browser, use annotator._selectHighlight to deselect
   deselect: =>
     # Mark this highlight as deselected
     @_$highlight.removeClass 'selected'
@@ -239,6 +243,7 @@ class PDFTextHighlight extends Annotator.Highlight
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
 
+  # Is highlight currently drawn as selected, use annotator.selectedAnnotationId to get ID of a selected annotation
   isSelected: =>
     @_$highlight.hasClass 'selected'
 
@@ -248,24 +253,6 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = @.getBoundingClientRect()
 
       rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
-
-  # If we pass location, it is tested to be the same as location for current highlight.
-  # This is useful when looping over all selected highlights and we want to make to
-  # assert that all of them belong to the same _id. See Annotator.updateLocation
-  # for example of use.
-  updateLocation: (location) =>
-    return null unless @isSelected()
-
-    assert @annotation._id
-
-    newLocation = Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @annotation._id
-    if location
-      # Testing that all currently selected highligts are part of the same annotation
-      assert.equal newLocation, location
-    else
-      Meteor.Router.toNew newLocation
-
-    newLocation
 
   # Get the HTML elements making up the highlight
   _getDOMElements: =>

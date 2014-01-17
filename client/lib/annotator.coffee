@@ -32,6 +32,7 @@ class @Annotator extends Annotator
     delete @options.noScan
 
     @_annotations = {}
+    @selectedAnnotationId = null
 
   _setupViewer: =>
     # Overridden and disabled
@@ -76,7 +77,7 @@ class @Annotator extends Annotator
       inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
 
       # If mousedown happened outside any selected highlight, we deselect highlights
-      @deselectAllHighlights() unless inAnySelectedHighlight
+      @_deselectAllHighlights() unless inAnySelectedHighlight
 
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
@@ -95,23 +96,21 @@ class @Annotator extends Annotator
         # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible
         @mouseStartingInsideSelectedHighlight = false
 
-        @deselectAllHighlights()
+        @_deselectAllHighlights()
 
       return # Make sure CoffeeScript does not return anything
 
     @ # For chaining
 
-  deselectAllHighlights: =>
+  # Just a helper function, to really deselect call _selectHighlight(null)
+  _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
   updateLocation: =>
-    location = null
-    for highlight in @getHighlights() when highlight.isSelected()
-      location = highlight.updateLocation location
-
-    # If location was not set, then highlight.updateLocation was never
-    # called, so let's update location to publication path
-    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug') unless location
+    if @selectedAnnotationId
+      Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
+    else
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
   checkForStartSelection: (event) =>
     super
@@ -161,9 +160,11 @@ class @Annotator extends Annotator
     annotation = @setupAnnotation annotation
 
     # Remove existing selection (the one we just made)
-    @deselectAllHighlights()
+    @_deselectAllHighlights()
 
     # And re-select it as a selected highlight
+    # This just draws it selected and does not yet update location
+    # We do this re-selection to make sure selection matches stored selection
     highlight.select() for highlight in @getHighlights [annotation]
 
     # TODO: Optimize time it takes to create a new highlight, for example, if you select whole PDF page it takes quite some time (> 1s) currently
@@ -183,8 +184,7 @@ class @Annotator extends Annotator
     return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
 
     # Otherwise we deselect any existing selected highlight
-    @deselectAllHighlights()
-    @updateLocation()
+    @_selectHighlight null
 
     return # Make sure CoffeeScript does not return anything
 
@@ -239,7 +239,8 @@ class @Annotator extends Annotator
       # TODO: Should we update also other fields (like full author, created timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
-      @updateLocation()
+      # Finally select it (until now it was just drawn selected) and update location
+      @_selectHighlight id
 
     annotation
 
@@ -259,12 +260,17 @@ class @Annotator extends Annotator
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]
+      @selectedAnnotationId = id
+
       highlights = @getHighlights [@_annotations[id]]
-      unless _.every highlights, ((h) -> h.isSelected())
-        @deselectAllHighlights()
-        highlight.select() for highlight in highlights
+      otherHighlights = _.difference @getHighlights(), highlights
+
+      highlight.deselect() for highlight in otherHighlights when highlight.isSelected()
+      highlight.select() for highlight in highlights when not highlight.isSelected()
     else
-      @deselectAllHighlights()
+      @selectedAnnotationId = null
+
+      @_deselectAllHighlights()
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()
