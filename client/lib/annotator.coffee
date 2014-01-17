@@ -210,6 +210,9 @@ class @Annotator extends Annotator
     annotation
 
   deleteAnnotation: (annotation) ->
+    # Deselecting before calling super so that all highlight objects are still available
+    @_selectHighlight null if annotation._id is @selectedAnnotationId
+
     annotation = super
 
     delete @_annotations[annotation._id]
