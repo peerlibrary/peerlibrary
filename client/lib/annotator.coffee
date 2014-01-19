@@ -32,6 +32,7 @@ class @Annotator extends Annotator
     delete @options.noScan
 
     @_annotations = {}
+    @selectedAnnotationId = null
 
   _setupViewer: =>
     # Overridden and disabled
@@ -76,7 +77,7 @@ class @Annotator extends Annotator
       inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
 
       # If mousedown happened outside any selected highlight, we deselect highlights
-      @deselectAllHighlights() unless inAnySelectedHighlight
+      @_deselectAllHighlights() unless inAnySelectedHighlight
 
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
@@ -95,23 +96,21 @@ class @Annotator extends Annotator
         # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible
         @mouseStartingInsideSelectedHighlight = false
 
-        @deselectAllHighlights()
+        @_deselectAllHighlights()
 
       return # Make sure CoffeeScript does not return anything
 
     @ # For chaining
 
-  deselectAllHighlights: =>
+  # Just a helper function, to really deselect call _selectHighlight(null)
+  _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
   updateLocation: =>
-    location = null
-    for highlight in @getHighlights() when highlight.isSelected()
-      location = highlight.updateLocation location
-
-    # If location was not set, then highlight.updateLocation was never
-    # called, so let's update location to publication path
-    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug') unless location
+    if @selectedAnnotationId
+      Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
+    else
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
   checkForStartSelection: (event) =>
     super
@@ -161,9 +160,11 @@ class @Annotator extends Annotator
     annotation = @setupAnnotation annotation
 
     # Remove existing selection (the one we just made)
-    @deselectAllHighlights()
+    @_deselectAllHighlights()
 
     # And re-select it as a selected highlight
+    # This just draws it selected and does not yet update location
+    # We do this re-selection to make sure selection matches stored selection
     highlight.select() for highlight in @getHighlights [annotation]
 
     # TODO: Optimize time it takes to create a new highlight, for example, if you select whole PDF page it takes quite some time (> 1s) currently
@@ -183,8 +184,7 @@ class @Annotator extends Annotator
     return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
 
     # Otherwise we deselect any existing selected highlight
-    @deselectAllHighlights()
-    @updateLocation()
+    @_selectHighlight null
 
     return # Make sure CoffeeScript does not return anything
 
@@ -210,14 +210,24 @@ class @Annotator extends Annotator
     annotation
 
   deleteAnnotation: (annotation) ->
+    # Deselecting before calling super so that all highlight objects are still available
+    @_selectHighlight null if annotation._id is @selectedAnnotationId
+
     annotation = super
 
     delete @_annotations[annotation._id]
 
     annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
+  ############################################################################
+  # We are using Annotator's annotations as highlights, so while annotation  #
+  # objects inside Annotator's code are annotations, from the perspective of #
+  # PeerLibrary highlighter they are highlights. All API functions from here #
+  # on are to bridge PeerLibrary highlighter with Annotator. They get        #
+  # highlighter documents from PeerLibrary and map them to Annotator's       #
+  # annotations.                                                             #
+  ############################################################################
+
   _insertHighlight: (annotation) =>
     # Populate with some of our fields
     annotation.author =
@@ -225,33 +235,50 @@ class @Annotator extends Annotator
     annotation.publication =
       _id: Session.get 'currentPublicationId'
 
-    Highlights.insert _.pick(annotation, '_id', 'author', 'publication', 'quote', 'target'), (error, id) =>
+    # Remove fields we do not want to store into the database
+    highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
+    highlight.target = _.map highlight.target, (t) =>
+      _.pick t, 'source', 'selector'
+
+    Highlights.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
 
       # TODO: Should we update also other fields (like full author, created timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
-      @updateLocation()
+      # Finally select it (until now it was just drawn selected) and update location
+      @_selectHighlight id
 
     annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _addHighlight: (id, fields) =>
     fields._id = id
     @setupAnnotation fields
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _changeHighlight: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
 
-  # We are using Annotator's annotations as highlights, so while
-  # input is an annotation object, we store it as a highlight
   _removeHighlight: (id) =>
     annotation = @_annotations[id]
     @deleteAnnotation annotation if annotation
+
+  _selectHighlight: (id) =>
+    if id and @_annotations[id]
+      @selectedAnnotationId = id
+
+      highlights = @getHighlights [@_annotations[id]]
+      otherHighlights = _.difference @getHighlights(), highlights
+
+      highlight.deselect() for highlight in otherHighlights when highlight.isSelected()
+      highlight.select() for highlight in highlights when not highlight.isSelected()
+    else
+      @selectedAnnotationId = null
+
+      @_deselectAllHighlights()
+
+    # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
+    @updateLocation()

@@ -331,6 +331,7 @@ class @Highlighter
     @mouseDown = false
 
     @_highlightsHandle = null
+    @_highlightLocationHandle = null
 
     @_annotator = new Annotator @
 
@@ -350,8 +351,9 @@ class @Highlighter
     $(window).off 'scroll.highlighter'
     $(window).off 'resize.highlighter'
 
-    # We stop the handle here and not just leave it to Deps.autorun to do it to cleanup in the right order
-    @_highlightsHandle.stop if @_highlightsHandle
+    # We stop handles here and not just leave it to Deps.autorun to do it to cleanup in the right order
+    @_highlightsHandle.stop() if @_highlightsHandle
+    @_highlightLocationHandle.stop() if @_highlightLocationHandle
 
     page.destroy() for page in @_pages
     @_pages = []
@@ -435,6 +437,9 @@ class @Highlighter
         @changeHighlight id, fields
       removed: (id) =>
         @removeHighlight id
+
+    @_highlightLocationHandle = Deps.autorun =>
+      @_annotator._selectHighlight Session.get 'currentHighlightId'
 
   pageRendered: (page) =>
     # We update the mapper for new page
