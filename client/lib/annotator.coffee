@@ -74,19 +74,26 @@ class @Annotator extends Annotator
 
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
-      inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
-
-      # If mousedown happened outside any selected highlight, we deselect highlights
-      @_deselectAllHighlights() unless inAnySelectedHighlight
-
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
       if e.which is 1 and $(e.target).parents().is('.display-page')
+        inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
+
+        # If mousedown happened outside any selected highlight, we deselect highlights,
+        # but we leave location unchanged so that on a new possible new highlight we
+        # update loication location to the new location without going through
+        # a publication-only location. If no highlight is made we update location in
+        # onFailedSelection.
+        @_deselectAllHighlights() unless inAnySelectedHighlight
+
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
         @checkForStartSelection e
+      else
+        # Otherwise we deselect everything
+        @_selectHighlight null
 
       return # Make sure CoffeeScript does not return anything
 
