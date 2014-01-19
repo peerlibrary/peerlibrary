@@ -4,50 +4,71 @@ Template.header.events =
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
+    return # Make sure CoffeeScript does not return anything
+
   'click .search-input': (e, template) ->
     # Only if focused on no-index header
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
+    return # Make sure CoffeeScript does not return anything
+
   'click .search-button': (e, template) ->
     Session.set 'searchActive', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'change .search-input': (e, template) ->
+    Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'keyup .search-input': (e, template) ->
     val = $(template.findAll '.search-input').val()
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
     if val
+      Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
       Session.set 'searchActive', true
       Session.set 'searchFocused', true
 
-    naturalQueryChange val
+    simpleQueryChange val
+
+    return # Make sure CoffeeScript does not return anything
 
   'paste .search-input': (e, template) ->
+    Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'cut .search-input': (e, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
   'submit #search': (e, template) ->
     e.preventDefault()
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    naturalQueryChange $(template.findAll '.search-input').val()
+    simpleQueryChange $(template.findAll '.search-input').val()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.header.development = ->
   'development' unless Meteor.settings?.public?.production
@@ -57,13 +78,6 @@ Template.header.indexHeader = ->
 
 Template.header.noIndexHeader = ->
   'no-index-header' if not Template.header.indexHeader()
-
-Template.header.created = ->
-  $(window).on 'scroll.header', ->
-    Session.set 'indexHeader', $(window).scrollTop() < $(window).height()
-
-Template.header.destroyed = ->
-  $(window).off 'scroll.header'
 
 Template.searchInput.searchFocused = ->
   'search-focused' if Session.get 'searchFocused'
@@ -82,7 +96,7 @@ Template.searchInput.searchInvitation = ->
   if Session.get 'currentSearchQuery'
     Session.get 'currentSearchQuery'
   else
-    "Search knowledge and people"
+    "Search academic publications and people"
 
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')

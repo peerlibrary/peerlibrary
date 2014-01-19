@@ -1,7 +1,7 @@
 PeerLibrary
 ===========
 
-Enriching the experience of open access scholarly literature.
+Capturing the global conversation on scholarly literature.
 
 http://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
@@ -17,8 +17,9 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl https://install.meteor.com | sh
 
-To add all tools provided by Meteor into your environment, add `~/.meteor/tools/latest/bin` to your
-environment `PATH` variable. For example, by running:
+If you do not have [node.js](http://nodejs.org) installed on your system, you can use one
+provided by Meteor. To add it into your environment, add `~/.meteor/tools/latest/bin` to
+your environment `PATH` variable. For example, by running:
 
     export PATH=~/.meteor/tools/latest/bin:$PATH
 
@@ -26,7 +27,7 @@ To add tools to you shell permanently, run:
 
     echo 'export PATH=~/.meteor/tools/latest/bin:$PATH' >> ~/.bash_profile
 
-Maybe on your system you have to add the lien to `~/.profile` file instead.
+Maybe on your system you have to add the line to `~/.profile` file instead.
 
 PeerLibrary requires additional Meteor packages which are provided through
 [Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
@@ -56,22 +57,20 @@ On Debian you can install:
 
 ### Run it! ###
 
-From a cloned PeerLibrary repository then run a development instance of PeerLibrary:
+From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) then run a development instance of PeerLibrary:
 
     mrt
 
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
 your local development instance.
 
-To demo the tool, you will need to populate your instance of the database with publications. Go to
-[http://localhost:3000/admin](http://localhost:3000/admin). Here you will see a series of
-buttons in the center of the screen that will allow you to cache publications.
-Click on the second button, _Sync arXiv metadata_, to begin the syncing process. The process
-will automatically proceed to caching and processing PDFs. Publications that make it all
-the way through "processing" will be searchable at your [http://localhost:3000/](http://localhost:3000/).
-
-Note: If you must stop the process midway through the metadata-cache-proccessing pipeline, you can
-click the button in the admin interface for the process which you previously left off on.
+To demo the tool, you will need to populate your instance of the database with publications.
+At first run it was already populated with dummy users `carl-sagan`, `hannah-arendt`,
+`paul-feyerabend` with password `hello`. User `carl-sagan` was set as administrator.
+Log in as `carl-sagan` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
+Click on the _Initialize database with sample data_ button, to initialize the database with
+the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
+and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
 ### Troubleshooting ###
 
@@ -93,6 +92,23 @@ installed among the dependencies, and `npm` gets confused with versions when upg
 version with the command:
 
     rm -rf ~/.meteorite/packages/pdf.js
+
+If you have not cloned recursively (`git clone --recursive ...`), you will at some point get a such or similar error:
+
+    While building package `blob`:
+    error: File not found: Blob/Blob.js
+
+You just have to manually initialize submodules we are using:
+
+    git submodule update --init --recursive
+
+If you are getting Stylus errors like:
+
+    error: Stylus compiler error: client/css/_viewer.styl:2
+
+    failed to locate @import file variables.styl
+
+You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
 
 ### Debug mode ###
 

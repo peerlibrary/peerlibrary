@@ -4,6 +4,9 @@ Meteor.methods
   # "key" is parsed user-provided string serving as keyword
   # "filter" is internal filter field so that "value" can be mapped to filters
   'search-propose': (query) ->
+    # TODO: Support real queries
+    check query, String
+
     # TODO: For now we just ignore query, we should do something smart with it
     proposals = Publications.find(
       processed: true
@@ -27,8 +30,11 @@ Meteor.methods
     proposals
 
 Meteor.publish 'search-results', (query, limit) ->
-  if not query
-    return
+  # TODO: Support real queries
+  check query, String
+  check limit, PositiveNumber
+
+  return unless query
 
   if _.isString(query)
     # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
@@ -105,91 +111,3 @@ Meteor.publish 'search-results', (query, limit) ->
 
     resultsHandle.stop()
     countHandle.stop()
-
-Meteor.publish 'search-available', ->
-  searchResultsId = Random.id()
-  countPublications = 0
-  countPersons = 0
-  initializingPublications = true
-  initializingPersons = true
-  minPublicationDate = null
-  maxPublicationDate = null
-
-  handlePublications = Publications.find(
-    processed: true
-  ,
-    fields:
-      # id field is implicitly added
-      created: 1
-  ).observeChanges
-    added: (id, fields) =>
-      countPublications++
-
-      created = moment.utc fields.created
-
-      changed =
-        countPublications: countPublications
-
-      if not minPublicationDate or created < minPublicationDate
-        minPublicationDate = created
-        changed.minPublicationDate = minPublicationDate
-
-      if not maxPublicationDate or created > maxPublicationDate
-        maxPublicationDate = created
-        changed.maxPublicationDate = maxPublicationDate
-
-      @changed 'SearchResults', searchResultsId, changed if !initializingPublications
-
-    changed: (id, fields) =>
-      return unless fields.created
-
-      created = moment.utc fields.created
-
-      changed = {}
-      changed.minPublicationDate = created.toDate() if created < minPublicationDate
-      changed.maxPublicationDate = created.toDate() if created > maxPublicationDate
-
-      @changed 'SearchResults', searchResultsId, changed if changed
-
-    removed: (id) =>
-      countPublications--
-      @changed 'SearchResults', searchResultsId,
-        countPublications: countPublications
-
-      # We ignore removed publications for minPublicationDate and maxPublicationDate
-      # This much simplifies the code and there is not really a big drawback because of this
-
-  initializingPublications = false
-
-  handlePersons = Persons.find({},
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id) =>
-      countPersons++
-
-      if !initializingPersons
-        @changed 'SearchResults', searchResultsId,
-          countPersons: countPersons
-
-    removed: (id) =>
-      countPublications--
-      @changed 'SearchResults', searchResultsId,
-        countPersons: countPersons
-
-  initializingPersons = false
-
-  @added 'SearchResults', searchResultsId,
-    query: null
-    countPublications: countPublications
-    countPersons: countPersons
-    minPublicationDate: minPublicationDate?.toDate()
-    maxPublicationDate: maxPublicationDate?.toDate()
-
-  @ready()
-
-  @onStop =>
-    @removed 'SearchResults', searchResultsId
-
-    handlePublications.stop()
-    handlePersons.stop()

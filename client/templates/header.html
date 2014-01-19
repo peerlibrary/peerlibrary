@@ -15,6 +15,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> importButton}}
           {{!
             <li class="explore pull-right">
               <a href="#">Explore</a>
@@ -43,7 +44,7 @@
       </form>
     </div>
     {{#if indexHeader}}
-      {{!<p>or drag & drop a file to read</p>}}
+      <p class="drop-files-to-import">or drop files to import</p>
     {{/if}}
   </div>
 </template>
@@ -58,4 +59,13 @@
   <li class="login pull-right">
     {{loginButtons align="right"}}
   </li>
+</template>
+
+<template name="importButton">
+  <li class="import pull-right">
+    <a href="" class="import-link-text">Import</a>
+  </li>
+  {{#constant}}
+    <input class="import-file-input" type="file" multiple="multiple" />
+  {{/constant}}
 </template>

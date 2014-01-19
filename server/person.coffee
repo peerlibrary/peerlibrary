@@ -23,6 +23,7 @@ class @Person extends @Person
       'gravatarHash'
       'foreNames'
       'lastName'
+      'isAdmin'
     ]
 
   # A set of fields which are public and can be published to the client
@@ -33,12 +34,17 @@ class @Person extends @Person
       gravatarHash: 1
       foreNames: 1
       lastName: 1
+      isAdmin: 1
       work: 1
       education: 1
       publications: 1
       library: 1
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
+  check slug, String
+
+  return unless slug
+
   Persons.find
     $or: [
         slug: slug

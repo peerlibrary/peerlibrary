@@ -14,14 +14,18 @@ UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
+  ImportingFiles.update file._id,
+    $set:
+      status: "Verifying file"
+
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
-  Meteor.call 'verifyPublication', publicationId, samplesData, (err) ->
-    if err
+  Meteor.call 'verifyPublication', publicationId, samplesData, (error) ->
+    if error
       ImportingFiles.update file._id,
         $set:
           errored: true
-          status: err.toString()
+          status: error.toString()
       return
 
     ImportingFiles.update file._id,
@@ -37,12 +41,12 @@ uploadFile = (file, publicationId) ->
     size: UPLOAD_CHUNK_SIZE,
     publicationId: publicationId
   ,
-    (err) ->
-      if err
+    (error) ->
+      if error
         ImportingFiles.update file._id,
           $set:
             errored: true
-            status: err.toString()
+            status: error.toString()
         return
 
       ImportingFiles.update file._id,
@@ -83,12 +87,12 @@ importFile = (file) ->
         $set:
           sha256: sha256
 
-      Meteor.call 'createPublication', file.name, sha256, (err, result) ->
-        if err
+      Meteor.call 'createPublication', file.name, sha256, (error, result) ->
+        if error
           ImportingFiles.update file._id,
             $set:
               errored: true
-              status: err.toString()
+              status: error.toString()
           return
 
         if result.already
@@ -113,8 +117,8 @@ importFile = (file) ->
     errored: false
   ,
     # We are using callback to make sure ImportingFiles really has the file now
-    (err, id) ->
-      throw err if err
+    (error, id) ->
+      throw error if error
 
       # So that meteor-file knows what to update
       file._id = id
@@ -146,6 +150,7 @@ hideOverlay = ->
 Meteor.startup ->
   $(document).on 'dragstart', (e) ->
     e.preventDefault()
+    return # Make sure CoffeeScript does not return anything
 
   $(document).on 'dragenter', (e) ->
     e.preventDefault()
@@ -158,36 +163,89 @@ Meteor.startup ->
 
     if Meteor.personId()
       Session.set 'importOverlayActive', true
+      e.originalEvent.dataTransfer.effectAllowed = 'copy'
+      e.originalEvent.dataTransfer.dropEffect = 'copy'
     else
-      Session.set 'loginOverlayActive', true
+      Session.set 'signInOverlayActive', true
+      e.originalEvent.dataTransfer.effectAllowed = 'none'
+      e.originalEvent.dataTransfer.dropEffect = 'none'
 
-Template.loginOverlay.loginOverlayActive = ->
-  Session.get 'loginOverlayActive'
+    return # Make sure CoffeeScript does not return anything
 
-Template.loginOverlay.events =
+Template.importButton.events =
+  'click .import': (e, template) ->
+    e.preventDefault()
+
+    if Meteor.personId()
+      $(template.findAll '.import-file-input').click()
+    else
+      Session.set 'signInOverlayActive', true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'change input.import-file-input': (e, template) ->
+    e.preventDefault()
+
+    return if e.target.files?.length is 0
+
+    Session.set 'importOverlayActive', true
+    _.each e.target.files, importFile
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.searchInput.events =
+  'click .drop-files-to-import': (e, template) ->
+    e.preventDefault()
+
+    $('ul.top-menu .import').click()
+
+Template.signInOverlay.signInOverlayActive = ->
+  Session.get 'signInOverlayActive'
+
+Template.signInOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+    e.dataTransfer.effectAllowed = 'none'
+    e.dataTransfer.dropEffect = 'none'
+
+    return # Make sure CoffeeScript does not return anything
 
   'dragleave': (e, template) ->
     e.preventDefault()
 
     unless DRAGGING_OVER_DOM
-      Session.set 'loginOverlayActive', false
+      Session.set 'signInOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
 
   'drop': (e, template) ->
     e.stopPropagation()
     e.preventDefault()
-    Session.set 'loginOverlayActive', false
+    Session.set 'signInOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click': (e, template) ->
+    e.preventDefault()
+    Session.set 'signInOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.events =
   'dragover': (e, template) ->
     e.preventDefault()
+    e.dataTransfer.effectAllowed = 'copy'
+    e.dataTransfer.dropEffect = 'copy'
+
+    return # Make sure CoffeeScript does not return anything
 
   'dragleave': (e, template) ->
     e.preventDefault()
 
     if ImportingFiles.find().count() == 0 and not DRAGGING_OVER_DOM
       Session.set 'importOverlayActive', false
+
+    return # Make sure CoffeeScript does not return anything
 
   'drop': (e, template) ->
     e.stopPropagation()
@@ -199,12 +257,17 @@ Template.importOverlay.events =
 
     _.each e.dataTransfer.files, importFile
 
+    return # Make sure CoffeeScript does not return anything
+
   'click': (e, template) ->
     hideOverlay()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
   $(document).on 'keyup.importOverlay', (e) ->
     hideOverlay() if e.keyCode is 27 # esc key
+    return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->
   $(document).off 'keyup.importOverlay'
@@ -226,9 +289,9 @@ Deps.autorun ->
 
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
-    Meteor.Router.to Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
-    Meteor.Router.to Meteor.Router.profilePath Meteor.personId()
+    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
 
   Session.set 'importOverlayActive', false
 

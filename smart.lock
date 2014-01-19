@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "a985e94e01247d274d65b22cae1c5fc9b77ddcf1"
+    "commit": "d8ba6ada91328cb0b67e9c09db039906e10b75b0"
   },
   "dependencies": {
     "basePackages": {
@@ -24,7 +24,8 @@
         "branch": "master"
       },
       "digest": {},
-      "peerdb": {}
+      "peerdb": {},
+      "useragent": {}
     },
     "packages": {
       "router": {
@@ -104,8 +105,13 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.3.4",
-        "commit": "8a5b4083bbd6f3b22f18eb9f1c229e7edbbadf85"
+        "tag": "v0.3.5",
+        "commit": "ef2e0fe0c9889ceb70de89c3da79e48d608ec901"
+      },
+      "useragent": {
+        "git": "https://github.com/awwx/meteor-useragent.git",
+        "tag": "v0.0.2",
+        "commit": "8737222105a50cfe484ccd09728bdfa7c35288a2"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

@@ -1,6 +1,10 @@
-Meteor.publish 'annotations-by-publication', (publication) ->
+Meteor.publish 'annotations-by-publication', (publicationId) ->
+  check publicationId, String
+
+  return unless publicationId
+
   Annotations.find
-    publication: publication
+    'publication._id': publicationId
   ,
     sort: [
       ['page', 'asc']
