@@ -34,7 +34,7 @@
       "router": {
         "git": "https://github.com/peerlibrary/meteor-router.git",
         "branch": "peerlibrary",
-        "commit": "5fa557d8d65d4ac96fbff81e64d70a28fae3cd69"
+        "commit": "e2e5b67a831815ad83fa5d4533391748c0957eb5"
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
