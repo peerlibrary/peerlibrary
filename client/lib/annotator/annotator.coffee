@@ -184,11 +184,18 @@ class @Annotator extends Annotator
   onFailedSelection: (event) =>
     super
 
+    # If this was not triggered by a user event (but by calling checkForEndSelection
+    # after enableAnnotating event) and thus does not have previousMousePosition, we
+    # do not do anything. Otherwise if location contains highlight and we want to
+    # have it selected when the page loads, this would not happen because onFailedSelection
+    # would be called which would deselect the highlight below.
+    return if not event or not event.previousMousePosition
+
     # If click (mousedown coordinates same as mouseup coordinates) is on a highlight, we do not
     # do anything because click event will be made as well, which will select the new highlight.
     # This assures we do not first deselect (and update location to publication location) just
     # to select another highlight immediately afterwards (and update location again to highlight).
-    return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
+    return if event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
 
     # Otherwise we deselect any existing selected highlight
     @_selectHighlight null
