@@ -281,6 +281,10 @@ class @Annotator extends Annotator
       otherHighlights = _.difference @getHighlights(), highlights
 
       highlight.deselect() for highlight in otherHighlights when highlight.isSelected()
+      # highlights is an empty list if Annotator's anchors for selected Annotator's
+      # annotation (our highlight) are not realized (Annotator's highlights created),
+      # but we do not care because we set selectedAnnotationId and highlight will be
+      # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
     else
       @selectedAnnotationId = null
