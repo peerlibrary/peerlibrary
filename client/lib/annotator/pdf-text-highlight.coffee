@@ -257,7 +257,7 @@ class PDFTextHighlight extends Annotator.Highlight
     selection.removeAllRanges()
 
     # We will re-add it in highlight.select() if necessary
-    $('.text-layer').removeClass 'highlight-selected'
+    $('.text-layer', @anchor.annotator.wrapper).removeClass 'highlight-selected'
 
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()

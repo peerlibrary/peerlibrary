@@ -26,8 +26,9 @@ class @Annotator extends Annotator
   mouseStartingInsideSelectedHighlight: false
   mousePosition: null
 
-  constructor: (@_highlighter) ->
-    super $('.display-wrapper'),
+  # $displayWrapper will be saved in _setupWrapper to @wrapper
+  constructor: (@_highlighter, $displayWrapper) ->
+    super $displayWrapper,
       noScan: true
     delete @options.noScan
 
