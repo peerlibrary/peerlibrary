@@ -16,7 +16,7 @@ class Page
 
     @_extractedText = null
 
-    @$displayPage = $("#display-page-#{ @pageNumber }")
+    @$displayPage = $("#display-page-#{ @pageNumber }", @highlighter._$displayWrapper)
 
   destroy: =>
     # Nothing really to do
@@ -325,14 +325,15 @@ class Page
     @highlighter.pageRemoved @
 
 class @Highlighter
-  constructor: ->
+  constructor: (@_$displayWrapper) ->
     @_pages = []
     @_numPages = null
     @mouseDown = false
 
     @_highlightsHandle = null
+    @_highlightLocationHandle = null
 
-    @_annotator = new Annotator @
+    @_annotator = new Annotator @, @_$displayWrapper
 
     @_annotator.addPlugin 'TextHighlights'
     @_annotator.addPlugin 'DomTextMapper'
@@ -350,8 +351,11 @@ class @Highlighter
     $(window).off 'scroll.highlighter'
     $(window).off 'resize.highlighter'
 
-    # We stop the handle here and not just leave it to Deps.autorun to do it to cleanup in the right order
-    @_highlightsHandle.stop if @_highlightsHandle
+    # We stop handles here and not just leave it to Deps.autorun to do it to cleanup in the right order
+    @_highlightsHandle.stop() if @_highlightsHandle
+    @_highlightsHandle = null
+    @_highlightLocationHandle.stop() if @_highlightLocationHandle
+    @_highlightLocationHandle = null
 
     page.destroy() for page in @_pages
     @_pages = []
@@ -359,6 +363,7 @@ class @Highlighter
     # TODO: Clean-up after Annotator
     #@_annotator.destroy() if @_annotator
     @_annotator = null # To release any memory
+    @_$displayWrapper = null # To release any memory
 
   setNumPages: (@_numPages) =>
 
@@ -435,6 +440,9 @@ class @Highlighter
         @changeHighlight id, fields
       removed: (id) =>
         @removeHighlight id
+
+    @_highlightLocationHandle = Deps.autorun =>
+      @_annotator._selectHighlight Session.get 'currentHighlightId'
 
   pageRendered: (page) =>
     # We update the mapper for new page

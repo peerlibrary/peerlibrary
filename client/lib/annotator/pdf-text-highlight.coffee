@@ -139,9 +139,7 @@ class PDFTextHighlight extends Annotator.Highlight
     )
 
   _clickHandler: (e) =>
-    @anchor.annotator.deselectAllHighlights()
-    @select()
-    @anchor.annotator.updateLocation()
+    @anchor.annotator._selectHighlight @annotation._id
 
     return # Make sure CoffeeScript does not return anything
 
@@ -232,6 +230,13 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_sortHighlights()
 
+    # Annotator's anchors are realized (Annotator's highlight is created) when page is rendered
+    # and virtualized (Annotator's highlight is destroyed) when page is removed. This mostly happens
+    # as user scrolls around. But we want that if our highlight (Annotator's annotation) is selected
+    # (selectedAnnotationId is set) when it is realized, it is drawn as selected and also that it is
+    # really selected in the browser as a selection. So we do this here.
+    @select() if @anchor.annotator.selectedAnnotationId is @annotation._id
+
   # React to changes in the underlying annotation
   annotationUpdated: =>
     # TODO: What to do when it is updated? Can we plug in reactivity somehow? To update template automatically?
@@ -239,8 +244,23 @@ class PDFTextHighlight extends Annotator.Highlight
 
   # Remove all traces of this highlight from the document
   removeFromDocument: =>
+    # When removing, first we have to deselect it and just then remove it, otherwise
+    # if this particular highlight is created again browser reselection does not
+    # work (tested in Chrome). It seems if you have a selection and remove DOM
+    # of text which is selected and then put DOM back and try to select it again,
+    # nothing happens, no new browser selection is made. So what was happening
+    # was that if you had a highlight selected on the first page (including
+    # browser selection of the text in the highlight) and you scroll away so that
+    # page was removed and then scroll back for page to be rendered again and
+    # highlight realized (created) again, _createHighlight correctly called select
+    # on the highlight, all CSS classes were correctly applied (making highlight
+    # transparent), but browser selection was not made on text. If we deselect
+    # when removing, then reselecting works correctly.
+    @deselect() if @anchor.annotator.selectedAnnotationId is @annotation._id
+
     $(@_$highlight).remove()
 
+  # Just a helper function to draw highlight selected and make it selected by the browser, use annotator._selectHighlight to select
   select: =>
     selection = window.getSelection()
     selection.addRange @normedRange.toRange()
@@ -248,6 +268,7 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$textLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
 
+  # Just a helper function to draw highlight unselected and make it unselected by the browser, use annotator._selectHighlight to deselect
   deselect: =>
     # Mark this highlight as deselected
     @_$highlight.removeClass 'selected'
@@ -257,11 +278,12 @@ class PDFTextHighlight extends Annotator.Highlight
     selection.removeAllRanges()
 
     # We will re-add it in highlight.select() if necessary
-    $('.text-layer').removeClass 'highlight-selected'
+    $('.text-layer', @anchor.annotator.wrapper).removeClass 'highlight-selected'
 
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
 
+  # Is highlight currently drawn as selected, use annotator.selectedAnnotationId to get ID of a selected annotation
   isSelected: =>
     @_$highlight.hasClass 'selected'
 
@@ -271,26 +293,6 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = @.getBoundingClientRect()
 
       rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
-
-  # If we pass location, it is tested to be the same as location for current highlight.
-  # This is useful when looping over all selected highlights and we want to make to
-  # assert that all of them belong to the same _id. See Annotator.updateLocation
-  # for example of use.
-  updateLocation: (location) =>
-    return null unless @isSelected()
-
-    # Maybe it is only latency compensated highlight and we do not yet have its
-    # _id, skip, updateLocation will be called again when we get _id
-    return null unless @annotation._id
-
-    newLocation = Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @annotation._id
-    if location
-      # Testing that all currently selected highligts are part of the same annotation
-      assert.equal newLocation, location
-    else
-      Meteor.Router.toNew newLocation
-
-    newLocation
 
   # Get the HTML elements making up the highlight
   _getDOMElements: =>

@@ -19,11 +19,10 @@ Template.indexMain.created = ->
 
 Template.indexMain.rendered = ->
   return if @_backgroundRendered
+  @_backgroundRendered = true
 
   Deps.nonreactive =>
     $(@find '.landing').append @_background.render()
-
-    @_backgroundRendered = true
 
 Template.indexMain.destroyed = ->
   $(window).off 'resize.background'
