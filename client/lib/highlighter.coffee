@@ -437,11 +437,11 @@ class @Highlighter
       'publication._id': Session.get 'currentPublicationId'
     ).observeChanges
       added: (id, fields) =>
-        @addHighlight id, fields
+        @highlightAdded id, fields
       changed: (id, fields) =>
-        @changeHighlight id, fields
+        @highlightChanged id, fields
       removed: (id) =>
-        @removeHighlight id
+        @highlightRemoved id
 
     @_highlightLocationHandle = Deps.autorun =>
       @_annotator._selectHighlight Session.get 'currentHighlightId'
@@ -454,14 +454,14 @@ class @Highlighter
     # We update the mapper for removed page
     @_annotator?.domMapper?.pageRemoved page.pageNumber
 
-  addHighlight: (id, fields) =>
+  highlightAdded: (id, fields) =>
     if @_annotator.hasAnnotation id
-      @changeHighlight id, fields
+      @highlightChanged id, fields
     else
-      @_annotator._addHighlight id, fields
+      @_annotator._highlightAdded id, fields
 
-  changeHighlight: (id, fields) =>
-    @_annotator._changeHighlight id, fields
+  highlightChanged: (id, fields) =>
+    @_annotator._highlightChanged id, fields
 
-  removeHighlight: (id) =>
-    @_annotator._removeHighlight id
+  highlightRemoved: (id) =>
+    @_annotator._highlightRemoved id

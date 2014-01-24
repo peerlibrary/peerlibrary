@@ -249,6 +249,20 @@ class @Annotator extends Annotator
   # annotations.                                                             #
   ############################################################################
 
+  _highlightAdded: (id, fields) =>
+    fields._id = id
+    @setupAnnotation fields
+
+  _highlightChanged: (id, fields) =>
+    # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
+
+    annotation = _.extend @_annotations[id], fields
+    @updateAnnotation annotation
+
+  _highlightRemoved: (id) =>
+    annotation = @_annotations[id]
+    @deleteAnnotation annotation if annotation
+
   _insertHighlight: (annotation) =>
     # Populate with some of our fields
     annotation.author =
@@ -273,19 +287,9 @@ class @Annotator extends Annotator
 
     annotation
 
-  _addHighlight: (id, fields) =>
-    fields._id = id
-    @setupAnnotation fields
-
-  _changeHighlight: (id, fields) =>
-    # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
-
-    annotation = _.extend @_annotations[id], fields
-    @updateAnnotation annotation
-
   _removeHighlight: (id) =>
-    annotation = @_annotations[id]
-    @deleteAnnotation annotation if annotation
+    Highlights.remove id, (error) =>
+      throw error if error
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]
