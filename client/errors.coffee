@@ -26,6 +26,7 @@ window.onerror = (errorMsg, url, lineNumber) ->
     settings: Meteor.settings
     release: Meteor.release
     version: VERSION
+    PDFJS: _.pick PDFJS, 'maxImageSize', 'disableFontFace', 'disableWorker', 'disableRange', 'disableAutoFetch', 'pdfBug', 'postMessageTransfers', 'disableCreateObjectURL', 'verbosity'
 
   if oldOnError
     oldOnError errorMsg, url, lineNumber

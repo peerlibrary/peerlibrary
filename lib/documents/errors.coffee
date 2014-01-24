@@ -19,6 +19,16 @@ class @LoggedError extends Document
   # settings: Meteor settings, if used at this instance
   # release: Meteor release, if not custom release/fork
   # version: version of PeerLibrary running on the client
+  # PDFJS:
+  #   maxImageSize: maxImageSize PDF.js setting
+  #   disableFontFace: disableFontFace PDF.js setting
+  #   disableWorker: disableWorker PDF.js setting
+  #   disableRange: disableRange PDF.js setting
+  #   disableAutoFetch: disableAutoFetch PDF.js setting
+  #   pdfBug: pdfBug PDF.js setting
+  #   postMessageTransfers: postMessageTransfers PDF.js setting
+  #   disableCreateObjectURL: disableCreateObjectURL PDF.js setting
+  #   verbosity: verbosity PDF.js setting
   # serverTime: server time when the error was received (in UTC)
   # parsedUserAgent: parsed and more structured information about user's browser
   # person: if user was logged in and has not opted-out, reference to the person for whom the error occured, otherwise null
