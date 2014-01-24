@@ -187,49 +187,68 @@ Deps.autorun ->
 Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
-viewportHeightPercentage = ->
-  100 * Math.min($(window).height() / $('.viewer .display-wrapper').height(), 1)
+makePercentage = (x) ->
+  100 * Math.max(Math.min(x, 1), 0)
 
-viewportPositionPercentage = ->
-  $displayWrapper = $('.viewer .display-wrapper')
-  100 * Math.max($(window).scrollTop() - $displayWrapper.offset().top, 0) / $displayWrapper.height()
+# We do not have to use display wrapper position in computing viewport
+# positions because we are just interested in how much display wrapper
+# moved and scrollTop changes in sync with display wrapper moving.
+# When scrollTop is 100px, 100px less of display wrapper is visible.
+
+viewportTopPercentage = ->
+  makePercentage($(window).scrollTop() / $('.viewer .display-wrapper').height())
+
+viewportBottomPercentage = ->
+  availableHeight = $(window).height() - $('header .container').height()
+  scrollBottom = $(window).scrollTop() + availableHeight
+  makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
+
+setViewportPosition = ($viewport) ->
+  $viewport.css
+    top: "#{ viewportTopPercentage() }%"
+    bottom: "#{ 100 - viewportBottomPercentage() }%"
 
 scrollToOffset = (offset) ->
   $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height() / $('.scroller').height())
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
-    unless draggingViewport
-      $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
+    setViewportPosition $(@find '.viewport') unless draggingViewport
 
 Template.publicationScroller.rendered = ->
-  if Session.equals 'currentPublicationDOMReady', true
-    $(@find '.viewport').draggable
-      containment: 'parent'
-      start: (e, ui) ->
-        draggingViewport = true
-        true # Ensure default runs
-      drag: (e, ui) ->
-        $target = $(e.target)
-        scrollToOffset $target.offset().top - $target.parent().offset().top
-        true # Ensure default runs
-      stop: (e, ui) ->
-        draggingViewport = false
-        true # Ensure default runs
-    $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
+  return unless Session.equals 'currentPublicationDOMReady', true
+
+  $viewport = $(@find '.viewport')
+
+  $viewport.draggable
+    containment: 'parent'
+    start: (e, ui) ->
+      draggingViewport = true
+      true # Ensure default runs
+    drag: (e, ui) ->
+      $target = $(e.target)
+      scrollToOffset $target.offset().top - $target.parent().offset().top
+      true # Ensure default runs
+    stop: (e, ui) ->
+      draggingViewport = false
+      true # Ensure default runs
+
+  setViewportPosition $viewport
 
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  if Session.equals 'currentPublicationDOMReady', true
-    $displayWrapper = $('.viewer .display-wrapper')
-    totalHeight = $displayWrapper.height()
-    for section in $displayWrapper.children()
-      $section = $(section)
+  return [] unless Session.equals 'currentPublicationDOMReady', true
 
-      heightPercentage: 100 * $section.height() / totalHeight
-      topPercentage: 100 * $section.position().top / totalHeight
+  $displayWrapper = $('.viewer .display-wrapper')
+  displayTop = $displayWrapper.offset().top
+  displayHeight = $displayWrapper.height()
+  for section in $displayWrapper.children()
+    $section = $(section)
+
+    heightPercentage: 100 * $section.height() / displayHeight
+    topPercentage: 100 * ($section.offset().top - displayTop) / displayHeight
 
 Template.publicationScroller.events
   'click': (e, template) ->
