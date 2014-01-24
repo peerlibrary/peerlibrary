@@ -1,37 +1,34 @@
 @import variables
 
-#viewer
-  width 100%
-  height 100%
-  overflow-x hidden
-  position relative
-  padding-top 60px
+section.publication
+  padding-top header-height
 
-  .display
-    height 100%
-
-  .display-page
-    position relative
-    text-align center
-    margin-bottom 20px
-
-  .highlighted, .annotations .annotation:hover
-    background-color rgba(255,0,0,0.3)
-
-  .display-page
-    canvas
-      background rgba(255,255,255,1.0)
+  .container
+    margin 0
+    width 100%
 
 /* Meta menu
 ============ */
 
+/* Have to be defined here because we are using them in meta menu as well */
+scroller-width = 64px
+scroller-left = 12px
+scroller-bottom = 20px
+
+meta-menu-width = 28px
+meta-menu-height = 22px
+meta-menu-padding = 10px
+meta-menu-top = header-height + 15px
+meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+
 .meta-menu
   position fixed
   cursor pointer
-  width 28px
-  height 22px
-  left 20px
-  padding 10px
+  width meta-menu-width
+  height meta-menu-height
+  top meta-menu-top
+  left meta-menu-left
+  padding meta-menu-padding
   background #cececf
   border-radius 2px
   z-index 100
@@ -70,10 +67,11 @@
 
 .scroller
   position fixed
-  width 64px
-  top 120px
-  left 12px
+  width scroller-width
+  top meta-menu-top + meta-menu-height + 2 * meta-menu-padding + 20px
+  left scroller-left
   bottom 20px
+  z-index 50
 
   .section
     position absolute
@@ -81,7 +79,6 @@
     left 8px
     background #eee
     border: 1px solid light-grey
-    z-index 50
 
   .section:hover
     background rgba(46,46,44,0.12)
@@ -93,76 +90,51 @@
     border-radius 2px
     z-index 60
 
-/* Annotations
-============== */
-
-.annotations
-  z-index 100
-  float left
-  width 320px
-
-  ul.annotations-list
-    list-style none
-
-    li
-      background white
-      padding 20px
-      margin 10px 0
-      border-radius 2px
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12)
-      transition 0.2s
-
-    li:hover
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
-
 /* Viewer
 ========= */
 
-#viewer
-  width 100%
-  height 100%
-  overflow-x hidden
-  position relative
-  padding-top 60px
+viewer-left = scroller-width + 2 * scroller-left
+viewer-top = meta-menu-top - header-height
 
-  .display
-    height 100%
-
+.viewer
   .display-wrapper
-    max-width 800px
-    float left
+    /* Initially we set it to display-canvas-loading width and
+       then in code we update it to real width based on the PDF */
+    width display-canvas-loading-width
+    margin-left viewer-left
+    margin-top viewer-top
 
-  .display-page
-    position relative
-    text-align left
-    margin-left 60px
-    margin-bottom 20px
+    .display-page
+      position relative
+      /* Has to be set otherwise there is 4px of additional height to display-page */
+      line-height 0
+      margin-bottom 20px
 
-  .highlighted, .annotations .annotation:hover
-    background-color rgba(255,0,0,0.3)
+      .display-canvas
+        background rgba(255,255,255,1.0)
 
-  .loading
-    position absolute
-    left 50%
-    top 50%
-    height 10em
-    width 10em
-    margin-left -5em
-    margin-top -5em
-    line-height 10em
-    background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-    background-position 50% 50%
-    background-repeat no-repeat
-    text-align center
+      .loading
+        position absolute
+        left 50%
+        top 50%
+        height 10em
+        width 10em
+        margin-left -5em
+        margin-top -5em
+        line-height 10em
+        background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+        background-position 50% 50%
+        background-repeat no-repeat
+        text-align center
 
-  .display-canvas-loading
-    width 400px
-    height 400px
+      .display-canvas-loading
+        width display-canvas-loading-width
+        height display-canvas-loading-height
 
 /* Text selection
 ================= */
 
-#viewer
+.viewer
   .display-page canvas
     ::selection
       background rgba(255,255,10,0.3)
@@ -207,3 +179,47 @@
 
     .highlight.selected
        background-color rgba(0, 100, 0, 0.2)
+
+/* Annotations
+============== */
+
+annotations-left = meta-menu-left
+annotations-right = meta-menu-left
+
+.annotations
+  z-index 90
+  position fixed
+  /* Initially we set it based on display-canvas-loading width and
+     then in code we update it to real width based on the PDF */
+  left viewer-left + display-canvas-loading-width + annotations-left
+  right annotations-right
+  top meta-menu-top
+  bottom scroller-bottom
+  overflow-x hidden
+  overflow-y auto
+
+  ul.annotations-list
+    list-style none
+    padding 0
+    /* To not crop shadow */
+    margin 5px
+
+    li
+      background white
+      padding 20px
+      margin 10px 0
+      border-radius 2px
+      box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+      transition 0.2s
+
+    li:hover
+      box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+
+/* Footer
+========= */
+
+footer.publication
+  /* Initially we set it to display-canvas-loading width and
+     then in code we update it to real width based on the PDF */
+  width display-canvas-loading-width
+  margin-left viewer-left

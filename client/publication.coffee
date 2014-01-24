@@ -34,12 +34,12 @@ class @Publication extends @Publication
       return if @_pages is null
 
       # To make sure we are starting with empty slate
-      $('#viewer .display-wrapper').empty()
+      $('.viewer .display-wrapper').empty()
 
       for pageNumber in [1..@_pdf.numPages]
         $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
-        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('#viewer .display-wrapper')
+        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('.viewer .display-wrapper')
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (page) =>
@@ -55,6 +55,17 @@ class @Publication extends @Publication
             $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
               width: viewport.width
+
+            # TODO: We currently change this based on the width of the last page, but pages might not be of same width, what can we do then?
+
+            # We store current display wrapper width because we will later on
+            # reposition annotations for the ammount display wrapper width changes
+            displayWidth = parseFloat($('.viewer .display-wrapper').css('width'))
+            $('footer.publication, .viewer .display-wrapper').css
+              width: viewport.width
+            # We reposition annotations if display wrapper width changed
+            $('.annotations').css
+              left: "+=#{ viewport.width - displayWidth }"
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
@@ -108,7 +119,7 @@ class @Publication extends @Publication
       page.page.destroy()
     @_pdf.destroy() if @_pdf
 
-    $('#viewer .display-wrapper').empty()
+    $('.viewer .display-wrapper').empty()
 
   renderPage: (page) =>
     return if page.rendering
@@ -178,14 +189,14 @@ Template.publication.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
 viewportHeightPercentage = ->
-  100 * Math.min($(window).height() / $('#viewer .display-wrapper').height(), 1)
+  100 * Math.min($(window).height() / $('.viewer .display-wrapper').height(), 1)
 
 viewportPositionPercentage = ->
-  $displayWrapper = $('#viewer .display-wrapper')
+  $displayWrapper = $('.viewer .display-wrapper')
   100 * Math.max($(window).scrollTop() - $displayWrapper.offset().top, 0) / $displayWrapper.height()
 
 scrollToOffset = (offset) ->
-  $(window).scrollTop Math.round(offset * $('#viewer .display-wrapper').height() / $('#scroller').height())
+  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height() / $('.scroller').height())
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
@@ -213,7 +224,7 @@ Template.publicationScroller.destroyed = ->
 
 Template.publicationScroller.sections = ->
   if Session.equals 'currentPublicationRendered', true
-    $displayWrapper = $('#viewer .display-wrapper')
+    $displayWrapper = $('.viewer .display-wrapper')
     totalHeight = $displayWrapper.height()
     for section in $displayWrapper.children()
       $section = $(section)
@@ -224,7 +235,7 @@ Template.publicationScroller.sections = ->
 Template.publicationScroller.events
   'click': (e, template) ->
     $target = $(e.target)
-    offset = if $target.is('#scroller') then e.offsetY - $('#scroller .viewport').height() / 2 else $target.offset().top - $target.parent().offset().top
+    offset = if $target.is('.scroller') then e.offsetY - $('.scroller .viewport').height() / 2 else $target.offset().top - $target.parent().offset().top
     scrollToOffset offset
 
 Template.publicationAnnotations.annotations = ->
@@ -244,13 +255,13 @@ Template.publicationAnnotationsItem.events =
       Session.set 'currentHighlight', null
       currentHighlight = false
 
-    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
+    showHighlight $('.viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .annotation': (e, template) ->
     unless _.isEqual Session.get('currentHighlight'), @location
-      hideHiglight $('#viewer .display .display-text')
+      hideHiglight $('.viewer .display .display-text')
 
     return # Make sure CoffeeScript does not return anything
 
@@ -260,7 +271,7 @@ Template.publicationAnnotationsItem.events =
       Session.set 'currentHighlight', @location
       currentHighlight = false
 
-    showHighlight $('#viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
+    showHighlight $('.viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
 
     return # Make sure CoffeeScript does not return anything
 
