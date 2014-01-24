@@ -230,6 +230,11 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_sortHighlights()
 
+    # Annotator's anchors are realized (Annotator's highlight is created) when page is rendered
+    # and virtualized (Annotator's highlight is destroyed) when page is removed. This mostly happens
+    # as user scrolls around. But we want that if our highlight (Annotator's annotation) is selected
+    # (selectedAnnotationId is set) when it is realized, it is drawn as selected and also that it is
+    # really selected in the browser as a selection. So we do this here.
     @select() if @anchor.annotator.selectedAnnotationId is @annotation._id
 
   # React to changes in the underlying annotation
@@ -239,6 +244,20 @@ class PDFTextHighlight extends Annotator.Highlight
 
   # Remove all traces of this highlight from the document
   removeFromDocument: =>
+    # When removing, first we have to deselect it and just then remove it, otherwise
+    # if this particular highlight is created again browser reselection does not
+    # work (tested in Chrome). It seems if you have a selection and remove DOM
+    # of text which is selected and then put DOM back and try to select it again,
+    # nothing happens, no new browser selection is made. So what was happening
+    # was that if you had a highlight selected on the first page (including
+    # browser selection of the text in the highlight) and you scroll away so that
+    # page was removed and then scroll back for page to be rendered again and
+    # highlight realized (created) again, _createHighlight correctly called select
+    # on the highlight, all CSS classes were correctly applied (making highlight
+    # transparent), but browser selection was not made on text. If we deselect
+    # when removing, then reselecting works correctly.
+    @deselect() if @anchor.annotator.selectedAnnotationId is @annotation._id
+
     $(@_$highlight).remove()
 
   # Just a helper function to draw highlight selected and make it selected by the browser, use annotator._selectHighlight to select
@@ -259,7 +278,7 @@ class PDFTextHighlight extends Annotator.Highlight
     selection.removeAllRanges()
 
     # We will re-add it in highlight.select() if necessary
-    $('.text-layer').removeClass 'highlight-selected'
+    $('.text-layer', @anchor.annotator.wrapper).removeClass 'highlight-selected'
 
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()

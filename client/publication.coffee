@@ -22,21 +22,21 @@ class @Publication extends @Publication
 
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
-  show: =>
+  show: (@_$displayWrapper) =>
     console.debug "Showing publication #{ @_id }"
 
     assert.strictEqual @_pages, null
 
     @_pagesDone = 0
     @_pages = []
-    @_highlighter = new Highlighter
+    @_highlighter = new Highlighter @_$displayWrapper
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
       # To make sure we are starting with empty slate
-      $('#viewer .display-wrapper').empty()
+      @_$displayWrapper.empty()
 
       @_highlighter.setNumPages @_pdf.numPages
 
@@ -65,7 +65,7 @@ class @Publication extends @Publication
           $textLayer,
           $highlightsControl,
           $loading,
-        ).appendTo('#viewer .display-wrapper')
+        ).appendTo(@_$displayWrapper)
 
         do (pageNumber) =>
           @_pdf.getPage(pageNumber).then (pdfPage) =>
@@ -77,7 +77,7 @@ class @Publication extends @Publication
             viewport = @_viewport
               pdfPage: pdfPage # Dummy page object
 
-            $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
             $canvas = $displayPage.find('canvas') # Both display and highlights canvases
             $canvas.removeClass('display-canvas-loading').attr
               height: viewport.height
@@ -126,7 +126,7 @@ class @Publication extends @Publication
       # make it too big
       fontSize = 21
 
-      $displayPage = $("#display-page-#{ pdfPage.pageNumber }")
+      $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
       $textLayerDummy = $('<div/>').addClass('text-layer-dummy').css('font-size', fontSize).text(@_highlighter.extractText pdfPage.pageNumber)
       $displayPage.append($textLayerDummy)
 
@@ -153,7 +153,7 @@ class @Publication extends @Publication
       # been set, we skip (it will be retried after text content is set)
       continue unless @_highlighter.hasTextContent page.pageNumber
 
-      $canvas = $("#display-page-#{ page.pageNumber } canvas")
+      $canvas = $("#display-page-#{ page.pageNumber } canvas", @_$displayWrapper)
 
       canvasTop = $canvas.offset().top
       canvasBottom = canvasTop + $canvas.height()
@@ -180,7 +180,8 @@ class @Publication extends @Publication
     @_highlighter = null
 
     # Clean DOM
-    $('#viewer .display-wrapper').empty()
+    @_$displayWrapper.empty()
+    @_$displayWrapper = null
 
   renderPage: (page) =>
     return if page.rendering
@@ -188,7 +189,7 @@ class @Publication extends @Publication
 
     console.debug "Rendering page #{ page.pdfPage.pageNumber }"
 
-    $displayPage = $("#display-page-#{ page.pageNumber }")
+    $displayPage = $("#display-page-#{ page.pageNumber }", @_$displayWrapper)
     $canvas = $displayPage.find('canvas')
 
     # Redo canvas resize to make sure it is the right size
@@ -213,7 +214,7 @@ class @Publication extends @Publication
 
       console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
-      $("#display-page-#{ page.pageNumber } .loading").hide()
+      $("#display-page-#{ page.pageNumber } .loading", @_$displayWrapper).hide()
 
       # Maybe we have to render text layer as well
       @_highlighter.checkRender()
@@ -222,12 +223,11 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error rendering page #{ page.pdfPage.pageNumber }", args...
 
-  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
-  @SHOW_FIELDS: ->
+  # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
+  @DISPLAY_FIELDS: ->
     fields:
       foreignId: 1
       source: 1
-      slug: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
@@ -236,32 +236,54 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get('currentPublicationId'), Publication.SHOW_FIELDS()
+  publication = Publications.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      slug: 1
 
   return unless publication
 
-  # currentPublicationSlug is null if slug is not present in URL, so we use
+  # currentPublicationSlug is null if slug is not present in location, so we use
   # null when publication.slug is empty string to prevent infinite looping
-  unless Session.equals 'currentPublicationSlug', (publication.slug or null)
-    highlightId = Session.get 'currentHighlightId'
-    if highlightId
-      Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
-    else
-      Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
-    return
+  return if Session.equals 'currentPublicationSlug', (publication.slug or null)
 
-  # Maybe we don't yet have whole publication object available
-  try
-    unless publication.url()
-      return
-  catch e
-    return
+  highlightId = Session.get 'currentHighlightId'
+  if highlightId
+    Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+  else
+    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
-  publication.show()
-  Deps.onInvalidate publication.destroy
-
-Template.publication.publication = ->
+Template.publicationMetaMenu.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
+
+Template.publicationDisplay.created = ->
+  @_displayHandle = null
+  @_displayRendered = false
+
+Template.publicationDisplay.rendered = ->
+  return if @_displayRendered
+  @_displayRendered = true
+
+  Deps.nonreactive =>
+    @_displayHandle = Deps.autorun =>
+      publication = Publications.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+
+      return unless publication
+
+      # Maybe we don't yet have whole publication object available
+      try
+        unless publication.url()
+          return
+      catch e
+        return
+
+      publication.show $(@find '.display-wrapper')
+      Deps.onInvalidate publication.destroy
+
+Template.publicationDisplay.destroyed = ->
+  @_displayHandle.stop() if @_displayHandle
+  @_displayHandle = null
+  @_displayRendered = false
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find

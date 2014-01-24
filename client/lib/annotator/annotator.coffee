@@ -26,8 +26,9 @@ class @Annotator extends Annotator
   mouseStartingInsideSelectedHighlight: false
   mousePosition: null
 
-  constructor: (@_highlighter) ->
-    super $('.display-wrapper'),
+  # $displayWrapper will be saved in _setupWrapper to @wrapper
+  constructor: (@_highlighter, $displayWrapper) ->
+    super $displayWrapper,
       noScan: true
     delete @options.noScan
 
@@ -74,19 +75,26 @@ class @Annotator extends Annotator
 
   _setupDocumentEvents: =>
     $(document).on 'mousedown': (e) =>
-      inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
-
-      # If mousedown happened outside any selected highlight, we deselect highlights
-      @_deselectAllHighlights() unless inAnySelectedHighlight
-
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
       if e.which is 1 and $(e.target).parents().is('.display-page')
+        inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
+
+        # If mousedown happened outside any selected highlight, we deselect highlights,
+        # but we leave location unchanged so that on a new possible new highlight we
+        # update loication location to the new location without going through
+        # a publication-only location. If no highlight is made we update location in
+        # onFailedSelection.
+        @_deselectAllHighlights() unless inAnySelectedHighlight
+
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
         @checkForStartSelection e
+      else
+        # Otherwise we deselect everything
+        @_selectHighlight null
 
       return # Make sure CoffeeScript does not return anything
 
@@ -177,11 +185,18 @@ class @Annotator extends Annotator
   onFailedSelection: (event) =>
     super
 
+    # If this was not triggered by a user event (but by calling checkForEndSelection
+    # after enableAnnotating event) and thus does not have previousMousePosition, we
+    # do not do anything. Otherwise if location contains highlight and we want to
+    # have it selected when the page loads, this would not happen because onFailedSelection
+    # would be called which would deselect the highlight below.
+    return if not event or not event.previousMousePosition
+
     # If click (mousedown coordinates same as mouseup coordinates) is on a highlight, we do not
     # do anything because click event will be made as well, which will select the new highlight.
     # This assures we do not first deselect (and update location to publication location) just
     # to select another highlight immediately afterwards (and update location again to highlight).
-    return if event and event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
+    return if event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @_inAnyHighlight event.clientX, event.clientY
 
     # Otherwise we deselect any existing selected highlight
     @_selectHighlight null
@@ -274,6 +289,10 @@ class @Annotator extends Annotator
       otherHighlights = _.difference @getHighlights(), highlights
 
       highlight.deselect() for highlight in otherHighlights when highlight.isSelected()
+      # highlights is an empty list if Annotator's anchors for selected Annotator's
+      # annotation (our highlight) are not realized (Annotator's highlights created),
+      # but we do not care because we set selectedAnnotationId and highlight will be
+      # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
     else
       @selectedAnnotationId = null
