@@ -84,8 +84,7 @@ class @Publication extends @Publication
             # TODO: Handle errors better (call destroy?)
             console.error "Error getting page #{ pageNumber }", args...
 
-      $(window).on 'scroll.publication', @checkRender
-      $(window).on 'resize.publication', @checkRender
+      $(window).on 'scroll.publication resize.publication', @checkRender
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
@@ -111,8 +110,7 @@ class @Publication extends @Publication
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
 
-    $(window).off 'scroll.publication'
-    $(window).off 'resize.publication'
+    $(window).off '.publication'
 
     for page in pages
       page.page.destroy()
@@ -221,7 +219,7 @@ Template.publicationScroller.rendered = ->
     $(@find '.viewport').height "#{ viewportHeightPercentage() }%"
 
 Template.publicationScroller.destroyed = ->
-  $(window).off 'scroll.publicationScroller'
+  $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
   if Session.equals 'currentPublicationDOMReady', true
