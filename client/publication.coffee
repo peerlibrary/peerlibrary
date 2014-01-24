@@ -173,7 +173,10 @@ class @Publication extends @Publication
     $(window).off 'resize.publication'
 
     page.pdfPage.destroy() for page in pages
-    @_pdf.destroy() if @_pdf
+    if @_pdf
+      @_pdf.cleanup()
+      @_pdf.destroy()
+      @_pdf = null
 
     # To make sure it is cleaned up
     @_highlighter.destroy() if @_highlighter

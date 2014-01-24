@@ -48,7 +48,7 @@ class PDFTextMapper extends PageTextMapperCore
 
   setEvents: =>
     # Do something about cross-page selections
-    @_annotator.wrapper.on 'domChange', (e) =>
+    @_annotator.wrapper.on 'domChange.annotator', (e) =>
       data = e.data or e.originalEvent.data
 
       return unless e.target is e.currentTarget
@@ -69,7 +69,7 @@ class PDFTextMapper extends PageTextMapperCore
       return # Make sure CoffeeScript does not return anything
 
     # Ignoring, because used only by Hypothes.is heatmap
-    #$(document).on 'scroll', (e) => @_onScroll()
+    #$(document).on 'scroll.annotator', (e) => @_onScroll()
 
   # Extract the text from the PDF
   scan: =>

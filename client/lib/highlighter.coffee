@@ -19,7 +19,10 @@ class Page
     @$displayPage = $("#display-page-#{ @pageNumber }", @highlighter._$displayWrapper)
 
   destroy: =>
-    # Nothing really to do
+    # To release any cyclic memory
+    @highlighter = null
+    @pdfPage = null
+    @$displayPage = null
 
   textLayer: =>
     textContentIndex = 0
@@ -360,10 +363,9 @@ class @Highlighter
     page.destroy() for page in @_pages
     @_pages = []
     @_numPages = null # To disable any asynchronous _checkHighlighting
-    # TODO: Clean-up after Annotator
-    #@_annotator.destroy() if @_annotator
-    @_annotator = null # To release any memory
-    @_$displayWrapper = null # To release any memory
+    @_annotator.destroy() if @_annotator
+    @_annotator = null # To release any cyclic memory
+    @_$displayWrapper = null # To release any cyclic memory
 
   setNumPages: (@_numPages) =>
 
