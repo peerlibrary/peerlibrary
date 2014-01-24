@@ -6,12 +6,13 @@ else
 
 PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
   fontHeight = geom.fontSize * Math.abs(geom.vScale)
+  fontAscent = if geom.ascent then geom.ascent * fontHeight else if geom.descent then (1 + geom.descent) * fontHeight else fontHeight
   canvasWidth = geom.canvasWidth * Math.abs(geom.hScale)
 
   segment =
     geom: geom
-    text: textContent.bidiTexts[textContentIndex].str
-    direction: textContent.bidiTexts[textContentIndex].dir
+    text: textContent[textContentIndex].str
+    direction: textContent[textContentIndex].dir
     angle: geom.angle
     textContentIndex: textContentIndex
     width: 0
@@ -22,8 +23,8 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
   segment.style =
     fontSize: fontHeight
     fontFamily: geom.fontFamily
-    left: geom.x + fontHeight * Math.sin(segment.angle)
-    top: geom.y - fontHeight * Math.cos(segment.angle)
+    left: geom.x + fontAscent * Math.sin(segment.angle)
+    top: geom.y - fontAscent * Math.cos(segment.angle)
 
   unless segment.isWhitespace
     ctx.font = "#{ segment.style.fontSize }px #{ segment.style.fontFamily }";

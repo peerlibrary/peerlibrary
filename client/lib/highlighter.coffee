@@ -58,7 +58,7 @@ class Page
   extractText: =>
     return @_extractedText unless @_extractedText is null
 
-    text = (t.str for t in @textContent.bidiTexts).join ' '
+    text = (t.str for t in @textContent).join ' '
 
     # Remove multiple whitespace characters and trim them away
     text = text.replace(WHITESPACE_REGEX, ' ').replace(TRIM_WHITESPACE_REGEX, '')
