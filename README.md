@@ -99,6 +99,9 @@ If you are getting Stylus errors like:
 
 You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
 
+If you notice that `mrt` command disappeared is this because you probably updated Meteor.
+You have to reinstall Meteorite (`npm install -g meteorite`).
+
 ### Debug mode ###
 
 To run PeerLibrary in the debug mode, you can run it with debug settings:
