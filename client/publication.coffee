@@ -78,8 +78,7 @@ class @Publication extends @Publication
             # Check if new page should be maybe rendered?
             @checkRender()
 
-            if @_pagesDone == @_pdf.numPages
-              Session.set 'currentPublicationRendered', true
+            Session.set 'currentPublicationDOMReady', true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -120,6 +119,8 @@ class @Publication extends @Publication
     @_pdf.destroy() if @_pdf
 
     $('.viewer .display-wrapper').empty()
+
+    Session.set 'currentPublicationDOMReady', false
 
   renderPage: (page) =>
     return if page.rendering
@@ -204,7 +205,7 @@ Template.publicationScroller.created = ->
       $(@find '.viewport').css 'top', "#{ viewportPositionPercentage() }%"
 
 Template.publicationScroller.rendered = ->
-  if Session.equals 'currentPublicationRendered', true
+  if Session.equals 'currentPublicationDOMReady', true
     $(@find '.viewport').draggable
       containment: 'parent'
       start: (e, ui) ->
@@ -223,7 +224,7 @@ Template.publicationScroller.destroyed = ->
   $(window).off 'scroll.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  if Session.equals 'currentPublicationRendered', true
+  if Session.equals 'currentPublicationDOMReady', true
     $displayWrapper = $('.viewer .display-wrapper')
     totalHeight = $displayWrapper.height()
     for section in $displayWrapper.children()
