@@ -35,6 +35,10 @@ class @Annotator extends Annotator
     @_annotations = {}
     @selectedAnnotationId = null
 
+  destroy: =>
+    $(document).off '.annotator'
+    $(@wrapper).off '.annotator'
+
   _setupViewer: =>
     # Overridden and disabled
 
@@ -74,7 +78,9 @@ class @Annotator extends Annotator
     false
 
   _setupDocumentEvents: =>
-    $(document).on 'mousedown': (e) =>
+    # Overridden
+
+    $(document).on 'mousedown.annotator': (e) =>
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
@@ -98,7 +104,7 @@ class @Annotator extends Annotator
 
       return # Make sure CoffeeScript does not return anything
 
-    $(document).on 'mousemove': (e) =>
+    $(document).on 'mousemove.annotator': (e) =>
       # We started moving for a new selection, so deselect any selected highlight
       if @mouseIsDown and @mouseStartingInsideSelectedHighlight
         # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible

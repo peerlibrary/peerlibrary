@@ -82,17 +82,6 @@ Sometimes when installing dependencies, Meteor will throw the following error:
 This just means that there was a timeout while downloading a dependency, probably because of
 a networking issue. Just retry.
 
-If you get the following error:
-
-    npm http 404 https://registry.npmjs.org/esprima/1.1.0-dev
-    npm ERR! Error: version not found: 1.1.0-dev : esprima/1.1.0-dev
-
-This error can occur because a development version of the `esprima` package is
-installed among the dependencies, and `npm` gets confused with versions when upgrading. You should just the delete old
-version with the command:
-
-    rm -rf ~/.meteorite/packages/pdf.js
-
 If you have not cloned recursively (`git clone --recursive ...`), you will at some point get a such or similar error:
 
     While building package `blob`:
@@ -109,6 +98,9 @@ If you are getting Stylus errors like:
     failed to locate @import file variables.styl
 
 You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
+
+If you notice that `mrt` command disappeared is this because you probably updated Meteor.
+You have to reinstall Meteorite (`npm install -g meteorite`).
 
 ### Debug mode ###
 
