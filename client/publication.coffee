@@ -60,7 +60,7 @@ class @Publication extends @Publication
 
             # We store current display wrapper width because we will later on
             # reposition annotations for the ammount display wrapper width changes
-            displayWidth = parseFloat($('.viewer .display-wrapper').css('width'))
+            displayWidth = $('.viewer .display-wrapper').width()
             $('footer.publication, .viewer .display-wrapper').css
               width: viewport.width
             # We reposition annotations if display wrapper width changed
