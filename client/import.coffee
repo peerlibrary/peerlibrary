@@ -149,7 +149,11 @@ hideOverlay = ->
 
 Meteor.startup ->
   $(document).on 'dragstart', (e) ->
+    # We want to prevent dragging of everything except the viewport
+    return if $(e.target).is('.viewport')
+
     e.preventDefault()
+
     return # Make sure CoffeeScript does not return anything
 
   $(document).on 'dragenter', (e) ->
