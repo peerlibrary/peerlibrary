@@ -1,8 +1,18 @@
-/*! jQuery UI - v1.11.0pre - 2013-11-20
+/*! jQuery UI - v1.11.0pre - 2014-01-24
 * http://jqueryui.com
-* Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.mouse.js, jquery.ui.draggable.js, jquery.ui.droppable.js, jquery.ui.resizable.js, jquery.ui.selectable.js, jquery.ui.sortable.js, jquery.ui.effect.js, jquery.ui.accordion.js, jquery.ui.autocomplete.js, jquery.ui.button.js, jquery.ui.datepicker.js, jquery.ui.dialog.js, jquery.ui.effect-blind.js, jquery.ui.effect-bounce.js, jquery.ui.effect-clip.js, jquery.ui.effect-drop.js, jquery.ui.effect-explode.js, jquery.ui.effect-fade.js, jquery.ui.effect-fold.js, jquery.ui.effect-highlight.js, jquery.ui.effect-puff.js, jquery.ui.effect-pulsate.js, jquery.ui.effect-scale.js, jquery.ui.effect-shake.js, jquery.ui.effect-size.js, jquery.ui.effect-slide.js, jquery.ui.effect-transfer.js, jquery.ui.menu.js, jquery.ui.position.js, jquery.ui.progressbar.js, jquery.ui.slider.js, jquery.ui.spinner.js, jquery.ui.tabs.js, jquery.ui.tooltip.js
-* Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
-(function( $, undefined ) {
+* Includes: core.js, widget.js, mouse.js, draggable.js, droppable.js, resizable.js, selectable.js, sortable.js, effect.js, accordion.js, autocomplete.js, button.js, datepicker.js, dialog.js, effect-blind.js, effect-bounce.js, effect-clip.js, effect-drop.js, effect-explode.js, effect-fade.js, effect-fold.js, effect-highlight.js, effect-puff.js, effect-pulsate.js, effect-scale.js, effect-shake.js, effect-size.js, effect-slide.js, effect-transfer.js, menu.js, position.js, progressbar.js, selectmenu.js, slider.js, spinner.js, tabs.js, tooltip.js
+* Copyright 2014 jQuery Foundation and other contributors; Licensed MIT */
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define( [ "jquery" ], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 // $.ui might exist from components with no dependencies, e.g., $.ui.position
 $.ui = $.ui || {};
@@ -49,18 +59,17 @@ $.fn.extend({
 	})( $.fn.focus ),
 
 	scrollParent: function() {
-		var scrollParent;
-		if (($.ui.ie && (/(static|relative)/).test(this.css("position"))) || (/absolute/).test(this.css("position"))) {
-			scrollParent = this.parents().filter(function() {
-				return (/(relative|absolute|fixed)/).test($.css(this,"position")) && (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
-			}).eq(0);
-		} else {
-			scrollParent = this.parents().filter(function() {
-				return (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
-			}).eq(0);
-		}
+		var position = this.css( "position" ),
+			excludeStaticParent = position === "absolute",
+			scrollParent = this.parents().filter( function() {
+				var parent = $( this );
+				if ( excludeStaticParent && parent.css( "position" ) === "static" ) {
+					return false;
+				}
+				return (/(auto|scroll)/).test( parent.css( "overflow" ) + parent.css( "overflow-y" ) + parent.css( "overflow-x" ) );
+			}).eq( 0 );
 
-		return ( /fixed/ ).test( this.css( "position") ) || !scrollParent.length ? $( this[ 0 ].ownerDocument || document ) : scrollParent;
+		return position === "fixed" || !scrollParent.length ? $( this[ 0 ].ownerDocument || document ) : scrollParent;
 	},
 
 	uniqueId: (function() {
@@ -281,9 +290,19 @@ $.ui.plugin = {
 	}
 };
 
-})( jQuery );
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define( [ "jquery" ], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 var widget_uuid = 0,
 	widget_slice = Array.prototype.slice;
@@ -689,7 +708,7 @@ $.Widget.prototype = {
 					handler.guid || handlerProxy.guid || $.guid++;
 			}
 
-			var match = event.match( /^(\w+)\s*(.*)$/ ),
+			var match = event.match( /^([\w:-]*)\s*(.*)$/ ),
 				eventName = match[1] + instance.eventNamespace,
 				selector = match[2];
 			if ( selector ) {
@@ -804,16 +823,31 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 	};
 });
 
-})( jQuery );
+return $.widget;
 
-(function( $, undefined ) {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 var mouseHandled = false;
 $( document ).mouseup( function() {
 	mouseHandled = false;
 });
 
-$.widget("ui.mouse", {
+return $.widget("ui.mouse", {
 	version: "@VERSION",
 	options: {
 		cancel: "input,textarea,button,select,option",
@@ -824,10 +858,10 @@ $.widget("ui.mouse", {
 		var that = this;
 
 		this.element
-			.bind("mousedown."+this.widgetName, function(event) {
+			.bind("mousedown." + this.widgetName, function(event) {
 				return that._mouseDown(event);
 			})
-			.bind("click."+this.widgetName, function(event) {
+			.bind("click." + this.widgetName, function(event) {
 				if (true === $.data(event.target, that.widgetName + ".preventClickEvent")) {
 					$.removeData(event.target, that.widgetName + ".preventClickEvent");
 					event.stopImmediatePropagation();
@@ -841,11 +875,11 @@ $.widget("ui.mouse", {
 	// TODO: make sure destroying one instance of mouse doesn't mess with
 	// other instances of mouse
 	_mouseDestroy: function() {
-		this.element.unbind("."+this.widgetName);
+		this.element.unbind("." + this.widgetName);
 		if ( this._mouseMoveDelegate ) {
 			this.document
-				.unbind("mousemove."+this.widgetName, this._mouseMoveDelegate)
-				.unbind("mouseup."+this.widgetName, this._mouseUpDelegate);
+				.unbind("mousemove." + this.widgetName, this._mouseMoveDelegate)
+				.unbind("mouseup." + this.widgetName, this._mouseUpDelegate);
 		}
 	},
 
@@ -969,9 +1003,24 @@ $.widget("ui.mouse", {
 	_mouseCapture: function(/* event */) { return true; }
 });
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./mouse",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 $.widget("ui.draggable", $.ui.mouse, {
 	version: "@VERSION",
@@ -1018,9 +1067,16 @@ $.widget("ui.draggable", $.ui.mouse, {
 		if (this.options.disabled){
 			this.element.addClass("ui-draggable-disabled");
 		}
+		this._setHandleClassName();
 
 		this._mouseInit();
+	},
 
+	_setOption: function( key, value ) {
+		this._super( key, value );
+		if ( key === "handle" ) {
+			this._setHandleClassName();
+		}
 	},
 
 	_destroy: function() {
@@ -1029,6 +1085,7 @@ $.widget("ui.draggable", $.ui.mouse, {
 			return;
 		}
 		this.element.removeClass( "ui-draggable ui-draggable-dragging ui-draggable-disabled" );
+		this._removeHandleClassName();
 		this._mouseDestroy();
 	},
 
@@ -1254,6 +1311,17 @@ $.widget("ui.draggable", $.ui.mouse, {
 			true;
 	},
 
+	_setHandleClassName: function() {
+		this._removeHandleClassName();
+		$( this.options.handle || this.element ).addClass( "ui-draggable-handle" );
+	},
+
+	_removeHandleClassName: function() {
+		this.element.find( ".ui-draggable-handle" )
+			.addBack()
+			.removeClass( "ui-draggable-handle" );
+	},
+
 	_createHelper: function(event) {
 
 		var o = this.options,
@@ -1292,6 +1360,10 @@ $.widget("ui.draggable", $.ui.mouse, {
 		}
 	},
 
+	_isRootNode: function( element ) {
+		return ( /(html|body)/i ).test( element.tagName ) || element === this.document[ 0 ];
+	},
+
 	_getParentOffset: function() {
 
 		//Get the offsetParent and cache its position
@@ -1307,10 +1379,7 @@ $.widget("ui.draggable", $.ui.mouse, {
 			po.top += this.scrollParent.scrollTop();
 		}
 
-		//This needs to be actually done for all browsers, since pageX/pageY includes this information
-		//Ugly IE fix
-		if((this.offsetParent[0] === document.body) ||
-			(this.offsetParent[0].tagName && this.offsetParent[0].tagName.toLowerCase() === "html" && $.ui.ie)) {
+		if ( this._isRootNode( this.offsetParent[ 0 ] ) ) {
 			po = { top: 0, left: 0 };
 		}
 
@@ -1322,16 +1391,17 @@ $.widget("ui.draggable", $.ui.mouse, {
 	},
 
 	_getRelativeOffset: function() {
-
-		if(this.cssPosition === "relative") {
-			var p = this.element.position();
-			return {
-				top: p.top - (parseInt(this.helper.css("top"),10) || 0) + this.scrollParent.scrollTop(),
-				left: p.left - (parseInt(this.helper.css("left"),10) || 0) + this.scrollParent.scrollLeft()
-			};
-		} else {
+		if ( this.cssPosition !== "relative" ) {
 			return { top: 0, left: 0 };
 		}
+
+		var p = this.element.position(),
+			scrollIsRootNode = this._isRootNode( this.scrollParent[ 0 ] );
+
+		return {
+			top: p.top - ( parseInt(this.helper.css( "top" ), 10) || 0 ) + ( !scrollIsRootNode ? this.scrollParent.scrollTop() : 0 ),
+			left: p.left - ( parseInt(this.helper.css( "left" ), 10) || 0 ) + ( !scrollIsRootNode ? this.scrollParent.scrollLeft() : 0 )
+		};
 
 	},
 
@@ -1356,6 +1426,8 @@ $.widget("ui.draggable", $.ui.mouse, {
 		var over, c, ce,
 			o = this.options,
 			document = this.document[ 0 ];
+
+		this.relative_container = null;
 
 		if ( !o.containment ) {
 			this.containment = null;
@@ -1416,31 +1488,20 @@ $.widget("ui.draggable", $.ui.mouse, {
 		}
 
 		var mod = d === "absolute" ? 1 : -1,
-			document = this.document[ 0 ],
-			useOffsetParent = this.cssPosition === "absolute" && ( this.scrollParent[ 0 ] === document || !$.contains( this.scrollParent[ 0 ], this.offsetParent[ 0 ] ) ),
-			scroll = useOffsetParent ? this.offsetParent : this.scrollParent,
-			// we need to test if offsetParent was used here because Blink incorrectly reports a 0 scrollTop
-			// on document.documentElement when the page is scrolled. Checking for offsetParent normalizes
-			// this across browsers. Blink bug: https://code.google.com/p/chromium/issues/detail?id=157855
-			scrollIsRootNode = useOffsetParent && ( /(html|body)/i ).test( scroll[ 0 ].nodeName );
-
-		//Cache the scroll
-		if (!this.offset.scroll) {
-			this.offset.scroll = {top : scroll.scrollTop(), left : scroll.scrollLeft()};
-		}
+			scrollIsRootNode = this._isRootNode( this.scrollParent[ 0 ] );
 
 		return {
 			top: (
 				pos.top	+																// The absolute mouse position
 				this.offset.relative.top * mod +										// Only for relative positioned nodes: Relative offset from element to offset parent
 				this.offset.parent.top * mod -										// The offsetParent's offset without borders (offset + border)
-				( ( this.cssPosition === "fixed" ? -this.scrollParent.scrollTop() : ( scrollIsRootNode ? 0 : this.offset.scroll.top ) ) * mod)
+				( ( this.cssPosition === "fixed" ? -this.offset.scroll.top : ( scrollIsRootNode ? 0 : this.offset.scroll.top ) ) * mod)
 			),
 			left: (
 				pos.left +																// The absolute mouse position
 				this.offset.relative.left * mod +										// Only for relative positioned nodes: Relative offset from element to offset parent
 				this.offset.parent.left * mod	-										// The offsetParent's offset without borders (offset + border)
-				( ( this.cssPosition === "fixed" ? -this.scrollParent.scrollLeft() : scrollIsRootNode ? 0 : this.offset.scroll.left ) * mod)
+				( ( this.cssPosition === "fixed" ? -this.offset.scroll.left : ( scrollIsRootNode ? 0 : this.offset.scroll.left ) ) * mod)
 			)
 		};
 
@@ -1450,19 +1511,16 @@ $.widget("ui.draggable", $.ui.mouse, {
 
 		var containment, co, top, left,
 			o = this.options,
-			document = this.document[ 0 ],
-			useOffsetParent = this.cssPosition === "absolute" && ( this.scrollParent[ 0 ] === document || !$.contains( this.scrollParent[ 0 ], this.offsetParent[ 0 ] ) ),
-			scroll = useOffsetParent ? this.offsetParent : this.scrollParent,
-			// we need to test if offsetParent was used here because Blink incorrectly reports a 0 scrollTop
-			// on document.documentElement when the page is scrolled. Checking for offsetParent normalizes
-			// this across browsers. Blink bug: https://code.google.com/p/chromium/issues/detail?id=157855
-			scrollIsRootNode = useOffsetParent && ( /(html|body)/i ).test( scroll[ 0 ].nodeName ),
+			scrollIsRootNode = this._isRootNode( this.scrollParent[ 0 ] ),
 			pageX = event.pageX,
 			pageY = event.pageY;
 
-		//Cache the scroll
-		if (!this.offset.scroll) {
-			this.offset.scroll = {top : scroll.scrollTop(), left : scroll.scrollLeft()};
+		// Cache the scroll
+		if ( !scrollIsRootNode || !this.offset.scroll ) {
+			this.offset.scroll = {
+				top: this.scrollParent.scrollTop(),
+				left: this.scrollParent.scrollLeft()
+			};
 		}
 
 		/*
@@ -1524,14 +1582,14 @@ $.widget("ui.draggable", $.ui.mouse, {
 				this.offset.click.top	-												// Click offset (relative to the element)
 				this.offset.relative.top -												// Only for relative positioned nodes: Relative offset from element to offset parent
 				this.offset.parent.top +												// The offsetParent's offset without borders (offset + border)
-				( this.cssPosition === "fixed" ? -this.scrollParent.scrollTop() : ( scrollIsRootNode ? 0 : this.offset.scroll.top ) )
+				( this.cssPosition === "fixed" ? -this.offset.scroll.top : ( scrollIsRootNode ? 0 : this.offset.scroll.top ) )
 			),
 			left: (
 				pageX -																	// The absolute mouse position
 				this.offset.click.left -												// Click offset (relative to the element)
 				this.offset.relative.left -												// Only for relative positioned nodes: Relative offset from element to offset parent
 				this.offset.parent.left +												// The offsetParent's offset without borders (offset + border)
-				( this.cssPosition === "fixed" ? -this.scrollParent.scrollLeft() : ( scrollIsRootNode ? 0 : this.offset.scroll.left ) )
+				( this.cssPosition === "fixed" ? -this.offset.scroll.left : ( scrollIsRootNode ? 0 : this.offset.scroll.left ) )
 			)
 		};
 
@@ -1953,9 +2011,27 @@ $.ui.plugin.add("draggable", "zIndex", {
 	}
 });
 
-})(jQuery);
+return $.ui.draggable;
 
-(function( $, undefined ) {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./mouse",
+			"./draggable"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 $.widget( "ui.droppable", {
 	version: "@VERSION",
@@ -2342,9 +2418,26 @@ $.ui.ddmanager = {
 	}
 };
 
-})( jQuery );
+return $.ui.droppable;
 
-(function( $, undefined ) {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./mouse",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 $.widget("ui.resizable", $.ui.mouse, {
 	version: "@VERSION",
@@ -2384,7 +2477,6 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 	_hasScroll: function( el, a ) {
 
-		//If overflow is hidden, the element might have extra content, but the user wants to hide it
 		if ( $( el ).css( "overflow" ) === "hidden") {
 			return false;
 		}
@@ -2420,10 +2512,9 @@ $.widget("ui.resizable", $.ui.mouse, {
 			_helper: o.helper || o.ghost || o.animate ? o.helper || "ui-resizable-helper" : null
 		});
 
-		//Wrap the element if it cannot hold child nodes
+		// Wrap the element if it cannot hold child nodes
 		if(this.element[0].nodeName.match(/canvas|textarea|input|select|button|img/i)) {
 
-			//Create a wrapper element and set the wrapper to the new current internal element
 			this.element.wrap(
 				$("<div class='ui-wrapper' style='overflow: hidden;'></div>").css({
 					position: this.element.css("position"),
@@ -2434,30 +2525,26 @@ $.widget("ui.resizable", $.ui.mouse, {
 				})
 			);
 
-			//Overwrite the original this.element
 			this.element = this.element.parent().data(
 				"ui-resizable", this.element.resizable( "instance" )
 			);
 
 			this.elementIsWrapper = true;
 
-			//Move margins to the wrapper
 			this.element.css({ marginLeft: this.originalElement.css("marginLeft"), marginTop: this.originalElement.css("marginTop"), marginRight: this.originalElement.css("marginRight"), marginBottom: this.originalElement.css("marginBottom") });
 			this.originalElement.css({ marginLeft: 0, marginTop: 0, marginRight: 0, marginBottom: 0});
-
-			//Prevent Safari textarea resize
+			// support: Safari
+			// Prevent Safari textarea resize
 			this.originalResizeStyle = this.originalElement.css("resize");
 			this.originalElement.css("resize", "none");
 
-			//Push the actual element to our proportionallyResize internal array
 			this._proportionallyResizeElements.push(this.originalElement.css({ position: "static", zoom: 1, display: "block" }));
 
+			// support: IE9
 			// avoid IE jump (hard set the margin)
 			this.originalElement.css({ margin: this.originalElement.css("margin") });
 
-			// fix handlers offset
 			this._proportionallyResize();
-
 		}
 
 		this.handles = o.handles || (!$(".ui-resizable-handle", this.element).length ? "e,s,se" : { n: ".ui-resizable-n", e: ".ui-resizable-e", s: ".ui-resizable-s", w: ".ui-resizable-w", se: ".ui-resizable-se", sw: ".ui-resizable-sw", ne: ".ui-resizable-ne", nw: ".ui-resizable-nw" });
@@ -2476,15 +2563,13 @@ $.widget("ui.resizable", $.ui.mouse, {
 				hname = "ui-resizable-"+handle;
 				axis = $("<div class='ui-resizable-handle " + hname + "'></div>");
 
-				// Apply zIndex to all handles - see #7960
 				axis.css({ zIndex: o.zIndex });
 
-				//TODO : What's going on here?
+				// TODO : What's going on here?
 				if ("se" === handle) {
 					axis.addClass("ui-icon ui-icon-gripsmall-diagonal-se");
 				}
 
-				//Insert into internal handles object and append to element
 				this.handles[handle] = ".ui-resizable-"+handle;
 				this.element.append(axis);
 			}
@@ -2500,18 +2585,15 @@ $.widget("ui.resizable", $.ui.mouse, {
 			for(i in this.handles) {
 
 				if(this.handles[i].constructor === String) {
-					this.handles[i] = $(this.handles[i], this.element).show();
+					this.handles[i] = this.element.children( this.handles[ i ] ).first().show();
 				}
 
-				//Apply pad to wrapper element, needed to fix axis position (textarea, inputs, scrolls)
 				if (this.elementIsWrapper && this.originalElement[0].nodeName.match(/textarea|input|select|button/i)) {
 
 					axis = $(this.handles[i], this.element);
 
-					//Checking the correct pad and border
 					padWrapper = /sw|ne|nw|se|n|s/.test(i) ? axis.outerHeight() : axis.outerWidth();
 
-					//The padding type i have to apply...
 					padPos = [ "padding",
 						/ne|nw|n/.test(i) ? "Top" :
 						/se|sw|s/.test(i) ? "Bottom" :
@@ -2523,31 +2605,28 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 				}
 
-				//TODO: What's that good for? There's not anything to be executed left
+				// TODO: What's that good for? There's not anything to be executed left
 				if(!$(this.handles[i]).length) {
 					continue;
 				}
 			}
 		};
 
-		//TODO: make renderAxis a prototype function
+		// TODO: make renderAxis a prototype function
 		this._renderAxis(this.element);
 
 		this._handles = $(".ui-resizable-handle", this.element)
 			.disableSelection();
 
-		//Matching axis name
 		this._handles.mouseover(function() {
 			if (!that.resizing) {
 				if (this.className) {
 					axis = this.className.match(/ui-resizable-(se|sw|ne|nw|n|e|s|w)/i);
 				}
-				//Axis, default = se
 				that.axis = axis && axis[1] ? axis[1] : "se";
 			}
 		});
 
-		//If we want to auto hide the elements
 		if (o.autoHide) {
 			this._handles.hide();
 			$(this.element)
@@ -2570,7 +2649,6 @@ $.widget("ui.resizable", $.ui.mouse, {
 				});
 		}
 
-		//Initialize the mouse interaction
 		this._mouseInit();
 
 	},
@@ -2585,7 +2663,7 @@ $.widget("ui.resizable", $.ui.mouse, {
 					.removeData("resizable").removeData("ui-resizable").unbind(".resizable").find(".ui-resizable-handle").remove();
 			};
 
-		//TODO: Unwrap at same DOM position
+		// TODO: Unwrap at same DOM position
 		if (this.elementIsWrapper) {
 			_destroy(this.element);
 			wrapper = this.element;
@@ -2628,7 +2706,7 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 		this.resizing = true;
 
-		// bugfix for http://dev.jquery.com/ticket/1749
+		// Bugfix for http://bugs.jqueryui.com/ticket/1749
 		if ( (/absolute/).test( el.css("position") ) ) {
 			el.css({ position: "absolute", top: el.css("top"), left: el.css("left") });
 		} else if (el.is(".ui-draggable")) {
@@ -2645,7 +2723,6 @@ $.widget("ui.resizable", $.ui.mouse, {
 			curtop += $(o.containment).scrollTop() || 0;
 		}
 
-		//Store needed variables
 		this.offset = this.helper.offset();
 		this.position = { left: curleft, top: curtop };
 		this.size = this._helper ? { width: this.helper.width(), height: this.helper.height() } : { width: el.width(), height: el.height() };
@@ -2654,7 +2731,6 @@ $.widget("ui.resizable", $.ui.mouse, {
 		this.sizeDiff = { width: el.outerWidth() - el.width(), height: el.outerHeight() - el.height() };
 		this.originalMousePosition = { left: event.pageX, top: event.pageY };
 
-		//Aspect Ratio
 		this.aspectRatio = (typeof o.aspectRatio === "number") ? o.aspectRatio : ((this.originalSize.width / this.originalSize.height) || 1);
 
 		cursor = $(".ui-resizable-" + this.axis).css("cursor");
@@ -2667,27 +2743,29 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 	_mouseDrag: function(event) {
 
-		//Increase performance, avoid regex
 		var data,
 			el = this.helper, props = {},
 			smp = this.originalMousePosition,
 			a = this.axis,
-			prevTop = this.position.top,
-			prevLeft = this.position.left,
-			prevWidth = this.size.width,
-			prevHeight = this.size.height,
 			dx = (event.pageX-smp.left)||0,
 			dy = (event.pageY-smp.top)||0,
 			trigger = this._change[a];
+
+		this.prevPosition = {
+			top: this.position.top,
+			left: this.position.left
+		};
+		this.prevSize = {
+			width: this.size.width,
+			height: this.size.height
+		};
 
 		if (!trigger) {
 			return false;
 		}
 
-		// Calculate the attrs that will be change
 		data = trigger.apply(this, [event, dx, dy]);
 
-		// Put this in the mouseDrag handler since the user can start pressing shift while resizing
 		this._updateVirtualBoundaries(event.shiftKey);
 		if (this._aspectRatio || event.shiftKey) {
 			data = this._updateRatio(data, event);
@@ -2697,30 +2775,28 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 		this._updateCache(data);
 
-		// plugins callbacks need to be called first
 		this._propagate("resize", event);
 
-		if (this.position.top !== prevTop) {
+		if ( this.position.top !== this.prevPosition.top ) {
 			props.top = this.position.top + "px";
 		}
-		if (this.position.left !== prevLeft) {
+		if ( this.position.left !== this.prevPosition.left ) {
 			props.left = this.position.left + "px";
 		}
-		if (this.size.width !== prevWidth) {
+		if ( this.size.width !== this.prevSize.width ) {
 			props.width = this.size.width + "px";
 		}
-		if (this.size.height !== prevHeight) {
+		if ( this.size.height !== this.prevSize.height ) {
 			props.height = this.size.height + "px";
 		}
-		el.css(props);
+		el.css( props );
 
-		if (!this._helper && this._proportionallyResizeElements.length) {
+		if ( !this._helper && this._proportionallyResizeElements.length ) {
 			this._proportionallyResize();
 		}
 
-		// Call the user callback if the element was resized
-		if ( ! $.isEmptyObject(props) ) {
-			this._trigger("resize", event, this.ui());
+		if ( !$.isEmptyObject( props ) ) {
+			this._trigger( "resize", event, this.ui() );
 		}
 
 		return false;
@@ -2781,8 +2857,6 @@ $.widget("ui.resizable", $.ui.mouse, {
 		};
 
 		if(this._aspectRatio || forceAspectRatio) {
-			// We want to create an enclosing box whose aspect ration is the requested one
-			// First, compute the "projected" size for each dimension based on the aspect ratio and other dimension
 			pMinWidth = b.minHeight * this.aspectRatio;
 			pMinHeight = b.minWidth / this.aspectRatio;
 			pMaxWidth = b.maxHeight * this.aspectRatio;
@@ -2879,7 +2953,7 @@ $.widget("ui.resizable", $.ui.mouse, {
 			data.top = dh - o.maxHeight;
 		}
 
-		// fixing jump error on top/left - bug #2330
+		// Fixing jump error on top/left - bug #2330
 		if (!data.width && !data.height && !data.left && data.top) {
 			data.top = null;
 		} else if (!data.width && !data.height && !data.top && data.left) {
@@ -2993,7 +3067,9 @@ $.widget("ui.resizable", $.ui.mouse, {
 			position: this.position,
 			size: this.size,
 			originalSize: this.originalSize,
-			originalPosition: this.originalPosition
+			originalPosition: this.originalPosition,
+			prevSize: this.prevSize,
+			prevPosition: this.prevPosition
 		};
 	}
 
@@ -3044,129 +3120,168 @@ $.ui.plugin.add("resizable", "animate", {
 
 });
 
-$.ui.plugin.add("resizable", "containment", {
+$.ui.plugin.add( "resizable", "containment", {
 
 	start: function() {
 		var element, p, co, ch, cw, width, height,
-			that = $(this).resizable( "instance" ),
+			that = $( this ).resizable( "instance" ),
 			o = that.options,
 			el = that.element,
 			oc = o.containment,
-			ce = (oc instanceof $) ? oc.get(0) : (/parent/.test(oc)) ? el.parent().get(0) : oc;
+			ce = ( oc instanceof $ ) ? oc.get( 0 ) : ( /parent/.test( oc ) ) ? el.parent().get( 0 ) : oc;
 
-		if (!ce) {
+		if ( !ce ) {
 			return;
 		}
 
-		that.containerElement = $(ce);
+		that.containerElement = $( ce );
 
-		if (/document/.test(oc) || oc === document) {
-			that.containerOffset = { left: 0, top: 0 };
-			that.containerPosition = { left: 0, top: 0 };
+		if ( /document/.test( oc ) || oc === document ) {
+			that.containerOffset = {
+				left: 0,
+				top: 0
+			};
+			that.containerPosition = {
+				left: 0,
+				top: 0
+			};
 
 			that.parentData = {
-				element: $(document), left: 0, top: 0,
-				width: $(document).width(), height: $(document).height() || document.body.parentNode.scrollHeight
+				element: $( document ),
+				left: 0,
+				top: 0,
+				width: $( document ).width(),
+				height: $( document ).height() || document.body.parentNode.scrollHeight
 			};
-		}
-
-		// i'm a node, so compute top, left, right, bottom
-		else {
-			element = $(ce);
+		} else {
+			element = $( ce );
 			p = [];
-			$([ "Top", "Right", "Left", "Bottom" ]).each(function(i, name) { p[i] = that._num(element.css("padding" + name)); });
+			$([ "Top", "Right", "Left", "Bottom" ]).each(function( i, name ) {
+				p[ i ] = that._num( element.css( "padding" + name ) );
+			});
 
 			that.containerOffset = element.offset();
 			that.containerPosition = element.position();
-			that.containerSize = { height: (element.innerHeight() - p[3]), width: (element.innerWidth() - p[1]) };
+			that.containerSize = {
+				height: ( element.innerHeight() - p[ 3 ] ),
+				width: ( element.innerWidth() - p[ 1 ] )
+			};
 
 			co = that.containerOffset;
 			ch = that.containerSize.height;
 			cw = that.containerSize.width;
-			width = (that._hasScroll(ce, "left") ? ce.scrollWidth : cw );
-			height = (that._hasScroll(ce) ? ce.scrollHeight : ch);
+			width = ( that._hasScroll ( ce, "left" ) ? ce.scrollWidth : cw );
+			height = ( that._hasScroll ( ce ) ? ce.scrollHeight : ch ) ;
 
 			that.parentData = {
-				element: ce, left: co.left, top: co.top, width: width, height: height
+				element: ce,
+				left: co.left,
+				top: co.top,
+				width: width,
+				height: height
 			};
 		}
 	},
 
-	resize: function( event ) {
+	resize: function( event, ui ) {
 		var woset, hoset, isParent, isOffsetRelative,
-			that = $(this).resizable( "instance" ),
+			that = $( this ).resizable( "instance" ),
 			o = that.options,
-			co = that.containerOffset, cp = that.position,
+			co = that.containerOffset,
+			cp = that.position,
 			pRatio = that._aspectRatio || event.shiftKey,
-			cop = { top:0, left:0 }, ce = that.containerElement;
+			cop = {
+				top: 0,
+				left: 0
+			},
+			ce = that.containerElement,
+			continueResize = true;
 
-		if (ce[0] !== document && (/static/).test(ce.css("position"))) {
+		if ( ce[ 0 ] !== document && ( /static/ ).test( ce.css( "position" ) ) ) {
 			cop = co;
 		}
 
-		if (cp.left < (that._helper ? co.left : 0)) {
-			that.size.width = that.size.width + (that._helper ? (that.position.left - co.left) : (that.position.left - cop.left));
-			if (pRatio) {
+		if ( cp.left < ( that._helper ? co.left : 0 ) ) {
+			that.size.width = that.size.width + ( that._helper ? ( that.position.left - co.left ) : ( that.position.left - cop.left ) );
+			if ( pRatio ) {
 				that.size.height = that.size.width / that.aspectRatio;
+				continueResize = false;
 			}
 			that.position.left = o.helper ? co.left : 0;
 		}
 
-		if (cp.top < (that._helper ? co.top : 0)) {
-			that.size.height = that.size.height + (that._helper ? (that.position.top - co.top) : that.position.top);
-			if (pRatio) {
+		if ( cp.top < ( that._helper ? co.top : 0 ) ) {
+			that.size.height = that.size.height + ( that._helper ? ( that.position.top - co.top ) : that.position.top );
+			if ( pRatio ) {
 				that.size.width = that.size.height * that.aspectRatio;
+				continueResize = false;
 			}
 			that.position.top = that._helper ? co.top : 0;
 		}
 
-		that.offset.left = that.parentData.left+that.position.left;
-		that.offset.top = that.parentData.top+that.position.top;
+		that.offset.left = that.parentData.left + that.position.left;
+		that.offset.top = that.parentData.top + that.position.top;
 
-		woset = Math.abs( (that._helper ? that.offset.left - cop.left : (that.offset.left - cop.left)) + that.sizeDiff.width );
-		hoset = Math.abs( (that._helper ? that.offset.top - cop.top : (that.offset.top - co.top)) + that.sizeDiff.height );
+		woset = Math.abs( ( that._helper ? that.offset.left - cop.left : ( that.offset.left - co.left ) ) + that.sizeDiff.width );
+		hoset = Math.abs( ( that._helper ? that.offset.top - cop.top : ( that.offset.top - co.top ) ) + that.sizeDiff.height );
 
-		isParent = that.containerElement.get(0) === that.element.parent().get(0);
-		isOffsetRelative = /relative|absolute/.test(that.containerElement.css("position"));
+		isParent = that.containerElement.get( 0 ) === that.element.parent().get( 0 );
+		isOffsetRelative = /relative|absolute/.test( that.containerElement.css( "position" ) );
 
 		if ( isParent && isOffsetRelative ) {
 			woset -= Math.abs( that.parentData.left );
 		}
 
-		if (woset + that.size.width >= that.parentData.width) {
+		if ( woset + that.size.width >= that.parentData.width ) {
 			that.size.width = that.parentData.width - woset;
-			if (pRatio) {
+			if ( pRatio ) {
 				that.size.height = that.size.width / that.aspectRatio;
+				continueResize = false;
 			}
 		}
 
-		if (hoset + that.size.height >= that.parentData.height) {
+		if ( hoset + that.size.height >= that.parentData.height ) {
 			that.size.height = that.parentData.height - hoset;
-			if (pRatio) {
+			if ( pRatio ) {
 				that.size.width = that.size.height * that.aspectRatio;
+				continueResize = false;
 			}
+		}
+
+		if ( !continueResize ){
+			that.position.left = ui.prevPosition.left;
+			that.position.top = ui.prevPosition.top;
+			that.size.width = ui.prevSize.width;
+			that.size.height = ui.prevSize.height;
 		}
 	},
 
 	stop: function(){
-		var that = $(this).resizable( "instance" ),
+		var that = $( this ).resizable( "instance" ),
 			o = that.options,
 			co = that.containerOffset,
 			cop = that.containerPosition,
 			ce = that.containerElement,
-			helper = $(that.helper),
+			helper = $( that.helper ),
 			ho = helper.offset(),
 			w = helper.outerWidth() - that.sizeDiff.width,
 			h = helper.outerHeight() - that.sizeDiff.height;
 
-		if (that._helper && !o.animate && (/relative/).test(ce.css("position"))) {
-			$(this).css({ left: ho.left - cop.left - co.left, width: w, height: h });
+		if ( that._helper && !o.animate && ( /relative/ ).test( ce.css( "position" ) ) ) {
+			$( this ).css({
+				left: ho.left - cop.left - co.left,
+				width: w,
+				height: h
+			});
 		}
 
-		if (that._helper && !o.animate && (/static/).test(ce.css("position"))) {
-			$(this).css({ left: ho.left - cop.left - co.left, width: w, height: h });
+		if ( that._helper && !o.animate && ( /static/ ).test( ce.css( "position" ) ) ) {
+			$( this ).css({
+				left: ho.left - cop.left - co.left,
+				width: w,
+				height: h
+			});
 		}
-
 	}
 });
 
@@ -3311,20 +3426,47 @@ $.ui.plugin.add("resizable", "grid", {
 			that.size.height = newHeight;
 			that.position.left = op.left - ox;
 		} else {
-			that.size.width = newWidth;
-			that.size.height = newHeight;
-			that.position.top = op.top - oy;
-			that.position.left = op.left - ox;
+			if ( newHeight - gridY > 0 ) {
+				that.size.height = newHeight;
+				that.position.top = op.top - oy;
+			} else {
+				that.size.height = gridY;
+				that.position.top = op.top + os.height - gridY;
+			}
+			if ( newWidth - gridX > 0 ) {
+				that.size.width = newWidth;
+				that.position.left = op.left - ox;
+			} else {
+				that.size.width = gridX;
+				that.position.left = op.left + os.width - gridX;
+			}
 		}
 	}
 
 });
 
-})(jQuery);
+return $.ui.resizable;
 
-(function( $, undefined ) {
+}));
 
-$.widget("ui.selectable", $.ui.mouse, {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./mouse",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget("ui.selectable", $.ui.mouse, {
 	version: "@VERSION",
 	options: {
 		appendTo: "body",
@@ -3583,11 +3725,26 @@ $.widget("ui.selectable", $.ui.mouse, {
 
 });
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.widget("ui.sortable", $.ui.mouse, {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./mouse",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget("ui.sortable", $.ui.mouse, {
 	version: "@VERSION",
 	widgetEventPrefix: "sort",
 	ready: false,
@@ -3656,14 +3813,35 @@ $.widget("ui.sortable", $.ui.mouse, {
 		//Initialize mouse events for interaction
 		this._mouseInit();
 
+		this._setHandleClassName();
+
 		//We're ready to go
 		this.ready = true;
 
 	},
 
+	_setOption: function( key, value ) {
+		this._super( key, value );
+
+		if ( key === "handle" ) {
+			this._setHandleClassName();
+		}
+	},
+
+	_setHandleClassName: function() {
+		this.element.find( ".ui-sortable-handle" ).removeClass( "ui-sortable-handle" );
+		$.each( this.items, function() {
+			( this.instance.options.handle ?
+				this.item.find( this.instance.options.handle ) : this.item )
+				.addClass( "ui-sortable-handle" );
+		});
+	},
+
 	_destroy: function() {
 		this.element
-			.removeClass("ui-sortable ui-sortable-disabled");
+			.removeClass( "ui-sortable ui-sortable-disabled" )
+			.find( ".ui-sortable-handle" )
+				.removeClass( "ui-sortable-handle" );
 		this._mouseDestroy();
 
 		for ( var i = this.items.length - 1; i >= 0; i-- ) {
@@ -4170,6 +4348,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 	refresh: function(event) {
 		this._refreshItems(event);
+		this._setHandleClassName();
 		this.refreshPositions();
 		return this;
 	},
@@ -4305,7 +4484,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 				p = this.containers[i].element.offset();
 				this.containers[i].containerCache.left = p.left;
 				this.containers[i].containerCache.top = p.top;
-				this.containers[i].containerCache.width	= this.containers[i].element.outerWidth();
+				this.containers[i].containerCache.width = this.containers[i].element.outerWidth();
 				this.containers[i].containerCache.height = this.containers[i].element.outerHeight();
 			}
 		}
@@ -4847,9 +5026,19 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 });
 
-})(jQuery);
+}));
 
-(function($, undefined) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define( [ "jquery" ], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 var dataSpace = "ui-effects-";
 
@@ -6123,11 +6312,27 @@ $.each( baseEasings, function( name, easeIn ) {
 
 })();
 
-})(jQuery);
+return $.effects;
 
-(function( $, undefined ) {
+}));
 
-$.widget( "ui.accordion", {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.accordion", {
 	version: "@VERSION",
 	options: {
 		active: 0,
@@ -6323,7 +6528,7 @@ $.widget( "ui.accordion", {
 		}
 	},
 
-	_panelKeyDown : function( event ) {
+	_panelKeyDown: function( event ) {
 		if ( event.keyCode === $.ui.keyCode.UP && event.ctrlKey ) {
 			$( event.currentTarget ).prev().focus();
 		}
@@ -6367,7 +6572,7 @@ $.widget( "ui.accordion", {
 
 		this.headers.next()
 			.addClass( "ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom" )
-			.filter(":not(.ui-accordion-content-active)")
+			.filter( ":not(.ui-accordion-content-active)" )
 			.hide();
 	},
 
@@ -6488,7 +6693,7 @@ $.widget( "ui.accordion", {
 			keydown: "_keydown"
 		};
 		if ( event ) {
-			$.each( event.split(" "), function( index, eventName ) {
+			$.each( event.split( " " ), function( index, eventName ) {
 				events[ eventName ] = "_eventHandler";
 			});
 		}
@@ -6669,15 +6874,31 @@ $.widget( "ui.accordion", {
 
 		// Work around for rendering bug in IE (#5421)
 		if ( toHide.length ) {
-			toHide.parent()[0].className = toHide.parent()[0].className;
+			toHide.parent()[ 0 ].className = toHide.parent()[ 0 ].className;
 		}
 		this._trigger( "activate", null, data );
 	}
 });
 
-})( jQuery );
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./position",
+			"./menu"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 $.widget( "ui.autocomplete", {
 	version: "@VERSION",
@@ -6716,7 +6937,7 @@ $.widget( "ui.autocomplete", {
 		// events when we know the keydown event was used to modify the
 		// search term. #7799
 		var suppressKeyPress, suppressKeyPressRepeat, suppressInput,
-			nodeName = this.element[0].nodeName.toLowerCase(),
+			nodeName = this.element[ 0 ].nodeName.toLowerCase(),
 			isTextarea = nodeName === "textarea",
 			isInput = nodeName === "input";
 
@@ -6893,6 +7114,7 @@ $.widget( "ui.autocomplete", {
 				}
 			},
 			menufocus: function( event, ui ) {
+				var label, item;
 				// support: Firefox
 				// Prevent accidental activation of menu items in Firefox (#7024 #9118)
 				if ( this.isNewMenu ) {
@@ -6908,19 +7130,19 @@ $.widget( "ui.autocomplete", {
 					}
 				}
 
-				var item = ui.item.data( "ui-autocomplete-item" );
+				item = ui.item.data( "ui-autocomplete-item" );
 				if ( false !== this._trigger( "focus", event, { item: item } ) ) {
 					// use value to match what will end up in the input, if it was a key event
 					if ( event.originalEvent && /^key/.test( event.originalEvent.type ) ) {
 						this._value( item.value );
 					}
-				} else {
-					// Normally the input is populated with the item's value as the
-					// menu is navigated, causing screen readers to notice a change and
-					// announce the item. Since the focus event was canceled, this doesn't
-					// happen, so we update the live region so that screen readers can
-					// still notice the change and announce it.
-					this.liveRegion.text( item.value );
+				}
+
+				// Announce the value in the liveRegion
+				label = ui.item.attr( "aria-label" ) || item.value;
+				if ( label && jQuery.trim( label ).length ) {
+					this.liveRegion.children().hide();
+					$( "<div>" ).text( label ).appendTo( this.liveRegion );
 				}
 			},
 			menuselect: function( event, ui ) {
@@ -6928,7 +7150,7 @@ $.widget( "ui.autocomplete", {
 					previous = this.previous;
 
 				// only trigger when focus was lost (click on menu)
-				if ( this.element[0] !== this.document[0].activeElement ) {
+				if ( this.element[ 0 ] !== this.document[ 0 ].activeElement ) {
 					this.element.focus();
 					this.previous = previous;
 					// #6109 - IE triggers two focus events and the second
@@ -6954,7 +7176,8 @@ $.widget( "ui.autocomplete", {
 
 		this.liveRegion = $( "<span>", {
 				role: "status",
-				"aria-live": "polite"
+				"aria-live": "assertive",
+				"aria-relevant": "additions"
 			})
 			.addClass( "ui-helper-hidden-accessible" )
 			.appendTo( this.document[ 0 ].body );
@@ -7000,12 +7223,12 @@ $.widget( "ui.autocomplete", {
 				this.document.find( element ).eq( 0 );
 		}
 
-		if ( !element ) {
+		if ( !element || !element[ 0 ] ) {
 			element = this.element.closest( ".ui-front" );
 		}
 
 		if ( !element.length ) {
-			element = this.document[0].body;
+			element = this.document[ 0 ].body;
 		}
 
 		return element;
@@ -7014,7 +7237,7 @@ $.widget( "ui.autocomplete", {
 	_initSource: function() {
 		var array, url,
 			that = this;
-		if ( $.isArray(this.options.source) ) {
+		if ( $.isArray( this.options.source ) ) {
 			array = this.options.source;
 			this.source = function( request, response ) {
 				response( $.ui.autocomplete.filter( array, request.term ) );
@@ -7033,7 +7256,7 @@ $.widget( "ui.autocomplete", {
 						response( data );
 					},
 					error: function() {
-						response( [] );
+						response([]);
 					}
 				});
 			};
@@ -7129,7 +7352,7 @@ $.widget( "ui.autocomplete", {
 
 	_normalize: function( items ) {
 		// assume all items have the right format when the first item is complete
-		if ( items.length && items[0].label && items[0].value ) {
+		if ( items.length && items[ 0 ].label && items[ 0 ].value ) {
 			return items;
 		}
 		return $.map( items, function( item ) {
@@ -7139,10 +7362,10 @@ $.widget( "ui.autocomplete", {
 					value: item
 				};
 			}
-			return $.extend({
+			return $.extend( {}, item, {
 				label: item.label || item.value,
 				value: item.value || item.label
-			}, item );
+			});
 		});
 	},
 
@@ -7157,7 +7380,7 @@ $.widget( "ui.autocomplete", {
 		this._resizeMenu();
 		ul.position( $.extend({
 			of: this.element
-		}, this.options.position ));
+		}, this.options.position ) );
 
 		if ( this.options.autoFocus ) {
 			this.menu.next();
@@ -7223,11 +7446,11 @@ $.widget( "ui.autocomplete", {
 
 $.extend( $.ui.autocomplete, {
 	escapeRegex: function( value ) {
-		return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+		return value.replace( /[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&" );
 	},
-	filter: function(array, term) {
-		var matcher = new RegExp( $.ui.autocomplete.escapeRegex(term), "i" );
-		return $.grep( array, function(value) {
+	filter: function( array, term ) {
+		var matcher = new RegExp( $.ui.autocomplete.escapeRegex( term ), "i" );
+		return $.grep( array, function( value ) {
 			return matcher.test( value.label || value.value || value );
 		});
 	}
@@ -7258,13 +7481,30 @@ $.widget( "ui.autocomplete", $.ui.autocomplete, {
 		} else {
 			message = this.options.messages.noResults;
 		}
-		this.liveRegion.text( message );
+		this.liveRegion.children().hide();
+		$( "<div>" ).text( message ).appendTo( this.liveRegion );
 	}
 });
 
-}( jQuery ));
+return $.ui.autocomplete;
 
-(function( $, undefined ) {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 var lastActive,
 	baseClasses = "ui-button ui-widget ui-state-default ui-corner-all",
@@ -7642,9 +7882,24 @@ $.widget( "ui.buttonset", {
 	}
 });
 
-}( jQuery ) );
+return $.ui.button;
 
-(function( $, undefined ) {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 $.extend($.ui, { datepicker: { version: "@VERSION" } });
 
@@ -9689,11 +9944,32 @@ $.datepicker.initialized = false;
 $.datepicker.uuid = new Date().getTime();
 $.datepicker.version = "@VERSION";
 
-})(jQuery);
+return $.datepicker;
 
-(function( $, undefined ) {
+}));
 
-$.widget( "ui.dialog", {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./button",
+			"./draggable",
+			"./mouse",
+			"./position",
+			"./resizable"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.dialog", {
 	version: "@VERSION",
 	options: {
 		appendTo: "body",
@@ -10515,11 +10791,24 @@ $.widget( "ui.dialog", {
 	}
 });
 
-}( jQuery ));
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.blind = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.blind = function( o, done ) {
 	// Create element
 	var el = $( this ),
 		rvertical = /up|down|vertical/,
@@ -10583,11 +10872,24 @@ $.effects.effect.blind = function( o, done ) {
 	});
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.bounce = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.bounce = function( o, done ) {
 	var el = $( this ),
 		props = [ "position", "top", "bottom", "left", "right", "height", "width" ],
 
@@ -10684,11 +10986,24 @@ $.effects.effect.bounce = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.clip = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.clip = function( o, done ) {
 	// Create element
 	var el = $( this ),
 		props = [ "position", "top", "bottom", "left", "right", "height", "width" ],
@@ -10739,11 +11054,24 @@ $.effects.effect.clip = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.drop = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.drop = function( o, done ) {
 
 	var el = $( this ),
 		props = [ "position", "top", "bottom", "left", "right", "opacity", "height", "width" ],
@@ -10792,11 +11120,24 @@ $.effects.effect.drop = function( o, done ) {
 	});
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.explode = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.explode = function( o, done ) {
 
 	var rows = o.pieces ? Math.round( Math.sqrt( o.pieces ) ) : 3,
 		cells = rows,
@@ -10877,11 +11218,24 @@ $.effects.effect.explode = function( o, done ) {
 	}
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.fade = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.fade = function( o, done ) {
 	var el = $( this ),
 		mode = $.effects.setMode( el, o.mode || "toggle" );
 
@@ -10895,11 +11249,24 @@ $.effects.effect.fade = function( o, done ) {
 	});
 };
 
-})( jQuery );
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.fold = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.fold = function( o, done ) {
 
 	// Create element
 	var el = $( this ),
@@ -10959,11 +11326,24 @@ $.effects.effect.fold = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.highlight = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.highlight = function( o, done ) {
 	var elem = $( this ),
 		props = [ "backgroundImage", "backgroundColor", "opacity" ],
 		mode = $.effects.setMode( elem, o.mode || "show" ),
@@ -10997,11 +11377,25 @@ $.effects.effect.highlight = function( o, done ) {
 		});
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.puff = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect",
+			"./effect-scale"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.puff = function( o, done ) {
 	var elem = $( this ),
 		mode = $.effects.setMode( elem, o.mode || "hide" ),
 		hide = mode === "hide",
@@ -11034,11 +11428,24 @@ $.effects.effect.puff = function( o, done ) {
 	elem.effect( o );
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.pulsate = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.pulsate = function( o, done ) {
 	var elem = $( this ),
 		mode = $.effects.setMode( elem, o.mode || "show" ),
 		show = mode === "show",
@@ -11085,11 +11492,25 @@ $.effects.effect.pulsate = function( o, done ) {
 	elem.dequeue();
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.scale = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect",
+			"./effect-size"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.scale = function( o, done ) {
 
 	// Create element
 	var el = $( this ),
@@ -11151,11 +11572,24 @@ $.effects.effect.scale = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.shake = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.shake = function( o, done ) {
 
 	var el = $( this ),
 		props = [ "position", "top", "bottom", "left", "right", "height", "width" ],
@@ -11213,11 +11647,24 @@ $.effects.effect.shake = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.size = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.size = function( o, done ) {
 
 	// Create element
 	var original, baseline, factor,
@@ -11424,11 +11871,24 @@ $.effects.effect.size = function( o, done ) {
 
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.slide = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.slide = function( o, done ) {
 
 	// Create element
 	var el = $( this ),
@@ -11476,11 +11936,24 @@ $.effects.effect.slide = function( o, done ) {
 	});
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.effects.effect.transfer = function( o, done ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./effect"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.effects.effect.transfer = function( o, done ) {
 	var elem = $( this ),
 		target = $( o.to ),
 		targetFixed = target.css( "position" ) === "fixed",
@@ -11511,11 +11984,26 @@ $.effects.effect.transfer = function( o, done ) {
 			});
 };
 
-})(jQuery);
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.widget( "ui.menu", {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./position"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.menu", {
 	version: "@VERSION",
 	defaultElement: "<ul>",
 	delay: 300,
@@ -11539,7 +12027,8 @@ $.widget( "ui.menu", {
 
 	_create: function() {
 		this.activeMenu = this.element;
-		// flag used to prevent firing of the click handler
+
+		// Flag used to prevent firing of the click handler
 		// as the event bubbles up through nested menus
 		this.mouseHandled = false;
 		this.element
@@ -11549,14 +12038,7 @@ $.widget( "ui.menu", {
 			.attr({
 				role: this.options.role,
 				tabIndex: 0
-			})
-			// need to catch all clicks on disabled menu
-			// not possible through _on
-			.bind( "click" + this.eventNamespace, $.proxy(function( event ) {
-				if ( this.options.disabled ) {
-					event.preventDefault();
-				}
-			}, this ));
+			});
 
 		if ( this.options.disabled ) {
 			this.element
@@ -11568,9 +12050,6 @@ $.widget( "ui.menu", {
 			// Prevent focus from sticking to links inside menu after clicking
 			// them (focus should always stay on UL during navigation).
 			"mousedown .ui-menu-item": function( event ) {
-				event.preventDefault();
-			},
-			"click .ui-state-disabled": function( event ) {
 				event.preventDefault();
 			},
 			"click .ui-menu-item": function( event ) {
@@ -11647,7 +12126,7 @@ $.widget( "ui.menu", {
 		this.element
 			.removeAttr( "aria-activedescendant" )
 			.find( ".ui-menu" ).addBack()
-				.removeClass( "ui-menu ui-widget ui-widget-content ui-menu-icons" )
+				.removeClass( "ui-menu ui-widget ui-widget-content ui-menu-icons ui-front" )
 				.removeAttr( "role" )
 				.removeAttr( "tabIndex" )
 				.removeAttr( "aria-labelledby" )
@@ -11783,8 +12262,8 @@ $.widget( "ui.menu", {
 	},
 
 	refresh: function() {
-		var menus,
-			items,
+		var menus, items,
+			that = this,
 			icon = this.options.icons.submenu,
 			submenus = this.element.find( this.options.menus );
 
@@ -11792,7 +12271,7 @@ $.widget( "ui.menu", {
 
 		// Initialize nested menus
 		submenus.filter( ":not(.ui-menu)" )
-			.addClass( "ui-menu ui-widget ui-widget-content" )
+			.addClass( "ui-menu ui-widget ui-widget-content ui-front" )
 			.hide()
 			.attr({
 				role: this.options.role,
@@ -11818,8 +12297,7 @@ $.widget( "ui.menu", {
 		// Initialize menu-items containing spaces and/or dashes only as dividers
 		items.not( ".ui-menu-item" ).each(function() {
 			var item = $( this );
-			// hyphen, em dash, en dash
-			if ( !/[^\-\u2014\u2013\s]/.test( item.text() ) ) {
+			if ( that._isDivider( item ) ) {
 				item.addClass( "ui-widget-content ui-menu-divider" );
 			}
 		});
@@ -12005,6 +12483,12 @@ $.widget( "ui.menu", {
 		return !$( event.target ).closest( ".ui-menu" ).length;
 	},
 
+	_isDivider: function( item ) {
+
+		// Match hyphen, em dash, en dash
+		return !/[^\-\u2014\u2013\s]/.test( item.text() );
+	},
+
 	collapse: function( event ) {
 		var newItem = this.active &&
 			this.active.parent().closest( ".ui-menu-item", this.element );
@@ -12131,9 +12615,19 @@ $.widget( "ui.menu", {
 	}
 });
 
-}( jQuery ));
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define( [ "jquery" ], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 (function() {
 
 $.ui = $.ui || {};
@@ -12214,8 +12708,10 @@ $.position = {
 		return (cachedScrollbarWidth = w1 - w2);
 	},
 	getScrollInfo: function( within ) {
-		var overflowX = within.isWindow ? "" : within.element.css( "overflow-x" ),
-			overflowY = within.isWindow ? "" : within.element.css( "overflow-y" ),
+		var overflowX = within.isWindow || within.isDocument ? "" :
+				within.element.css( "overflow-x" ),
+			overflowY = within.isWindow || within.isDocument ? "" :
+				within.element.css( "overflow-y" ),
 			hasOverflowX = overflowX === "scroll" ||
 				( overflowX === "auto" && within.width < within.element[0].scrollWidth ),
 			hasOverflowY = overflowY === "scroll" ||
@@ -12227,10 +12723,12 @@ $.position = {
 	},
 	getWithinInfo: function( element ) {
 		var withinElement = $( element || window ),
-			isWindow = $.isWindow( withinElement[0] );
+			isWindow = $.isWindow( withinElement[0] ),
+			isDocument = !!withinElement[ 0 ] && withinElement[ 0 ].nodeType === 9;
 		return {
 			element: withinElement,
 			isWindow: isWindow,
+			isDocument: isDocument,
 			offset: withinElement.offset() || { left: 0, top: 0 },
 			scrollLeft: withinElement.scrollLeft(),
 			scrollTop: withinElement.scrollTop(),
@@ -12371,7 +12869,7 @@ $.fn.position = function( options ) {
 					my: options.my,
 					at: options.at,
 					within: within,
-					elem : elem
+					elem: elem
 				});
 			}
 		});
@@ -12619,11 +13117,28 @@ $.ui.position = {
 })();
 
 })();
-}( jQuery ) );
 
-(function( $, undefined ) {
+return $.ui.position;
 
-$.widget( "ui.progressbar", {
+}));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.progressbar", {
 	version: "@VERSION",
 	options: {
 		max: 100,
@@ -12755,11 +13270,547 @@ $.widget( "ui.progressbar", {
 	}
 });
 
-})( jQuery );
+}));
 
 (function( $, undefined ) {
 
-$.widget( "ui.slider", $.ui.mouse, {
+return $.widget( "ui.selectmenu", {
+	version: "@VERSION",
+	defaultElement: "<select>",
+	options: {
+		appendTo: null,
+		icons: {
+			button: "ui-icon-triangle-1-s"
+		},
+		position: {
+			my: "left top",
+			at: "left bottom",
+			collision: "none"
+		},
+		width: null,
+
+		// callbacks
+		change: null,
+		close: null,
+		focus: null,
+		open: null,
+		select: null
+	},
+
+	_create: function() {
+		var selectmenuId = this.element.uniqueId().attr( "id" );
+		this.ids = {
+			element: selectmenuId,
+			button: selectmenuId + "-button",
+			menu: selectmenuId + "-menu"
+		};
+
+		this._drawButton();
+		this._drawMenu();
+
+		if ( this.options.disabled ) {
+			this.disable();
+		}
+	},
+
+	_drawButton: function() {
+		var that = this,
+			tabindex = this.element.attr( "tabindex" );
+
+		// Associate existing label with the new button
+		this.label = $( "label[for='" + this.ids.element + "']" ).attr( "for", this.ids.button );
+		this._on( this.label, {
+			click: function( event ) {
+				this.button.focus();
+				event.preventDefault();
+			}
+		});
+
+		// Hide original select element
+		this.element.hide();
+
+		// Create button
+		this.button = $( "<span>", {
+			"class": "ui-selectmenu-button ui-widget ui-state-default ui-corner-all",
+			tabindex: tabindex || this.options.disabled ? -1 : 0,
+			id: this.ids.button,
+			role: "combobox",
+			"aria-expanded": "false",
+			"aria-autocomplete": "list",
+			"aria-owns": this.ids.menu,
+			"aria-haspopup": "true"
+		})
+		.insertAfter( this.element );
+
+		$( "<span>", {
+			"class": "ui-icon " + this.options.icons.button
+		}).prependTo( this.button );
+
+		this.buttonText = $( "<span>", {
+			"class": "ui-selectmenu-text"
+		})
+		.appendTo( this.button );
+
+		this._setText( this.buttonText, this.element.find( "option:selected" ).text() );
+		this._setOption( "width", this.options.width );
+
+		this._on( this.button, this._buttonEvents );
+		this.button.one( "focusin", function() {
+			// Delay rendering the menu items until the button receives focus
+			that._refreshMenu();
+		});
+		this._hoverable( this.button );
+		this._focusable( this.button );
+	},
+
+	_drawMenu: function() {
+		var that = this;
+
+		// Create menu
+		this.menu = $( "<ul>", {
+			"aria-hidden": "true",
+			"aria-labelledby": this.ids.button,
+			id: this.ids.menu
+		});
+
+		// Wrap menu
+		this.menuWrap = $( "<div>", {
+			"class": "ui-selectmenu-menu ui-front"
+		})
+		.append( this.menu )
+		.appendTo( this._appendTo() );
+
+		// Initialize menu widget
+		this.menuInstance = this.menu.menu({
+			role: "listbox",
+			select: function( event, ui ) {
+				event.preventDefault();
+				that._select( ui.item.data( "ui-selectmenu-item" ), event );
+			},
+			focus: function( event, ui ) {
+				var item = ui.item.data( "ui-selectmenu-item" );
+
+				// Prevent inital focus from firing and checks if its a newly focused item
+				if ( that.focusIndex != null && item.index !== that.focusIndex ) {
+					that._trigger( "focus", event, { item: item } );
+					if ( !that.isOpen ) {
+						that._select( item, event );
+					}
+				}
+				that.focusIndex = item.index;
+
+				that.button.attr( "aria-activedescendant",
+					that.menuItems.eq( item.index ).attr( "id" ) );
+			}
+		})
+		.menu( "instance" );
+
+		// Adjust menu styles to dropdown
+		this.menu.addClass( "ui-corner-bottom" ).removeClass( "ui-corner-all" );
+
+		// TODO: Can we make this cleaner?
+		// If not, at least update the comment to say what we're removing
+		// Unbind uneeded menu events
+		this.menuInstance._off( this.menu, "mouseleave" );
+
+		// Cancel the menu's collapseAll on document click
+		this.menuInstance._closeOnDocumentClick = function() {
+			return false;
+		};
+
+		this.menuInstance._isDivider = function() {
+			return false;
+		};
+	},
+
+	refresh: function() {
+		this._refreshMenu();
+		this._setText( this.buttonText, this._getSelectedItem().text() );
+		this._setOption( "width", this.options.width );
+	},
+
+	_refreshMenu: function() {
+		this.menu.empty();
+
+		var item,
+			options = this.element.find( "option" );
+
+		if ( !options.length ) {
+			return;
+		}
+
+		this._readOptions( options );
+		this._renderMenu( this.menu, this.items );
+
+		this.menuInstance.refresh();
+		this.menuItems = this.menu.find( "li" ).not( ".ui-selectmenu-optgroup" );
+
+		item = this._getSelectedItem();
+
+		// Update the menu to have the correct item focused
+		this.menuInstance.focus( null, item );
+		this._setAria( item.data( "ui-selectmenu-item" ) );
+
+		// Set disabled state
+		this._setOption( "disabled", this.element.prop( "disabled" ) );
+	},
+
+	open: function( event ) {
+		if ( this.options.disabled ) {
+			return;
+		}
+
+		// If this is the first time the menu is being opened, render the items
+		if ( !this.menuItems ) {
+			this._refreshMenu();
+		} else {
+			// TODO: Why is this necessary?
+			// Shouldn't the underlying menu always have accurate state?
+			this.menu.find( ".ui-state-focus" ).removeClass( "ui-state-focus" );
+			this.menuInstance.focus( null, this._getSelectedItem() );
+			this.menuItems.eq( this.element[ 0 ].selectedIndex ).addClass( "ui-state-active" );
+		}
+
+		this.isOpen = true;
+		this._toggleAttr();
+		this._resizeMenu();
+		this._position();
+
+		this._on( this.document, this._documentClick );
+
+		this._trigger( "open", event );
+	},
+
+	_position: function() {
+		this.menuWrap.position( $.extend( { of: this.button }, this.options.position ) );
+	},
+
+	close: function( event ) {
+		if ( !this.isOpen ) {
+			return;
+		}
+
+		this.isOpen = false;
+		this._toggleAttr();
+
+		// Check if we have an item to select
+		if ( this.menuItems ) {
+			this.menuInstance.active = this._getSelectedItem();
+		}
+
+		this._off( this.document );
+
+		this._trigger( "close", event );
+	},
+
+	widget: function() {
+		return this.button;
+	},
+
+	menuWidget: function() {
+		return this.menu;
+	},
+
+	_renderMenu: function( ul, items ) {
+		var that = this,
+			currentOptgroup = "";
+
+		$.each( items, function( index, item ) {
+			if ( item.optgroup !== currentOptgroup ) {
+				$( "<li>", {
+					"class": "ui-selectmenu-optgroup ui-menu-divider" +
+						( item.element.parent( "optgroup" ).attr( "disabled" ) ?
+							" ui-state-disabled" :
+							"" ),
+					text: item.optgroup
+				})
+				.appendTo( ul );
+				currentOptgroup = item.optgroup;
+			}
+			that._renderItemData( ul, item );
+		});
+	},
+
+	_renderItemData: function( ul, item ) {
+		return this._renderItem( ul, item ).data( "ui-selectmenu-item", item );
+	},
+
+	_renderItem: function( ul, item ) {
+		var li = $( "<li>" );
+
+		if ( item.disabled ) {
+			li.addClass( "ui-state-disabled" );
+		}
+		this._setText( li, item.label );
+
+		return li.appendTo( ul );
+	},
+
+	_setText: function( element, value ) {
+		if ( value ) {
+			element.text( value );
+		} else {
+			element.html( "&#160;" );
+		}
+	},
+
+	_move: function( direction, event ) {
+		var filter = ".ui-menu-item",
+			item, next;
+
+		if ( this.isOpen ) {
+			item = this.menuItems.eq( this.focusIndex );
+		} else {
+			item = this.menuItems.eq( this.element[ 0 ].selectedIndex );
+			filter += ":not(.ui-state-disabled)";
+		}
+
+		if ( direction === "first" || direction === "last" ) {
+			next = item[ direction === "first" ? "prevAll" : "nextAll" ]( filter ).eq( -1 );
+		} else {
+			next = item[ direction + "All" ]( filter ).eq( 0 );
+		}
+
+		if ( next.length ) {
+			this.menu.menu( "focus", event, next );
+		}
+	},
+
+	_getSelectedItem: function() {
+		return this.menuItems.eq( this.element[ 0 ].selectedIndex );
+	},
+
+	_toggle: function( event ) {
+		if ( this.isOpen ) {
+			this.close( event );
+		} else {
+			this.open( event );
+		}
+	},
+
+	_documentClick: {
+		mousedown: function( event ) {
+			if ( this.isOpen && !$( event.target ).closest( ".ui-selectmenu-menu, #" + this.ids.button ).length ) {
+				this.close( event );
+			}
+		}
+	},
+
+	_buttonEvents: {
+		click: "_toggle",
+		keydown: function( event ) {
+			var preventDefault = true;
+			switch ( event.keyCode ) {
+				case $.ui.keyCode.TAB:
+				case $.ui.keyCode.ESCAPE:
+					this.close( event );
+					preventDefault = false;
+					break;
+				case $.ui.keyCode.ENTER:
+					if ( this.isOpen ) {
+						this._selectMenu( event );
+					}
+					break;
+				case $.ui.keyCode.UP:
+					if ( event.altKey ) {
+						this._toggle( event );
+					} else {
+						this._move( "prev", event );
+					}
+					break;
+				case $.ui.keyCode.DOWN:
+					if ( event.altKey ) {
+						this._toggle( event );
+					} else {
+						this._move( "next", event );
+					}
+					break;
+				case $.ui.keyCode.SPACE:
+					if ( this.isOpen ) {
+						this._selectMenu( event );
+					} else {
+						this._toggle( event );
+					}
+					break;
+				case $.ui.keyCode.LEFT:
+					this._move( "prev", event );
+					break;
+				case $.ui.keyCode.RIGHT:
+					this._move( "next", event );
+					break;
+				case $.ui.keyCode.HOME:
+				case $.ui.keyCode.PAGE_UP:
+					this._move( "first", event );
+					break;
+				case $.ui.keyCode.END:
+				case $.ui.keyCode.PAGE_DOWN:
+					this._move( "last", event );
+					break;
+				default:
+					this.menu.trigger( event );
+					preventDefault = false;
+			}
+
+			if ( preventDefault ) {
+				event.preventDefault();
+			}
+		}
+	},
+
+	_selectMenu: function( event ) {
+		if ( !this.menuItems.eq( this.focusIndex ).hasClass( "ui-state-disabled" ) ) {
+			this.menuInstance.select( event );
+		}
+	},
+
+	_select: function( item, event ) {
+		var oldIndex = this.element[ 0 ].selectedIndex;
+
+		// Change native select element
+		this.element[ 0 ].selectedIndex = item.index;
+		this._setText( this.buttonText, item.label );
+		this._setAria( item );
+		this._trigger( "select", event, { item: item } );
+
+		if ( item.index !== oldIndex ) {
+			this._trigger( "change", event, { item: item } );
+		}
+
+		this.close( event );
+	},
+
+	_setAria: function( item ) {
+		var id = this.menuItems.eq( item.index ).attr( "id" );
+
+		this.button.attr({
+			"aria-labelledby": id,
+			"aria-activedescendant": id
+		});
+		this.menu.attr( "aria-activedescendant", id );
+	},
+
+	_setOption: function( key, value ) {
+		if ( key === "icons" ) {
+			this.button.find( "span.ui-icon" )
+				.removeClass( this.options.icons.button )
+				.addClass( value.button );
+		}
+
+		this._super( key, value );
+
+		if ( key === "appendTo" ) {
+			this.menuWrap.appendTo( this._appendTo() );
+		}
+		if ( key === "disabled" ) {
+			this.menuInstance.option( "disabled", value );
+			this.button
+				.toggleClass( "ui-state-disabled", value )
+				.attr( "aria-disabled", value );
+
+			this.element.prop( "disabled", value );
+			if ( value ) {
+				this.button.attr( "tabindex", -1 );
+				this.close();
+			} else {
+				this.button.attr( "tabindex", 0 );
+			}
+		}
+		if ( key === "width" ) {
+			if ( !value ) {
+				value = this.element.outerWidth();
+			}
+			this.button.outerWidth( value );
+		}
+	},
+
+	_appendTo: function() {
+		var element = this.options.appendTo;
+
+		if ( element ) {
+			element = element.jquery || element.nodeType ?
+				$( element ) :
+				this.document.find( element ).eq( 0 );
+		}
+
+		if ( !element ) {
+			element = this.element.closest( ".ui-front" );
+		}
+
+		if ( !element.length ) {
+			element = this.document[ 0 ].body;
+		}
+
+		return element;
+	},
+
+	_toggleAttr: function() {
+		this.button
+			.toggleClass( "ui-corner-top", this.isOpen )
+			.toggleClass( "ui-corner-all", !this.isOpen );
+		this.menuWrap.toggleClass( "ui-selectmenu-open", this.isOpen );
+		this.menu.attr( "aria-hidden", !this.isOpen );
+		this.button.attr( "aria-expanded", this.isOpen );
+	},
+
+	_resizeMenu: function() {
+		this.menu.outerWidth( Math.max(
+			this.button.outerWidth(),
+			// IE10 wraps long text (possibly a rounding bug)
+			// so we add 1px to avoid the wrapping
+			this.menu.width( "" ).outerWidth() + 1
+		) );
+	},
+
+	_getCreateOptions: function() {
+		return { disabled: this.element.prop( "disabled" ) };
+	},
+
+	_readOptions: function( options ) {
+		var data = [];
+		options.each( function( index, item ) {
+			var option = $( item ),
+				optgroup = option.parent( "optgroup" );
+			data.push({
+				element: option,
+				index: index,
+				value: option.attr( "value" ),
+				label: option.text(),
+				optgroup: optgroup.attr( "label" ) || "",
+				disabled: optgroup.attr( "disabled" ) || option.attr( "disabled" )
+			});
+		});
+		this.items = data;
+	},
+
+	_destroy: function() {
+		this.menuWrap.remove();
+		this.button.remove();
+		this.element.show();
+		this.element.removeUniqueId();
+		this.label.attr( "for", this.ids.element );
+	}
+});
+
+}( jQuery ));
+
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./mouse",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.slider", $.ui.mouse, {
 	version: "@VERSION",
 	widgetEventPrefix: "slide",
 
@@ -13423,9 +14474,24 @@ $.widget( "ui.slider", $.ui.mouse, {
 	}
 });
 
-}(jQuery));
+}));
 
-(function( $ ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./button"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
 
 function spinner_modifier( fn ) {
 	return function() {
@@ -13438,7 +14504,7 @@ function spinner_modifier( fn ) {
 	};
 }
 
-$.widget( "ui.spinner", {
+return $.widget( "ui.spinner", {
 	version: "@VERSION",
 	defaultElement: "<input>",
 	widgetEventPrefix: "spin",
@@ -13914,11 +14980,25 @@ $.widget( "ui.spinner", {
 	}
 });
 
-}( jQuery ) );
+}));
 
-(function( $, undefined ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.widget( "ui.tabs", {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.tabs", {
 	version: "@VERSION",
 	delay: 300,
 	options: {
@@ -14748,7 +15828,7 @@ $.widget( "ui.tabs", {
 			url: anchor.attr( "href" ),
 			beforeSend: function( jqXHR, settings ) {
 				return that._trigger( "beforeLoad", event,
-					$.extend( { jqXHR : jqXHR, ajaxSettings: settings }, eventData ) );
+					$.extend( { jqXHR: jqXHR, ajaxSettings: settings }, eventData ) );
 			}
 		};
 	},
@@ -14759,11 +15839,26 @@ $.widget( "ui.tabs", {
 	}
 });
 
-})( jQuery );
+}));
 
-(function( $ ) {
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
 
-$.widget( "ui.tooltip", {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./position"
+		], factory );
+	} else {
+
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+return $.widget( "ui.tooltip", {
 	version: "@VERSION",
 	options: {
 		content: function() {
@@ -14830,6 +15925,16 @@ $.widget( "ui.tooltip", {
 		if ( this.options.disabled ) {
 			this._disable();
 		}
+
+		// Append the aria-live region so tooltips announce correctly
+		this.liveRegion = $( "<div>" )
+			.attr({
+				role: "log",
+				"aria-live": "assertive",
+				"aria-relevant": "additions"
+			})
+			.addClass( "ui-helper-hidden-accessible" )
+			.appendTo( this.document[ 0 ].body );
 	},
 
 	_setOption: function( key, value ) {
@@ -14867,7 +15972,7 @@ $.widget( "ui.tooltip", {
 			if ( element.is( "[title]" ) ) {
 				element
 					.data( "ui-tooltip-title", element.attr( "title" ) )
-					.attr( "title", "" );
+					.removeAttr( "title" );
 			}
 		});
 	},
@@ -14959,7 +16064,7 @@ $.widget( "ui.tooltip", {
 	},
 
 	_open: function( event, target, content ) {
-		var tooltip, events, delayedShow,
+		var tooltip, events, delayedShow, a11yContent,
 			positionOption = $.extend( {}, this.options.position );
 
 		if ( !content ) {
@@ -14992,6 +16097,18 @@ $.widget( "ui.tooltip", {
 		tooltip = this._tooltip( target );
 		this._addDescribedBy( target, tooltip.attr( "id" ) );
 		tooltip.find( ".ui-tooltip-content" ).html( content );
+
+		// Support: Voiceover on OS X, JAWS on IE <= 9
+		// JAWS announces deletions even when aria-relevant="additions"
+		// Voiceover will sometimes re-read the entire log region's contents from the beginning
+		this.liveRegion.children().hide();
+		if ( content.clone ) {
+			a11yContent = content.clone();
+			a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+		} else {
+			a11yContent = content;
+		}
+		$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
 
 		function position( event ) {
 			positionOption.of = event;
@@ -15036,11 +16153,17 @@ $.widget( "ui.tooltip", {
 					fakeEvent.currentTarget = target[0];
 					this.close( fakeEvent, true );
 				}
-			},
-			remove: function() {
-				this._removeTooltip( tooltip );
 			}
 		};
+
+		// Only bind remove handler for delegated targets. Non-delegated
+		// tooltips will handle this in destroy.
+		if ( target[ 0 ] !== this.element[ 0 ] ) {
+			events.remove = function() {
+				this._removeTooltip( tooltip );
+			};
+		}
+
 		if ( !event || event.type === "mouseover" ) {
 			events.mouseleave = "close";
 		}
@@ -15065,7 +16188,8 @@ $.widget( "ui.tooltip", {
 		clearInterval( this.delayedShow );
 
 		// only set title if we had one before (see comment in _open())
-		if ( target.data( "ui-tooltip-title" ) ) {
+		// If the title attribute has changed since open(), don't restore
+		if ( target.data( "ui-tooltip-title" ) && !target.attr( "title" ) ) {
 			target.attr( "title", target.data( "ui-tooltip-title" ) );
 		}
 
@@ -15078,8 +16202,9 @@ $.widget( "ui.tooltip", {
 
 		target.removeData( "ui-tooltip-open" );
 		this._off( target, "mouseleave focusout keyup" );
+
 		// Remove 'remove' binding only on delegated targets
-		if ( target[0] !== this.element[0] ) {
+		if ( target[ 0 ] !== this.element[ 0 ] ) {
 			this._off( target, "remove" );
 		}
 		this._off( this.document, "mousemove" );
@@ -15138,11 +16263,15 @@ $.widget( "ui.tooltip", {
 
 			// Restore the title
 			if ( element.data( "ui-tooltip-title" ) ) {
-				element.attr( "title", element.data( "ui-tooltip-title" ) );
+				// If the title attribute has changed since open(), don't restore
+				if ( !element.attr( "title" ) ) {
+					element.attr( "title", element.data( "ui-tooltip-title" ) );
+				}
 				element.removeData( "ui-tooltip-title" );
 			}
 		});
+		this.liveRegion.remove();
 	}
 });
 
-}( jQuery ) );
+}));
