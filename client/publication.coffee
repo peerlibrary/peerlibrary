@@ -204,34 +204,76 @@ viewportBottomPercentage = ->
   makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
 
 setViewportPosition = ($viewport) ->
+  top = viewportTopPercentage()
+  bottom = viewportBottomPercentage()
   $viewport.css
-    top: "#{ viewportTopPercentage() }%"
-    bottom: "#{ 100 - viewportBottomPercentage() }%"
+    top: "#{ top }%"
+    # We are using top & height instead of top & bottom because
+    # jQuery UI dragging is modifying only top and even if we
+    # dynamically update bottom in drag or scroll event handlers,
+    # height of the viewport still jitters as user drags. But the
+    # the downside is that user cannot scroll pass the end of the
+    # publication with scroller as jQuery UI stops dragging when
+    # end reaches the edge of the containment. If we use top &
+    # height we are dynamically making viewport smaller so this
+    # is possible.
+    height: "#{ bottom - top }%"
 
 scrollToOffset = (offset) ->
-  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height() / $('.scroller').height())
+  # We round ourselves to make sure we are rounding in the same way accross all browsers.
+  # Otherwise there is a conflict between what scroll to and how is the viewport then
+  # positioned in the scroll event handler and what is the position of the viewport as we
+  # are dragging it. This makes movement of the viewport not smooth.
+  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height())
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
+    # We do not call setViewportPosition when dragging from scroll event
+    # handler but directly from drag event handler because otherwise there
+    # are two competing event handlers working on viewport position.
+    # An example of the issue is if you drag fast with mouse below the
+    # browser window edge if there are compething event handlers viewport
+    # gets stuck and does not necessary go to the end position.
     setViewportPosition $(@find '.viewport') unless draggingViewport
 
 Template.publicationScroller.rendered = ->
+  # Dependency on currentPublicationDOMReady value is registered because we
+  # are using it in sections helper as well, which means that rendered will
+  # be called multiple times as currentPublicationDOMReady changes
   return unless Session.equals 'currentPublicationDOMReady', true
 
   $viewport = $(@find '.viewport')
 
   $viewport.draggable
     containment: 'parent'
+    axis: 'y'
+
     start: (e, ui) ->
       draggingViewport = true
-      true # Ensure default runs
+      return # Make sure CoffeeScript does not return anything
+
     drag: (e, ui) ->
       $target = $(e.target)
-      scrollToOffset $target.offset().top - $target.parent().offset().top
-      true # Ensure default runs
+
+      # It seems it is better to use $target.offset().top than ui.offset.top
+      # because it seems to better represent real state of the viewport
+      # position. A test is if you move fast the viewport to the end it
+      # moves the publication exactly to the end of the last page and
+      # not a bit before.
+      viewportOffset = $target.offset().top - $target.parent().offset().top
+      scrollToOffset viewportOffset / $target.parent().height()
+
+      # Sync the position, especially the height. It can happen that user starts
+      # dragging when viewport is smaller at the end of the page, when it get over
+      # the publication end, so we want to enlarge the viewport to normal size when
+      # user drags it up.
+      setViewportPosition $(e.target)
+
+      return # Make sure CoffeeScript does not return anything
+
     stop: (e, ui) ->
       draggingViewport = false
-      true # Ensure default runs
+      return # Make sure CoffeeScript does not return anything
 
   setViewportPosition $viewport
 
@@ -251,10 +293,15 @@ Template.publicationScroller.sections = ->
     topPercentage: 100 * ($section.offset().top - displayTop) / displayHeight
 
 Template.publicationScroller.events
-  'click': (e, template) ->
-    $target = $(e.target)
-    offset = if $target.is('.scroller') then e.offsetY - $('.scroller .viewport').height() / 2 else $target.offset().top - $target.parent().offset().top
-    scrollToOffset offset
+  'click .scroller': (e, template) ->
+    # We want to move only on clicks outside the viewport to prevent conflicts between dragging and clicking
+    return if $(e.target).is('.viewport')
+
+    $scroller = $(template.find('.scroller'))
+    clickOffset = e.pageY - $scroller.offset().top
+    scrollToOffset (clickOffset - $(template.find('.viewport')).height() / 2) / $scroller.height()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.annotations = ->
   Annotations.find
