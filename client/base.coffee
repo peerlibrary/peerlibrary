@@ -15,6 +15,7 @@ setSession = (session) ->
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
+    currentPublicationDOMReady: false
     currentHighlightId: null
     currentPersonSlug: null
 
