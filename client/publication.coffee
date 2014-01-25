@@ -244,6 +244,7 @@ Template.publicationScroller.rendered = ->
 
   $viewport = $(@find '.viewport')
 
+  draggingViewport = false
   $viewport.draggable
     containment: 'parent'
     axis: 'y'
