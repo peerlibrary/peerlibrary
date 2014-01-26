@@ -6,6 +6,7 @@
     {{> publicationScroller}}
     {{> publicationDisplay}}
     <div class="annotations">
+      {{> annotationsControl}}
       <ul class="annotations-list">
         {{> publicationAnnotations}}
         <li class="annotation">
@@ -73,4 +74,10 @@
 <template name="highlightsControl">
   {{! TODO: Display delete buttons only to authors of highlights (for now) }}
   <button class="delete">Delete</button>
+</template>
+
+<template name="annotationsControl">
+  <div class="control">
+    <button class="add" title="Add annotation">+</button>
+  </div>
 </template>
