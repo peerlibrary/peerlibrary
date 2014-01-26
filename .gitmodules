@@ -14,3 +14,7 @@
 	path = packages/annotator/annotator
 	url = git://github.com/peerlibrary/annotator.git
 	branch = peerlibrary
+[submodule "packages/medium-editor/medium-editor"]
+	path = packages/medium-editor/medium-editor
+	url = git://github.com/peerlibrary/medium-editor.git
+	branch = peerlibrary
