@@ -39,6 +39,7 @@ class @Publication extends @Publication
 
       # To make sure we are starting with empty slate
       @_$displayWrapper.empty()
+      Session.set 'currentPublicationDOMReady', false
 
       @_highlighter.setNumPages @_pdf.numPages
 
@@ -92,8 +93,9 @@ class @Publication extends @Publication
 
             # We store current display wrapper width because we will later on
             # reposition annotations for the ammount display wrapper width changes
-            displayWidth = $('.viewer .display-wrapper').width()
-            $('footer.publication, .viewer .display-wrapper').css
+            displayWidth = @_$displayWrapper.width()
+            # We remove all added CSS in publication destroy
+            $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
             # We reposition annotations if display wrapper width changed
             $('.annotations').css
@@ -197,6 +199,13 @@ class @Publication extends @Publication
 
     # Clean DOM
     @_$displayWrapper.empty()
+
+    # We remove added CSS
+    $('footer.publication').add(@_$displayWrapper).css
+      width: ''
+    $('.annotations').css
+      left: ''
+
     @_$displayWrapper = null
 
     Session.set 'currentPublicationDOMReady', false
@@ -344,6 +353,8 @@ scrollToOffset = (offset) ->
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
+    return unless Session.equals 'currentPublicationDOMReady', true
+
     # We do not call setViewportPosition when dragging from scroll event
     # handler but directly from drag event handler because otherwise there
     # are two competing event handlers working on viewport position.

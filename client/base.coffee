@@ -15,14 +15,17 @@ setSession = (session) ->
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
-    currentPublicationDOMReady: false
     currentHighlightId: null
     currentPersonSlug: null
 
   for key, value of session
     Session.set key, value
 
-  # Overlays are special and we do not clear them while routing
+  # Those are special and we do not clear them while routing.
+  # Care has to be taken that they are set and unset manually.
+  # - currentPublicationDOMReady
+  # - importOverlayActive
+  # - signInOverlayActive
 
   # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()
