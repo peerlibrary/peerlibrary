@@ -451,48 +451,19 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.annotationsControl.events
+  'click .add': (e, template) =>
+    annotation =
+      author:
+        _id: Meteor.personId()
+      publication:
+        _id: Session.get 'currentPublicationId'
+      local: true
+
+    LocalAnnotations.insert annotation, (error, id) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      throw error if error
+
 Template.publicationAnnotations.annotations = ->
   LocalAnnotations.find
-    publication: Session.get 'currentPublicationId'
-  ,
-    sort: [
-      ['location.page', 'asc']
-      ['location.start', 'asc']
-      ['location.end', 'asc']
-    ]
-
-Template.publicationAnnotationsItem.events =
-  'mouseenter .annotation': (e, template) ->
-    currentHighlight = true
-    unless _.isEqual Session.get('currentHighlight'), @location
-      Session.set 'currentHighlight', null
-      currentHighlight = false
-
-    showHighlight $('.viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
-
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseleave .annotation': (e, template) ->
-    unless _.isEqual Session.get('currentHighlight'), @location
-      hideHiglight $('.viewer .display .display-text')
-
-    return # Make sure CoffeeScript does not return anything
-
-  'click .annotation': (e, template) ->
-    currentHighlight = true
-    unless _.isEqual Session.get('currentHighlight'), @location
-      Session.set 'currentHighlight', @location
-      currentHighlight = false
-
-    showHighlight $('.viewer .display .display-text').eq(@location.page - 1), @location.start, @location.end, currentHighlight
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.publicationAnnotationsItem.highlighted = ->
-  currentHighlight = Session.get 'currentHighlight'
-
-  currentHighlight?.page is @location.page and currentHighlight?.start is @location.start and currentHighlight?.end is @location.end
-
-Template.publicationAnnotationsItem.rendered = ->
-  $(@findAll '.annotation').data
-    annotation: @data
+    'publication._id': Session.get 'currentPublicationId'
