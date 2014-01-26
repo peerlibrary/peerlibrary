@@ -12,7 +12,7 @@ Template.index.searchActive = ->
   Session.get 'searchActive'
 
 Template.indexMain.created = ->
-  @_background = new Background
+  @_background = new Background()
   @_backgroundRendered = false
 
   $(window).on 'resize.background', @_background.resize
