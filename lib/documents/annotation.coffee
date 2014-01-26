@@ -10,10 +10,9 @@ class @Annotation extends Document
   # body: annotation's body
   # publication:
   #   _id: publication's id
-  # location:
-  #   page: one-based
-  #   start: start index of text layer elements of the annotation's highlight (inclusive)
-  #   end: end index of text layer elements of the annotation's highlight (inclusive)
+  # highlights: list of
+  #   _id: highlight id
+  # local (client only): is this annotation just a temporary annotation on the cliend side
 
   # Should be a function so that we can possible resolve circual references
   @Meta =>
@@ -21,3 +20,4 @@ class @Annotation extends Document
     fields:
       author: @ReferenceField Person, ['slug', 'foreNames', 'lastName']
       publication: @ReferenceField Publication
+      highlights: [@ReferenceField Highlight]

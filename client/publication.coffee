@@ -452,7 +452,7 @@ Template.publicationScroller.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.annotations = ->
-  Annotations.find
+  LocalAnnotations.find
     publication: Session.get 'currentPublicationId'
   ,
     sort: [
