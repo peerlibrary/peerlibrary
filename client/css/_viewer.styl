@@ -50,8 +50,9 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
     display none
     color white
     padding 5px
+    overflow-x hidden
+    overflow-y auto
 
-  .meta-content.description
     .authors
       span::after
         content ","
@@ -158,6 +159,8 @@ viewer-top = meta-menu-top - header-height
           user-select text
 
       .highlights-control
+        line-height default-line-height
+
         .meta-menu.control
           position absolute
           display none
@@ -189,6 +192,7 @@ viewer-top = meta-menu-top - header-height
         text-align center
 
       .text-layer-dummy
+        line-height default-line-height
         position absolute
         color transparent
         cursor default
