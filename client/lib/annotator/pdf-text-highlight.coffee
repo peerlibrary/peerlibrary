@@ -108,7 +108,8 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    $control.find('.meta-content').html(Template.highlightsControl()).find('.delete').on 'click.highlight', (e) =>
+    # TODO: Make reactive content of the template?
+    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
       @anchor.annotator._removeHighlight @annotation._id
 
       return # Make sure CoffeeScript does not return anything

@@ -74,6 +74,12 @@
 <template name="highlightsControl">
   {{! TODO: Display delete buttons only to authors of highlights (for now) }}
   <button class="delete">Delete</button>
+  <p class="authors">
+    {{#with author}}
+      <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
+    {{/with}}
+  </p>
+  <p>{{created}}</p>
 </template>
 
 <template name="annotationsControl">
