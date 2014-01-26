@@ -87,7 +87,7 @@ If you have not cloned recursively (`git clone --recursive ...`), you will at so
     While building package `blob`:
     error: File not found: Blob/Blob.js
 
-You just have to manually initialize submodules we are using:
+Or similar errors for other packages, you just have to manually initialize git submodules we are using:
 
     git submodule update --init --recursive
 
