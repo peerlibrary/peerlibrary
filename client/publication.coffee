@@ -2,6 +2,26 @@
 
 draggingViewport = false
 
+# Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
+_publicationDOMReady = false
+
+# We use our own dependency tracking for publicationDOMReady and not Session to
+# make sure it is not preserved when site autoreloads (because of a code change).
+# Otherwise publicationDOMReady stored in Session would be restored to true which
+# would be an invalid initial state. But on the other hand we want it to be
+# a reactive value so that we can combine code logic easy.
+publicationDOMReadyDependency = new Deps.Dependency()
+
+isPublicationDOMReady = ->
+  publicationDOMReadyDependency.depend()
+  _publicationDOMReady
+
+setPublicationDOMReady = (ready) ->
+  return if _publicationDOMReady is ready
+
+  _publicationDOMReady = ready
+  publicationDOMReadyDependency.changed()
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -39,7 +59,7 @@ class @Publication extends @Publication
 
       # To make sure we are starting with empty slate
       @_$displayWrapper.empty()
-      Session.set 'currentPublicationDOMReady', false
+      setPublicationDOMReady false
 
       @_highlighter.setNumPages @_pdf.numPages
 
@@ -116,7 +136,7 @@ class @Publication extends @Publication
             # Check if new page should be maybe rendered?
             @checkRender()
 
-            Session.set 'currentPublicationDOMReady', true if @_pagesDone is @_pdf.numPages
+            setPublicationDOMReady true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -208,7 +228,7 @@ class @Publication extends @Publication
 
     @_$displayWrapper = null
 
-    Session.set 'currentPublicationDOMReady', false
+    setPublicationDOMReady false
 
   renderPage: (page) =>
     return if page.rendering
@@ -353,7 +373,7 @@ scrollToOffset = (offset) ->
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
-    return unless Session.equals 'currentPublicationDOMReady', true
+    return unless isPublicationDOMReady()
 
     # We do not call setViewportPosition when dragging from scroll event
     # handler but directly from drag event handler because otherwise there
@@ -364,10 +384,10 @@ Template.publicationScroller.created = ->
     setViewportPosition $(@find '.viewport') unless draggingViewport
 
 Template.publicationScroller.rendered = ->
-  # Dependency on currentPublicationDOMReady value is registered because we
+  # Dependency on isPublicationDOMReady value is registered because we
   # are using it in sections helper as well, which means that rendered will
-  # be called multiple times as currentPublicationDOMReady changes
-  return unless Session.equals 'currentPublicationDOMReady', true
+  # be called multiple times as isPublicationDOMReady changes
+  return unless isPublicationDOMReady()
 
   $viewport = $(@find '.viewport')
 
@@ -409,7 +429,7 @@ Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  return [] unless Session.equals 'currentPublicationDOMReady', true
+  return [] unless isPublicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
   displayTop = $displayWrapper.offset().top

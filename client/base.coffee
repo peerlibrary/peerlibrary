@@ -23,7 +23,6 @@ setSession = (session) ->
 
   # Those are special and we do not clear them while routing.
   # Care has to be taken that they are set and unset manually.
-  # - currentPublicationDOMReady
   # - importOverlayActive
   # - signInOverlayActive
 
