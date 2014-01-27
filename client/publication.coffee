@@ -70,7 +70,7 @@ class @Publication extends @Publication
         # We enable forwarding of mouse events from text layer to highlights layer
         $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
         $highlightsControl = $('<div/>').addClass('highlights-control').append(
-          $('<div/>').addClass('meta-menu control').append(
+          $('<div/>').addClass('meta-menu').append(
             $('<i/>').addClass('icon-menu'),
             $('<div/>').addClass('meta-content'),
           )
@@ -118,7 +118,7 @@ class @Publication extends @Publication
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
             # We reposition annotations if display wrapper width changed
-            $('.annotations').css
+            $('.annotations-control, .annotations').css
               left: "+=#{ viewport.width - displayWidth }"
 
             @_pages[pageNumber - 1] =
@@ -223,7 +223,7 @@ class @Publication extends @Publication
     # We remove added CSS
     $('footer.publication').add(@_$displayWrapper).css
       width: ''
-    $('.annotations').css
+    $('.annotations-control, .annotations').css
       left: ''
 
     @_$displayWrapper = null

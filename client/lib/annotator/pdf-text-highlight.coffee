@@ -98,7 +98,7 @@ class PDFTextHighlight extends Annotator.Highlight
     ).appendTo(@_$highlightsLayer)
 
   _showControl: =>
-    $control = @_$highlightsControl.find('.control')
+    $control = @_$highlightsControl.find('.meta-menu')
     $control.css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
@@ -117,12 +117,12 @@ class PDFTextHighlight extends Annotator.Highlight
     $control.show()
 
   _hideControl: =>
-    @_$highlightsControl.find('.control').hide().off(
+    @_$highlightsControl.find('.meta-menu').hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
     )
-    @_$highlightsControl.find('.control .meta-content .delete').off '.highlight'
+    @_$highlightsControl.find('.meta-menu .meta-content .delete').off '.highlight'
 
   _clickHandler: (e) =>
     @anchor.annotator._selectHighlight @annotation._id

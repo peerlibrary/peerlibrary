@@ -20,6 +20,7 @@ meta-menu-height = 22px
 meta-menu-padding = 10px
 meta-menu-top = header-height + 15px
 meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+meta-menu-icon-font-size = 20px
 
 .meta-menu
   position fixed
@@ -43,7 +44,7 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
     color white
 
   i.icon-menu
-    font-size 20px
+    font-size meta-menu-icon-font-size
     color white
 
   .meta-content
@@ -101,6 +102,11 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
 
 viewer-left = scroller-width + 2 * scroller-left
 viewer-top = meta-menu-top - header-height
+
+small-meta-menu-width = 20px
+small-meta-menu-height = 18px
+small-meta-menu-padding = 5px
+small-meta-menu-icon-font-size = 13px
 
 .viewer
   .display-wrapper
@@ -161,19 +167,18 @@ viewer-top = meta-menu-top - header-height
       .highlights-control
         line-height default-line-height
 
-        .meta-menu.control
+        .meta-menu
           position absolute
           display none
-          width 20px
-          height 18px
-          padding 5px
+          width small-meta-menu-width
+          height small-meta-menu-height
+          padding small-meta-menu-padding
           z-index 200
-          text-align left
 
           i.icon-menu
-            font-size 13px
+            font-size small-meta-menu-icon-font-size
 
-        .meta-menu.control:hover
+        .meta-menu:hover
           width 150px
           min-height 220px
 
@@ -228,8 +233,12 @@ viewer-top = meta-menu-top - header-height
 
 annotations-left = meta-menu-left
 annotations-right = meta-menu-left
+annotations-control-height = 28px
 
-.annotations
+.annotations-control
+  background #cececf
+  border-radius 2px
+  height annotations-control-height
   z-index 90
   position fixed
   /* Initially we set it based on display-canvas-loading width and
@@ -237,50 +246,93 @@ annotations-right = meta-menu-left
   left viewer-left + display-canvas-loading-width + annotations-left
   right annotations-right
   top meta-menu-top
-  bottom scroller-bottom
-  overflow-x hidden
-  overflow-y auto
 
-  .control
+  .add
     background #cececf
+    border none
     border-radius 2px
+    font-size 20px
+    color white
+    width 28px
     height 28px
 
-    .add
-      background #cececf
-      border none
-      border-radius 2px
-      font-size 20px
-      color white
-      width 28px
-      height 28px
+  .add:hover
+    background rgba(46,46,44,0.5)
 
-    .add:hover
-      background rgba(46,46,44,0.5)
+  .add:active, .add:focus
+    outline none
+    border none
 
-    .add:active, .add:focus
-      outline none
-      border none
+.annotations
+  list-style none
+  margin 0
+  padding 0
+  overflow auto
+  position fixed
+  z-index 90
+  /* Initially we set it based on display-canvas-loading width and
+     then in code we update it to real width based on the PDF */
+  left viewer-left + display-canvas-loading-width + annotations-left
+  /* To not crop the shadow of annotations we move the right edge
+     for 5px to the right and then add 5px right margin to each
+     annotation */
+  right annotations-right - 5px
+  top meta-menu-top + annotations-control-height + 10px
+  bottom 15px
 
-  ul.annotations-list
-    list-style none
-    padding 0
-    /* To not crop shadow */
-    margin 5px
+  .annotation
+    position relative
+    display block
+    background white
+    padding 20px
+    /* To not crop the shadow of annotations we move the right edge
+       for 5px to the right and then add 5px (in fact 6px, so that
+       it looks better with our 1px shadow border) right margin to each
+       annotation. Additionally, we add left margin to provide space
+       for meta menu. */
+    margin 10px 6px 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
 
-    li
-      background white
-      padding 20px
-      margin 10px 0
+    /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+    border-radius 2px
+    box-shadow 0 0 0 1px box-shadow-border
+    transition 0.2s
 
-      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      border-radius 2px
-      box-shadow 0 0 0 1px box-shadow-border
-      transition 0.2s
+    .meta-menu
+      position absolute
+      width small-meta-menu-width
+      height small-meta-menu-height
+      padding small-meta-menu-padding
+      z-index 200
+      top 0
+      left initial
+      right 100%
+      margin-right 5px
 
-    li:hover
+      i.icon-menu
+        font-size small-meta-menu-icon-font-size
+        float right
+        /* No idea why 1px margin is needed with float right but it is not
+           positioned the same with and without float in initial closed
+           state (but it should be) */
+        margin-top 1px
+        margin-right 1px
+
+    .meta-menu:hover
+      width 150px
+      min-height 220px
+
+  .annotation:hover
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
       box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+  /* We use only 1px here to still have shadow border visible, but not 5px
+     top margin which makes visible lower than the crop top line when
+     scrolling. Otherwise when you have an initial list of annotations and
+     you scroll down there is 5px lag before annotation is cropped. With 1px
+     we fake things to look more or less normal, with shadow border, but
+     there it is not noticeable that cropping does not happen immediately. */
+  .annotation:first-child
+    margin-top 1px
 
 /* Footer
 ========= */
