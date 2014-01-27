@@ -270,13 +270,16 @@ annotations-control-height = 28px
   overflow auto
   position fixed
   z-index 90
+  /* To not crop the shadow of annotations we move the left edge
+     for 5px to the left and then add 5px left margin to each
+     annotation */
   /* Initially we set it based on display-canvas-loading width and
      then in code we update it to real width based on the PDF */
-  left viewer-left + display-canvas-loading-width + annotations-left
-  /* To not crop the shadow of annotations we move the right edge
-     for 5px to the right and then add 5px right margin to each
+  left viewer-left + display-canvas-loading-width + annotations-left - 5px
+  /* To not have scroll bar overlapping the content we move the right
+     edge for 10px to the right and then add 10px right margin to each
      annotation */
-  right annotations-right - 5px
+  right annotations-right - 10px
   top meta-menu-top + annotations-control-height + 10px
   bottom 15px
 
@@ -285,12 +288,13 @@ annotations-control-height = 28px
     display block
     background white
     padding 20px
-    /* To not crop the shadow of annotations we move the right edge
-       for 5px to the right and then add 5px (in fact 6px, so that
-       it looks better with our 1px shadow border) right margin to each
-       annotation. Additionally, we add left margin to provide space
-       for meta menu. */
-    margin 10px 6px 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
+    /* To not crop the shadow of annotations we move the left edge
+       for 5px to the left and then add 5px (in fact 6px, so that
+       it looks better with our 1px shadow border) left margin to each
+       annotation. Additionally, we add right margin to provide space
+       for meta menu + 10px to not have scroll bar overlapping the
+       content (we moved the right edge for 10 px for that). */
+    margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px
 
     /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
     border-radius 2px
@@ -306,17 +310,15 @@ annotations-control-height = 28px
       z-index 200
       top 0
       left initial
-      right 100%
-      margin-right 5px
+      right 0
+      margin-right -(small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
 
       i.icon-menu
         font-size small-meta-menu-icon-font-size
         float right
-        /* No idea why 1px margin is needed with float right but it is not
-           positioned the same with and without float in initial closed
-           state (but it should be) */
+        /* No idea why 1px margin is needed with float right but otherwise
+           icon is not positioned correctly */
         margin-top 1px
-        margin-right 1px
 
     .meta-menu:hover
       width 150px
