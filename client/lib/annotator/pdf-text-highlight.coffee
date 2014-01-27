@@ -128,7 +128,12 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
     )
-    $control.find('.meta-content').html(Template.highlightsControl())
+
+    $control.find('.meta-content').html(Template.highlightsControl()).find('.delete').on 'click.highlight', (e) =>
+      @anchor.annotator._removeHighlight @annotation._id
+
+      return # Make sure CoffeeScript does not return anything
+
     $control.show()
 
   _hideControl: =>
@@ -137,6 +142,7 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
     )
+    @_$highlightsControl.find('.control .meta-content .delete').off '.highlight'
 
   _clickHandler: (e) =>
     @anchor.annotator._selectHighlight @annotation._id
@@ -257,6 +263,10 @@ class PDFTextHighlight extends Annotator.Highlight
     # transparent), but browser selection was not made on text. If we deselect
     # when removing, then reselecting works correctly.
     @deselect() if @anchor.annotator.selectedAnnotationId is @annotation._id
+
+    # We fake mouse leaving if highlight was hovered by any chance
+    # (this happens when you remove a highlight through a control).
+    @_mouseleaveHandler()
 
     $(@_$highlight).remove()
 

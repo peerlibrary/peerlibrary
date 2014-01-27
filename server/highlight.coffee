@@ -13,6 +13,15 @@ Highlights.allow
 
     personId = Meteor.personId userId
 
+    # Only allow insertion if declared author is current user
+    personId and doc.author._id is personId
+
+  remove: (userId, doc) ->
+    return false unless userId
+
+    personId = Meteor.personId userId
+
+    # Only allow removal if author is current user
     personId and doc.author._id is personId
 
 # Misuse insert validation to add additional fields on the server before insertion
