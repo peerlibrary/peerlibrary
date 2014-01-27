@@ -324,7 +324,7 @@ Template.publicationDisplay.rendered = ->
       catch e
         return
 
-      publication.show $(@find '.display-wrapper')
+      publication.show $(@findAll '.display-wrapper')
       Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
@@ -381,7 +381,7 @@ Template.publicationScroller.created = ->
     # An example of the issue is if you drag fast with mouse below the
     # browser window edge if there are compething event handlers viewport
     # gets stuck and does not necessary go to the end position.
-    setViewportPosition $(@find '.viewport') unless draggingViewport
+    setViewportPosition $(@findAll '.viewport') unless draggingViewport
 
 Template.publicationScroller.rendered = ->
   # Dependency on isPublicationDOMReady value is registered because we
@@ -389,7 +389,7 @@ Template.publicationScroller.rendered = ->
   # be called multiple times as isPublicationDOMReady changes
   return unless isPublicationDOMReady()
 
-  $viewport = $(@find '.viewport')
+  $viewport = $(@findAll '.viewport')
 
   draggingViewport = false
   $viewport.draggable
@@ -445,9 +445,9 @@ Template.publicationScroller.events
     # We want to move only on clicks outside the viewport to prevent conflicts between dragging and clicking
     return if $(e.target).is('.viewport')
 
-    $scroller = $(template.find('.scroller'))
+    $scroller = $(template.findAll '.scroller')
     clickOffset = e.pageY - $scroller.offset().top
-    scrollToOffset (clickOffset - $(template.find('.viewport')).height() / 2) / $scroller.height()
+    scrollToOffset (clickOffset - $(template.findAll '.viewport').height() / 2) / $scroller.height()
 
     return # Make sure CoffeeScript does not return anything
 
