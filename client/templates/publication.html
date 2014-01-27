@@ -1,16 +1,25 @@
 <template name="publication">
-  <div id="viewer">
-      <div class="display">
-        <div class="meta-menu">
-          {{> publicationMetaMenu}}
-        </div>
-        <div class="annotations">
-          <ul class="annotations-list">
-            {{> publicationAnnotations}}
-          </ul>
-        </div>
-        {{> publicationDisplay}}
-      </div>
+  <div class="viewer">
+    <div class="meta-menu">
+      {{> publicationMetaMenu}}
+    </div>
+    {{> publicationScroller}}
+    {{> publicationDisplay}}
+    <div class="annotations">
+      <ul class="annotations-list">
+        {{> publicationAnnotations}}
+        <li class="annotation">
+          <div class="text" contenteditable="true">
+            It is a question of the Third World starting a new history of Man, a history which will have regard to the sometimes prodigious theses which Europe has put forward, but which will also not forget Europe's crimes, of which the most horrible was committed in the heart of man, and consisted of the pathological tearing apart of his functions and the crumbling away of his unity. And in the framework of the collectivity there were the differentiations, the stratification and the bloodthirsty tensions fed by classes; and finally, on the immense scale of humanity, there were racial hatreds, slavery, exploitation and above all the bloodless genocide which consisted in the setting aside of fifteen thousand millions of men.
+          </div>
+        </li>
+        <li class="annotation">
+          <div class="text" contenteditable="true">
+            Knowledge emerges only through invention and re-invention, through the restless, impatient, continuing, hopeful inquiry human beings pursue in the world, with the world, and with each other.
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -32,6 +41,19 @@
   {{#constant}}
     <div class="display-wrapper"></div>
   {{/constant}}
+</template>
+
+<template name="publicationScroller">
+  <div class="scroller">
+    {{#each sections}}
+      {{> publicationScrollerSection}}
+    {{/each}}
+    <div class="viewport"></div>
+  </div>
+</template>
+
+<template name="publicationScrollerSection">
+  <div class="section" style="height: {{heightPercentage}}%; top: {{topPercentage}}%"></div>
 </template>
 
 <template name="publicationAnnotations">

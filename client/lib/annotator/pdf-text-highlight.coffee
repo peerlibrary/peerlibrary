@@ -42,20 +42,37 @@ class PDFTextHighlight extends Annotator.Highlight
         @_box.height = segment.top + segment.height - @_box.top
 
   _precomputeHover: (segments) =>
-    # For now reuse simply a bounding box
-    # TODO: Compute a better polygon around all segments
+    # TODO: Improve polygon drawing, split segment array by chunks 
 
-    @_hover = _.clone @_box
+    # _hover is an array of vertices coordinates
+    @_hover = []
+    @_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
+    @_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
 
-    # Round to have integer coordinates on canvas
-    @_hover.width += @_hover.left - Math.round(@_hover.left)
-    @_hover.left = Math.round(@_hover.left)
-    @_hover.width = Math.round(@_hover.width)
-    @_hover.height += @_hover.top - Math.round(@_hover.top)
-    @_hover.top = Math.round(@_hover.top)
-    @_hover.height = Math.round(@_hover.height)
+    curr = segments[0]
+    i = 1
+    while i < segments.length
+      # check to see if next segment is on a different line
+      if (segments[i].top > curr.top) and ((segments[i].top + segments[i].height) > (curr.top + curr.height))
+        @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top)])
+        @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top + segments[i-1].height)])
+        curr = segments[i]
+      i++
 
-    return # Don't return the result of the for loop
+    # compute bottom right vertices
+    @_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top)])
+    @_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top + segments[segments.length-1].height)])
+
+    curr = segments[segments.length-1]
+    i = segments.length-2
+    while i > 0
+      if (segments[i].top < curr.top) and ((segments[i].top + segments[i].height) < (curr.top + curr.height))
+        @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top + segments[i+1].height)])
+        @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top)])
+        curr = segments[i]
+      i--
+
+    return  # Don't return the result of the for loop
 
   _drawHover: =>
     context = @_highlightsCanvas.getContext('2d')
@@ -67,20 +84,24 @@ class PDFTextHighlight extends Annotator.Highlight
 
     context.lineWidth = 1
     # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
-    context.strokeStyle = 'rgba(14,41,57,0.32)'
-    context.shadowColor = 'rgba(14,41,57,1.0)'
-    context.shadowBlur = 5
-    context.shadowOffsetX = 0
-    context.shadowOffsetY = 2
+    context.strokeStyle = 'rgba(180,170,0,9)'
+    #context.shadowColor = 'rgba(14,41,57,1.0)'
+    #context.shadowBlur = 5
+    #context.shadowOffsetX = 0
+    #context.shadowOffsetY = 2
 
     context.beginPath()
-    context.rect @_hover.left - 1, @_hover.top - 1, @_hover.width + 2, @_hover.height + 2
+    #context.strokeRect @_hover.start_x, @_hover.start_y, @_hover.width + 2, @_hover.height+2
+    #context.strokeRect @_hover.left - 1, @_hover.top - 1, @_hover.width + 2, @_hover.height + 2
+    context.moveTo(@_hover[0][0], @_hover[0][1])
+    for vertex in @_hover[1..]
+      context.lineTo(vertex[0],vertex[1])
     context.closePath()
 
     context.stroke()
 
     # As shadow is drawn both on inside and outside, we clear inside to give a nice 3D effect
-    context.clearRect @_hover.left, @_hover.top, @_hover.width, @_hover.height
+    # context.clearRect @_hover.left, @_hover.top, @_hover.width, @_hover.height
 
     context.restore()
 

@@ -132,5 +132,5 @@ Nevertheless, you are invited to join the development, but please understand
 that things might be changing under your feet so it is probably useful to
 discuss planned contributions in advance.
 
-See the [Contributing](https://github.com/peerlibrary/peerlibrary/wiki/Contributing) section of our wiki for more
+See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/master/CONTRIBUTING.md) file for more
 details and ideas.

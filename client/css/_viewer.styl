@@ -1,121 +1,34 @@
 @import variables
 
-/* Viewer
-========= */
+section.publication
+  padding-top header-height
 
-#viewer
-  width 100%
-  height 100%
-  overflow-x hidden
-  position relative
-  padding-top 60px
-
-  .display
-    height 100%
-
-    .display-wrapper
-      /* We disable selection so that user cannot select anything between pages */
-      user-select none
-
-      .display-page
-        position relative
-        margin-left auto
-        margin-right auto
-        margin-bottom 20px
-        text-align center
-
-        .display-canvas
-          background rgba(255,255,255,1.0)
-
-        .display-canvas-loading
-          width 400px
-          height 400px
-
-        .highlights-canvas
-          position absolute
-          left 0
-          top 0
-
-        .highlights-layer, .text-layer, .highlights-control
-          color transparent
-
-        .highlights-layer
-          .highlights-layer-segment
-            position absolute
-            background-color highlight-color
-
-          .highlights-layer-highlight.selected .highlights-layer-segment
-            background-color transparent
-
-        .text-layer
-          line-height 1
-          white-space pre
-          cursor text
-          overflow hidden
-          position absolute
-          left 0
-          top 0
-          width 100%
-          height 100%
-
-          .text-layer-segment
-            position absolute
-
-            /* We re-enable selection for text layer */
-            user-select text
-
-        .highlights-control
-          .meta-menu.control
-            position absolute
-            display none
-            width 20px
-            height 18px
-            padding 5px
-            z-index 200
-            text-align left
-
-            i.icon-menu
-              font-size 13px
-
-          .meta-menu.control:hover
-            width 150px
-            min-height 220px
-
-        .loading
-          position absolute
-          left 50%
-          top 50%
-          height 10em
-          width 10em
-          margin-left -5em
-          margin-top -5em
-          line-height 10em
-          background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-          background-position 50% 50%
-          background-repeat no-repeat
-          text-align center
-
-        .text-layer-dummy
-          position absolute
-          color transparent
-          cursor default
-          top 0
-          left 0
-          width 100%
-          /* To be able to detect overflow and scale text
-             we do not set height and we set overflow to visible */
-          overflow visible
+  .container
+    margin 0
+    width 100%
 
 /* Meta menu
 ============ */
 
+/* Have to be defined here because we are using them in meta menu as well */
+scroller-width = 64px
+scroller-left = 12px
+scroller-bottom = 20px
+
+meta-menu-width = 28px
+meta-menu-height = 22px
+meta-menu-padding = 10px
+meta-menu-top = header-height + 15px
+meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+
 .meta-menu
   position fixed
   cursor pointer
-  width 28px
-  height 22px
-  left 20px
-  padding 10px
+  width meta-menu-width
+  height meta-menu-height
+  top meta-menu-top
+  left meta-menu-left
+  padding meta-menu-padding
   background #cececf
   border-radius 2px
   z-index 100
@@ -154,40 +67,144 @@
   .meta-content
     display block
 
-/* Annotations
-============== */
+/* Scroller
+=========== */
 
-.annotations
-  position absolute
-  z-index 100
-  right 20px
-  width 300px
+.scroller
+  position fixed
+  width scroller-width
+  top meta-menu-top + meta-menu-height + 2 * meta-menu-padding + 20px
+  left scroller-left
+  bottom 20px
+  z-index 50
 
-  ul.annotations-list
-    list-style none
+  .section
+    position absolute
+    width 48px
+    left 8px
+    background #eee
+    border: 1px solid light-grey
 
-    li
-      background white
-      padding 20px
-      margin 10px 0
+  .section:hover
+    background rgba(46,46,44,0.12)
 
-      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      border-radius 2px
-      box-shadow 0 0 0 1px box-shadow-border
-      transition 0.2s
+  .viewport
+    position absolute
+    width 100%
+    background rgba(46,46,44,0.12)
+    border-radius 2px
+    z-index 60
 
-    li:hover
-      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+/* Viewer
+========= */
 
-  .annotation:hover
-    background-color rgba(255,0,0,0.3)
+viewer-left = scroller-width + 2 * scroller-left
+viewer-top = meta-menu-top - header-height
+
+.viewer
+  .display-wrapper
+    /* Initially we set it to display-canvas-loading width and
+       then in code we update it to real width based on the PDF */
+    width display-canvas-loading-width
+    margin-left viewer-left
+    margin-top viewer-top
+    /* We disable selection so that user cannot select anything between pages (in Firefox) */
+    user-select none
+
+    .display-page
+      position relative
+      /* Has to be set otherwise there is 4px of additional height to display-page */
+      line-height 0
+      margin-bottom 20px
+      border 1px solid rgb(200,200,200)
+
+      .display-canvas
+        background rgba(255,255,255,1.0)
+
+      .display-canvas-loading
+        width display-canvas-loading-width
+        height display-canvas-loading-height
+
+      .highlights-canvas
+        position absolute
+        left 0
+        top 0
+
+      .highlights-layer, .text-layer, .highlights-control
+        color transparent
+
+      .highlights-layer
+        .highlights-layer-segment
+          position absolute
+          background-color highlight-color
+
+        .highlights-layer-highlight.selected .highlights-layer-segment
+          background-color transparent
+
+      .text-layer
+        line-height 1
+        white-space pre
+        cursor text
+        overflow hidden
+        position absolute
+        left 0
+        top 0
+        width 100%
+        height 100%
+
+        .text-layer-segment
+          position absolute
+
+          /* We re-enable selection for text layer */
+          user-select text
+
+      .highlights-control
+        .meta-menu.control
+          position absolute
+          display none
+          width 20px
+          height 18px
+          padding 5px
+          z-index 200
+          text-align left
+
+          i.icon-menu
+            font-size 13px
+
+        .meta-menu.control:hover
+          width 150px
+          min-height 220px
+
+      .loading
+        position absolute
+        left 50%
+        top 50%
+        height 10em
+        width 10em
+        margin-left -5em
+        margin-top -5em
+        line-height 10em
+        background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+        background-position 50% 50%
+        background-repeat no-repeat
+        text-align center
+
+      .text-layer-dummy
+        position absolute
+        color transparent
+        cursor default
+        top 0
+        left 0
+        width 100%
+        /* To be able to detect overflow and scale text
+           we do not set height and we set overflow to visible */
+        overflow visible
 
 /* Debugging PDF parsing
 ======================== */
 
-#viewer .display-page
-  .segment, .paragraph
+.viewer .display-page
+  .segment
     position absolute
 
   .text-segment
@@ -203,15 +220,49 @@
   .image-segment
     background-color rgba(240,110,0,0.2)
 
-  .paragraph
-    background-color rgba(0,110,180,0.2)
+/* Annotations
+============== */
 
-/* Highlighting
-=============== */
+annotations-left = meta-menu-left
+annotations-right = meta-menu-left
 
-#viewer .display-page .highlight
-  position absolute
-  background-color rgba(255,0,0,0.3)
+.annotations
+  z-index 90
+  position fixed
+  /* Initially we set it based on display-canvas-loading width and
+     then in code we update it to real width based on the PDF */
+  left viewer-left + display-canvas-loading-width + annotations-left
+  right annotations-right
+  top meta-menu-top
+  bottom scroller-bottom
+  overflow-x hidden
+  overflow-y auto
 
-.annotator-hl
-  background-color rgba(255,0,0,0.3)
+  ul.annotations-list
+    list-style none
+    padding 0
+    /* To not crop shadow */
+    margin 5px
+
+    li
+      background white
+      padding 20px
+      margin 10px 0
+
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+      border-radius 2px
+      box-shadow 0 0 0 1px box-shadow-border
+      transition 0.2s
+
+    li:hover
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+/* Footer
+========= */
+
+footer.publication
+  /* Initially we set it to display-canvas-loading width and
+     then in code we update it to real width based on the PDF */
+  width display-canvas-loading-width
+  margin-left viewer-left
