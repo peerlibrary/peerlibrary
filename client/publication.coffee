@@ -470,3 +470,18 @@ Template.publicationAnnotations.annotations = ->
 
 Template.publicationAnnotations.rendered = ->
   $(@findAll '.annotations').scrollLock()
+
+Template.annotationMetaMenu.rendered = ->
+  # If we leave z-index constant for all meta menu items
+  # then because of the DOM order those later in the DOM
+  # are higher than earlier. But we want the opposite so
+  # when meta menu opens down it goes over icons below.
+  # This currently is a hack because this should be rendered
+  # as part of Meteor rendering, but it does not yet support
+  # indexing. See https://github.com/meteor/meteor/pull/912
+  # TODO: Reimplement using Meteor indexing of rendered elements (@index)
+  BASE_Z_INDEX = 200
+  $metaMenus = $('.annotations .meta-menu')
+  $metaMenus.each (i, metaMenu) =>
+    $(metaMenu).css
+      zIndex: BASE_Z_INDEX + $metaMenus.length - i
