@@ -487,6 +487,8 @@ Template.publicationAnnotations.annotations = ->
 
 Template.publicationAnnotations.rendered = ->
   $(@findAll '.annotations').scrollLock()
+  editor = new MediumEditor '.annotation .body',
+    buttons: ['bold', 'italic', 'quote'] 
 
 Template.annotationMetaMenu.rendered = ->
   # If we leave z-index constant for all meta menu items
