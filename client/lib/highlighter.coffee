@@ -35,7 +35,7 @@ class Page
     endLayout: =>
       @textSegmentsDone = true
 
-      @_enableHighligts()
+      @_enableHighlights()
 
     appendText: (geom) =>
       segment = PDFJS.pdfTextSegment @textContent, textContentIndex, geom
@@ -50,7 +50,7 @@ class Page
     endLayout: =>
       @imageLayerDone = true
 
-      @_enableHighligts()
+      @_enableHighlights()
 
     appendImage: (geom) =>
       @imageSegments.push PDFJS.pdfImageSegment geom
@@ -89,7 +89,7 @@ class Page
 
     @$displayPage.append divs
 
-  _enableHighligts: =>
+  _enableHighlights: =>
     return unless @textSegmentsDone and @imageLayerDone
 
     # Highlights already enabled for this page
