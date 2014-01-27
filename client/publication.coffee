@@ -470,11 +470,15 @@ Template.publicationScroller.events
 
 Template.annotationsControl.events
   'click .add': (e, template) ->
+    # We prepopulate automatically generated fields as well because we
+    # want them to be displayed even before they are saved to the server
+    # TODO: We could add to PeerDB to generate fields on the client side as well?
     annotation =
-      author:
-        _id: Meteor.personId()
+      created: moment.utc().toDate()
+      author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
       publication:
         _id: Session.get 'currentPublicationId'
+      highlights: []
       local: true
 
     LocalAnnotations.insert annotation, (error, id) =>
