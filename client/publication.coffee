@@ -157,6 +157,23 @@ class @Publication extends @Publication
 
       @_highlighter.setTextContent pdfPage.pageNumber, textContent
 
+      # In addition to set text content for highlighter we also create
+      # a dummy text layer containing text. The idea is that while we
+      # do not yet have precise location of the text on the page and
+      # we do not even want all pages to have a realistic text layer
+      # because it is very resource heavy, we can create one div with
+      # all text in it so that when user searchers in the browser,
+      # browser can find the page. And once it jumps to the page we
+      # render a realistic text layer and hude the dummy one. This text
+      # is hidden, but we force it over the whole page, so that those
+      # yellow lines in the scroll bar in Chrome showing the position
+      # of search results are more or less accurate. All this is just
+      # a workaround and it is not ideal because once browser jumps to
+      # the page and renders the realistic text layer user has to repeat
+      # the search for browser to find content in the new text layer.
+      # We could decide in the future to rather intercept search,
+      # for example by intercepting ctrl+f.
+
       # Good initial font size, we want text to cover whole page,
       # but if there is not much text to begin with, we should not
       # make it too big
