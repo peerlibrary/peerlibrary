@@ -3,8 +3,6 @@ Package.describe({
 });
 
 Package.on_use(function (api) {
-  api.use(['scss'], 'client');
-
   api.export('MediumEditor');
 
   api.add_files([
