@@ -33,6 +33,10 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
   border-radius 2px
   z-index 100
   transition 0.2s
+  /* We limit only to those we use in hover so that we do not animate
+     by accident highlight control as we move them around from one
+     highlight to another */
+  transition-property background, width, min-height
   overflow hidden
 
   a
@@ -42,11 +46,12 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
     font-size 20px
     color white
 
-  .meta-description
+  .meta-content
     display none
     color white
     padding 5px
 
+  .meta-content.description
     .authors
       span::after
         content ","
@@ -59,7 +64,7 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
   width 300px
   min-height 420px
 
-  .meta-description
+  .meta-content
     display block
 
 /* Scroller
@@ -103,6 +108,8 @@ viewer-top = meta-menu-top - header-height
     width display-canvas-loading-width
     margin-left viewer-left
     margin-top viewer-top
+    /* We disable selection so that user cannot select anything between pages (in Firefox) */
+    user-select none
 
     .display-page
       position relative
@@ -112,6 +119,60 @@ viewer-top = meta-menu-top - header-height
 
       .display-canvas
         background rgba(255,255,255,1.0)
+
+      .display-canvas-loading
+        width display-canvas-loading-width
+        height display-canvas-loading-height
+
+      .highlights-canvas
+        position absolute
+        left 0
+        top 0
+
+      .highlights-layer, .text-layer, .highlights-control
+        color transparent
+
+      .highlights-layer
+        .highlights-layer-segment
+          position absolute
+          background-color highlight-color
+
+        .highlights-layer-highlight.selected .highlights-layer-segment
+          background-color transparent
+
+      .text-layer
+        line-height 1
+        white-space pre
+        cursor text
+        overflow hidden
+        position absolute
+        left 0
+        top 0
+        width 100%
+        height 100%
+
+        .text-layer-segment
+          position absolute
+
+          /* We re-enable selection for text layer */
+          user-select text
+
+      .highlights-control
+        .meta-menu.control
+          position absolute
+          display none
+          width 20px
+          height 18px
+          padding 5px
+          z-index 200
+          text-align left
+
+          i.icon-menu
+            font-size 13px
+
+        .meta-menu.control:hover
+          width 150px
+          min-height 220px
 
       .loading
         position absolute
@@ -127,58 +188,36 @@ viewer-top = meta-menu-top - header-height
         background-repeat no-repeat
         text-align center
 
-      .display-canvas-loading
-        width display-canvas-loading-width
-        height display-canvas-loading-height
+      .text-layer-dummy
+        position absolute
+        color transparent
+        cursor default
+        top 0
+        left 0
+        width 100%
+        /* To be able to detect overflow and scale text
+           we do not set height and we set overflow to visible */
+        overflow visible
 
-/* Text selection
-================= */
+/* Debugging PDF parsing
+======================== */
 
-.viewer
-  .display-page canvas
-    ::selection
-      background rgba(255,255,10,0.3)
-
-    ::-moz-selection
-      background rgba(255,255,10,0.3)
-
-  .display-text
+.viewer .display-page
+  .segment
     position absolute
-    left 0
-    top 0
-    right 0
-    bottom 0
-    color #000
-    font-family sans-serif
-    overflow hidden
-    margin-right auto
-    margin-left auto
 
-  .display-text > div
-    color transparent
-    position absolute
+  .text-segment
+    background-color rgba(180,170,0,0.2)
+    color rgba(230,20,20,0.4)
     line-height 1
     white-space pre
     cursor text
 
-  .display-text
-    .highlight
-      margin -1px
-      padding 1px
-      background-color rgba(180, 0, 170, 0.2)
-      border-radius 4px
+    /* We re-enable selection for text segments */
+    user-select text
 
-    .highlight.begin
-      border-radius 4px 0px 0px 4px
-
-    .highlight.end
-      border-radius 0px 4px 4px 0px
-
-    .highlight.middle
-      border-radius 0px
-
-    .highlight.selected
-       background-color rgba(0, 100, 0, 0.2)
+  .image-segment
+    background-color rgba(240,110,0,0.2)
 
 /* Annotations
 ============== */
@@ -208,12 +247,15 @@ annotations-right = meta-menu-left
       background white
       padding 20px
       margin 10px 0
+
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
       border-radius 2px
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+      box-shadow 0 0 0 1px box-shadow-border
       transition 0.2s
 
     li:hover
-      box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
 /* Footer
 ========= */

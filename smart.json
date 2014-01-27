@@ -4,7 +4,10 @@
     "git": "https://github.com/peerlibrary/meteor.git"
   },
   "packages": {
-    "router": {},
+    "router": {
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-router.git"
+    },
     "pdf.js": {},
     "assert": {},
     "aws-sdk": {},

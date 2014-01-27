@@ -5,7 +5,3 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
 
   Annotations.find
     'publication._id': publicationId
-  ,
-    sort: [
-      ['page', 'asc']
-    ]

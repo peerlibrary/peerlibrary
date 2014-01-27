@@ -2,3 +2,15 @@
 	path = packages/blob/Blob
 	url = git://github.com/peerlibrary/Blob.js.git
 	branch = peerlibrary
+[submodule "packages/dom-text-mapper/dom-text-mapper"]
+	path = packages/dom-text-mapper/dom-text-mapper
+	url = git://github.com/peerlibrary/dom-text-mapper.git
+	branch = peerlibrary
+[submodule "packages/dom-text-mapper/dom-text-matcher"]
+	path = packages/dom-text-mapper/dom-text-matcher
+	url = git://github.com/peerlibrary/dom-text-matcher.git
+	branch = peerlibrary
+[submodule "packages/annotator/annotator"]
+	path = packages/annotator/annotator
+	url = git://github.com/peerlibrary/annotator.git
+	branch = peerlibrary

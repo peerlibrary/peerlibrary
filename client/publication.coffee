@@ -1,14 +1,37 @@
+@SCALE = 1.25
+
 draggingViewport = false
+
+# Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
+_publicationDOMReady = false
+
+# We use our own dependency tracking for publicationDOMReady and not Session to
+# make sure it is not preserved when site autoreloads (because of a code change).
+# Otherwise publicationDOMReady stored in Session would be restored to true which
+# would be an invalid initial state. But on the other hand we want it to be
+# a reactive value so that we can combine code logic easy.
+publicationDOMReadyDependency = new Deps.Dependency()
+
+isPublicationDOMReady = ->
+  publicationDOMReadyDependency.depend()
+  _publicationDOMReady
+
+setPublicationDOMReady = (ready) ->
+  return if _publicationDOMReady is ready
+
+  _publicationDOMReady = ready
+  publicationDOMReadyDependency.changed()
 
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
 
     @_pages = null
+    @_highlighter = null
 
   _viewport: (page) =>
-    scale = 1.25
-    page.page.getViewport scale
+    scale = SCALE
+    page.pdfPage.getViewport scale
 
   _progressCallback: (progressData) =>
     # Maybe this instance has been destroyed in meantime
@@ -21,38 +44,68 @@ class @Publication extends @Publication
 
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
-  show: =>
+  show: (@_$displayWrapper) =>
     console.debug "Showing publication #{ @_id }"
 
     assert.strictEqual @_pages, null
 
     @_pagesDone = 0
     @_pages = []
+    @_highlighter = new Highlighter @_$displayWrapper
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
       # To make sure we are starting with empty slate
-      $('.viewer .display-wrapper').empty()
+      @_$displayWrapper.empty()
+      setPublicationDOMReady false
+
+      @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
-        $canvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading')
+        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
+        $highlightsLayer = $('<div/>').addClass('highlights-layer')
+        # We enable forwarding of mouse events from text layer to highlights layer
+        $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
+        $highlightsControl = $('<div/>').addClass('highlights-control').append(
+          $('<div/>').addClass('meta-menu control').append(
+            $('<i/>').addClass('icon-menu'),
+            $('<div/>').addClass('meta-content'),
+          )
+        )
         $loading = $('<div/>').addClass('loading').text("Page #{ pageNumber }")
-        $('<div/>').addClass('display-page').attr('id', "display-page-#{ pageNumber }").append($canvas).append($loading).appendTo('.viewer .display-wrapper')
+
+        $('<div/>').addClass(
+          'display-page'
+        ).attr(
+          id: "display-page-#{ pageNumber }"
+        ).append(
+          $displayCanvas,
+          $highlightsCanvas,
+          $highlightsLayer,
+          $textLayer,
+          $highlightsControl,
+          $loading,
+        ).appendTo(@_$displayWrapper)
 
         do (pageNumber) =>
-          @_pdf.getPage(pageNumber).then (page) =>
+          @_pdf.getPage(pageNumber).then (pdfPage) =>
             # Maybe this instance has been destroyed in meantime
             return if @_pages is null
 
-            assert.equal pageNumber, page.pageNumber
+            assert.equal pageNumber, pdfPage.pageNumber
 
             viewport = @_viewport
-              page: page # Dummy page object
+              pdfPage: pdfPage # Dummy page object
 
-            $canvas = $("#display-page-#{ pageNumber } canvas")
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
+            $canvas = $displayPage.find('canvas') # Both display and highlights canvases
             $canvas.removeClass('display-canvas-loading').attr
+              height: viewport.height
+              width: viewport.width
+            $displayPage.css
               height: viewport.height
               width: viewport.width
 
@@ -60,8 +113,9 @@ class @Publication extends @Publication
 
             # We store current display wrapper width because we will later on
             # reposition annotations for the ammount display wrapper width changes
-            displayWidth = $('.viewer .display-wrapper').width()
-            $('footer.publication, .viewer .display-wrapper').css
+            displayWidth = @_$displayWrapper.width()
+            # We remove all added CSS in publication destroy
+            $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
             # We reposition annotations if display wrapper width changed
             $('.annotations').css
@@ -69,16 +123,20 @@ class @Publication extends @Publication
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
-              page: page
+              pdfPage: pdfPage
               rendering: false
             @_pagesDone++
+
+            @_highlighter.setPage pdfPage
+
+            @_getTextContent pdfPage
 
             @_progressCallback()
 
             # Check if new page should be maybe rendered?
             @checkRender()
 
-            Session.set 'currentPublicationDOMReady', true if @_pagesDone is @_pdf.numPages
+            setPublicationDOMReady true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -90,11 +148,48 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error showing #{ @_id }", args...
 
+  _getTextContent: (pdfPage) =>
+    console.debug "Getting text content for page #{ pdfPage.pageNumber }"
+
+    pdfPage.getTextContent().then (textContent) =>
+      # Maybe this instance has been destroyed in meantime
+      return if @_pages is null
+
+      @_highlighter.setTextContent pdfPage.pageNumber, textContent
+
+      # Good initial font size, we want text to cover whole page,
+      # but if there is not much text to begin with, we should not
+      # make it too big
+      fontSize = 21
+
+      $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
+      $textLayerDummy = $('<div/>').addClass('text-layer-dummy').css('font-size', fontSize).text(@_highlighter.extractText pdfPage.pageNumber)
+      $displayPage.append($textLayerDummy)
+
+      while $textLayerDummy.outerHeight(true) > $displayPage.height() and fontSize > 1
+        fontSize--
+        $textLayerDummy.css('font-size', fontSize)
+
+      console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
+
+      # Check if the page should be maybe rendered, but we
+      # skipped it because text content was not yet available
+      @checkRender()
+
+    , (args...) =>
+      # TODO: Handle errors better (call destroy?)
+      console.error "Error getting text content for page #{ pdfPage.pageNumber }", args...
+
   checkRender: =>
     for page in @_pages or []
       continue if page.rendering
 
-      $canvas = $("#display-page-#{ page.pageNumber } canvas")
+      # When rendering we also set text segment locations for what we need text
+      # content to be already available, so if we are before text content has
+      # been set, we skip (it will be retried after text content is set)
+      continue unless @_highlighter.hasTextContent page.pageNumber
+
+      $canvas = $("#display-page-#{ page.pageNumber } canvas", @_$displayWrapper)
 
       canvasTop = $canvas.offset().top
       canvasBottom = canvasTop + $canvas.height()
@@ -112,19 +207,37 @@ class @Publication extends @Publication
 
     $(window).off '.publication'
 
-    for page in pages
-      page.page.destroy()
-    @_pdf.destroy() if @_pdf
+    page.pdfPage.destroy() for page in pages
+    if @_pdf
+      @_pdf.cleanup()
+      @_pdf.destroy()
+      @_pdf = null
 
-    $('.viewer .display-wrapper').empty()
+    # To make sure it is cleaned up
+    @_highlighter.destroy() if @_highlighter
+    @_highlighter = null
 
-    Session.set 'currentPublicationDOMReady', false
+    # Clean DOM
+    @_$displayWrapper.empty()
+
+    # We remove added CSS
+    $('footer.publication').add(@_$displayWrapper).css
+      width: ''
+    $('.annotations').css
+      left: ''
+
+    @_$displayWrapper = null
+
+    setPublicationDOMReady false
 
   renderPage: (page) =>
     return if page.rendering
     page.rendering = true
 
-    $canvas = $("#display-page-#{ page.pageNumber } canvas")
+    console.debug "Rendering page #{ page.pdfPage.pageNumber }"
+
+    $displayPage = $("#display-page-#{ page.pageNumber }", @_$displayWrapper)
+    $canvas = $displayPage.find('canvas')
 
     # Redo canvas resize to make sure it is the right size
     # It seems sometimes already resized canvases are being deleted and replaced with initial versions
@@ -132,60 +245,92 @@ class @Publication extends @Publication
     $canvas.attr
       height: viewport.height
       width: viewport.width
+    $displayPage.css
+      height: viewport.height
+      width: viewport.width
 
     renderContext =
       canvasContext: $canvas.get(0).getContext '2d'
+      textLayer: @_highlighter.textLayer page.pageNumber
+      imageLayer: @_highlighter.imageLayer page.pageNumber
       viewport: @_viewport page
 
-    console.debug "Rendering page #{ page.page.pageNumber }"
-
-    page.page.render(renderContext).then =>
+    page.pdfPage.render(renderContext).promise.then =>
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      console.debug "Rendering page #{ page.page.pageNumber } complete"
+      console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
-      $("#display-page-#{ page.pageNumber } .loading").hide()
+      $("#display-page-#{ page.pageNumber } .loading", @_$displayWrapper).hide()
+
+      # Maybe we have to render text layer as well
+      @_highlighter.checkRender()
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error rendering page #{ page.page.pageNumber }", args...
+      console.error "Error rendering page #{ page.pdfPage.pageNumber }", args...
 
-  # Fields needed when showing (rendering) the publication: those which are needed for PDF URL to be available and slug
-  @SHOW_FIELDS: ->
+  # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
+  @DISPLAY_FIELDS: ->
     fields:
       foreignId: 1
       source: 1
-      slug: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get('currentPublicationId'), Publication.SHOW_FIELDS()
+  publication = Publications.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      slug: 1
 
   return unless publication
 
-  # currentPublicationSlug is null if slug is not present in URL, so we use
+  # currentPublicationSlug is null if slug is not present in location, so we use
   # null when publication.slug is empty string to prevent infinite looping
-  unless Session.equals 'currentPublicationSlug', (publication.slug or null)
+  return if Session.equals 'currentPublicationSlug', (publication.slug or null)
+
+  highlightId = Session.get 'currentHighlightId'
+  if highlightId
+    Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+  else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
-    return
 
-  # Maybe we don't yet have whole publication object available
-  try
-    unless publication.url()
-      return
-  catch e
-    return
-
-  publication.show()
-  Deps.onInvalidate publication.destroy
-
-Template.publication.publication = ->
+Template.publicationMetaMenu.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
+
+Template.publicationDisplay.created = ->
+  @_displayHandle = null
+  @_displayRendered = false
+
+Template.publicationDisplay.rendered = ->
+  return if @_displayRendered
+  @_displayRendered = true
+
+  Deps.nonreactive =>
+    @_displayHandle = Deps.autorun =>
+      publication = Publications.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+
+      return unless publication
+
+      # Maybe we don't yet have whole publication object available
+      try
+        unless publication.url()
+          return
+      catch e
+        return
+
+      publication.show $(@find '.display-wrapper')
+      Deps.onInvalidate publication.destroy
+
+Template.publicationDisplay.destroyed = ->
+  @_displayHandle.stop() if @_displayHandle
+  @_displayHandle = null
+  @_displayRendered = false
 
 makePercentage = (x) ->
   100 * Math.max(Math.min(x, 1), 0)
@@ -228,6 +373,8 @@ scrollToOffset = (offset) ->
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller', (e) =>
+    return unless isPublicationDOMReady()
+
     # We do not call setViewportPosition when dragging from scroll event
     # handler but directly from drag event handler because otherwise there
     # are two competing event handlers working on viewport position.
@@ -237,10 +384,10 @@ Template.publicationScroller.created = ->
     setViewportPosition $(@find '.viewport') unless draggingViewport
 
 Template.publicationScroller.rendered = ->
-  # Dependency on currentPublicationDOMReady value is registered because we
+  # Dependency on isPublicationDOMReady value is registered because we
   # are using it in sections helper as well, which means that rendered will
-  # be called multiple times as currentPublicationDOMReady changes
-  return unless Session.equals 'currentPublicationDOMReady', true
+  # be called multiple times as isPublicationDOMReady changes
+  return unless isPublicationDOMReady()
 
   $viewport = $(@find '.viewport')
 
@@ -282,7 +429,7 @@ Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  return [] unless Session.equals 'currentPublicationDOMReady', true
+  return [] unless isPublicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
   displayTop = $displayWrapper.offset().top

@@ -39,18 +39,18 @@ class @Person extends Document
       slug: @GeneratedField 'self', ['user.username']
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
 
-Meteor.person = ->
+Meteor.person = (userId) ->
   # Meteor.userId is reactive
-  userId = Meteor.userId()
+  userId ?= Meteor.userId()
 
   return null unless userId
 
   Persons.findOne
     'user._id': userId
 
-Meteor.personId = ->
+Meteor.personId = (userId) ->
   # Meteor.userId is reactive
-  userId = Meteor.userId()
+  userId ?= Meteor.userId()
 
   return null unless userId
 

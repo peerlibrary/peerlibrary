@@ -1,5 +1,4 @@
 DEBUG = false
-NOT_WHITESPACE = /\S/
 
 bindEnvironemnt = (f) ->
   Meteor.bindEnvironment f, (e) -> throw e
@@ -13,7 +12,7 @@ PDF =
     initCallback document.numPages
 
     #metadata = document.getMetadataSync pageNumber
-    #Log.debug "Metadata", metadata
+    #Log.debug "Metadata #{ util.inspect metadata, false, null }"
 
     for pageNumber in [1..document.numPages]
       page = document.getPageSync pageNumber
@@ -23,7 +22,7 @@ PDF =
       progressCallback (page.pageNumber - 1) / document.numPages
 
       #annotations = page.getAnnotationsSync()
-      #Log.debug "Annotations", annotations
+      #Log.debug "Annotations #{ util.inspect annotations, false, null }"
 
       textContent = page.getTextContentSync()
 
@@ -31,6 +30,8 @@ PDF =
       canvasElement = new PDFJS.canvas viewport.width, viewport.height
       canvasContext = canvasElement.getContext '2d'
       appendCounter = 0
+
+      defaultContext = _.omit canvasContext, 'canvas', _.functions canvasContext
 
       page.renderSync
         canvasContext: canvasContext
@@ -50,30 +51,26 @@ PDF =
             pageImageCallback page.pageNumber, canvasElement
 
           appendText: bindEnvironemnt (geom) ->
-            width = geom.canvasWidth * geom.hScale
-            height = geom.fontSize * Math.abs geom.vScale
-            x = geom.x
-            y = viewport.height - geom.y
-            text = textContent.bidiTexts[appendCounter].str
-            direction = textContent.bidiTexts[appendCounter].dir
-
-            if direction == 'ttb' # Vertical text
-              # We rotate for 90 degrees
-              # Example: http://blogs.adobe.com/CCJKType/files/2012/07/TaroUTR50SortedList112.pdf
-              x -= height
-              y -= width - height
-              [height, width] = [width, height]
+            # TODO: Verify it still draws correctly on the server
+            segment = PDFJS.pdfTextSegment textContent, appendCounter, geom
 
             appendCounter++
 
-            if !NOT_WHITESPACE.test text
-              return
+            if segment.hasWidth and DEBUG
+              canvasContext.save()
 
-            if DEBUG
+              # We reset context
+              canvasContext.setTransform(1, 0, 0, 1, 0, 0);
+              canvasContext.resetClip?(); # TODO: In standard, but not yet available in node-canvas: https://github.com/LearnBoost/node-canvas/issues/358
+              _.extend canvasContext, defaultContext
+
               # Draw a rectangle around the text segment
-              canvasContext.strokeRect x, y, width, height
+              canvasContext.strokeStyle = '#CC0000'
+              canvasContext.strokeRect segment.boundingBox.left, segment.boundingBox.top, segment.boundingBox.width, segment.boundingBox.height
 
-            textCallback page.pageNumber, x, y, width, height, direction, text
+              canvasContext.restore()
+
+            textCallback page.pageNumber, segment
 
     progressCallback 1.0
 

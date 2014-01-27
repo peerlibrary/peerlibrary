@@ -6,7 +6,10 @@
   },
   "dependencies": {
     "basePackages": {
-      "router": {},
+      "router": {
+        "git": "https://github.com/peerlibrary/meteor-router.git",
+        "branch": "peerlibrary"
+      },
       "pdf.js": {},
       "assert": {},
       "aws-sdk": {},
@@ -29,14 +32,14 @@
     },
     "packages": {
       "router": {
-        "git": "https://github.com/tmeasday/meteor-router.git",
-        "tag": "v0.5.4.1",
-        "commit": "d00e380dda2184b70e909fc4a0fb5358d602c586"
+        "git": "https://github.com/peerlibrary/meteor-router.git",
+        "branch": "peerlibrary",
+        "commit": "8ccba83d0e52135e6237bc8eb7bd08ad08c1815b"
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.585.3",
-        "commit": "4dd73297a019ecc91b3953ea7bc50e89be0ba30f"
+        "tag": "v0.8.942-3",
+        "commit": "5c96a0cf84b1470fbc4d129dcb6451561bdb2a71"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
@@ -45,8 +48,8 @@
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
-        "tag": "v1.5.0.3",
-        "commit": "6745d769dc64660ccd349c33f9ebaf1583b0961a"
+        "tag": "v1.5.1.1",
+        "commit": "63efa4ebbe9986bd875f69d5fdf3248c5c44159e"
       },
       "tar": {
         "git": "https://github.com/peerlibrary/meteor-tar.git",

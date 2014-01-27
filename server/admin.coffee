@@ -129,7 +129,7 @@ Meteor.methods
         ).createReadStream().pipe(
           tar.Parse()
         ).on('ignoredEntry', (entry) ->
-          Log.error "Ignored entry in #{ key } tar file", entry.props
+          Log.error "Ignored entry in #{ key } tar file: #{ entry.props }"
         ).on('entry', (entry) ->
           if entry.props.type != tar.types.File
             return
@@ -172,8 +172,8 @@ Meteor.methods
       timeout: 60000 # ms
 
     if page.statusCode and page.statusCode != 200
-      Log.error "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
-      throw new Meteor.Error 500, "Downloading arXiv metadata failed: #{ page.statusCode }", page.content
+      Log.error "Downloading arXiv metadata failed: #{ page.statusCode }: #{ page.content }"
+      throw new Meteor.Error 500, "Downloading arXiv metadata failed: #{ page.statusCode }: #{ page.content }"
     else if page.error
       Log.error page.error
       throw page.error
@@ -187,7 +187,7 @@ Meteor.methods
 
       if not record?
         # Using inspect because records can be heavily nested
-        Log.warn "Empty record metadata, skipping", util.inspect recordEntry, false, null
+        Log.warn "Empty record metadata, skipping #{ util.inspect recordEntry, false, null }"
         continue
 
       # TODO: Really process versions
@@ -231,7 +231,7 @@ Meteor.methods
 
       if bad
         # Using inspect because records can be heavily nested
-        Log.warn "Could not parse authors, skipping", authors, util.inspect record, false, null
+        Log.warn "Could not parse authors, skipping #{ authors }, #{ util.inspect record, false, null }"
         continue
 
       # Remove collaboration information
@@ -243,7 +243,7 @@ Meteor.methods
 
       if authors.length == 0
         # Using inspect because records can be heavily nested
-        Log.warn "Empty authors list, skipping", util.inspect record, false, null
+        Log.warn "Empty authors list, skipping #{ util.inspect record, false, null }"
         continue
 
       for author in authors
@@ -329,7 +329,7 @@ Meteor.methods
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
-      textCallback = (pageNumber, x, y, width, height, direction, text) ->
+      textCallback = (pageNumber, segment) ->
 
       pageImageCallback = (pageNumber, canvasElement) ->
         thumbnailCanvas = new PDFJS.canvas 95, 125
@@ -346,7 +346,7 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
-        Log.error "Error processing PDF:", error.stack or error.toString?() or error
+        Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
 
     Log.info "Done"
 
