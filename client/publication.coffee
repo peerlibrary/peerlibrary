@@ -467,3 +467,6 @@ Template.annotationsControl.events
 Template.publicationAnnotations.annotations = ->
   LocalAnnotations.find
     'publication._id': Session.get 'currentPublicationId'
+
+Template.publicationAnnotations.rendered = ->
+  $(@findAll '.annotations').scrollLock()
