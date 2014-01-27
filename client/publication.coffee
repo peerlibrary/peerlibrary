@@ -469,7 +469,7 @@ Template.publicationScroller.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationsControl.events
-  'click .add': (e, template) =>
+  'click .add': (e, template) ->
     annotation =
       author:
         _id: Meteor.personId()
@@ -480,6 +480,8 @@ Template.annotationsControl.events
     LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.annotations = ->
   LocalAnnotations.find
@@ -502,3 +504,11 @@ Template.annotationMetaMenu.rendered = ->
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: BASE_Z_INDEX + $metaMenus.length - i
+
+Template.annotationMetaMenu.events
+  'click .delete': (e, template) ->
+    LocalAnnotations.remove @_id, (error) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      throw error if error
+
+    return # Make sure CoffeeScript does not return anything
