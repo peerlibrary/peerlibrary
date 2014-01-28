@@ -160,7 +160,7 @@ class @Publication extends @Publication
             $('.annotations-control, .annotations').css
               left: "+=#{ viewport.width - displayWidth }"
 
-            $('.annotations .invite .body, .annotations .local .bocandy').balanceText()
+            $('.annotations .invite .body, .annotations .local .body').balanceText()
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
