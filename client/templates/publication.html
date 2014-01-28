@@ -116,8 +116,9 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{! TODO: Display delete buttons only to authors of annotations (for now) }}
-      <button class="delete">Delete</button>
+      {{#if canEdit}}	    
+        <button class="delete">Delete</button>
+      {{/if}}
       <p class="authors">
         {{#with author}}
           <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
