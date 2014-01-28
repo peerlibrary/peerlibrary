@@ -8,6 +8,9 @@ $.fn.scrollLock = function () {
         var height = $this.height();
         var up = e.deltaY > 0;
 
+        // If there is no scroller, don't do anything
+        if (scrollHeight === height) return;
+
         if (!up && -e.deltaY > scrollHeight - height - scrollTop) {
             // Scrolling down, but this will take us past the bottom
             $this.scrollTop(scrollHeight - height);
