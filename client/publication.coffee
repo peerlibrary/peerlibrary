@@ -676,7 +676,6 @@ Template.publicationAnnotationsItem.rendered = ->
     LocalAnnotations.update @data._id,
       $set:
         body: text
-        local: false
     ,
       (error) ->
         throw error if error
