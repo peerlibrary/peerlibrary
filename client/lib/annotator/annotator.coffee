@@ -84,20 +84,27 @@ class @Annotator extends Annotator
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
-      if e.which is 1 and $(e.target).parents().is('.display-page')
+      if e.which is 1 and $(e.target).closest('.display-page').length
         inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
 
         # If mousedown happened outside any selected highlight, we deselect highlights,
         # but we leave location unchanged so that on a new possible new highlight we
-        # update loication location to the new location without going through
-        # a publication-only location. If no highlight is made we update location in
-        # onFailedSelection.
+        # update location to the new location without going through a publication-only
+        # location. If no highlight is made we update location in onFailedSelection.
         @_deselectAllHighlights() unless inAnySelectedHighlight
 
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
         @checkForStartSelection e
+
+      # Left mouse button and mousedown happened on an annotation
+      else if e.which is 1 and $(e.target).closest('.annotations .annotation').length
+        # If mousedown happened inside an annotation, we deselect highlights,
+        # but we leave location unchanged so that we update location to the
+        # annotation location without going through a publication-only location.
+        @_deselectAllHighlights()
+
       else
         # Otherwise we deselect everything
         @_selectHighlight null
@@ -121,8 +128,13 @@ class @Annotator extends Annotator
     highlight.deselect() for highlight in @getHighlights()
 
   updateLocation: =>
+    # This is our annotations
+    annotationId = Session.get 'currentAnnotationId'
+    # @selectedAnnotationId is Annotator's annotation, so our highlights
     if @selectedAnnotationId
       Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
+    else if annotationId
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
@@ -323,10 +335,24 @@ class @Annotator extends Annotator
       # but we do not care because we set selectedAnnotationId and highlight will be
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
+
+      annotation = createAnnotationDocument()
+      annotation.local = true
+      annotation.highlights = [
+        _id: id
+      ]
+
+      LocalAnnotations.remove
+        local: true
+      LocalAnnotations.insert annotation
+
     else
       @selectedAnnotationId = null
 
       @_deselectAllHighlights()
+
+      LocalAnnotations.remove
+        local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()
