@@ -160,6 +160,8 @@ class @Publication extends @Publication
             $('.annotations-control, .annotations').css
               left: "+=#{ viewport.width - displayWidth }"
 
+            $('.annotations .invite .body, .annotations .local .body').balanceText()
+
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
               pdfPage: pdfPage
@@ -583,15 +585,19 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $(@findAll '.annotations').scrollLock()
+  $annotation = $(@findAll '.annotations')
+
+  $annotation.scrollLock()
 
   # We have to reset current left edge when re-rendering
-  $('.annotations').css
+  $annotation.css
     # To not crop the shadow of annotations we move the left edge
     # for 5px to the left and then add 5px (in fact 6px, so that
     # it looks better with our 1px shadow border) left margin to each
     # annotation. Same value is used in the _viewer.styl as well.
     left: $('.annotations-control').position().left - 5
+
+  $annotation.find('.invite .body, .local .body').balanceText()
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
@@ -651,6 +657,9 @@ Template.publicationAnnotationsItem.rendered = ->
 Template.publicationAnnotationsItem.canEdit = ->
   # Only the author can edit for now
   return @author._id is Meteor.personId()
+
+Template.highlightInvite.rendered = ->
+  $(@findAll '.body').balanceText()
 
 Template.annotationInvite.rendered = ->
   $(@findAll '.body').balanceText()

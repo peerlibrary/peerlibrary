@@ -358,7 +358,7 @@ annotations-control-height = 28px
   .annotation:first-child
     margin-top 1px
 
-  .annotation.local
+  .annotation.local, .annotation.invite
     /* 11px instead of 10px for the same reason we are using 6px for left margin
        instead of 5px - so that it looks better with our 1px shadow border. */
     margin-right 11px
@@ -366,6 +366,27 @@ annotations-control-height = 28px
     .body
       text-align center
       color gray
+
+  .annotation.invite
+    position absolute
+    left 0
+    right 0
+    top 0
+    bottom 0
+    margin-top 0
+    margin-bottom 0
+    padding 0
+    background-color transparent
+    box-shadow none
+
+    .vertical-align-outer
+      display table
+      height 100%
+      width 100%
+
+      .vertical-align-inner
+        display table-cell
+        vertical-align middle
 
 /* Footer
 ========= */

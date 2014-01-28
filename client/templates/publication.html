@@ -47,6 +47,8 @@
   <ul class="annotations">
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
+    {{else}}
+      {{> highlightInvite}}
     {{/each}}
   </ul>
 </template>
@@ -73,8 +75,20 @@
   </li>
 </template>
 
+<template name="highlightInvite">
+  <li class="annotation invite">
+    <div class="vertical-align-outer">
+      <div class="vertical-align-inner">
+        <div class="body balance-text">
+          Select text in the publication to make a highlight or click on an existing highlight to select it.
+        </div>
+      </div>
+    </div>
+  </li>
+</template>
+
 <template name="annotationInvite">
-  <div class="body">
+  <div class="body balance-text">
     {{! TODO: Change to "Click here or start typing to link an annotation to the selected highlight." }}
     Click here to link an annotation to the selected highlight.
   </div>
