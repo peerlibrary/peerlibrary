@@ -575,20 +575,25 @@ Template.publicationAnnotations.rendered = ->
 Template.publicationAnnotationsItem.rendered = ->
   # Run for the first time only
   unless @rendered
-    $annotation = @
+    $annotation = @data
+    $saved = $(@find '.saved')
+
+    fadeOutSavedNotification = _.debounce ->
+      $saved.fadeOut 500
+    , 5000
 
     # TODO: Improve cross-browser compatibility
     # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
     @find('.body[contenteditable=true]').addEventListener 'input', ->
-      LocalAnnotations.update $annotation.data._id,
+      LocalAnnotations.update $annotation._id,
         $set:
           body: $(@).text()
           local: false
       , (error) ->
         throw error if error
 
-        $saved = $($annotation.find 'span.saved')
-        $saved.text 'Saved'
+        $saved.show()
+        fadeOutSavedNotification()
 
     @rendered = true
 
