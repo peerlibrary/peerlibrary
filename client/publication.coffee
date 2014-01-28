@@ -690,3 +690,5 @@ Template.annotationMetaMenu.events
     Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
+
+Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
