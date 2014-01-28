@@ -53,10 +53,12 @@
 
 <template name="publicationAnnotationsItem">
   <li class="annotation">
-    {{#if canEdit}}
-      <div class="body" contenteditable="true">
-        {{body}}
-      </div>
+  {{#if canEdit}}
+      {{#constant}}
+        <div class="body" contenteditable="true">
+          {{body}}
+        </div>
+      {{/constant}}
     {{else}}
       <div class="body">
         {{body}}
