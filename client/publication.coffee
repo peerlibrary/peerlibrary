@@ -524,6 +524,7 @@ Template.publicationScroller.events
     return # Make sure CoffeeScript does not return anything
 
 Template.highlightsControl.canEdit = ->
+  # Only the author can edit for now
   return @author._id is Meteor.personId()
 
 Template.annotationsControl.events
@@ -654,9 +655,7 @@ Template.publicationAnnotationsItem.rendered = ->
 
     @rendered = true
 
-Template.publicationAnnotationsItem.canEdit = ->
-  # Only the author can edit for now
-  return @author._id is Meteor.personId()
+Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
