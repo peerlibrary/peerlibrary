@@ -630,11 +630,11 @@ Template.publicationAnnotationsItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.created = ->
-  _rendered = false
+  @_rendered = false
 
 Template.publicationAnnotationsItem.rendered = ->
   # Run for the first time only
-  return if _rendered or @data.local
+  return if @_rendered or @data.local
   $saved = $(@findAll '.saved')
 
   fadeOutSavedNotification = _.debounce ->
@@ -656,7 +656,7 @@ Template.publicationAnnotationsItem.rendered = ->
 
     return
 
-  _rendered = true
+  @_rendered = true
 
 Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 
