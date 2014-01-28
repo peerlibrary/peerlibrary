@@ -301,6 +301,11 @@ annotations-control-height = 28px
     box-shadow 0 0 0 1px box-shadow-border
     transition 0.2s
 
+    [contenteditable=true]:empty:not(:focus):before
+      content attr(data-placeholder)
+      color #cececf
+      font-style italic
+
     .saved
       position absolute
       right 4px

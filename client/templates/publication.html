@@ -60,9 +60,7 @@
     {{else}}
       {{#if canEdit}}
         {{#constant}}
-          <div class="body" contenteditable="true">
-            {{body}}
-          </div>
+          <div class="body" contenteditable="true" data-placeholder="Type your annotation here">{{body}}</div>
           <span class="saved">Saved</span>
         {{/constant}}
       {{else}}
