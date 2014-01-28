@@ -228,6 +228,8 @@ class @Annotator extends Annotator
 
     @_annotations[annotation._id] = annotation
 
+    setHighlights @_getRenderedHighlights()
+
     annotation
 
   deleteAnnotation: (annotation) ->
@@ -238,7 +240,23 @@ class @Annotator extends Annotator
 
     delete @_annotations[annotation._id]
 
+    setHighlights @_getRenderedHighlights()
+
     annotation
+
+  _realizePage: (index) =>
+    super
+
+    setHighlights @_getRenderedHighlights()
+
+    return # Make sure CoffeeScript does not return anything
+
+  _virtualizePage: (index) =>
+    super
+
+    setHighlights @_getRenderedHighlights()
+
+    return # Make sure CoffeeScript does not return anything
 
   ############################################################################
   # We are using Annotator's annotations as highlights, so while annotation  #
@@ -255,6 +273,7 @@ class @Annotator extends Annotator
 
   _highlightChanged: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
+    # TODO: Do we have to call setHighlights in updateAnnotation?
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
@@ -311,3 +330,12 @@ class @Annotator extends Annotator
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()
+
+  _getRenderedHighlights: =>
+    highlights = {}
+    for highlight in @getHighlights()
+      if highlights[highlight.annotation._id]
+        highlights[highlight.annotation._id].push highlight.getBoundingBox()
+      else
+        highlights[highlight.annotation._id] = [highlight.getBoundingBox()]
+    highlights
