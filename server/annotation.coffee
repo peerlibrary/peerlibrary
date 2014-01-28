@@ -49,7 +49,7 @@ Annotations.deny
     doc.updated = moment.utc().toDate()
     
     # We return false as we are not
-    # checking anything, just adding fields
+    # checking anything, just updating fields
     false
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
