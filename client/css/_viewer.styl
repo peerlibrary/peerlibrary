@@ -345,6 +345,15 @@ annotations-control-height = 28px
   .annotation:first-child
     margin-top 1px
 
+  .annotation.local
+    /* 11px instead of 10px for the same reason we are using 6px for left margin
+       instead of 5px - so that it looks better with our 1px shadow border. */
+    margin-right 11px
+
+    .body
+      text-align center
+      color gray
+
 /* Footer
 ========= */
 

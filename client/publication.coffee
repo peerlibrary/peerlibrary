@@ -515,18 +515,7 @@ Template.publicationScroller.events
 
 Template.annotationsControl.events
   'click .add': (e, template) ->
-    # We prepopulate automatically generated fields as well because we
-    # want them to be displayed even before they are saved to the server
-    # TODO: We could add to PeerDB to generate fields on the client side as well?
-    timestamp = moment.utc().toDate()
-    annotation =
-      created: timestamp
-      updated: timestamp
-      author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
-      publication:
-        _id: Session.get 'currentPublicationId'
-      highlights: []
-      local: true
+    annotation = createAnnotationDocument()
 
     LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
@@ -568,6 +557,9 @@ Template.publicationAnnotations.rendered = ->
     # it looks better with our 1px shadow border) left margin to each
     # annotation. Same value is used in the _viewer.styl as well.
     left: $('.annotations-control').position().left - 5
+
+Template.annotationInvite.rendered = ->
+  $(@findAll '.body').balanceText()
 
 Template.annotationMetaMenu.rendered = ->
   # If we leave z-index constant for all meta menu items

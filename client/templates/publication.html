@@ -52,12 +52,22 @@
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li class="annotation">
-    <div class="body" contenteditable="true">
-      {{body}}
-    </div>
-    {{> annotationMetaMenu}}
+  <li class="annotation {{#if local}}local{{/if}}">
+    {{#if local}}
+      {{> annotationInvite}}
+    {{else}}
+      <div class="body" contenteditable="true">
+        {{body}}
+      </div>
+      {{> annotationMetaMenu}}
+    {{/if}}
   </li>
+</template>
+
+<template name="annotationInvite">
+  <div class="body">
+    Click here or start typing to link an annotation to the selected highlight.
+  </div>
 </template>
 
 <template name="highlightsControl">
