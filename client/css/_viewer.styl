@@ -314,6 +314,24 @@ annotations-control-height = 28px
     box-shadow 0 0 0 1px box-shadow-border
     transition 0.2s
 
+    [contenteditable=true]:empty:not(:focus):before
+      content attr(data-placeholder)
+      color #cececf
+      font-style italic
+
+    .saved
+      position absolute
+      right 4px
+      bottom 2px
+      color #cececf
+      transition opacity .5s ease-in-out
+
+      /* Initially hidden. To show "Saved" notification, change the opacity. */
+      opacity 0
+
+    .saved.display
+      opacity 1
+
     .meta-menu
       position absolute
       width small-meta-menu-width

@@ -523,6 +523,10 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.highlightsControl.canEdit = ->
+  # Only the author can edit for now
+  return @author._id is Meteor.personId()
+
 Template.annotationsControl.events
   'click .add': (e, template) ->
     annotation = createAnnotationDocument()
@@ -634,7 +638,14 @@ Template.publicationAnnotationsItem.events
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
+    # Focus by clicking on the annotation
+    # TODO: Make it work when converting local annotation
+    $(template.findAll '.body[contenteditable=true]').get(0).focus()
+
     return # Make sure CoffeeScript does not return anything
+
+Template.publicationAnnotationsItem.created = ->
+  @_rendered = false
 
 Template.publicationAnnotationsItem.rendered = ->
   $annotation = $(@findAll '.annotation')
@@ -654,6 +665,36 @@ Template.publicationAnnotationsItem.rendered = ->
   $annotation.on 'mouseleave', (e, highlightId) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
+
+  # Run for the first time only and if not a local annotation
+  return if @_rendered or @data.local
+  @_rendered = true
+
+  $saved = $(@findAll '.saved')
+
+  saveAnnotation = _.debounce (text) =>
+    LocalAnnotations.update @data._id,
+      $set:
+        body: text
+    ,
+      (error) ->
+        throw error if error
+
+        $saved.addClass('display')
+  , 2500
+
+  # TODO: Improve cross-browser compatibility
+  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
+  $(@findAll '.body[contenteditable=true]').on 'input', (e) => 
+    $saved.removeClass('display')
+    saveAnnotation $(e.target).text()
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationAnnotationsItem.destroyed = ->
+  @_rendered = false
+
+Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
@@ -688,3 +729,5 @@ Template.annotationMetaMenu.events
     Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
+
+Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit

@@ -58,9 +58,16 @@
     {{#if local}}
       {{> annotationInvite}}
     {{else}}
-      <div class="body" contenteditable="true">
-        {{body}}
-      </div>
+      {{#if canEdit}}
+        {{#constant}}
+          <div class="body" contenteditable="true" data-placeholder="Write your annotation here">{{body}}</div>
+          <span class="saved">Saved</span>
+        {{/constant}}
+      {{else}}
+        <div class="body">
+          {{body}}
+        </div>
+      {{/if}}
       {{> annotationMetaMenu}}
     {{/if}}
   </li>
@@ -86,8 +93,9 @@
 </template>
 
 <template name="highlightsControl">
-  {{! TODO: Display delete buttons only to authors of highlights (for now) }}
-  <button class="delete">Delete</button>
+  {{#if canEdit}}
+    <button class="delete">Delete</button>
+  {{/if}}
   <p class="authors">
     {{#with author}}
       <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
@@ -114,8 +122,9 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{! TODO: Display delete buttons only to authors of annotations (for now) }}
-      <button class="delete">Delete</button>
+      {{#if canEdit}}	    
+        <button class="delete">Delete</button>
+      {{/if}}
       <p class="authors">
         {{#with author}}
           <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
