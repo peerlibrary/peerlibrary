@@ -628,6 +628,7 @@ Template.publicationAnnotationsItem.events
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
     # Focus by clicking on the annotation
+    # TODO: Make it work when converting local annotation
     $(template.findAll '.body[contenteditable=true]').get(0).focus()
 
     return # Make sure CoffeeScript does not return anything
