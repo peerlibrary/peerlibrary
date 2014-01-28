@@ -99,7 +99,7 @@ class @Annotator extends Annotator
         @checkForStartSelection e
 
       # Left mouse button and mousedown happened on an annotation
-      else if e.which is 1 and $(e.target).closest('.annotations .annotation').length
+      else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
         # If mousedown happened inside an annotation, we deselect highlights,
         # but we leave location unchanged so that we update location to the
         # annotation location without going through a publication-only location.
@@ -300,6 +300,7 @@ class @Annotator extends Annotator
       _id: Meteor.personId()
     annotation.publication =
       _id: Session.get 'currentPublicationId'
+    annotation.highlights = []
 
     # Remove fields we do not want to store into the database
     highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
@@ -345,6 +346,13 @@ class @Annotator extends Annotator
       LocalAnnotations.remove
         local: true
       LocalAnnotations.insert annotation
+
+      # On click on the highlight we are for sure inside the highlight, so we can
+      # immediatelly send a mouse enter event to make sure related annotation has
+      # a hovered state. Even if _selectHighlight not really happened because of
+      # a click, it is still a nice effect to emphasize the invitation.
+      Meteor.defer ->
+        $('.annotations-list .annotation').trigger 'highlightMouseenter', [id]
 
     else
       @selectedAnnotationId = null

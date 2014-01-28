@@ -16,6 +16,14 @@ Highlights.allow
     # Only allow insertion if declared author is current user
     personId and doc.author._id is personId
 
+  update: (userId, doc) ->
+    return false unless userId
+
+    personId = Meteor.personId userId
+
+    # Only allow update if declared author is current user
+    personId and doc.author._id is personId
+
   remove: (userId, doc) ->
     return false unless userId
 
@@ -32,9 +40,18 @@ Highlights.deny
 
   insert: (userId, doc) ->
     doc.created = moment.utc().toDate()
+    doc.updated = doc.created
+    doc.annotations = [] if not doc.annotations
 
     # We return false as we are not
     # checking anything, just adding fields
+    false
+
+  update: (userId, doc) ->
+    doc.updated = moment.utc().toDate()
+
+    # We return false as we are not
+    # checking anything, just updating fields
     false
 
 Meteor.publish 'highlights-by-id', (id) ->
