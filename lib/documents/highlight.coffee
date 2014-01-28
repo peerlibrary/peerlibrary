@@ -1,7 +1,7 @@
 @Highlights = new Meteor.Collection 'Highlights', transform: (doc) => new @Highlight doc
 
 class @Highlight extends Document
-  # created: timestamp of this version
+  # created: timestamp when document was created
   # author:
   #   _id: author's person id
   #   slug: author's person id

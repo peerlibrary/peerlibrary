@@ -521,8 +521,10 @@ Template.annotationsControl.events
     # We prepopulate automatically generated fields as well because we
     # want them to be displayed even before they are saved to the server
     # TODO: We could add to PeerDB to generate fields on the client side as well?
+    timestamp = moment.utc().toDate()
     annotation =
-      created: moment.utc().toDate()
+      created: timestamp
+      updated: timestamp
       author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
       publication:
         _id: Session.get 'currentPublicationId'
@@ -564,7 +566,11 @@ Template.publicationAnnotations.rendered = ->
 
   # We have to reset current left edge when re-rendering
   $('.annotations').css
-    left: $('.annotations-control').css 'left'
+    # To not crop the shadow of annotations we move the left edge
+    # for 5px to the left and then add 5px (in fact 6px, so that
+    # it looks better with our 1px shadow border) left margin to each
+    # annotation. Same value is used in the _viewer.styl as well.
+    left: $('.annotations-control').position().left - 5
 
 Template.publicationAnnotationsItem.canEdit = ->
   # Only the author can edit for now

@@ -6,7 +6,7 @@ class @Person extends Document
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
-  # created: creation timestamp
+  # created: timestamp when document was created
   # foreNames
   # lastName
   # isAdmin: boolean, is user an administrator or not
