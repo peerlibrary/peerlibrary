@@ -639,23 +639,23 @@ Template.publicationAnnotationsItem.rendered = ->
 
   $saved = $(@findAll '.saved')
 
-  fadeOutSavedNotification = _.debounce ->
-    $saved.removeClass('display')
-  , 5000
-
-  # TODO: Improve cross-browser compatibility
-  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-  $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
+  saveAnnotation = _.debounce (text) =>
     LocalAnnotations.update @data._id,
       $set:
-        body: $(e.target).text()
+        body: text
         local: false
     ,
       (error) ->
         throw error if error
-  
+
         $saved.addClass('display')
-        fadeOutSavedNotification()
+  , 2500
+
+  # TODO: Improve cross-browser compatibility
+  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
+  $(@findAll '.body[contenteditable=true]').on 'input', (e) => 
+    $saved.removeClass('display')
+    saveAnnotation $(e.target).text()
 
     return # Make sure CoffeeScript does not return anything
 
