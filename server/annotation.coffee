@@ -31,6 +31,7 @@ Annotations.deny
 
   insert: (userId, doc) ->
     doc.created = moment.utc().toDate()
+    doc.updated = doc.created
 
     # We return false as we are not
     # checking anything, just adding fields
