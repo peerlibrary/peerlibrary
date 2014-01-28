@@ -16,6 +16,7 @@ setSession = (session) ->
     currentPublicationSlug: null
     currentPublicationProgress: null
     currentHighlightId: null
+    currentAnnotationId: null
     currentPersonSlug: null
 
   for key, value of session
@@ -80,6 +81,15 @@ Meteor.Router.add
         currentPublicationId: publicationId
         currentPublicationSlug: publicationSlug
         currentHighlightId: highlightId
+      'publication'
+
+  '/p/:publicationId/:publicationSlug?/a/:annotationId':
+    as: 'annotation'
+    to: (publicationId, publicationSlug, annotationId) ->
+      setSession
+        currentPublicationId: publicationId
+        currentPublicationSlug: publicationSlug
+        currentAnnotationId: annotationId
       'publication'
 
   '/p/:publicationId/:publicationSlug?':

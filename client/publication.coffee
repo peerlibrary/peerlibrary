@@ -1,6 +1,7 @@
 @SCALE = 1.25
 
 draggingViewport = false
+currentPublication = null
 
 # Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
 _publicationDOMReady = false
@@ -186,6 +187,8 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       console.error "Error showing #{ @_id }", args...
 
+    currentPublication = @
+
   _getTextContent: (pdfPage) =>
     console.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
@@ -256,6 +259,8 @@ class @Publication extends @Publication
 
   destroy: =>
     console.debug "Destroying publication #{ @_id }"
+
+    currentPublication = null
 
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
@@ -352,8 +357,11 @@ Deps.autorun ->
   return if Session.equals 'currentPublicationSlug', (publication.slug or null)
 
   highlightId = Session.get 'currentHighlightId'
+  annotationId = Session.get 'currentAnnotationId'
   if highlightId
     Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+  else if annotationId
+    Meteor.Router.toNew Meteor.Router.annotationPath publication._id, publication.slug, annotationId
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
@@ -518,22 +526,13 @@ Template.highlightsControl.canEdit = ->
 
 Template.annotationsControl.events
   'click .add': (e, template) ->
-    # We prepopulate automatically generated fields as well because we
-    # want them to be displayed even before they are saved to the server
-    # TODO: We could add to PeerDB to generate fields on the client side as well?
-    timestamp = moment.utc().toDate()
-    annotation =
-      created: timestamp
-      updated: timestamp
-      author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
-      publication:
-        _id: Session.get 'currentPublicationId'
-      highlights: []
-      local: true
+    annotation = createAnnotationDocument()
 
-    LocalAnnotations.insert annotation, (error, id) =>
+    annotationId = LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
+
+    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
 
@@ -561,6 +560,28 @@ Template.publicationAnnotations.annotations = ->
     ]
     'publication._id': Session.get 'currentPublicationId'
 
+Template.publicationAnnotations.created = ->
+  $(document).on 'mouseup.publicationAnnotations', (e) =>
+    # Left mouse button and mousedown happened on a target inside a display-page
+    if e.which is 1 and $(e.target).closest('.display-page').length and currentPublication?._highlighter?._annotator?._inAnyHighlight e.clientX, e.clientY
+      # If mousedown happened inside a highlight, we leave location unchanged
+      # so that we update location to the highlight location without going
+      # through a publication-only location
+      return
+
+    # Left mouse button and mousedown happened on an annotation
+    else if e.which is 1 and $(e.target).closest('.annotations .annotation').length
+      # If mousedown happened inside an annotation, we leave location unchanged
+      # so that we update location to the annotation location without going
+      # through a publication-only location
+      return
+
+    else
+      # Otherwise we deselect the annotation
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.publicationAnnotations.rendered = ->
   $(@findAll '.annotations').scrollLock()
 
@@ -571,6 +592,35 @@ Template.publicationAnnotations.rendered = ->
     # it looks better with our 1px shadow border) left margin to each
     # annotation. Same value is used in the _viewer.styl as well.
     left: $('.annotations-control').position().left - 5
+
+Template.publicationAnnotations.destroyed = ->
+  $(document).off '.publicationAnnotations'
+
+Template.publicationAnnotationsItem.events
+  # We do conversion of local annotation already in mousedown so that
+  # we are before mousedown on document which deselects highlights
+  'mousedown': (e, template) =>
+    return unless template.data.local
+
+    LocalAnnotations.update template.data._id,
+      $unset:
+        local: ''
+
+    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click': (e, template) =>
+    # We do not select or even deselect an annotation on clicks inside a meta menu.
+    # We do the former so that when user click "delete" button, an annotation below
+    # is not automatically selected. We do the latter so that behavior is the same
+    # as it is for highlights.
+    if $(e.target).closest('.annotations .annotation .meta-menu').length
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    else
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.rendered = ->
   # Run for the first time only
@@ -601,6 +651,9 @@ Template.publicationAnnotationsItem.canEdit = ->
   # Only the author can edit for now
   return @author._id is Meteor.person()?._id
 
+Template.annotationInvite.rendered = ->
+  $(@findAll '.body').balanceText()
+
 Template.annotationMetaMenu.rendered = ->
   # If we leave z-index constant for all meta menu items
   # then because of the DOM order those later in the DOM
@@ -621,5 +674,7 @@ Template.annotationMetaMenu.events
     LocalAnnotations.remove @_id, (error) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
+
+    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
