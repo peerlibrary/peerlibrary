@@ -306,9 +306,13 @@ annotations-control-height = 28px
       right 4px
       bottom 2px
       color #cececf
+      transition opacity .5s ease-in-out
 
-      /* Initially hidden. Notify by switching to display: block */
-      display none
+      /* Initially hidden. Notify by fading into opaque */
+      opacity 0
+
+    .saved.display
+      opacity 1
 
     .meta-menu
       position absolute

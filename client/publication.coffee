@@ -628,7 +628,7 @@ Template.publicationAnnotationsItem.rendered = ->
     $saved = $(@findAll '.saved')
 
     fadeOutSavedNotification = _.debounce ->
-      $saved.fadeOut 500
+      $saved.removeClass('display')
     , 5000
 
     # TODO: Improve cross-browser compatibility
@@ -641,7 +641,7 @@ Template.publicationAnnotationsItem.rendered = ->
       , (error) ->
         throw error if error
 
-        $saved.show()
+        $saved.addClass('display')
         fadeOutSavedNotification()
 
       return
