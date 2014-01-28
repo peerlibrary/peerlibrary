@@ -231,7 +231,9 @@ small-meta-menu-icon-font-size = 13px
 /* Annotations
 ============== */
 
-annotations-left = meta-menu-left
+/* Initially we set it based on display-canvas-loading width and
+   then in code we update it to real width based on the PDF */
+annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
 annotations-control-height = 28px
 
@@ -241,9 +243,7 @@ annotations-control-height = 28px
   height annotations-control-height
   z-index 90
   position fixed
-  /* Initially we set it based on display-canvas-loading width and
-     then in code we update it to real width based on the PDF */
-  left viewer-left + display-canvas-loading-width + annotations-left
+  left annotations-left
   right annotations-right
   top meta-menu-top
 
@@ -271,11 +271,11 @@ annotations-control-height = 28px
   position fixed
   z-index 90
   /* To not crop the shadow of annotations we move the left edge
-     for 5px to the left and then add 5px left margin to each
-     annotation */
-  /* Initially we set it based on display-canvas-loading width and
-     then in code we update it to real width based on the PDF */
-  left viewer-left + display-canvas-loading-width + annotations-left - 5px
+     for 5px to the left and then add 5px (in fact 6px, so that
+     it looks better with our 1px shadow border) left margin to
+     each annotation. Same value is used in the publication.coffee
+     as well. */
+  left annotations-left - 5px
   /* To not have scroll bar overlapping the content we move the right
      edge for 10px to the right and then add 10px right margin to each
      annotation */

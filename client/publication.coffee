@@ -561,7 +561,11 @@ Template.publicationAnnotations.rendered = ->
 
   # We have to reset current left edge when re-rendering
   $('.annotations').css
-    left: $('.annotations-control').css 'left'
+    # To not crop the shadow of annotations we move the left edge
+    # for 5px to the left and then add 5px (in fact 6px, so that
+    # it looks better with our 1px shadow border) left margin to each
+    # annotation. Same value is used in the _viewer.styl as well.
+    left: $('.annotations-control').position().left - 5
 
 Template.annotationMetaMenu.rendered = ->
   # If we leave z-index constant for all meta menu items
