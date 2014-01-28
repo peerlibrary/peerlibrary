@@ -449,8 +449,8 @@ Template.publicationScroller.sections = ->
   return [] unless isPublicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
-  displayTop = $displayWrapper.offset().top
-  displayHeight = $displayWrapper.height()
+  displayTop = $displayWrapper.outerOffset().top
+  displayHeight = $displayWrapper.outerHeight(true)
   for section in $displayWrapper.children()
     $section = $(section)
 
