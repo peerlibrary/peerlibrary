@@ -587,6 +587,9 @@ Template.publicationAnnotationsItem.rendered = ->
       , (error) ->
         throw error if error
 
+        $saved = $($annotation.find 'span.saved')
+        $saved.text 'Saved'
+
     @rendered = true
 
 Template.publicationAnnotationsItem.canEdit = ->
