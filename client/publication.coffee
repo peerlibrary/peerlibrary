@@ -618,6 +618,10 @@ Template.publicationAnnotationsItem.events
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
+    # On click to convert local annotation we are for sure inside the annotation, so we can
+    # immediatelly send a mouse enter event to make sure related highlight has a hovered state
+    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [template.data._id]
+
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) =>
