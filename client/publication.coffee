@@ -633,8 +633,10 @@ Template.publicationAnnotationsItem.created = ->
   @_rendered = false
 
 Template.publicationAnnotationsItem.rendered = ->
-  # Run for the first time only
+  # Run for the first time only and if not a local annotation
   return if @_rendered or @data.local
+  @_rendered = true
+
   $saved = $(@findAll '.saved')
 
   fadeOutSavedNotification = _.debounce ->
@@ -648,15 +650,17 @@ Template.publicationAnnotationsItem.rendered = ->
       $set:
         body: $(e.target).text()
         local: false
-    , (error) ->
-      throw error if error
+    ,
+      (error) ->
+        throw error if error
+  
+        $saved.addClass('display')
+        fadeOutSavedNotification()
 
-      $saved.addClass('display')
-      fadeOutSavedNotification()
+    return # Make sure CoffeeScript does not return anything
 
-    return
-
-  @_rendered = true
+Template.publicationAnnotationsItem.destroyed = ->
+  @_rendered = false
 
 Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 
