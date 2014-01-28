@@ -613,6 +613,8 @@ Template.publicationAnnotationsItem.events
       $unset:
         local: ''
 
+    $(template.findAll '.body').focus()
+
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
     return # Make sure CoffeeScript does not return anything
