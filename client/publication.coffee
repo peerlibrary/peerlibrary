@@ -631,29 +631,29 @@ Template.publicationAnnotationsItem.events
 
 Template.publicationAnnotationsItem.rendered = ->
   # Run for the first time only
-  unless @rendered or @data.local
-    $saved = $(@findAll '.saved')
+  return if @rendered or @data.local
+  $saved = $(@findAll '.saved')
 
-    fadeOutSavedNotification = _.debounce ->
-      $saved.removeClass('display')
-    , 5000
+  fadeOutSavedNotification = _.debounce ->
+    $saved.removeClass('display')
+  , 5000
 
-    # TODO: Improve cross-browser compatibility
-    # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-    $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
-      LocalAnnotations.update @data._id,
-        $set:
-          body: $(e.target).text()
-          local: false
-      , (error) ->
-        throw error if error
+  # TODO: Improve cross-browser compatibility
+  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
+  $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
+    LocalAnnotations.update @data._id,
+      $set:
+        body: $(e.target).text()
+        local: false
+    , (error) ->
+      throw error if error
 
-        $saved.addClass('display')
-        fadeOutSavedNotification()
+      $saved.addClass('display')
+      fadeOutSavedNotification()
 
-      return
+    return
 
-    @rendered = true
+  @rendered = true
 
 Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 
