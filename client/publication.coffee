@@ -640,7 +640,8 @@ Template.publicationAnnotationsItem.events
 
     # Focus by clicking on the annotation
     # TODO: Make it work when converting local annotation
-    $(template.findAll '.body[contenteditable=true]').get(0).focus()
+    # TODO: Fix this and make it work
+    #body = $(template.findAll '.body[contenteditable=true]').get(0)?.focus()
 
     return # Make sure CoffeeScript does not return anything
 
