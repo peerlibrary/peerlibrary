@@ -624,7 +624,7 @@ Template.publicationAnnotationsItem.events
 
 Template.publicationAnnotationsItem.rendered = ->
   # Run for the first time only
-  unless @rendered
+  unless @rendered or @data.local
     $saved = $(@findAll '.saved')
 
     fadeOutSavedNotification = _.debounce ->
