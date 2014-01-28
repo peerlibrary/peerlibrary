@@ -54,7 +54,7 @@
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li class="annotation {{#if local}}local{{/if}}">
+  <li class="annotation {{#if local}}local{{/if}} {{selected}}">
     {{#if local}}
       {{> annotationInvite}}
     {{else}}

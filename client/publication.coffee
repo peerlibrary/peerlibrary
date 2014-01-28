@@ -632,6 +632,9 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.publicationAnnotationsItem.selected = ->
+  'selected' if @_id is Session.get 'currentAnnotationId'
+
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
 
