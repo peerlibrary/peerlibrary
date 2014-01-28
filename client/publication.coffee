@@ -573,16 +573,21 @@ Template.publicationAnnotations.rendered = ->
     left: $('.annotations-control').position().left - 5
 
 Template.publicationAnnotationsItem.rendered = ->
-  # TODO: Improve cross-browser compatibility
-  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-  $annotation = @data
-  @find('.body[contenteditable=true]').addEventListener 'input', ->
-    LocalAnnotations.update
-      _id: $annotation._id
-    ,
-      $set:
-        body: $(@).text()
-        local: false
+  # Run for the first time only
+  unless @rendered
+    $annotation = @
+
+    # TODO: Improve cross-browser compatibility
+    # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
+    @find('.body[contenteditable=true]').addEventListener 'input', ->
+      LocalAnnotations.update $annotation.data._id,
+        $set:
+          body: $(@).text()
+          local: false
+      , (error) ->
+        throw error if error
+
+    @rendered = true
 
 Template.publicationAnnotationsItem.canEdit = ->
   # Only the author can edit for now
