@@ -157,10 +157,10 @@ class @Publication extends @Publication
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
             # We reposition annotations if display wrapper width changed
-            $('.annotations-control, .annotations').css
+            $('.annotations-control, .annotations-list').css
               left: "+=#{ viewport.width - displayWidth }"
 
-            $('.annotations .invite .body, .annotations .local .body').balanceText()
+            $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
@@ -285,7 +285,7 @@ class @Publication extends @Publication
     # We remove added CSS
     $('footer.publication').add(@_$displayWrapper).css
       width: ''
-    $('.annotations-control, .annotations').css
+    $('.annotations-control, .annotations-list').css
       left: ''
 
     @_$displayWrapper = null
@@ -569,7 +569,7 @@ Template.publicationAnnotations.created = ->
       return
 
     # Left mouse button and mousedown happened on an annotation
-    else if e.which is 1 and $(e.target).closest('.annotations .annotation').length
+    else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
       # If mousedown happened inside an annotation, we leave location unchanged
       # so that we update location to the annotation location without going
       # through a publication-only location
@@ -582,7 +582,7 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $annotation = $(@findAll '.annotations')
+  $annotation = $(@findAll '.annotations-list')
 
   $annotation.scrollLock()
 
@@ -609,6 +609,13 @@ Template.publicationAnnotationsItem.events
       $unset:
         local: ''
 
+    # TODO: Should this syncing be done automatically by PeerDB?
+    for highlight in template.data.highlights
+      Highlights.update highlight._id,
+        $addToSet:
+          annotations:
+            _id: template.data._id
+
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
     return # Make sure CoffeeScript does not return anything
@@ -618,7 +625,7 @@ Template.publicationAnnotationsItem.events
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
-    if $(e.target).closest('.annotations .annotation .meta-menu').length
+    if $(e.target).closest('.annotations-list .annotation .meta-menu').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
@@ -641,7 +648,7 @@ Template.annotationMetaMenu.rendered = ->
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   BASE_Z_INDEX = 200
-  $metaMenus = $('.annotations .meta-menu')
+  $metaMenus = $('.annotations-list .meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: BASE_Z_INDEX + $metaMenus.length - i

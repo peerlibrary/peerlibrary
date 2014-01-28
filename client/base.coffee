@@ -30,12 +30,13 @@ setSession = (session) ->
   # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()
 
-redirectHighlightId = (highlightId) ->
-  notFound = ->
-    # TODO: Is there a better/official way?
-    Meteor.Router._page = 'notfound'
-    Meteor.Router._pageDeps.changed()
+notFound = ->
+  # TODO: Is there a better/official way?
+  Meteor.Router._page = 'notfound'
+  Meteor.Router._pageDeps.changed()
 
+# TODO: We could just use a method here?
+redirectHighlightId = (highlightId) ->
   highlightsHandle = Meteor.subscribe 'highlights-by-id', highlightId,
     onError: (error) ->
       notFound()
@@ -63,6 +64,38 @@ redirectHighlightId = (highlightId) ->
             return
 
           Meteor.Router.to  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+
+  return # Return nothing
+
+# TODO: We could just use a method here?
+redirectAnnotationId = (annotationId) ->
+  annotationsHandle = Meteor.subscribe 'annotations-by-id', annotationId,
+    onError: (error) ->
+      notFound()
+    onReady: ->
+      annotation = Annotations.findOne annotationId
+
+      unless annotation
+        annotationsHandle.stop()
+        notFound()
+        return
+
+      publicationsHandle = Meteor.subscribe 'publications-by-id', annotation.publication._id,
+        onError: (error) ->
+          annotationsHandle.stop()
+          notFound()
+        onReady: ->
+          publication = Publications.findOne annotation.publication._id
+
+          # We do not need subscriptions anymore
+          annotationsHandle.stop()
+          publicationsHandle.stop()
+
+          unless publication
+            notFound()
+            return
+
+          Meteor.Router.to  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
 
   return # Return nothing
 
@@ -112,6 +145,13 @@ Meteor.Router.add
     to: (highlightId) ->
       setSession()
       redirectHighlightId highlightId
+      'redirecting'
+
+  '/a/:annotationId':
+    as: 'annotationId'
+    to: (annotationId) ->
+      setSession()
+      redirectAnnotationId annotationId
       'redirecting'
 
   '/about':

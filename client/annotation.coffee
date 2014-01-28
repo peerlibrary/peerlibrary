@@ -76,3 +76,16 @@ Meteor.startup ->
   publication:
     _id: Session.get 'currentPublicationId'
   highlights: []
+
+# If we have the annotation and the publication available on the client,
+# we can create full path directly, otherwise we have to use annotationIdPath
+Handlebars.registerHelper 'annotationPathFromId', (annotatonId, options) ->
+  annotation = Annotations.findOne annotatonId
+
+  return Meteor.Router.annotationIdPath annotatonId unless annotation
+
+  publication = Publications.findOne annotation.publication._id
+
+  return Meteor.Router.annotationIdPath annotatonId unless publication
+
+  Meteor.Router.annotationPath publication._id, publication.slug, annotatonId

@@ -32,10 +32,21 @@ Annotations.deny
   insert: (userId, doc) ->
     doc.created = moment.utc().toDate()
     doc.updated = doc.created
+    doc.highlights = [] if not doc.highlights
 
     # We return false as we are not
     # checking anything, just adding fields
     false
+
+Meteor.publish 'annotations-by-id', (id) ->
+  check id, String
+
+  return unless id
+
+  Annotations.find
+    _id: id
+  ,
+    Annotation.PUBLIC_FIELDS()
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
   check publicationId, String

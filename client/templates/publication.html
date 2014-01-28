@@ -44,7 +44,7 @@
 </template>
 
 <template name="publicationAnnotations">
-  <ul class="annotations">
+  <ul class="annotations-list">
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
     {{else}}
@@ -93,7 +93,15 @@
       <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
     {{/with}}
   </p>
-  <p>{{created}}</p>
+  <p class="time">{{created}}</p>
+  <p class="time">{{updated}}</p>
+  <p class="annotations">
+    {{#each annotations}}
+      <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
+    {{else}}
+      Not linked to any annotation.
+    {{/each}}
+  </p>
 </template>
 
 <template name="annotationsControl">
@@ -113,7 +121,8 @@
           <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
         {{/with}}
       </p>
-      <p>{{created}}</p>
+      <p class="time">{{created}}</p>
+      <p class="time">{{updated}}</p>
       <p class="highlights">
         {{#each highlights}}
           <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>

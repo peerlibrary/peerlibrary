@@ -61,6 +61,11 @@ meta-menu-icon-font-size = 20px
       span:last-child::after
         content ""
 
+    .time
+      margin-bottom 0
+      margin-top 0
+      font-size smaller
+
 .meta-menu:hover
   background rgba(46,46,44,0.5)
   width 300px
@@ -178,6 +183,14 @@ small-meta-menu-icon-font-size = 13px
           i.icon-menu
             font-size small-meta-menu-icon-font-size
 
+          .meta-content
+            .annotations
+              span::after
+                content ","
+
+              span:last-child::after
+                content ""
+
         .meta-menu:hover
           width 150px
           min-height 220px
@@ -263,7 +276,7 @@ annotations-control-height = 28px
     outline none
     border none
 
-.annotations
+.annotations-list
   list-style none
   margin 0
   padding 0
