@@ -468,6 +468,9 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.highlightsControl.canEdit = ->
+  return @author._id is Meteor.person()?._id
+
 Template.annotationsControl.events
   'click .add': (e, template) =>
     annotation =
@@ -487,8 +490,10 @@ Template.publicationAnnotations.annotations = ->
 
 Template.publicationAnnotations.rendered = ->
   $(@findAll '.annotations').scrollLock()
-  editor = new MediumEditor '.annotation .body',
-    buttons: ['bold', 'italic', 'quote'] 
+
+Template.publicationAnnotationsItem.canEdit = ->
+  # Only the author can edit for now
+  return @author._id is Meteor.person()?._id
 
 Template.annotationMetaMenu.rendered = ->
   # If we leave z-index constant for all meta menu items

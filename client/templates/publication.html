@@ -53,16 +53,23 @@
 
 <template name="publicationAnnotationsItem">
   <li class="annotation">
-    <div class="body"> 
-      {{body}}
-    </div>
+    {{#if canEdit}}
+      <div class="body" contenteditable="true">
+        {{body}}
+      </div>
+    {{else}}
+      <div class="body">
+        {{body}}
+      </div>
+    {{/if}}
     {{> annotationMetaMenu}}
   </li>
 </template>
 
 <template name="highlightsControl">
-  {{! TODO: Display delete buttons only to authors of highlights (for now) }}
-  <button class="delete">Delete</button>
+  {{#if canEdit}}
+    <button class="delete">Delete</button>
+  {{/if}}
   <p class="authors">
     {{#with author}}
       <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
