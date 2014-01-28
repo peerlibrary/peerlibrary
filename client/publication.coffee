@@ -22,6 +22,42 @@ setPublicationDOMReady = (ready) ->
   _publicationDOMReady = ready
   publicationDOMReadyDependency.changed()
 
+# Should not be used directly but through getViewport and setViewport
+_viewport =
+  top: null
+  bottom: null
+
+viewportDependency = new Deps.Dependency()
+
+getViewport = ->
+  viewportDependency.depend()
+  _viewport
+
+setViewport = (top, bottom) ->
+  return if _viewport.top is top and _viewport.bottom is bottom
+
+  _viewport =
+    top: top
+    bottom: bottom
+  viewportDependency.changed()
+
+# Should not be used directly but through getHighlights and setHighlights
+_highlights = {}
+
+highlightsDependency = new Deps.Dependency()
+
+@getHighlights = ->
+  highlightsDependency.depend()
+  _highlights
+
+@setHighlights = (highlights) ->
+  a = _.keys _highlights
+  b = _.keys highlights
+  return unless a.length isnt b.length or _.difference(a, b).length
+
+  _highlights = highlights
+  highlightsDependency.changed()
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
@@ -60,6 +96,8 @@ class @Publication extends @Publication
       # To make sure we are starting with empty slate
       @_$displayWrapper.empty()
       setPublicationDOMReady false
+      setViewport null, null
+      setHighlights {}
 
       @_highlighter.setNumPages @_pdf.numPages
 
@@ -246,6 +284,8 @@ class @Publication extends @Publication
     @_$displayWrapper = null
 
     setPublicationDOMReady false
+    setViewport null, null
+    setHighlights {}
 
   renderPage: (page) =>
     return if page.rendering
@@ -381,6 +421,9 @@ setViewportPosition = ($viewport) ->
     # is possible.
     height: "#{ bottom - top }%"
 
+  displayHeight = $('.viewer .display-wrapper').height()
+  setViewport top * displayHeight / 100, bottom * displayHeight / 100
+
 scrollToOffset = (offset) ->
   # We round ourselves to make sure we are rounding in the same way accross all browsers.
   # Otherwise there is a conflict between what scroll to and how is the viewport then
@@ -389,7 +432,7 @@ scrollToOffset = (offset) ->
   $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height())
 
 Template.publicationScroller.created = ->
-  $(window).on 'scroll.publicationScroller', (e) =>
+  $(window).on 'scroll.publicationScroller resize.publicationScroller', (e) =>
     return unless isPublicationDOMReady()
 
     # We do not call setViewportPosition when dragging from scroll event
@@ -399,6 +442,8 @@ Template.publicationScroller.created = ->
     # browser window edge if there are compething event handlers viewport
     # gets stuck and does not necessary go to the end position.
     setViewportPosition $(@findAll '.viewport') unless draggingViewport
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationScroller.rendered = ->
   # Dependency on isPublicationDOMReady value is registered because we
@@ -449,8 +494,8 @@ Template.publicationScroller.sections = ->
   return [] unless isPublicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
-  displayTop = $displayWrapper.offset().top
-  displayHeight = $displayWrapper.height()
+  displayTop = $displayWrapper.outerOffset().top
+  displayHeight = $displayWrapper.outerHeight(true)
   for section in $displayWrapper.children()
     $section = $(section)
 
@@ -472,24 +517,54 @@ Template.highlightsControl.canEdit = ->
   return @author._id is Meteor.person()?._id
 
 Template.annotationsControl.events
-  'click .add': (e, template) =>
+  'click .add': (e, template) ->
+    # We prepopulate automatically generated fields as well because we
+    # want them to be displayed even before they are saved to the server
+    # TODO: We could add to PeerDB to generate fields on the client side as well?
     annotation =
-      author:
-        _id: Meteor.personId()
+      created: moment.utc().toDate()
+      author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
       publication:
         _id: Session.get 'currentPublicationId'
+      highlights: []
       local: true
 
     LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       throw error if error
 
+    return # Make sure CoffeeScript does not return anything
+
 Template.publicationAnnotations.annotations = ->
+  viewport = getViewport()
+  highlights = @getHighlights()
+
+  insideViewport = (area) ->
+    viewport.top <= area.top + area.height and viewport.bottom >= area.top
+
+  visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
+
   LocalAnnotations.find
+    $or: [
+      # We display local annotations
+      local: true
+    ,
+      # We display all annotations which are not linked to any highlight
+      highlights:
+        $in: [null, []]
+    ,
+      # We display those which have a corresponding highlight visible
+      'highlights._id':
+        $in: visibleHighlights
+    ]
     'publication._id': Session.get 'currentPublicationId'
 
 Template.publicationAnnotations.rendered = ->
   $(@findAll '.annotations').scrollLock()
+
+  # We have to reset current left edge when re-rendering
+  $('.annotations').css
+    left: $('.annotations-control').css 'left'
 
 Template.publicationAnnotationsItem.canEdit = ->
   # Only the author can edit for now
@@ -509,3 +584,11 @@ Template.annotationMetaMenu.rendered = ->
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: BASE_Z_INDEX + $metaMenus.length - i
+
+Template.annotationMetaMenu.events
+  'click .delete': (e, template) ->
+    LocalAnnotations.remove @_id, (error) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      throw error if error
+
+    return # Make sure CoffeeScript does not return anything

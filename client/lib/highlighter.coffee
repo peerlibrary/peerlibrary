@@ -347,12 +347,10 @@ class @Highlighter
     # set Annotator.TextHighlight value in TextAnchors plugin instance
     @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
 
-    $(window).on 'scroll.highlighter', @checkRender
-    $(window).on 'resize.highlighter', @checkRender
+    $(window).on 'scroll.highlighter resize.highlighter', @checkRender
 
   destroy: =>
-    $(window).off 'scroll.highlighter'
-    $(window).off 'resize.highlighter'
+    $(window).off '.highlighter'
 
     # We stop handles here and not just leave it to Deps.autorun to do it to cleanup in the right order
     @_highlightsHandle.stop() if @_highlightsHandle

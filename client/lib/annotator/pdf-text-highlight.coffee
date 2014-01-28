@@ -11,6 +11,8 @@ class PDFTextHighlight extends Annotator.Highlight
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
     @_$highlightsControl = @_$textLayer.next('.highlights-control')
 
+    @_offset = @_$highlightsLayer.offsetParent().offset()
+
     @_area = null
     @_box = null
     @_hover = null
@@ -179,8 +181,6 @@ class PDFTextHighlight extends Annotator.Highlight
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
 
-    offset = @_$highlightsLayer.offsetParent().offset()
-
     # We cannot simply use Range.getClientRects because it returns different
     # things in different browsers: in Firefox it seems to return almost precise
     # but a bit offset values (maybe just more testing would be needed), but in
@@ -193,8 +193,8 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = $wrap.get(0).getBoundingClientRect()
       $node.unwrap()
 
-      left: rect.left + scrollLeft - offset.left
-      top: rect.top + scrollTop - offset.top
+      left: rect.left + scrollLeft - @_offset.left
+      top: rect.top + scrollTop - @_offset.top
       width: rect.width
       height: rect.height
 
@@ -287,6 +287,15 @@ class PDFTextHighlight extends Annotator.Highlight
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
     @_$highlight
+
+  # Get bounding box with coordinates relative to the outer bounds of the display wrapper
+  getBoundingBox: =>
+    wrapperOffset = @anchor.annotator.wrapper.outerOffset()
+
+    left: @_box.left + @_offset.left - wrapperOffset.left
+    top: @_box.top + @_offset.top - wrapperOffset.top
+    width: @_box.width
+    height: @_box.height
 
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>

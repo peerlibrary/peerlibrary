@@ -37,6 +37,16 @@ Highlights.deny
     # checking anything, just adding fields
     false
 
+Meteor.publish 'highlights-by-id', (id) ->
+  check id, String
+
+  return unless id
+
+  Highlights.find
+    _id: id
+  ,
+    Highlight.PUBLIC_FIELDS()
+
 Meteor.publish 'highlights-by-publication', (publicationId) ->
   check publicationId, String
 

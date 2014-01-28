@@ -29,6 +29,42 @@ setSession = (session) ->
   # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()
 
+redirectHighlightId = (highlightId) ->
+  notFound = ->
+    # TODO: Is there a better/official way?
+    Meteor.Router._page = 'notfound'
+    Meteor.Router._pageDeps.changed()
+
+  highlightsHandle = Meteor.subscribe 'highlights-by-id', highlightId,
+    onError: (error) ->
+      notFound()
+    onReady: ->
+      highlight = Highlights.findOne highlightId
+
+      unless highlight
+        highlightsHandle.stop()
+        notFound()
+        return
+
+      publicationsHandle = Meteor.subscribe 'publications-by-id', highlight.publication._id,
+        onError: (error) ->
+          highlightsHandle.stop()
+          notFound()
+        onReady: ->
+          publication = Publications.findOne highlight.publication._id
+
+          # We do not need subscriptions anymore
+          highlightsHandle.stop()
+          publicationsHandle.stop()
+
+          unless publication
+            notFound()
+            return
+
+          Meteor.Router.to  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+
+  return # Return nothing
+
 Meteor.Router.add
   '/':
     as: 'index'
@@ -60,6 +96,13 @@ Meteor.Router.add
       setSession
         currentPersonSlug: personSlug
       'profile'
+
+  '/h/:highlightId':
+    as: 'highlightId'
+    to: (highlightId) ->
+      setSession()
+      redirectHighlightId highlightId
+      'redirecting'
 
   '/about':
     as: 'about'

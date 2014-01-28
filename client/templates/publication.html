@@ -96,6 +96,13 @@
         {{/with}}
       </p>
       <p>{{created}}</p>
+      <p class="highlights">
+        {{#each highlights}}
+          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
+        {{else}}
+          Not linked to any highlight.
+        {{/each}}
+      </p>
     </div>
   </div>
 </template>
