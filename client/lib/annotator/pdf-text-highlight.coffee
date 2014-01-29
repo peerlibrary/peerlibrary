@@ -153,7 +153,7 @@ class PDFTextHighlight extends Annotator.Highlight
         $(target).trigger e
         e.type = 'mouseout'
 
-  _mouseenterHandler: (e) =>
+  _mouseenterHandler: (e, noControl) =>
     # We have to check if highlight already is marked as hovered because of mouse events forwarding
     # we use, which makes the event be send twice, once when mouse really hovers the highlight, and
     # another time when user moves from a highlight to a control - in fact mouseover handler above
@@ -164,33 +164,33 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$highlight.addClass 'hovered'
     @_drawHover()
     # When mouseenter handler is called by _annotationMouseenterHandler we do not want to show control
-    @_showControl() if e
+    @_showControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if e
+    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if noControl
 
     return # Make sure CoffeeScript does not return anything
 
-  _mouseleaveHandler: (e) =>
+  _mouseleaveHandler: (e, noControl) =>
     # Probably not really necessary to check if highlight already marked as hovered but to match check above
     return unless @_$highlight.hasClass 'hovered'
 
     @_$highlight.removeClass 'hovered'
     @_hideHover()
     # When mouseleave handler is called by _annotationMouseleaveHandler we do not want to show control
-    @_hideControl() if e
+    @_hideControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if e
+    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
 
     return # Make sure CoffeeScript does not return anything
 
   _annotationMouseenterHandler: (e, annotationId) =>
-    @_mouseenterHandler() if annotationId in _.pluck @annotation.annotations, '_id'
+    @_mouseenterHandler null, true if annotationId in _.pluck @annotation.annotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _annotationMouseleaveHandler: (e, annotationId) =>
-    @_mouseleaveHandler() if annotationId in _.pluck @annotation.annotations, '_id'
+    @_mouseleaveHandler null, true if annotationId in _.pluck @annotation.annotations, '_id'
 
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
@@ -263,7 +263,7 @@ class PDFTextHighlight extends Annotator.Highlight
 
     # We fake mouse leaving if highlight was hovered by any chance
     # (this happens when you remove a highlight through a control).
-    @_mouseleaveHandler()
+    @_mouseleaveHandler null
 
     $(@_$highlight).remove()
 
