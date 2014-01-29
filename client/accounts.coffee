@@ -27,3 +27,6 @@ Template._loginButtons.events
   'focus #login-buttons': (e, template) ->
     e.dialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
+
+Handlebars.registerHelper 'currentUserId', (options) ->
+  Meteor.userId()
