@@ -625,7 +625,7 @@ Template.publicationAnnotationsItem.events
     # Focus immediately after converting local annotation
     # TODO: Improve this
     Meteor.setTimeout ->
-      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+      $($template?.findAll '.body[contenteditable=true]').get(0)?.focus()
     , 100
 
     # On click to convert local annotation we are for sure inside the annotation, so we can
@@ -646,9 +646,10 @@ Template.publicationAnnotationsItem.events
 
     # Focus body no matter where the annotation was clicked
     # TODO: Improve this
-    Meteor.setTimeout ->
-      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
-    , 100
+    unless $(e.target).hasClass 'delete'
+      Meteor.setTimeout ->
+        $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+      , 100
 
     return # Make sure CoffeeScript does not return anything
 
