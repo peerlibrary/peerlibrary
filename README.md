@@ -62,12 +62,12 @@ From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) t
     mrt
 
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
-your local development instance.
+your local development instance, to start an installation wizard process in which you
+create an admin user (which has username `admin`). After you create an admin
+user, PeerLibrary will reload.
 
 To demo the tool, you will need to populate your instance of the database with publications.
-At first run it was already populated with dummy users `carl-sagan`, `hannah-arendt`,
-`paul-feyerabend` with password `hello`. User `carl-sagan` was set as administrator.
-Log in as `carl-sagan` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
+Log in as `admin` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
 Click on the _Initialize database with sample data_ button, to initialize the database with
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
