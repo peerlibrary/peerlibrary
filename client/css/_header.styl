@@ -210,17 +210,27 @@ Sign in buttons
   display inline-block
   float right
 
-  a
-    cursor pointer
+  a.additional-link
+    color blue-accent 
 
+/*
+unauthenticated auth menu
+========================= */
+.not-logged-in
   #login-dropdown-list
     color black
-    background rgb(230,230,230)
+    background white
     border-color rgb(210,210,210)
+    border-radius 5px
     border-style solid
-    border-width 0 0 1px 1px
-    position absolute
-    width 293px
+    border-width 1px
+    position fixed
+    top 50%
+    left 50%
+    margin-left -151px
+    margin-top -220px
+    padding 20px 0
+    width 300px
     right 0px
     font-size 14px
     line-height 36px
@@ -233,7 +243,7 @@ Sign in buttons
     input
       position relative
       min-height 20px
-      width 235px
+      width 242px
       padding 7px 8px
       outline medium none
       color rgb(51,51,51)
@@ -251,8 +261,102 @@ Sign in buttons
       border-color rgb(81,167,232)
       box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
+    .login-button
+      width 258px
+      height 40px
+      position relative
+      margin 0 auto 10px auto
+      padding 0
+      background #4695C5
+      border 1px solid #2B729C
+      border-radius 3px
+      text-align center
+      font-weight bold
+      color white
+      cursor pointer
+      transition all 0.15s ease-in 0s
+
+    .login-button-form-submit
+      margin-top 20px
+
+    .login-button:hover
+      background #327CA8
+
+    .additional-link
+      background transparent
+      color blue-accent
+      text-align center
+    
     .loading
       display none
+
+.logged-in
+  #login-dropdown-list
+    background white 
+    border-color rgb(210,210,210)
+    border-style solid
+    border-width 1px
+    border-radius 3px
+    position  absolute
+    width 180px
+    padding 5px 0
+    top 56px
+    right 24px
+    font-size 14px
+    line-height 20px
+
+  #login-dropdown-list:after
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px
+    border-color #FFFFFF transparent
+    display block
+    width 0
+    z-index 1
+    margin-left -10px
+    top -8px
+    left 149px
+
+  #login-dropdown-list:before
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px;
+    border-color rgb(210,210,210) transparent
+    display block
+    width 0
+    z-index 0
+    margin-left -10px
+    top -9px
+    left 149px
+
+  .menu-item
+    padding 5px 20px
+    background transparent
+    text-align center
+    font-weight bold
+    color blue-accent
+    cursor pointer
+    transition all 0.15s ease-in 0s
+
+    a
+      color blue-accent
+
+  .menu-item:hover
+      background blue-accent
+      color white
+      a
+        color white
+  
+  .menu-item a:hover
+    color white
+    background blue-accent
+
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding 0 20px
@@ -269,31 +373,16 @@ Sign in buttons
   float right
 
 /*
-Auth buttons
+Auth form buttons
 ============ */
 
-.login-button
-  padding 5px 20px
-  background #68E468
-  text-align center
-  font-weight bold
-  color white
-  cursor pointer
-  transition all 0.15s ease-in 0s
 
-.login-button-form-submit
-  margin-top 30px
 
-.login-button:hover
-  background #7BC97B
-
-.additional-link
-  background blue
-  text-align center
 
 .user-icon
   width 24px
   height 24px
+  margin-left 12px
 
 /*
 Import button
@@ -356,6 +445,9 @@ header.index-header
     cursor pointer
 
   ul.top-menu
+    a
+      cursor pointer
+
     li > a, li a.login-link-text
       font-size 14px
       font-weight 600
@@ -364,15 +456,17 @@ header.index-header
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
-      background rgba(87,173,104,0.7)
-      border-radius 4px
+      background #4695c5
+      border 1px solid #2B729C
+      border-radius 3px
       transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
-      background rgba(87,173,104,1)
+      background #327CA8
 
     li a.login-link-text
       margin-right 25px
+      color white
 
   .user-icon
     margin-top -5px
