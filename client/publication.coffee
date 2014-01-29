@@ -622,6 +622,12 @@ Template.publicationAnnotationsItem.events
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
+    # Focus immediately after converting local annotation
+    # TODO: Improve this
+    Meteor.setTimeout ->
+      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+    , 100
+
     # On click to convert local annotation we are for sure inside the annotation, so we can
     # immediatelly send a mouse enter event to make sure related highlight has a hovered state
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [template.data._id]
@@ -638,10 +644,11 @@ Template.publicationAnnotationsItem.events
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
-    # Focus by clicking on the annotation
-    # TODO: Make it work when converting local annotation
-    # TODO: Fix this and make it work
-    #body = $(template.findAll '.body[contenteditable=true]').get(0)?.focus()
+    # Focus body no matter where the annotation was clicked
+    # TODO: Improve this
+    Meteor.setTimeout ->
+      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+    , 100
 
     return # Make sure CoffeeScript does not return anything
 
