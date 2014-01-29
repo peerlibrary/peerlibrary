@@ -6,3 +6,9 @@ Template.install.events
       throw error if error
 
       # Server side will reload the client
+
+Template.install.created = Template.indexMain.created
+
+Template.install.rendered = Template.indexMain.rendered
+
+Template.install.destroyed = Template.indexMain.destroyed

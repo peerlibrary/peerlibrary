@@ -217,6 +217,10 @@ Sign in buttons
   a.additional-link
     color blue-accent 
 
+/*
+unauthenticated auth menu
+========================= */
+.not-logged-in
   #login-dropdown-list
     color black
     background white
@@ -229,6 +233,7 @@ Sign in buttons
     left 50%
     margin-left -151px
     margin-top -220px
+    padding 20px 0
     width 300px
     right 0px
     font-size 14px
@@ -260,8 +265,47 @@ Sign in buttons
       border-color rgb(81,167,232)
       box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
+    .login-button
+      width 258px
+      height 40px
+      position relative
+      margin 0 auto 10px auto
+      padding 0
+      background #4695C5
+      border 1px solid #2B729C
+      border-radius 3px
+      text-align center
+      font-weight bold
+      color white
+      cursor pointer
+      transition all 0.15s ease-in 0s
+
+    .login-button-form-submit
+      margin-top 20px
+
+    .login-button:hover
+      background #327CA8
+
+    .additional-link
+      background transparent
+      color blue-accent
+      text-align center
+    
     .loading
       display none
+
+.logged-in
+  #login-dropdown-list
+    color black
+    background rgb(230,230,230)
+    border-color rgb(210,210,210)
+    border-style solid
+    border-width 0 0 1px 1px
+    position absolute
+    width 293px
+    right 0px
+    font-size 14px
+    line-height 36px
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding 0 20px
@@ -278,34 +322,11 @@ Sign in buttons
   float right
 
 /*
-Auth buttons
+Auth form buttons
 ============ */
 
-.login-button
-  width 258px
-  height 40px
-  position relative
-  margin 0 auto 20px auto
-  padding 0
-  background #4695C5
-  border 1px solid #2B729C
-  border-radius 3px
-  text-align center
-  font-weight bold
-  color white
-  cursor pointer
-  transition all 0.15s ease-in 0s
 
-.login-button-form-submit
-  margin-top 20px
 
-.login-button:hover
-  background #327CA8
-
-.additional-link
-  background transparent
-  color blue-accent
-  text-align center
 
 .user-icon
   width 24px
