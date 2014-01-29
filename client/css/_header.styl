@@ -210,10 +210,6 @@ Sign in buttons
   display inline-block
   float right
 
-  a
-    cursor pointer
-    color white
-
   a.additional-link
     color blue-accent 
 
@@ -296,16 +292,71 @@ unauthenticated auth menu
 
 .logged-in
   #login-dropdown-list
-    color black
-    background rgb(230,230,230)
+    background white 
     border-color rgb(210,210,210)
     border-style solid
-    border-width 0 0 1px 1px
-    position absolute
-    width 293px
-    right 0px
+    border-width 1px
+    border-radius 3px
+    position  absolute
+    width 180px
+    padding 5px 0
+    top 56px
+    right 24px
     font-size 14px
-    line-height 36px
+    line-height 20px
+
+  #login-dropdown-list:after
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px
+    border-color #FFFFFF transparent
+    display block
+    width 0
+    z-index 1
+    margin-left -10px
+    top -8px
+    left 149px
+
+  #login-dropdown-list:before
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px;
+    border-color rgb(210,210,210) transparent
+    display block
+    width 0
+    z-index 0
+    margin-left -10px
+    top -9px
+    left 149px
+
+  .menu-item
+    padding 5px 20px
+    background transparent
+    text-align center
+    font-weight bold
+    color blue-accent
+    cursor pointer
+    transition all 0.15s ease-in 0s
+
+    a
+      color blue-accent
+
+  .menu-item:hover
+      background blue-accent
+      color white
+      a
+        color white
+  
+  .menu-item a:hover
+    color white
+    background blue-accent
+
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
   padding 0 20px
@@ -331,6 +382,7 @@ Auth form buttons
 .user-icon
   width 24px
   height 24px
+  margin-left 12px
 
 /*
 Import button
@@ -393,6 +445,9 @@ header.index-header
     cursor pointer
 
   ul.top-menu
+    a
+      cursor pointer
+
     li > a, li a.login-link-text
       font-size 14px
       font-weight 600
