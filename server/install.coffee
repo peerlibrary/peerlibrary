@@ -2,9 +2,9 @@ Meteor.methods
   createAdminAccount: (password) ->
     check password, String
 
-    throw new Meteor.Error "Not in install mode", 403 unless INSTALL
+    throw new Meteor.Error 403, "Not in install mode." unless INSTALL
 
-    throw new Meteor.Error "Password is required", 400 unless password
+    throw new Meteor.Error 400, "Password is required." unless password
 
     adminId = Accounts.createUser
       username: 'admin'
