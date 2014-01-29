@@ -11,6 +11,8 @@ class PDFTextHighlight extends Annotator.Highlight
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
     @_$highlightsControl = @_$textLayer.next('.highlights-control')
 
+    @_offset = @_$highlightsLayer.offsetParent().offset()
+
     @_area = null
     @_box = null
     @_hover = null
@@ -98,7 +100,7 @@ class PDFTextHighlight extends Annotator.Highlight
     ).appendTo(@_$highlightsLayer)
 
   _showControl: =>
-    $control = @_$highlightsControl.find('.control')
+    $control = @_$highlightsControl.find('.meta-menu')
     $control.css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
@@ -108,7 +110,8 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    $control.find('.meta-content').html(Template.highlightsControl()).find('.delete').on 'click.highlight', (e) =>
+    # TODO: Make reactive content of the template?
+    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
       @anchor.annotator._removeHighlight @annotation._id
 
       return # Make sure CoffeeScript does not return anything
@@ -116,12 +119,12 @@ class PDFTextHighlight extends Annotator.Highlight
     $control.show()
 
   _hideControl: =>
-    @_$highlightsControl.find('.control').hide().off(
+    @_$highlightsControl.find('.meta-menu').hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
     )
-    @_$highlightsControl.find('.control .meta-content .delete').off '.highlight'
+    @_$highlightsControl.find('.meta-menu .meta-content .delete').off '.highlight'
 
   _clickHandler: (e) =>
     @anchor.annotator._selectHighlight @annotation._id
@@ -160,7 +163,11 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_$highlight.addClass 'hovered'
     @_drawHover()
-    @_showControl()
+    # When mouseenter handler is called by _annotationMouseenterHandler we do not want to show control
+    @_showControl() if e
+
+    # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
+    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if e
 
     return # Make sure CoffeeScript does not return anything
 
@@ -170,15 +177,24 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_$highlight.removeClass 'hovered'
     @_hideHover()
-    @_hideControl()
+    # When mouseleave handler is called by _annotationMouseleaveHandler we do not want to show control
+    @_hideControl() if e
+
+    # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
+    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if e
 
     return # Make sure CoffeeScript does not return anything
+
+  _annotationMouseenterHandler: (e, annotationId) =>
+    @_mouseenterHandler() if annotationId in _.pluck @annotation.annotations, '_id'
+    return # Make sure CoffeeScript does not return anything
+
+  _annotationMouseleaveHandler: (e, annotationId) =>
+    @_mouseleaveHandler() if annotationId in _.pluck @annotation.annotations, '_id'
 
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
-
-    offset = @_$highlightsLayer.offsetParent().offset()
 
     # We cannot simply use Range.getClientRects because it returns different
     # things in different browsers: in Firefox it seems to return almost precise
@@ -192,8 +208,8 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = $wrap.get(0).getBoundingClientRect()
       $node.unwrap()
 
-      left: rect.left + scrollLeft - offset.left
-      top: rect.top + scrollTop - offset.top
+      left: rect.left + scrollLeft - @_offset.left
+      top: rect.top + scrollTop - @_offset.top
       width: rect.width
       height: rect.height
 
@@ -208,6 +224,8 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
+      'annotationMouseenter': @_annotationMouseenterHandler
+      'annotationMouseleave': @_annotationMouseleaveHandler
 
     @_$highlight.data 'highlight', @
 
@@ -286,6 +304,15 @@ class PDFTextHighlight extends Annotator.Highlight
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
     @_$highlight
+
+  # Get bounding box with coordinates relative to the outer bounds of the display wrapper
+  getBoundingBox: =>
+    wrapperOffset = @anchor.annotator.wrapper.outerOffset()
+
+    left: @_box.left + @_offset.left - wrapperOffset.left
+    top: @_box.top + @_offset.top - wrapperOffset.top
+    width: @_box.width
+    height: @_box.height
 
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>

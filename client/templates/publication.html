@@ -1,39 +1,26 @@
 <template name="publication">
   <div class="viewer">
-    <div class="meta-menu">
-      {{> publicationMetaMenu}}
-    </div>
+    {{> publicationMetaMenu}}
     {{> publicationScroller}}
     {{> publicationDisplay}}
-    <div class="annotations">
-      <ul class="annotations-list">
-        {{> publicationAnnotations}}
-        <li class="annotation">
-          <div class="text" contenteditable="true">
-            It is a question of the Third World starting a new history of Man, a history which will have regard to the sometimes prodigious theses which Europe has put forward, but which will also not forget Europe's crimes, of which the most horrible was committed in the heart of man, and consisted of the pathological tearing apart of his functions and the crumbling away of his unity. And in the framework of the collectivity there were the differentiations, the stratification and the bloodthirsty tensions fed by classes; and finally, on the immense scale of humanity, there were racial hatreds, slavery, exploitation and above all the bloodless genocide which consisted in the setting aside of fifteen thousand millions of men.
-          </div>
-        </li>
-        <li class="annotation">
-          <div class="text" contenteditable="true">
-            Knowledge emerges only through invention and re-invention, through the restless, impatient, continuing, hopeful inquiry human beings pursue in the world, with the world, and with each other.
-          </div>
-        </li>
-      </ul>
-    </div>
+    {{> annotationsControl}}
+    {{> publicationAnnotations}}
   </div>
 </template>
 
 <template name="publicationMetaMenu">
-  <i class="icon-menu"></i>
-  <div class="meta-content description">
-    <p><b>{{publication.title}}</b></p>
-    <p class="authors">
-      {{#each publication.authors}}
-        <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
-      {{/each}}
-    </p>
-    <p>Published in: {{publication.source}}</p>
-    <p>{{publication.created}}</p>
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      <p><b>{{publication.title}}</b></p>
+      <p class="authors">
+        {{#each publication.authors}}
+          <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
+        {{/each}}
+      </p>
+      <p>Published in: {{publication.source}}</p>
+      <p>{{publication.created}}</p>
+    </div>
   </div>
 </template>
 
@@ -57,20 +44,101 @@
 </template>
 
 <template name="publicationAnnotations">
-  {{#each annotations}}
-    {{> publicationAnnotationsItem}}
-  {{/each}}
+  <ul class="annotations-list">
+    {{#each annotations}}
+      {{> publicationAnnotationsItem}}
+    {{else}}
+      {{> highlightInvite}}
+    {{/each}}
+  </ul>
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li class="annotation{{#if highlighted}} highlighted{{/if}}">
-    <div class="text" contenteditable="true">
-      {{body}}
+  <li class="annotation {{#if local}}local{{/if}} {{selected}}">
+    {{#if local}}
+      {{> annotationInvite}}
+    {{else}}
+      {{#if canEdit}}
+        {{#constant}}
+          <div class="body" contenteditable="true" data-placeholder="Write your annotation here">{{body}}</div>
+          <span class="saved">Saved</span>
+        {{/constant}}
+      {{else}}
+        <div class="body">
+          {{body}}
+        </div>
+      {{/if}}
+      {{> annotationMetaMenu}}
+    {{/if}}
+  </li>
+</template>
+
+<template name="highlightInvite">
+  <li class="annotation invite">
+    <div class="vertical-align-outer">
+      <div class="vertical-align-inner">
+        <div class="body balance-text">
+          Select text in the publication to make a highlight, or click on an existing highlight to select it.
+        </div>
+      </div>
     </div>
   </li>
 </template>
 
+<template name="annotationInvite">
+  <div class="body balance-text">
+    {{! TODO: Change to "Click here or start typing to link an annotation to the selected highlight." }}
+    Click here to link an annotation to the selected highlight.
+  </div>
+</template>
+
 <template name="highlightsControl">
-  {{! TODO: Display delete buttons only to authors of highlights (for now) }}
-  <button class="delete">Delete</button>
+  {{#if canEdit}}
+    <button class="delete">Delete</button>
+  {{/if}}
+  <p class="authors">
+    {{#with author}}
+      <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
+    {{/with}}
+  </p>
+  <p class="time">{{created}}</p>
+  <p class="time">{{updated}}</p>
+  <p class="annotations">
+    {{#each annotations}}
+      <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
+    {{else}}
+      Not linked to any annotation.
+    {{/each}}
+  </p>
+</template>
+
+<template name="annotationsControl">
+  <div class="annotations-control">
+    <button class="add" title="Add an annotation">+</button>
+  </div>
+</template>
+
+<template name="annotationMetaMenu">
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      {{#if canEdit}}	    
+        <button class="delete">Delete</button>
+      {{/if}}
+      <p class="authors">
+        {{#with author}}
+          <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
+        {{/with}}
+      </p>
+      <p class="time">{{created}}</p>
+      <p class="time">{{updated}}</p>
+      <p class="highlights">
+        {{#each highlights}}
+          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
+        {{else}}
+          Not linked to any highlight.
+        {{/each}}
+      </p>
+    </div>
+  </div>
 </template>
