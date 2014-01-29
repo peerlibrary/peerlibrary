@@ -32,6 +32,7 @@ class @LoggedError extends Document
   # serverTime: server time when the error was received (in UTC)
   # parsedUserAgent: parsed and more structured information about user's browser
   # person: if user was logged in and has not opted-out, reference to the person for whom the error occured, otherwise null
+  #   _id: person's id
 
   @Meta =>
     collection: LoggedErrors

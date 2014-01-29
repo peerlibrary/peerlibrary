@@ -42,7 +42,7 @@ Accounts.onCreateUser (options, user) ->
       slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
       gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
 
-    _.extend person, _.pick(options.profile or {}, 'foreNames', 'lastName', 'work', 'education', 'publications')
+    _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
     Persons.insert person
 

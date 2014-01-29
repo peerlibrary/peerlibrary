@@ -1,7 +1,7 @@
 <template name="profile">
   {{#if person}}
     <div id="profile">
-      <h1>{{person.foreNames}} {{person.lastName}}</h1>
+      <h1>{{person.givenName}} {{person.familyName}}</h1>
       {{#if isMine}}
         <h2>Library</h2>
         <ol class="item-list">
@@ -30,7 +30,7 @@
           <div class="clearfix"></div>
           <span class="authors line">
             {{#each authors}}
-              <span><a href="{{profilePath slug}}">{{foreNames}} {{lastName}}</a></span>
+              <span><a href="{{profilePath slug}}">{{givenName}} {{familyName}}</a></span>
             {{/each}}
           </span><br>
           <span class="date line">{{displayDay created}}</span><br>

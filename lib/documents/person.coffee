@@ -7,23 +7,9 @@ class @Person extends Document
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
   # created: timestamp when document was created
-  # foreNames
-  # lastName
+  # givenName
+  # familyName
   # isAdmin: boolean, is user an administrator or not
-  # work
-  #   position (e.g. Professor of Theoretical Physics)
-  #   institution (e.g. University of California, Berkeley)
-  #   startYear (e.g. 2011)
-  #   endYear null if current
-  # education
-  #   degree (e.g. PhD)
-  #   concentration (e.g. Social Anthropology)
-  #   institution
-  #   thesis: publication id - TODO: Define reference
-  #   advisor: person id - TODO: Define reference
-  #   startYear
-  #   endYear: null if ongoing
-  #   completed: true if degree granted
   # publications: list of
   #   _id: authored publication id
   # library: list of

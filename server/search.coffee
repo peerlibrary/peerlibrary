@@ -20,7 +20,7 @@ Meteor.methods
       ,
         key: "by"
         filter: "authors"
-        value: "#{ publication.authors[0].lastName } et al."
+        value: "#{ publication.authors[0].familyName } et al."
       ]
     proposals.push [
       key: ""

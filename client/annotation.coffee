@@ -72,7 +72,7 @@ Meteor.startup ->
 
   created: timestamp
   updated: timestamp
-  author: _.pick Meteor.person(), '_id', 'slug', 'foreNames', 'lastName'
+  author: _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName'
   publication:
     _id: Session.get 'currentPublicationId'
   highlights: []

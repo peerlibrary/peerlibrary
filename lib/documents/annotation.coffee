@@ -6,8 +6,8 @@ class @Annotation extends Document
   # author:
   #   _id: author's person id
   #   slug: author's person id
-  #   foreNames
-  #   lastName
+  #   givenName
+  #   familyName
   # body: annotation's body
   # publication:
   #   _id: publication's id
@@ -19,6 +19,6 @@ class @Annotation extends Document
   @Meta =>
     collection: Annotations
     fields:
-      author: @ReferenceField Person, ['slug', 'foreNames', 'lastName']
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName']
       publication: @ReferenceField Publication
       highlights: [@ReferenceField Highlight]

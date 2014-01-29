@@ -6,8 +6,8 @@ class @Highlight extends Document
   # author:
   #   _id: author's person id
   #   slug: author's person id
-  #   foreNames
-  #   lastName
+  #   givenName
+  #   familyName
   # publication:
   #   _id: publication's id
   # quote: quote made by this highlight
@@ -19,6 +19,6 @@ class @Highlight extends Document
   @Meta =>
     collection: Highlights
     fields:
-      author: @ReferenceField Person, ['slug', 'foreNames', 'lastName']
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName']
       publication: @ReferenceField Publication
       annotations: [@ReferenceField Annotation]
