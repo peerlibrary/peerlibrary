@@ -187,15 +187,24 @@ Sign in buttons
 
   a
     cursor pointer
+    color white
+
+  a.additional-link
+    color blue-accent 
 
   #login-dropdown-list
     color black
-    background rgb(230,230,230)
+    background white
     border-color rgb(210,210,210)
+    border-radius 5px
     border-style solid
-    border-width 0 0 1px 1px
-    position absolute
-    width 293px
+    border-width 1px
+    position fixed
+    top 50%
+    left 50%
+    margin-left -151px
+    margin-top -220px
+    width 300px
     right 0px
     font-size 14px
     line-height 36px
@@ -208,7 +217,7 @@ Sign in buttons
     input
       position relative
       min-height 20px
-      width 235px
+      width 242px
       padding 7px 8px
       outline medium none
       color rgb(51,51,51)
@@ -248,8 +257,14 @@ Auth buttons
 ============ */
 
 .login-button
-  padding 5px 20px
-  background #68E468
+  width 258px
+  height 40px
+  position relative
+  margin 0 auto 20px auto
+  padding 0
+  background #4695C5
+  border 1px solid #2B729C
+  border-radius 3px
   text-align center
   font-weight bold
   color white
@@ -257,13 +272,14 @@ Auth buttons
   transition all 0.15s ease-in 0s
 
 .login-button-form-submit
-  margin-top 30px
+  margin-top 20px
 
 .login-button:hover
-  background #7BC97B
+  background #327CA8
 
 .additional-link
-  background blue
+  background transparent
+  color blue-accent
   text-align center
 
 .user-icon
@@ -338,15 +354,17 @@ header.index-header
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
-      background rgba(87,173,104,0.7)
-      border-radius 4px
+      background #4695c5
+      border 1px solid #2B729C
+      border-radius 3px
       transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
-      background rgba(87,173,104,1)
+      background #327CA8
 
     li a.login-link-text
       margin-right 25px
+      color white
 
   .user-icon
     margin-top -5px
