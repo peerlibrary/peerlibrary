@@ -98,6 +98,8 @@ Template.searchInput.searchInvitation = ->
   else
     "Search academic publications and people"
 
+Template.searchInput.development = Template.header.development
+
 Deps.autorun ->
   $('.search-input').val(Session.get 'currentSearchQuery')
 

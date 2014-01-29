@@ -60,7 +60,6 @@ ul.top-menu
 
   .search-wrapper
     padding 0 20px
-    cursor pointer
     width 400px
     transition 0.2s
 
@@ -92,6 +91,9 @@ ul.top-menu
 
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   text-decoration none !important
+
+.no-index-header ul.top-menu .search-wrapper
+  cursor pointer
 
 .no-index-header
   ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
@@ -164,18 +166,41 @@ span.cursor
 .development
   position relative
 
-  .banner
-    color red
-    position absolute
-    font-size 12px
-    line-height default-line-height
-    font-weight bold
-    text-align center
-    top 33%
-    left 0
-    right 0
-    padding 0
-    transform rotate(-10deg)
+.development .banner, .development-banner
+  color red
+  position absolute
+  font-size 12px
+  line-height default-line-height
+  font-weight bold
+  text-align center
+  top 33%
+  left 0
+  right 0
+  padding 0
+  transform rotate(-10deg)
+
+.development-banner
+  transform none
+  position static
+  font-size 18px
+  width 90%
+  margin-left auto
+  margin-right auto
+  margin-bottom 0
+
+  .warning
+    font-size 36px
+    margin-top ((18px * default-line-height * 2 - 36px) / 2)
+
+  .left
+    float left
+
+  .right
+    float right
+
+.development-comment
+  text-align center
+  margin 0
 
 /*
 Sign in buttons
@@ -344,6 +369,7 @@ header.index-header
 
   .drop-files-to-import
     text-align center
+    cursor pointer
 
   ul.top-menu
     li > a, li a.login-link-text

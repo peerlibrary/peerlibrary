@@ -46,6 +46,10 @@
     </div>
     {{#if indexHeader}}
       <p class="drop-files-to-import">or drop files to import</p>
+      {{#if development}}
+        <p class="development-banner"><span class="warning left">⚠</span>Development instance<span class="warning right">⚠</span><br />Data is NOT stored permanently and is reset as needed!</p>
+        <p class="development-comment">The official website for users is at <a href="http://peerlibrary.org/">http://peerlibrary.org/</a>.</p>
+      {{/if}}
     {{/if}}
   </div>
 </template>
