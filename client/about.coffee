@@ -1,1 +1,0 @@
-Template.about.VERSION = VERSION
