@@ -646,9 +646,10 @@ Template.publicationAnnotationsItem.events
 
     # Focus body no matter where the annotation was clicked
     # TODO: Improve this
-    Meteor.setTimeout ->
-      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
-    , 100
+    unless $(e.target).hasClass 'delete'
+      Meteor.setTimeout ->
+        $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+      , 100
 
     return # Make sure CoffeeScript does not return anything
 
