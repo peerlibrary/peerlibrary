@@ -6,5 +6,3 @@ Template.footer.indexFooter = ->
 
 Template.footer.noIndexFooter = ->
   'no-index-footer' if not Template.footer.indexFooter()
-
-Template.footer.VERSION = VERSION

@@ -1,6 +1,13 @@
+ADMIN_USER_ID = 'NfEBPKH6GLYHuSJXJ'
+ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
+
 Accounts.onCreateUser (options, user) ->
   try
-    personId = Random.id()
+    if user.username is 'admin'
+      user._id = ADMIN_USER_ID
+      personId = ADMIN_PERSON_ID
+    else
+      personId = Random.id()
 
     user.person =
       _id: personId

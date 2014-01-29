@@ -99,95 +99,102 @@ redirectAnnotationId = (annotationId) ->
 
   return # Return nothing
 
-Meteor.Router.add
-  '/':
-    as: 'index'
-    to: ->
-      setSession
-        indexActive: true
-      'index'
-
-  '/p/:publicationId/:publicationSlug?/h/:highlightId':
-    as: 'highlight'
-    to: (publicationId, publicationSlug, highlightId) ->
-      setSession
-        currentPublicationId: publicationId
-        currentPublicationSlug: publicationSlug
-        currentHighlightId: highlightId
-      'publication'
-
-  '/p/:publicationId/:publicationSlug?/a/:annotationId':
-    as: 'annotation'
-    to: (publicationId, publicationSlug, annotationId) ->
-      setSession
-        currentPublicationId: publicationId
-        currentPublicationSlug: publicationSlug
-        currentAnnotationId: annotationId
-      'publication'
-
-  '/p/:publicationId/:publicationSlug?':
-    as: 'publication'
-    to: (publicationId, publicationSlug) ->
-      setSession
-        currentPublicationId: publicationId
-        currentPublicationSlug: publicationSlug
-      'publication'
-
-  '/u/:personSlug':
-    as: 'profile'
-    to: (personSlug) ->
-      setSession
-        currentPersonSlug: personSlug
-      'profile'
-
-  '/h/:highlightId':
-    as: 'highlightId'
-    to: (highlightId) ->
+if INSTALL
+  Meteor.Router.add
+    '*': ->
       setSession()
-      redirectHighlightId highlightId
-      'redirecting'
+      'install'
 
-  '/a/:annotationId':
-    as: 'annotationId'
-    to: (annotationId) ->
+else
+  Meteor.Router.add
+    '/':
+      as: 'index'
+      to: ->
+        setSession
+          indexActive: true
+        'index'
+
+    '/p/:publicationId/:publicationSlug?/h/:highlightId':
+      as: 'highlight'
+      to: (publicationId, publicationSlug, highlightId) ->
+        setSession
+          currentPublicationId: publicationId
+          currentPublicationSlug: publicationSlug
+          currentHighlightId: highlightId
+        'publication'
+
+    '/p/:publicationId/:publicationSlug?/a/:annotationId':
+      as: 'annotation'
+      to: (publicationId, publicationSlug, annotationId) ->
+        setSession
+          currentPublicationId: publicationId
+          currentPublicationSlug: publicationSlug
+          currentAnnotationId: annotationId
+        'publication'
+
+    '/p/:publicationId/:publicationSlug?':
+      as: 'publication'
+      to: (publicationId, publicationSlug) ->
+        setSession
+          currentPublicationId: publicationId
+          currentPublicationSlug: publicationSlug
+        'publication'
+
+    '/u/:personSlug':
+      as: 'profile'
+      to: (personSlug) ->
+        setSession
+          currentPersonSlug: personSlug
+        'profile'
+
+    '/h/:highlightId':
+      as: 'highlightId'
+      to: (highlightId) ->
+        setSession()
+        redirectHighlightId highlightId
+        'redirecting'
+
+    '/a/:annotationId':
+      as: 'annotationId'
+      to: (annotationId) ->
+        setSession()
+        redirectAnnotationId annotationId
+        'redirecting'
+
+    '/about':
+      as: 'about'
+      to: ->
+        setSession()
+        'about'
+
+    '/help':
+      as: 'help'
+      to: ->
+        setSession()
+        'help'
+
+    '/privacy':
+      as: 'privacy'
+      to: ->
+        setSession()
+        'privacy'
+
+    '/terms':
+      as: 'terms'
+      to: ->
+        setSession()
+        'terms'
+
+    '/admin':
+      as: 'admin'
+      to: ->
+        setSession
+          adminActive: true
+        'admin'
+
+    '*': ->
       setSession()
-      redirectAnnotationId annotationId
-      'redirecting'
-
-  '/about':
-    as: 'about'
-    to: ->
-      setSession()
-      'about'
-
-  '/help':
-    as: 'help'
-    to: ->
-      setSession()
-      'help'
-
-  '/privacy':
-    as: 'privacy'
-    to: ->
-      setSession()
-      'privacy'
-
-  '/terms':
-    as: 'terms'
-    to: ->
-      setSession()
-      'terms'
-
-  '/admin':
-    as: 'admin'
-    to: ->
-      setSession
-        adminActive: true
-      'admin'
-
-  '*': ->
-    setSession()
-    'notfound'
+      'notfound'
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->
