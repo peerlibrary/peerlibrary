@@ -1,0 +1,14 @@
+<template name="notificationsOverlay">
+  <ul class="notifications">
+    {{#each notifications}}
+      {{> notificationsOverlayItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="notificationsOverlayItem">
+  <li class="notification alert {{type}}">
+    <button type="button" class="close">&times;</button>
+    {{message}}
+  </li>
+</template>

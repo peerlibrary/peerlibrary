@@ -1,0 +1,19 @@
+@import variables
+
+.notifications
+  position fixed
+  width 300px
+  top 100px
+  left 50%
+  margin-left -150px
+  /* Higher than importing overlay */
+  z-index 100000
+
+  .notification
+    position absolute
+    left 0
+    right 0
+    top 0
+
+  .notification.animate
+    transition top .5s
