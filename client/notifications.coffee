@@ -21,11 +21,10 @@ class @Notify
     notificationId
 
   @debug: (message, additional) =>
-    notificationId = @_insert 'debug', message, additional
-
+    # For debugging we log only to the console
     console.debug message, additional
 
-    notificationId
+    null
 
   @warn: (message, additional) =>
     notificationId = @_insert 'warn', message, additional
