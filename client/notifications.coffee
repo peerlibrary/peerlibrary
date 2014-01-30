@@ -5,7 +5,7 @@
 #   message: message of the notification
 Notifications = new Meteor.Collection null
 
-class @Notification
+class @Notify
   @_insert: (type, message, additional) =>
     Notifications.insert
       type: type
