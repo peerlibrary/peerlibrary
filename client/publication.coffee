@@ -724,6 +724,8 @@ Template.annotationMetaMenu.rendered = ->
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   BASE_Z_INDEX = 200
+  # We have to search for meta menus globally to have
+  # access to other meta menus of other annotations
   $metaMenus = $('.annotations-list .meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
