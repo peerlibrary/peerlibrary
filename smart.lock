@@ -63,8 +63,8 @@
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
-        "tag": "v2.2.1",
-        "commit": "9ee12e714afe56b189f53076447b7b54f3012065"
+        "tag": "v2.5.1",
+        "commit": "8c9bc5d3fc96705057737cb9743d555417f6e551"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
@@ -108,8 +108,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.3.7",
-        "commit": "e940670d47e912674f0219cf611f2fb330c241ca"
+        "tag": "v0.3.8",
+        "commit": "952d877e6ef615f9d8fe5ac57969d35e506233af"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
