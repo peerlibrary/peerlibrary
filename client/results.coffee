@@ -107,7 +107,7 @@ Template.publicationSearchResult.events =
   'click .preview-link': (e, template) ->
     e.preventDefault()
     Meteor.subscribe 'publications-by-id', @_id, ->
-      Deps.afterFlush ->
+      Deps.afterFlush =>
         $(template.findAll '.abstract').slideToggle(200)
 
     return # Make sure CoffeeScript does not return anything

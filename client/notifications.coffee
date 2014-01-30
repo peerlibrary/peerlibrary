@@ -6,52 +6,56 @@
 Notifications = new Meteor.Collection null
 
 class @Notification
-  @success: (message) =>
-    notificationId = Notifications.insert
-      type: 'success'
+  @_insert: (type, message, additional) =>
+    Notifications.insert
+      type: type
       timestamp: moment.utc().toDate()
       message: message
+      additional: additional
 
-    console.log message
+  @success: (message, additional) =>
+    notificationId = @_insert 'success', message, additional
+
+    console.log message, additional
 
     notificationId
 
-  @debug: (message) =>
-    notificationId = Notifications.insert
-      type: 'debug'
-      timestamp: moment.utc().toDate()
-      message: message
+  @debug: (message, additional) =>
+    notificationId = @_insert 'debug', message, additional
 
-    console.debug message
+    console.debug message, additional
 
     notificationId
 
-  @warn: (message) =>
-    notificationId = Notifications.insert
-      type: 'warn'
-      timestamp: moment.utc().toDate()
-      message: message
+  @warn: (message, additional) =>
+    notificationId = @_insert 'warn', message, additional
 
-    console.warn message
+    console.warn message, additional
 
     notificationId
 
-  @error: (message, log, stack) =>
-    notificationId = Notifications.insert
-      type: 'error'
-      timestamp: moment.utc().toDate()
-      message: message
-
-    console.error message
-
-    caller = Log._getCallerDetails(/client\/lib\/notifications(?:\/|(?::tests)?\.(?:js|coffee))/)
+  @error: (message, additional, log, stack) =>
     unless stack
       stack = new Error().stack
       # We skip first two lines as they are useless
       # (the first is "Error" and the second is location of this error function)
       stack = stack.split('\n')[2..].join('\n') if stack
 
-    @_logError message, caller.file, caller.line, stack
+    notificationAdditional = additional
+
+    if stack
+      notificationAdditional += "<div class=\"stack\">#{ _.escape(stack) }</div>"
+
+    if log
+      caller = Log._getCallerDetails(/client\/lib\/notifications(?:\/|(?::tests)?\.(?:js|coffee))/)
+
+      loggedErrorId = @_logError [message, additional].join('\n'), caller.file, caller.line, stack
+
+      notificationAdditional += "<div class=\"error-logged\">This error has been logged as #{ loggedErrorId }.</div>"
+
+    notificationId = @_insert 'error', message, notificationAdditional
+
+    console.error message, additional, stack
 
     notificationId
 
@@ -85,19 +89,21 @@ class @Notification
       version: VERSION
       PDFJS: _.pick PDFJS, 'maxImageSize', 'disableFontFace', 'disableWorker', 'disableRange', 'disableAutoFetch', 'pdfBug', 'postMessageTransfers', 'disableCreateObjectURL', 'verbosity'
 
+positionNotifications = ($notifications) ->
+  top = 0
+  $notifications.each (i, notification) =>
+    $(notification).css
+      top: top
+    Deps.afterFlush =>
+      $(notification).addClass('animate')
+    top += $(notification).outerHeight(true)
+
 Template.notificationsOverlay.rendered = ->
   # This currently is a hack because this should be rendered
   # as part of Meteor rendering, but it does not yet support
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  top = 0
-  $notifications = $(@findAll '.notification')
-  $notifications.each (i, notification) =>
-    $(notification).css
-      top: top
-    Deps.afterFlush ->
-      $(notification).addClass('animate')
-    top += $(notification).outerHeight(true)
+  positionNotifications $(@findAll '.notification')
 
 Template.notificationsOverlay.notifications = ->
   Notifications.find {},
@@ -126,9 +132,30 @@ Template.notificationsOverlayItem.destroyed = ->
     @_seen = false
 
 Template.notificationsOverlayItem.events
-  # We in fact close notification on click anywhere on
-  # notification, not just on the close button
-  'click': (e, template) ->
-    Notifications.remove @_id
+  'click .button': (e, template) ->
+    if $(e.target).hasClass('icon-down-open')
+      e.preventDefault()
+
+      Deps.afterFlush =>
+        $(template.findAll '.additional').slideDown
+          duration: 200
+          step: (animation) =>
+            positionNotifications $('.notifications .notification')
+          complete: =>
+            positionNotifications $('.notifications .notification')
+            $(e.target).addClass('icon-close').removeClass('icon-down-open').attr('title', 'Close')
+
+    else if $(e.target).hasClass('icon-close')
+      Notifications.remove @_id unless e.isDefaultPrevented()
 
     return # Make sure CoffeeScript does not return anything
+
+  'click': (e, template) ->
+    Notifications.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-close')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.notificationsOverlayItem.additional = ->
+  # We allow additional information to be raw HTML content,
+  # but we make sure that it can be plain text as well
+  @additional.replace '\n', '<br/>'

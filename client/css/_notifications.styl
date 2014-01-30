@@ -21,8 +21,20 @@
     right 0
     top 0
 
-    .close
+    .button
       float right
+
+    /* TODO: Replace with real glyph */
+    .icon-close:before
+      content '\2A09' /* '⨉' */
+
+    .additional
+      display none
+
+      .error-logged
+        font-size smaller
+        font-style italic
+        text-align center
 
   .animate
     transition top .5s

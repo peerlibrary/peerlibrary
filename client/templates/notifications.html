@@ -8,7 +8,16 @@
 
 <template name="notificationsOverlayItem">
   <li class="notification {{type}}">
-    <button type="button" class="close" title="Close">&times;</button>
-    {{message}}
+    <i class="icon-down-open button" title="Additional information"></i>
+    <div class="message">{{message}}</div>
+    {{#if additional}}
+      <div class="additional">
+        {{!
+          We allow raw HTML content for additional information.
+          This means it should come only from trusted sources.
+        }}
+        {{{additional}}}
+      </div>
+    {{/if}}
   </li>
 </template>
