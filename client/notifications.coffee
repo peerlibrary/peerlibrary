@@ -97,7 +97,7 @@ Template.notificationsOverlay.rendered = ->
       top: top
     Deps.afterFlush ->
       $(notification).addClass('animate')
-    top += $(notification).height()
+    top += $(notification).outerHeight(true)
 
 Template.notificationsOverlay.notifications = ->
   Notifications.find {},
