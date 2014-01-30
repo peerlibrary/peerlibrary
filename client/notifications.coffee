@@ -89,21 +89,31 @@ class @Notification
       version: VERSION
       PDFJS: _.pick PDFJS, 'maxImageSize', 'disableFontFace', 'disableWorker', 'disableRange', 'disableAutoFetch', 'pdfBug', 'postMessageTransfers', 'disableCreateObjectURL', 'verbosity'
 
-positionNotifications = ($notifications) ->
+positionNotifications = ($notifications, fast) ->
   top = 0
   $notifications.each (i, notification) =>
-    $(notification).css
+    $notification = $(notification)
+    $notification.css
       top: top
+      # Additionally, if we leave z-index constant for all notifications
+      # then because of the DOM order those later in the DOM are higher
+      # than earlier. But we want the opposite so when notification slides
+      # (expands) down it goes over notifications below.
+      zIndex: $notifications.length - i
+    if fast
+      $notification.addClass('fast-animate')
+    else
+      $notification.removeClass('fast-animate')
     Deps.afterFlush =>
-      $(notification).addClass('animate')
-    top += $(notification).outerHeight(true)
+      $notification.addClass('animate')
+    top += $notification.outerHeight(true)
 
 Template.notificationsOverlay.rendered = ->
   # This currently is a hack because this should be rendered
   # as part of Meteor rendering, but it does not yet support
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  positionNotifications $(@findAll '.notification')
+  positionNotifications $(@findAll '.notification'), false
 
 Template.notificationsOverlay.notifications = ->
   Notifications.find {},
@@ -138,11 +148,12 @@ Template.notificationsOverlayItem.events
 
       Deps.afterFlush =>
         $(template.findAll '.additional').slideDown
+          # Twice as slow as CSS position transition animation time
           duration: 200
           step: (animation) =>
-            positionNotifications $('.notifications .notification')
+            positionNotifications $('.notifications .notification'), true
           complete: =>
-            positionNotifications $('.notifications .notification')
+            positionNotifications $('.notifications .notification'), false
             $(e.target).addClass('icon-close').removeClass('icon-down-open').attr('title', 'Close')
 
     else if $(e.target).hasClass('icon-close')

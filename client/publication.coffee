@@ -608,13 +608,12 @@ Template.publicationAnnotations.rendered = ->
   # as part of Meteor rendering, but it does not yet support
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  BASE_Z_INDEX = 200
   # We have to search for meta menus globally to have
   # access to other meta menus of other annotations
   $metaMenus = $annotations.find('.meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
-      zIndex: BASE_Z_INDEX + $metaMenus.length - i
+      zIndex: $metaMenus.length - i
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
