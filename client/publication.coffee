@@ -586,19 +586,35 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $annotation = $(@findAll '.annotations-list')
+  $annotations = $(@findAll '.annotations-list')
 
-  $annotation.scrollLock()
+  $annotations.scrollLock()
 
   # We have to reset current left edge when re-rendering
-  $annotation.css
+  $annotations.css
     # To not crop the shadow of annotations we move the left edge
     # for 5px to the left and then add 5px (in fact 6px, so that
     # it looks better with our 1px shadow border) left margin to each
     # annotation. Same value is used in the _viewer.styl as well.
     left: $('.annotations-control').position().left - 5
 
-  $annotation.find('.invite .body, .local .body').balanceText()
+  $annotations.find('.invite .body, .local .body').balanceText()
+
+  # If we leave z-index constant for all meta menu items
+  # then because of the DOM order those later in the DOM
+  # are higher than earlier. But we want the opposite so
+  # when meta menu opens down it goes over icons below.
+  # This currently is a hack because this should be rendered
+  # as part of Meteor rendering, but it does not yet support
+  # indexing. See https://github.com/meteor/meteor/pull/912
+  # TODO: Reimplement using Meteor indexing of rendered elements (@index)
+  BASE_Z_INDEX = 200
+  # We have to search for meta menus globally to have
+  # access to other meta menus of other annotations
+  $metaMenus = $annotations.find('.meta-menu')
+  $metaMenus.each (i, metaMenu) =>
+    $(metaMenu).css
+      zIndex: BASE_Z_INDEX + $metaMenus.length - i
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
@@ -713,23 +729,6 @@ Template.highlightInvite.rendered = ->
 
 Template.annotationInvite.rendered = ->
   $(@findAll '.body').balanceText()
-
-Template.annotationMetaMenu.rendered = ->
-  # If we leave z-index constant for all meta menu items
-  # then because of the DOM order those later in the DOM
-  # are higher than earlier. But we want the opposite so
-  # when meta menu opens down it goes over icons below.
-  # This currently is a hack because this should be rendered
-  # as part of Meteor rendering, but it does not yet support
-  # indexing. See https://github.com/meteor/meteor/pull/912
-  # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  BASE_Z_INDEX = 200
-  # We have to search for meta menus globally to have
-  # access to other meta menus of other annotations
-  $metaMenus = $('.annotations-list .meta-menu')
-  $metaMenus.each (i, metaMenu) =>
-    $(metaMenu).css
-      zIndex: BASE_Z_INDEX + $metaMenus.length - i
 
 Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
