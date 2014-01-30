@@ -126,13 +126,23 @@ Template.notificationsOverlayItem.created = ->
 Template.notificationsOverlayItem.rendered = ->
   return if @_timeout or @_seen
 
-  @_timeout = Meteor.setTimeout =>
+  $notification = $(@findAll '.notification')
+
+  @_timeout = new VisibleTimeout =>
     @_seen = true
-    $(@findAll '.notification').fadeOut 'slow', =>
+    $notification.fadeOut 'slow', =>
       Notifications.remove @data._id
     @_timeout = null
   ,
-    10000 # ms
+    7000 # ms
+
+  # Pause the timeout while user is hovering over the notification
+  $notification.on 'mouseenter', (e) =>
+    @_timeout.pause() if @_timeout
+    return # Make sure CoffeeScript does not return anything
+  $notification.on 'mouseleave', (e) =>
+    @_timeout.resume() if @_timeout
+    return # Make sure CoffeeScript does not return anything
 
 Template.notificationsOverlayItem.destroyed = ->
   if @_timeout
