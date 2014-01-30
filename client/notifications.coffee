@@ -55,7 +55,7 @@ class @Notification
 
     notificationId = @_insert 'error', message, notificationAdditional
 
-    console.error message, additional, stack
+    console.error message, additional, loggedErrorId, stack
 
     notificationId
 
