@@ -3,17 +3,37 @@
 .notifications
   position fixed
   width 300px
-  top 100px
+  top 75px
   left 50%
+  list-style none
+  margin 0
+  padding 0
   margin-left -150px
   /* Higher than importing overlay */
   z-index 100000
 
   .notification
     position absolute
+    display block
+    padding 0
     left 0
     right 0
     top 0
 
-  .notification.animate
+    .close
+      float right
+
+  .animate
     transition top .5s
+
+  .success
+    background-color green
+
+  .debug
+    background-color light-grey
+
+  .warn
+    background-color yellow
+
+  .error
+    background-color red

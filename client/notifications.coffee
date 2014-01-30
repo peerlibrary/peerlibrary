@@ -18,7 +18,7 @@ class @Notification
 
   @debug: (message) =>
     notificationId = Notifications.insert
-      type: 'warn'
+      type: 'debug'
       timestamp: moment.utc().toDate()
       message: message
 
@@ -126,6 +126,8 @@ Template.notificationsOverlayItem.destroyed = ->
     @_seen = false
 
 Template.notificationsOverlayItem.events
+  # We in fact close notification on click anywhere on
+  # notification, not just on the close button
   'click': (e, template) ->
     Notifications.remove @_id
 
