@@ -21,6 +21,9 @@ hslToRgb = (h, s, l) ->
 
   ((r * 255) << 16) + ((g * 255) << 8) + (b * 255)
 
+# If not supported use an identity function which will never call a callback to disable animation
+frame = requestAnimationFrame or webkitRequestAnimationFrame or mozRequestAnimationFrame or (->)
+
 class Vector
   constructor: (@x, @y) ->
     @originX = x or 0
@@ -95,11 +98,11 @@ class @Background
   computeRatio: =>
     devicePixelRatio = window.devicePixelRatio or 1
     context = @renderer.gl or @renderer.context
-    backingStoreRatio = context.webkitBackingStorePixelRatio or
+    backingStoreRatio = context.backingStorePixelRatio or
+                        context.webkitBackingStorePixelRatio or
                         context.mozBackingStorePixelRatio or
                         context.msBackingStorePixelRatio or
-                        context.oBackingStorePixelRatio or
-                        context.backingStorePixelRatio or 1
+                        context.oBackingStorePixelRatio or 1
 
     @ratio = devicePixelRatio / backingStoreRatio
 
@@ -107,7 +110,7 @@ class @Background
     @resizeView()
     @generateTriangles()
 
-    requestAnimationFrame @draw
+    frame @draw
 
     @renderer.view
 
@@ -182,4 +185,4 @@ class @Background
 
     @renderer.render @stage
 
-    requestAnimationFrame @draw
+    frame @draw
