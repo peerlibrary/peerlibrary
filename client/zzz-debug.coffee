@@ -27,6 +27,6 @@ if Meteor.settings?.public?.debug?.rendering
     counter = 0
 
     template.rendered = (args...) ->
-      console.debug name, "render count: #{ ++counter }"
+      Notify.debug name, "render count: #{ ++counter }"
       oldRendered.apply @, args if oldRendered
       pulse @

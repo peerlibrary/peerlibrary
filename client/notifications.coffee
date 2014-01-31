@@ -16,20 +16,29 @@ class @Notify
   @success: (message, additional) =>
     notificationId = @_insert 'success', message, additional
 
-    console.log message, additional
+    if additional
+      console.log message, additional
+    else
+      console.log message
 
     notificationId
 
   @debug: (message, additional) =>
     # For debugging we log only to the console
-    console.debug message, additional
+    if additional
+      console.debug message, additional
+    else
+      console.debug message
 
     null
 
   @warn: (message, additional) =>
     notificationId = @_insert 'warn', message, additional
 
-    console.warn message, additional
+    if additional
+      console.warn message, additional
+    else
+      console.warn message
 
     notificationId
 
@@ -54,7 +63,10 @@ class @Notify
 
     notificationId = @_insert 'error', message, notificationAdditional
 
-    console.error message, additional, loggedErrorId, stack
+    if additional
+      console.error message, additional, loggedErrorId, stack
+    else
+      console.error message, loggedErrorId, stack
 
     notificationId
 

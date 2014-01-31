@@ -82,7 +82,7 @@ class @Publication extends @Publication
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
   show: (@_$displayWrapper) =>
-    console.debug "Showing publication #{ @_id }"
+    Notify.debug "Showing publication #{ @_id }"
 
     assert.strictEqual @_pages, null
 
@@ -181,18 +181,18 @@ class @Publication extends @Publication
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
-            console.error "Error getting page #{ pageNumber }", args...
+            Notify.error "Error getting page #{ pageNumber }", args
 
       $(window).on 'scroll.publication resize.publication', @checkRender
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error showing #{ @_id }", args...
+      Notify.error "Error showing #{ @_id }", args
 
     currentPublication = @
 
   _getTextContent: (pdfPage) =>
-    console.debug "Getting text content for page #{ pdfPage.pageNumber }"
+    Notify.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
     pdfPage.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime
@@ -230,7 +230,7 @@ class @Publication extends @Publication
         fontSize--
         $textLayerDummy.css('font-size', fontSize)
 
-      console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
+      Notify.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
       # Check if the page should be maybe rendered, but we
       # skipped it because text content was not yet available
@@ -238,7 +238,7 @@ class @Publication extends @Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error getting text content for page #{ pdfPage.pageNumber }", args...
+      Notify.error "Error getting text content for page #{ pdfPage.pageNumber }", args
 
   checkRender: =>
     for page in @_pages or []
@@ -260,7 +260,7 @@ class @Publication extends @Publication
     return # Make sure CoffeeScript does not return anything
 
   destroy: =>
-    console.debug "Destroying publication #{ @_id }"
+    Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
 
@@ -298,7 +298,7 @@ class @Publication extends @Publication
     return if page.rendering
     page.rendering = true
 
-    console.debug "Rendering page #{ page.pdfPage.pageNumber }"
+    Notify.debug "Rendering page #{ page.pdfPage.pageNumber }"
 
     $displayPage = $("#display-page-#{ page.pageNumber }", @_$displayWrapper)
     $canvas = $displayPage.find('canvas')
@@ -323,7 +323,7 @@ class @Publication extends @Publication
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
+      Notify.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading", @_$displayWrapper).hide()
 
@@ -332,7 +332,7 @@ class @Publication extends @Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error rendering page #{ page.pdfPage.pageNumber }", args...
+      Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
