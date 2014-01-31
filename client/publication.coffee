@@ -533,7 +533,7 @@ Template.annotationsControl.events
 
     annotationId = LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      throw error if error
+      Notify.meteorError error, true if error
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
@@ -702,7 +702,9 @@ Template.publicationAnnotationsItem.rendered = ->
         body: text
     ,
       (error) ->
-        throw error if error
+        if error
+          Notify.meteorError error, true
+          return
 
         $saved.addClass('display')
   , 2500
@@ -733,7 +735,7 @@ Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
     LocalAnnotations.remove @_id, (error) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      throw error if error
+      Notify.meteorError error, true if error
 
     Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 

@@ -42,7 +42,12 @@ class @Notify
 
     notificationId
 
+  @meteorError: (error, log) =>
+    @error error.reason, error.details, log
+
   @error: (message, additional, log, stack) =>
+    additional = '' unless additional
+
     unless stack
       stack = new Error().stack
       # We skip first two lines as they are useless
@@ -63,10 +68,15 @@ class @Notify
 
     notificationId = @_insert 'error', message, notificationAdditional
 
-    if additional
-      console.error message, additional, loggedErrorId, stack
+    if loggedErrorId
+      logged = "<logged as #{ loggedErrorId }>"
     else
-      console.error message, loggedErrorId, stack
+      logged = '<not logged>'
+
+    if additional
+      console.error message, additional, logged, stack
+    else
+      console.error message, logged, stack
 
     notificationId
 

@@ -309,7 +309,9 @@ class @Annotator extends Annotator
 
     Highlights.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      throw error if error
+      if error
+        Notify.meteorError error, true
+        return
 
       # TODO: Should we update also other fields (like full author, created timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
@@ -321,7 +323,7 @@ class @Annotator extends Annotator
 
   _removeHighlight: (id) =>
     Highlights.remove id, (error) =>
-      throw error if error
+      Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]
