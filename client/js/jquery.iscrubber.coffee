@@ -22,6 +22,9 @@ $.fn.iscrubber = (customOptions) ->
   this.each ->
     $this = $(this)
 
+    return if $this.data('iscrubber-enabled')
+    $this.data('iscrubber-enabled', true)
+
     # get elements
     elements = $this.find('li')
 
@@ -36,7 +39,7 @@ $.fn.iscrubber = (customOptions) ->
     scrub(elements, options.showItem)
 
     # bind event when mouse moves over scrubber
-    $this.mousemove (e) ->
+    $this.on 'mousemove.iscrubber', (e) ->
       # get x mouse position
       x = e.pageX - $this.offset().left
 
@@ -46,6 +49,6 @@ $.fn.iscrubber = (customOptions) ->
       scrub(elements, index)
 
     # bind event when mouse leaves scrubber
-    $this.mouseleave ->
+    $this.on 'mouseleave.iscrubber', ->
       scrub(elements, options.showItem) if options.leaveToFirst is true
 
