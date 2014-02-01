@@ -200,4 +200,4 @@ Template.notificationsOverlayItem.events
 Template.notificationsOverlayItem.additional = ->
   # We allow additional information to be raw HTML content,
   # but we make sure that it can be plain text as well
-  @additional.replace '\n', '<br/>'
+  @additional.replace '\n', '<br/>' if @additional
