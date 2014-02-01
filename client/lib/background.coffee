@@ -50,11 +50,11 @@ class Vector
 
 class Triangle
   constructor: (@background, @v0, @v1, @v2) ->
-    @v0 ?= new Vector
-    @v1 ?= new Vector
-    @v2 ?= new Vector
+    @v0 ?= new Vector()
+    @v1 ?= new Vector()
+    @v2 ?= new Vector()
 
-    @graphics = new PIXI.Graphics
+    @graphics = new PIXI.Graphics()
 
   draw: =>
     @graphics.clear()

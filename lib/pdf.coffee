@@ -27,7 +27,7 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
     top: geom.y - fontAscent * Math.cos(segment.angle)
 
   unless segment.isWhitespace
-    ctx.font = "#{ segment.style.fontSize }px #{ segment.style.fontFamily }";
+    ctx.font = "#{ segment.style.fontSize }px #{ segment.style.fontFamily }"
     segment.width = ctx.measureText(segment.text).width
 
     assert segment.width >= 0, segment.width
@@ -35,7 +35,7 @@ PDFJS.pdfTextSegment = (textContent, textContentIndex, geom) ->
     if segment.width
       angle = segment.angle * (180 / Math.PI)
       segment.scale = canvasWidth / segment.width
-      segment.style.transform = "rotate(#{ angle }deg) scale(#{ segment.scale }, 1)";
+      segment.style.transform = "rotate(#{ angle }deg) scale(#{ segment.scale }, 1)"
       segment.style.transformOrigin = '0% 0%';
 
   segment.boundingBox =

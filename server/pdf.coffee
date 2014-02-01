@@ -60,7 +60,7 @@ PDF =
               canvasContext.save()
 
               # We reset context
-              canvasContext.setTransform(1, 0, 0, 1, 0, 0);
+              canvasContext.setTransform 1, 0, 0, 1, 0, 0
               canvasContext.resetClip?(); # TODO: In standard, but not yet available in node-canvas: https://github.com/LearnBoost/node-canvas/issues/358
               _.extend canvasContext, defaultContext
 

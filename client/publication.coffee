@@ -711,7 +711,7 @@ Template.publicationAnnotationsItem.rendered = ->
 
   # TODO: Improve cross-browser compatibility
   # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-  $(@findAll '.body[contenteditable=true]').on 'input', (e) => 
+  $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
     $saved.removeClass('display')
     saveAnnotation $(e.target).text()
 

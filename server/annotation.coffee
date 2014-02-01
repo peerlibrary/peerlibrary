@@ -48,7 +48,7 @@ Annotations.deny
 
   update: (userId, doc) ->
     doc.updated = moment.utc().toDate()
-    
+
     # We return false as we are not
     # checking anything, just updating fields
     false
