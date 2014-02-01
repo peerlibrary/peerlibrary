@@ -271,12 +271,12 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
-  $(document).on 'keyup.importOverlay', (e) ->
+  $(document).off('.importOverlay').on 'keyup.importOverlay', (e) =>
     hideOverlay() if e.keyCode is 27 # esc key
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->
-  $(document).off 'keyup.importOverlay'
+  $(document).off '.importOverlay'
 
 Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'

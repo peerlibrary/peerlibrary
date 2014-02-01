@@ -159,10 +159,10 @@ Template.notificationsOverlayItem.rendered = ->
     7000 # ms
 
   # Pause the timeout while user is hovering over the notification
-  $notification.on 'mouseenter', (e) =>
+  $notification.on 'mouseenter.notification', (e) =>
     @_timeout.pause() if @_timeout
     return # Make sure CoffeeScript does not return anything
-  $notification.on 'mouseleave', (e) =>
+  $notification.on 'mouseleave.notification', (e) =>
     @_timeout.resume() if @_timeout
     return # Make sure CoffeeScript does not return anything
 
@@ -170,7 +170,7 @@ Template.notificationsOverlayItem.destroyed = ->
   if @_timeout
     Meteor.clearTimeout @_timeout
     @_timeout = null
-    @_seen = false
+  @_seen = false
 
 Template.notificationsOverlayItem.events
   'click .button': (e, template) ->

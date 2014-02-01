@@ -44,7 +44,7 @@ Template.results.rendered = ->
     searchLimitIncreasing = false
 
 Template.results.destroyed = ->
-  $(window).off 'scroll.results'
+  $(window).off '.results'
 
 increaseSearchLimit = (pageSize) ->
   if searchLimitIncreasing

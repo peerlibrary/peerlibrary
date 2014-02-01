@@ -25,7 +25,7 @@ Template.indexMain.rendered = ->
     $(@findAll '.landing').append @_background.render()
 
 Template.indexMain.destroyed = ->
-  $(window).off 'resize.background'
+  $(window).off '.background'
 
   @_background.destroy()
   @_background = null

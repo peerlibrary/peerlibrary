@@ -1,7 +1,7 @@
 // Based on https://stackoverflow.com/questions/5802467/prevent-scrolling-of-parent-element
 
 $.fn.scrollLock = function () {
-    return $(this).on('mousewheel', function (e) {
+    return $(this).off('.scrollLock').on('mousewheel.scrollLock', function (e) {
         var $this = $(this);
         var scrollTop = $this.scrollTop();
         var scrollHeight = this.scrollHeight;

@@ -674,19 +674,22 @@ Template.publicationAnnotationsItem.created = ->
 Template.publicationAnnotationsItem.rendered = ->
   $annotation = $(@findAll '.annotation')
 
-  $annotation.on 'highlightMouseenter', (e, highlightId) =>
+  # To make sure rendered can be called multiple times and we bind event handlers only once
+  $annotation.off '.publicationAnnotationsItem'
+
+  $annotation.on 'highlightMouseenter.publicationAnnotationsItem', (e, highlightId) =>
     $annotation.addClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'highlightMouseleave', (e, highlightId) =>
+  $annotation.on 'highlightMouseleave.publicationAnnotationsItem', (e, highlightId) =>
     $annotation.removeClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseenter', (e) =>
+  $annotation.on 'mouseenter.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseleave', (e, highlightId) =>
+  $annotation.on 'mouseleave.publicationAnnotationsItem', (e, highlightId) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
