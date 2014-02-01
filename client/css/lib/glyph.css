@@ -1,88 +1,44 @@
-@charset "UTF-8";
+@font-face {
+	font-family: 'pl-glyph';
+	src:url('/fonts/pl-glyph.eot');
+	src:url('/fonts/pl-glyph.eot?#iefix') format('embedded-opentype'),
+		url('/fonts/pl-glyph.woff') format('woff'),
+		url('/fonts/pl-glyph.ttf') format('truetype'),
+		url('/fonts/pl-glyph.svg#pl-glyph') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
 
- @font-face {
-  font-family: 'glyph';
-  src: url('/font/glyph.eot?33702742');
-  src: url('/font/glyph.eot?33702742#iefix') format('embedded-opentype'),
-       url('/font/glyph.woff?33702742') format('woff'),
-       url('/font/glyph.ttf?33702742') format('truetype'),
-       url('/font/glyph.svg?33702742#glyph') format('svg');
-  font-weight: normal;
-  font-style: normal;
+[class^="icon-"], [class*=" icon-"] {
+	font-family: 'pl-glyph';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+  font-size: 130%;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
-/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
-/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
-/*
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  @font-face {
-    font-family: 'glyph';
-    src: url('../font/glyph.svg?33702742#glyph') format('svg');
-  }
+
+.icon-more:before {
+	content: "\e600";
 }
-*/
- 
- [class^="icon-"]:before, [class*=" icon-"]:before {
-  font-family: "glyph";
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
- 
-  display: inline-block;
-  text-decoration: inherit;
-  width: 1em;
-  margin-right: .2em;
-  text-align: center;
-  /* opacity: .8; */
- 
-  /* For safety - reset parent styles, that can break glyph codes*/
-  font-variant: normal;
-  text-transform: none;
-     
-  /* fix buttons height, for twitter bootstrap */
-  line-height: 1em;
- 
-  /* Animation center compensation - margins should be symmetric */
-  /* remove if not needed */
-  margin-left: .2em;
- 
-  /* you can be more comfortable with increased icons size */
-  /* font-size: 120%; */
- 
-  /* Uncomment for 3D effect */
-  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+.icon-menu:before {
+	content: "\e601";
 }
- 
-.icon-home:before { content: '\2302'; } /* '⌂' */
-.icon-star:before { content: '\2605'; } /* '★' */
-.icon-star-empty:before { content: '\2606'; } /* '☆' */
-.icon-cog:before { content: '\2699'; } /* '⚙' */
-.icon-edit:before { content: '\270d'; } /* '✍' */
-.icon-pencil:before { content: '\270e'; } /* '✎' */
-.icon-user-add:before { content: '\e700'; } /* '' */
-.icon-reply:before { content: '\e712'; } /* '' */
-.icon-code:before { content: '\e714'; } /* '' */
-.icon-comment:before { content: '\e718'; } /* '' */
-.icon-profile:before { content: '\e722'; } /* '' */
-.icon-trash:before { content: '\e729'; } /* '' */
-.icon-login:before { content: '\e740'; } /* '' */
-.icon-logout:before { content: '\e741'; } /* '' */
-.icon-down-open:before { content: '\e75c'; } /* '' */
-.icon-left-open:before { content: '\e75d'; } /* '' */
-.icon-right-open:before { content: '\e75e'; } /* '' */
-.icon-up-open:before { content: '\e75f'; } /* '' */
-.icon-dots:before { content: '\e78d'; } /* '' */
-.icon-bookmark-empty:before { content: '\f097'; } /* '' */
-.icon-rss:before { content: '\f09e'; } /* '' */
-.icon-filter:before { content: '\f0b0'; } /* '' */
-.icon-beaker:before { content: '\f0c3'; } /* '' */
-.icon-menu:before { content: '\e801'; } /* '' */
-.icon-upload-cloud:before { content: '\f0ee'; } /* '' */
-.icon-doc:before { content: '\f0f6'; } /* '' */
-.icon-circle-empty:before { content: '\f10c'; } /* '' */
-.icon-circle:before { content: '\f111'; } /* '' */
-.icon-attach:before { content: '📎'; } /* '\1f4ce' */
-.icon-download:before { content: '📥'; } /* '\1f4e5' */
-.icon-search:before { content: '\e800'; } /* '' */
-.icon-lock:before { content: '🔒'; } /* '\1f512' */
-.icon-lock-open:before { content: '🔓'; } /* '\1f513' */
-.icon-bookmark:before { content: '🔖'; } /* '\1f516' */
+.icon-search:before {
+	content: "\e602";
+}
+.icon-globe:before {
+	content: "\e603";
+}
+.icon-head:before {
+	content: "\e604";
+}
+.icon-close:before {
+	content: "\e605";
+}
