@@ -1,0 +1,53 @@
+@import variables
+
+.notifications
+  position fixed
+  width 300px
+  top 75px
+  left 50%
+  list-style none
+  margin 0
+  padding 0
+  margin-left -150px
+  /* Higher than importing overlay */
+  z-index 100000
+
+  .notification
+    position absolute
+    display block
+    padding 0
+    margin-bottom 10px
+    left 0
+    right 0
+    top 0
+
+    .button
+      float right
+
+    /* TODO: Replace with real glyph */
+    .icon-close:before
+      content '\2A09' /* '⨉' */
+
+    .additional
+      display none
+
+      .error-logged
+        font-size smaller
+        font-style italic
+        text-align center
+
+  .animate
+    transition top .5s
+
+  .fast-animate
+    /* Twice as fast as additional information slide down animation time */
+    transition top .1s ease-out
+
+  .success
+    background-color green
+
+  .warn
+    background-color yellow
+
+  .error
+    background-color red

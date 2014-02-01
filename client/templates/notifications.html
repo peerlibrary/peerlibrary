@@ -1,0 +1,23 @@
+<template name="notificationsOverlay">
+  <ul class="notifications">
+    {{#each notifications}}
+      {{> notificationsOverlayItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="notificationsOverlayItem">
+  <li class="notification {{type}}">
+    <i class="icon-down-open button" title="Additional information"></i>
+    <div class="message">{{message}}</div>
+    {{#if additional}}
+      <div class="additional">
+        {{!
+          We allow raw HTML content for additional information.
+          This means it should come only from trusted sources.
+        }}
+        {{{additional}}}
+      </div>
+    {{/if}}
+  </li>
+</template>

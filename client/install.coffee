@@ -3,7 +3,7 @@ Template.install.events
     e.preventDefault()
 
     Meteor.call 'createAdminAccount', $(template.findAll 'input.password').val(), (error) ->
-      throw error if error
+      Notify.meteorError error if error
 
       # Server side will reload the client
 

@@ -53,7 +53,7 @@ class PDFTextMapper extends PageTextMapperCore
 
       return unless e.target is e.currentTarget
 
-      console.log "Detected cross-page change event."
+      #console.log "Detected cross-page change event."
 
       # This event escaped the pages
       # Must be a cross-page selection

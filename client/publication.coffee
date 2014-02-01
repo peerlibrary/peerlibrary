@@ -82,7 +82,7 @@ class @Publication extends @Publication
     Session.set 'currentPublicationProgress', documentHalf + pagesHalf
 
   show: (@_$displayWrapper) =>
-    console.debug "Showing publication #{ @_id }"
+    Notify.debug "Showing publication #{ @_id }"
 
     assert.strictEqual @_pages, null
 
@@ -181,18 +181,18 @@ class @Publication extends @Publication
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
-            console.error "Error getting page #{ pageNumber }", args...
+            Notify.error "Error getting page #{ pageNumber }", args
 
       $(window).on 'scroll.publication resize.publication', @checkRender
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error showing #{ @_id }", args...
+      Notify.error "Error showing #{ @_id }", args
 
     currentPublication = @
 
   _getTextContent: (pdfPage) =>
-    console.debug "Getting text content for page #{ pdfPage.pageNumber }"
+    Notify.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
     pdfPage.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime
@@ -230,7 +230,7 @@ class @Publication extends @Publication
         fontSize--
         $textLayerDummy.css('font-size', fontSize)
 
-      console.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
+      Notify.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
       # Check if the page should be maybe rendered, but we
       # skipped it because text content was not yet available
@@ -238,7 +238,7 @@ class @Publication extends @Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error getting text content for page #{ pdfPage.pageNumber }", args...
+      Notify.error "Error getting text content for page #{ pdfPage.pageNumber }", args
 
   checkRender: =>
     for page in @_pages or []
@@ -260,7 +260,7 @@ class @Publication extends @Publication
     return # Make sure CoffeeScript does not return anything
 
   destroy: =>
-    console.debug "Destroying publication #{ @_id }"
+    Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
 
@@ -298,7 +298,7 @@ class @Publication extends @Publication
     return if page.rendering
     page.rendering = true
 
-    console.debug "Rendering page #{ page.pdfPage.pageNumber }"
+    Notify.debug "Rendering page #{ page.pdfPage.pageNumber }"
 
     $displayPage = $("#display-page-#{ page.pageNumber }", @_$displayWrapper)
     $canvas = $displayPage.find('canvas')
@@ -323,7 +323,7 @@ class @Publication extends @Publication
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      console.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
+      Notify.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading", @_$displayWrapper).hide()
 
@@ -332,7 +332,7 @@ class @Publication extends @Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      console.error "Error rendering page #{ page.pdfPage.pageNumber }", args...
+      Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
@@ -533,7 +533,7 @@ Template.annotationsControl.events
 
     annotationId = LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      throw error if error
+      Notify.meteorError error, true if error
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
@@ -608,13 +608,12 @@ Template.publicationAnnotations.rendered = ->
   # as part of Meteor rendering, but it does not yet support
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  BASE_Z_INDEX = 200
   # We have to search for meta menus globally to have
   # access to other meta menus of other annotations
   $metaMenus = $annotations.find('.meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
-      zIndex: BASE_Z_INDEX + $metaMenus.length - i
+      zIndex: $metaMenus.length - i
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
@@ -703,7 +702,9 @@ Template.publicationAnnotationsItem.rendered = ->
         body: text
     ,
       (error) ->
-        throw error if error
+        if error
+          Notify.meteorError error, true
+          return
 
         $saved.addClass('display')
   , 2500
@@ -734,7 +735,7 @@ Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
     LocalAnnotations.remove @_id, (error) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      throw error if error
+      Notify.meteorError error, true if error
 
     Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
