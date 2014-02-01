@@ -7,7 +7,7 @@ before_install:
   - npm install -g coffeelint
   - echo "Meteor.startup(function () {Meteor.setTimeout(function () {process.exit(0);}, 5000)})" > server/test-timeout.js
 before_script:
-  - coffeelint coffeelint client/ lib/ server/
+  - coffeelint client/ lib/ server/
 script:
   - make test
   - rm -f Makefile start_test.js phantom_runner.js
