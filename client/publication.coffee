@@ -69,6 +69,8 @@ class @Publication extends @Publication
     @_pages = null
     @_highlighter = null
 
+    focusAnnotationId = null
+
   _viewport: (page) =>
     scale = SCALE
     page.pdfPage.getViewport scale
@@ -296,6 +298,8 @@ class @Publication extends @Publication
     setPublicationDOMReady false
     setViewport null, null
     setHighlights {}
+
+    focusAnnotationId = null
 
   renderPage: (page) =>
     return if page.rendering
