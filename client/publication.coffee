@@ -626,13 +626,15 @@ Template.publicationAnnotations.destroyed = ->
 focusAnnotation = (body) ->
   return unless body
 
+  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
+
   if $(body).text().length > 0
     range = document.createRange()
-    sel = window.getSelection()
+    selection = window.getSelection()
     range.setStart body, 1
     range.collapse true
-    sel.removeAllRanges()
-    sel.addRange range
+    selection.removeAllRanges()
+    selection.addRange range
 
   body.focus()
 
@@ -752,7 +754,7 @@ Template.annotationEditor.rendered = ->
 
 Template.annotationEditor.destroyed = ->
   @_rendered = false
-  
+
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
 
