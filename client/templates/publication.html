@@ -58,19 +58,25 @@
     {{#if local}}
       {{> annotationInvite}}
     {{else}}
-      {{#if canEdit}}
-        {{#constant}}
-          <div class="body" contenteditable="true" data-placeholder="Write your annotation here">{{body}}</div>
-          <span class="saved">Saved</span>
-        {{/constant}}
+      {{#if selected}}
+        {{#if canEdit}}
+          {{> annotationEditor}}
+	{{else}}
+	  <div class="body">{{body}}</div>
+	{{/if}}
       {{else}}
-        <div class="body">
-          {{body}}
-        </div>
+	<div class="body" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
       {{/if}}
       {{> annotationMetaMenu}}
     {{/if}}
   </li>
+</template>
+
+<template name="annotationEditor">
+  {{#constant}}
+    <div class="body" contenteditable="true" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
+    <span class="saved">Saved</span>
+  {{/constant}}
 </template>
 
 <template name="highlightInvite">
