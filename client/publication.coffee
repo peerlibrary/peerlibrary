@@ -59,12 +59,17 @@ highlightsDependency = new Deps.Dependency()
   _highlights = highlights
   highlightsDependency.changed()
 
+# If set to an annotation id, focus on next render
+focusAnnotationId = null
+
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
 
     @_pages = null
     @_highlighter = null
+
+    focusAnnotationId = null
 
   _viewport: (page) =>
     scale = SCALE
@@ -293,6 +298,8 @@ class @Publication extends @Publication
     setPublicationDOMReady false
     setViewport null, null
     setHighlights {}
+
+    focusAnnotationId = null
 
   renderPage: (page) =>
     return if page.rendering
@@ -535,6 +542,8 @@ Template.annotationsControl.events
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 
+    focusAnnotationId = annotationId
+
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
@@ -618,6 +627,21 @@ Template.publicationAnnotations.rendered = ->
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
 
+focusAnnotation = (body) ->
+  return unless body
+
+  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
+
+  if $(body).text().length > 0
+    range = document.createRange()
+    selection = window.getSelection()
+    range.setStart body, 1
+    range.collapse true
+    selection.removeAllRanges()
+    selection.addRange range
+
+  body.focus()
+
 Template.publicationAnnotationsItem.events
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
@@ -640,7 +664,7 @@ Template.publicationAnnotationsItem.events
     # Focus immediately after converting local annotation
     # TODO: Improve this
     Meteor.setTimeout ->
-      $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+      focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
     , 100
 
     # On click to convert local annotation we are for sure inside the annotation, so we can
@@ -661,15 +685,13 @@ Template.publicationAnnotationsItem.events
 
     # Focus body no matter where the annotation was clicked
     # TODO: Improve this
-    unless $(e.target).hasClass 'delete'
+    $target = $(e.target)
+    unless $target.hasClass('delete') or $target.is('[contenteditable=true]')
       Meteor.setTimeout ->
-        $(template?.findAll '.body[contenteditable=true]').get(0)?.focus()
+        focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
       , 100
 
     return # Make sure CoffeeScript does not return anything
-
-Template.publicationAnnotationsItem.created = ->
-  @_rendered = false
 
 Template.publicationAnnotationsItem.rendered = ->
   $annotation = $(@findAll '.annotation')
@@ -693,6 +715,20 @@ Template.publicationAnnotationsItem.rendered = ->
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
+  if focusAnnotationId is @data._id
+    focusAnnotationId = null
+
+    focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
+
+Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
+
+Template.publicationAnnotationsItem.selected = ->
+  'selected' if @_id is Session.get 'currentAnnotationId'
+
+Template.annotationEditor.created = ->
+  @_rendered = false
+
+Template.annotationEditor.rendered = ->
   # Run for the first time only and if not a local annotation
   return if @_rendered or @data.local
   @_rendered = true
@@ -710,7 +746,7 @@ Template.publicationAnnotationsItem.rendered = ->
           return
 
         $saved.addClass('display')
-  , 2500
+  , 1000
 
   # TODO: Improve cross-browser compatibility
   # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
@@ -720,13 +756,8 @@ Template.publicationAnnotationsItem.rendered = ->
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationAnnotationsItem.destroyed = ->
+Template.annotationEditor.destroyed = ->
   @_rendered = false
-
-Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
-
-Template.publicationAnnotationsItem.selected = ->
-  'selected' if @_id is Session.get 'currentAnnotationId'
 
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
