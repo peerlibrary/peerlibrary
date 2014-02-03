@@ -58,7 +58,7 @@
     {{#if local}}
       {{> annotationInvite}}
     {{else}}
-      {{> displayIcon}}
+      <img src="{{ authorIconUrl }}" class="user-icon" />
       <h4 class="author-name">{{authorName}}</h4>
       {{#if selected}}
         {{#if canEdit}}
