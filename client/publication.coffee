@@ -3,6 +3,9 @@
 draggingViewport = false
 currentPublication = null
 
+# If set to an annotation id, focus on next render
+focusAnnotationId = null
+
 # Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
 _publicationDOMReady = false
 
@@ -59,17 +62,12 @@ highlightsDependency = new Deps.Dependency()
   _highlights = highlights
   highlightsDependency.changed()
 
-# If set to an annotation id, focus on next render
-focusAnnotationId = null
-
 class @Publication extends @Publication
   constructor: (args...) ->
     super args...
 
     @_pages = null
     @_highlighter = null
-
-    focusAnnotationId = null
 
   _viewport: (page) =>
     scale = SCALE
@@ -94,6 +92,8 @@ class @Publication extends @Publication
     @_pagesDone = 0
     @_pages = []
     @_highlighter = new Highlighter @_$displayWrapper
+
+    focusAnnotationId = null
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -268,6 +268,7 @@ class @Publication extends @Publication
     Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
+    focusAnnotationId = null
 
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
@@ -298,8 +299,6 @@ class @Publication extends @Publication
     setPublicationDOMReady false
     setViewport null, null
     setHighlights {}
-
-    focusAnnotationId = null
 
   renderPage: (page) =>
     return if page.rendering
@@ -630,9 +629,9 @@ Template.publicationAnnotations.destroyed = ->
 focusAnnotation = (body) ->
   return unless body
 
-  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
-
   if $(body).text().length > 0
+    currentPublication?._highlighter?._annotator?._deselectAllHighlights()
+
     range = document.createRange()
     selection = window.getSelection()
     range.setStart body, 1
