@@ -58,6 +58,8 @@
     {{#if local}}
       {{> annotationInvite}}
     {{else}}
+      {{> displayIcon}}
+      <h4 class="author-name">{{authorName}}</h4>
       {{#if selected}}
         {{#if canEdit}}
           {{> annotationEditor}}

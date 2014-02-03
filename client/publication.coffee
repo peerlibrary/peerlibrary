@@ -724,6 +724,10 @@ Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
 
+Template.publicationAnnotationsItem.authorName = ->
+  return @author.slug unless @author.givenName? and @author.familyName?
+  @author.givenName + ' ' + @author.familyName
+
 Template.annotationEditor.created = ->
   @_rendered = false
 
