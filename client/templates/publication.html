@@ -61,11 +61,11 @@
       {{#if selected}}
         {{#if canEdit}}
           {{> annotationEditor}}
-	{{else}}
-	  <div class="body">{{body}}</div>
-	{{/if}}
+        {{else}}
+          <div class="body">{{body}}</div>
+        {{/if}}
       {{else}}
-	<div class="body" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
+        <div class="body" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
       {{/if}}
       {{> annotationMetaMenu}}
     {{/if}}
