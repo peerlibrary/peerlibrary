@@ -39,7 +39,7 @@ Deps.autorun ->
   personId = Meteor.personId()
   if personId isnt lastPersonId
     if personId
-      Notify.success "Signed in successfully."
+      Notify.success "Signed in."
     else
-      Notify.success "Signed out successfully."
+      Notify.success "Signed out."
     lastPersonId = personId
