@@ -30,3 +30,16 @@ Template._loginButtons.events
 
 Handlebars.registerHelper 'currentUserId', (options) ->
   Meteor.userId()
+
+lastPersonId = Meteor.personId()
+
+Deps.autorun ->
+  return if Meteor.loggingIn()
+
+  personId = Meteor.personId()
+  if personId isnt lastPersonId
+    if personId
+      Notify.success "Signed in successfully."
+    else
+      Notify.success "Signed out successfully."
+    lastPersonId = personId
