@@ -1,0 +1,65 @@
+@font-face {
+  font-family: 'pl_glyph';
+  src: url('/fonts/pl_glyph.eot?77582606');
+  src: url('/fonts/pl_glyph.eot?77582606#iefix') format('embedded-opentype'),
+       url('/fonts/pl_glyph.woff?77582606') format('woff'),
+       url('/fonts/pl_glyph.ttf?77582606') format('truetype'),
+       url('/fonts/pl_glyph.svg?77582606#pl_glyph') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'pl_glyph';
+    src: url('/font/pl_glyph.svg?77582606#pl_glyph') format('svg');
+  }
+}
+*/
+ 
+ [class^="icon-"]:before, [class*=" icon-"]:before {
+  font-family: "pl_glyph";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+  /* opacity: .8; */
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+     
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+ 
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  margin-left: .2em;
+ 
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+ 
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+ 
+.icon-quote-left:before { content: '\e80a'; } /* '' */
+.icon-search:before { content: '\e800'; } /* '' */
+.icon-public:before { content: '\e801'; } /* '' */
+.icon-bold:before { content: '\e807'; } /* '' */
+.icon-italic:before { content: '\e808'; } /* '' */
+.icon-cancel:before { content: '\e803'; } /* '' */
+.icon-menu:before { content: '\e804'; } /* '' */
+.icon-down:before { content: '\e802'; } /* '' */
+.icon-more:before { content: '\e80c'; } /* '' */
+.icon-link:before { content: '\e809'; } /* '' */
+.icon-private:before { content: '\e805'; } /* '' */
+.icon-closed:before { content: '\e806'; } /* '' */
+.icon-plus:before { content: '\e80b'; } /* '' */
