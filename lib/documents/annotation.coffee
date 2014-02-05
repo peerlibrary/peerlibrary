@@ -18,7 +18,7 @@ class @Annotation extends Document
   #   tag:
   #     _id: label's tag id
   #     name: label's tag name (ISO 639-1 dictionary)
-  #     slug: labels' tag slug
+  #     slug: label's tag slug (ISO 639-1 dictionary)
   #   upvoters: list of
   #     _id: upvoter's person id
   #   downvoters: list of
