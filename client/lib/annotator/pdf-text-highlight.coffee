@@ -18,6 +18,12 @@ class PDFTextHighlight extends Annotator.Highlight
     @_hover = null
     @_$highlight = null
 
+    # We are displaying hovering effect also when mouse is not really over the highlighting, but we
+    # have to know if mouse is over the highlight to know if we should remove or not the hovering effect
+    # TODO: Rename hovering effect to something else (engaged? active?) and then hovering and other actions should just engage highlight as neccessary
+    # TODO: Sync this naming terminology with annotations (there are same states there)
+    @_mouseHovering = false
+
     @_createHighlight()
 
   _computeArea: (segments) =>
@@ -90,6 +96,9 @@ class PDFTextHighlight extends Annotator.Highlight
     context = @_highlightsCanvas.getContext('2d')
     context.clearRect 0, 0, @_highlightsCanvas.width, @_highlightsCanvas.height
 
+    # We restore hovers for other highlights
+    highlight._drawHover() for highlight in @anchor.annotator.getHighlights() when @pageIndex is highlight.pageIndex and highlight._$highlight.hasClass 'hovered'
+
   _sortHighlights: =>
     @_$highlightsLayer.find('.highlights-layer-highlight').detach().sort(
       (a, b) =>
@@ -101,6 +110,9 @@ class PDFTextHighlight extends Annotator.Highlight
 
   _showControl: =>
     $control = @_$highlightsControl.find('.meta-menu')
+
+    return if $control.is(':visible')
+
     $control.css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
@@ -119,7 +131,11 @@ class PDFTextHighlight extends Annotator.Highlight
     $control.show()
 
   _hideControl: =>
-    @_$highlightsControl.find('.meta-menu').hide().off(
+    $control = @_$highlightsControl.find('.meta-menu')
+
+    return unless $control.is(':visible')
+
+    $control.hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
@@ -153,13 +169,32 @@ class PDFTextHighlight extends Annotator.Highlight
         $(target).trigger e
         e.type = 'mouseout'
 
-  _mouseenterHandler: (e, noControl) =>
+  _mouseenterHandler: (e) =>
+    @_mouseHovering = true
+
+    @hover false
+    return # Make sure CoffeeScript does not return anything
+
+  _mouseleaveHandler: (e) =>
+    @_mouseHovering = false
+
+    if @_$highlight.hasClass 'selected'
+      @_hideControl()
+    else
+      @unhover false
+
+    return # Make sure CoffeeScript does not return anything
+
+  hover: (noControl) =>
     # We have to check if highlight already is marked as hovered because of mouse events forwarding
     # we use, which makes the event be send twice, once when mouse really hovers the highlight, and
     # another time when user moves from a highlight to a control - in fact mouseover handler above
     # gets text layer as related target (instead of underlying highlight) so it makes a second event.
     # This would be complicated to solve, so it is easier to simply have this check here.
-    return if @_$highlight.hasClass 'hovered'
+    if @_$highlight.hasClass 'hovered'
+      # We do not do anything, but we still show control if it was not shown already
+      @_showControl() unless noControl
+      return
 
     @_$highlight.addClass 'hovered'
     @_drawHover()
@@ -169,11 +204,12 @@ class PDFTextHighlight extends Annotator.Highlight
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
     $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if noControl
 
-    return # Make sure CoffeeScript does not return anything
-
-  _mouseleaveHandler: (e, noControl) =>
+  unhover: (noControl) =>
     # Probably not really necessary to check if highlight already marked as hovered but to match check above
-    return unless @_$highlight.hasClass 'hovered'
+    unless @_$highlight.hasClass 'hovered'
+      # We do not do anything, but we still hide control if it was not hidden already
+      @_hideControl() unless noControl
+      return
 
     @_$highlight.removeClass 'hovered'
     @_hideHover()
@@ -183,14 +219,13 @@ class PDFTextHighlight extends Annotator.Highlight
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
     $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
 
-    return # Make sure CoffeeScript does not return anything
-
   _annotationMouseenterHandler: (e, annotationId) =>
-    @_mouseenterHandler null, true if annotationId in _.pluck @annotation.annotations, '_id'
+    @hover true if annotationId in _.pluck @annotation.annotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _annotationMouseleaveHandler: (e, annotationId) =>
-    @_mouseleaveHandler null, true if annotationId in _.pluck @annotation.annotations, '_id'
+    @unhover true if annotationId in _.pluck @annotation.annotations, '_id'
+    return # Make sure CoffeeScript does not return anything
 
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
@@ -275,6 +310,9 @@ class PDFTextHighlight extends Annotator.Highlight
     @_$textLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
 
+    # We also want that selected annotations display a hover effect
+    @hover true
+
   # Just a helper function to draw highlight unselected and make it unselected by the browser, use annotator._selectHighlight to deselect
   deselect: =>
     # Mark this highlight as deselected
@@ -289,6 +327,9 @@ class PDFTextHighlight extends Annotator.Highlight
 
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
+
+    # If mouse is not over the highlight we unhover
+    @unhover true unless @_mouseHovering
 
   # Is highlight currently drawn as selected, use annotator.selectedAnnotationId to get ID of a selected annotation
   isSelected: =>
