@@ -248,17 +248,79 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 28px
+annotations-control-height = 300px
 
 .annotations-control
-  background #cececf
+  background white
   border-radius 2px
-  height annotations-control-height
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+  min-height annotations-control-height
+  height auto
   z-index 90
   position fixed
   left annotations-left
   right annotations-right
   top meta-menu-top
+
+  .annotations-form-wrapper
+    padding 20px
+
+    .form-header
+      height 30px
+
+      .form-title
+        float left
+
+      .form-status
+        float right 
+
+    .form-content
+      border 1px solid #e3e3e3
+
+      .format-toolbar
+        height 30px
+        text-align center
+        border-bottom 1px solid #e3e3e3
+
+        ul.format-buttons
+          list-style none
+          display block
+          padding 0
+          margin 0 auto
+          
+          li
+            display inline-block
+            float left
+            padding 8px
+            cursor pointer
+
+            i
+              color rgb(148, 157, 170)
+            
+          li:hover
+            i
+              color rgb(109, 117, 127)
+
+          li.inactive, li.inactive:hover
+            i
+              color rgb(205, 210, 216)
+
+      .form-body
+        height auto
+        min-height 130px
+        padding 8px 12px
+        font-weight normal
+        background white
+
+        p.annotation-content
+          min-height 100px
+          word-wrap break-word
+          color #444
+          line-height 1.4
+          font-size 14px
+          outline 0px solid transparent
+        
+            
 
   .add
     background #cececf

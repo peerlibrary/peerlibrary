@@ -49,22 +49,23 @@
   /* Uncomment for 3D effect */
   /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
 }
- 
-.icon-attach:before { content: '\e80d'; } /* '' */
-.icon-search:before { content: '\e800'; } /* '' */
-.icon-code:before { content: '\e80f'; } /* '' */
-.icon-menu:before { content: '\e804'; } /* '' */
-.icon-public:before { content: '\e801'; } /* '' */
-.icon-bold:before { content: '\e807'; } /* '' */
-.icon-italic:before { content: '\e808'; } /* '' */
-.icon-list-bullet:before { content: '\e810'; } /* '' */
-.icon-list-numbered:before { content: '\e811'; } /* '' */
-.icon-quote-left:before { content: '\e80a'; } /* '' */
-.icon-plus:before { content: '\e80b'; } /* '' */
-.icon-down:before { content: '\e802'; } /* '' */
-.icon-more:before { content: '\e80c'; } /* '' */
-.icon-link:before { content: '\e809'; } /* '' */
-.icon-private:before { content: '\e805'; } /* '' */
-.icon-tags:before { content: '\e80e'; } /* '' */
-.icon-closed:before { content: '\e806'; } /* '' */
-.icon-cancel:before { content: '\e803'; } /* '' */
+
+.icon-attach:before { content: '\e80d'; } /* 'î ' */
+.icon-search:before { content: '\e800'; } /* 'î ' */
+.icon-code:before { content: '\e80f'; } /* 'î ' */
+.icon-menu:before { content: '\e804'; } /* 'î ' */
+.icon-public:before { content: '\e801'; } /* 'î ' */
+.icon-bold:before { content: '\e807'; } /* 'î ' */
+.icon-italic:before { content: '\e808'; } /* 'î ' */
+.icon-list-bullet:before { content: '\e810'; } /* 'î ' */
+.icon-list-numbered:before { content: '\e811'; } /* 'î ' */
+.icon-quote-left:before { content: '\e80a'; } /* 'î ' */
+.icon-cancel:before { content: '\e803'; } /* 'î ' */
+.icon-plus:before { content: '\e80b'; } /* 'î ' */
+.icon-down:before { content: '\e802'; } /* 'î ' */
+.icon-more:before { content: '\e80c'; } /* 'î ' */
+.icon-link:before { content: '\e809'; } /* 'î ' */
+.icon-private:before { content: '\e805'; } /* 'î ' */
+.icon-tags:before { content: '\e80e'; } /* 'î ' */
+.icon-closed:before { content: '\e806'; } /* 'î ' */
+.icon-math:before { content: '\e812'; } /* 'î ' */ 
