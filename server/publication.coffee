@@ -3,11 +3,13 @@ crypto = Npm.require 'crypto'
 NUMBER_OF_VERIFICATION_SAMPLES = 3
 VERIFICATION_SAMPLE_SIZE = 64
 
+SLUG_MAX_LENGTH = 80
+
 class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
       if fields.title
-        [fields._id, URLify2 fields.title]
+        [fields._id, URLify2 fields.title SLUG_MAX_LENGTH]
       else
         [fields._id, '']
     meta
