@@ -20,7 +20,7 @@ verifyFile = (file, fileContent, publicationId, samples) ->
 
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
-  Meteor.call 'verifyPublication', publicationId, samplesData, (error) ->
+  Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
       ImportingFiles.update file._id,
         $set:
@@ -37,7 +37,7 @@ uploadFile = (file, publicationId) ->
   meteorFile = new MeteorFile file,
     collection: ImportingFiles
 
-  meteorFile.upload file, 'uploadPublication',
+  meteorFile.upload file, 'upload-publication',
     size: UPLOAD_CHUNK_SIZE,
     publicationId: publicationId
   ,
@@ -87,7 +87,7 @@ importFile = (file) ->
         $set:
           sha256: sha256
 
-      Meteor.call 'createPublication', file.name, sha256, (error, result) ->
+      Meteor.call 'create-publication', file.name, sha256, (error, result) ->
         if error
           ImportingFiles.update file._id,
             $set:

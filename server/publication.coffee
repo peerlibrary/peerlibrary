@@ -92,7 +92,7 @@ class @Publication extends @Publication
       metadata: 1
 
 Meteor.methods
-  createPublication: (filename, sha256) ->
+  'create-publication': (filename, sha256) ->
     check filename, String
     check sha256, String
 
@@ -163,7 +163,7 @@ Meteor.methods
     already: already
     samples: samples
 
-  uploadPublication: (file, options) ->
+  'upload-publication': (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
       publicationId: String
@@ -220,7 +220,7 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (publicationId, samplesData) ->
+  'verify-publication': (publicationId, samplesData) ->
     check publicationId, String
     check samplesData, [Uint8Array]
 
