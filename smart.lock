@@ -43,8 +43,8 @@
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
-        "tag": "v0.2.2",
-        "commit": "5f87f665ccd6c74322febaf78fe5a24dbfb7949c"
+        "tag": "v0.2.3",
+        "commit": "9c838fbf5053a9f4c9ea21cad8e2fef8f1374e7c"
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
