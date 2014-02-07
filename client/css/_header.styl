@@ -217,9 +217,10 @@ Sign in buttons
     color blue-accent 
 
 /*
-unauthenticated auth menu
-========================= */
-.not-logged-in
+Authentication menu
+=================== */
+
+header.not-logged-in
   #login-dropdown-list
     color black
     background white
@@ -293,7 +294,7 @@ unauthenticated auth menu
     .loading
       display none
 
-.logged-in
+header.logged-in
   #login-dropdown-list
     background white 
     border-color rgb(210,210,210)
@@ -303,8 +304,8 @@ unauthenticated auth menu
     position  absolute
     width 180px
     padding 5px 0
-    top 56px
-    right 24px
+    top 55px
+    right 10px
     font-size 14px
     line-height 20px
 
@@ -319,7 +320,7 @@ unauthenticated auth menu
     z-index 1
     margin-left -10px
     top -8px
-    left 149px
+    left 161px
 
   #login-dropdown-list:before
     content ''
@@ -332,7 +333,7 @@ unauthenticated auth menu
     z-index 0
     margin-left -10px
     top -9px
-    left 149px
+    left 161px
 
   .menu-item
     padding 5px 20px
@@ -361,6 +362,17 @@ unauthenticated auth menu
     a
       cursor pointer
 
+header.index-header.logged-in
+  #login-dropdown-list
+    top 56px
+    right 24px
+
+  #login-dropdown-list:after
+    left 149px
+
+  #login-dropdown-list:before
+    left 149px
+
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
   padding 0 20px
 
@@ -378,9 +390,6 @@ unauthenticated auth menu
 /*
 Auth form buttons
 ============ */
-
-
-
 
 .user-icon
   width 24px
