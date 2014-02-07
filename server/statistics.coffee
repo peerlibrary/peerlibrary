@@ -25,11 +25,11 @@ Meteor.startup ->
 
       if not minPublicationDate or created < minPublicationDate
         minPublicationDate = created
-        changed.minPublicationDate = minPublicationDate
+        changed.minPublicationDate = minPublicationDate.toDate()
 
       if not maxPublicationDate or created > maxPublicationDate
         maxPublicationDate = created
-        changed.maxPublicationDate = maxPublicationDate
+        changed.maxPublicationDate = maxPublicationDate.toDate()
 
       Statistics.update statisticsDataId, $set: changed if !initializingPublications
 
