@@ -18,6 +18,10 @@ Template._loginButtons.events
     e.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
+$(document).on 'keyup', (e) ->
+  Accounts._loginButtonsSession.closeDropdown() if e.keyCode is 27 # Escape key
+  return # Make sure CoffeeScript does not return anything
+
 Handlebars.registerHelper 'currentUserId', (options) ->
   Meteor.userId()
 

@@ -43,6 +43,10 @@ $(document).on 'click focus keypress', (e) ->
   Session.set 'newsletterActive', false unless e.originalEvent?.newsletterDialogBoxEvent
   return # Make sure CoffeeScript does not return anything
 
+$(document).on 'keyup', (e) ->
+  Session.set 'newsletterActive', false if e.keyCode is 27 # Escape key
+  return # Make sure CoffeeScript does not return anything
+
 subscribe = (template, email) ->
   return if Session.get 'newsletterSubscribing'
   Session.set 'newsletterSubscribing', true

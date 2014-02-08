@@ -145,9 +145,13 @@ hideOverlay = ->
       errored: true
     ]
   ).count()
+
   # We prevent hiding if user is uploading files
-  Session.set 'importOverlayActive', false if allCount == finishedAndErroredCount
-  ImportingFiles.remove({})
+  if allCount == finishedAndErroredCount
+    Session.set 'importOverlayActive', false
+    ImportingFiles.remove({})
+
+  Session.set 'signInOverlayActive', false
 
 Meteor.startup ->
   $(document).on 'dragstart', (e) ->
@@ -272,7 +276,7 @@ Template.importOverlay.events =
 
 Template.importOverlay.rendered = ->
   $(document).off('.importOverlay').on 'keyup.importOverlay', (e) =>
-    hideOverlay() if e.keyCode is 27 # esc key
+    hideOverlay() if e.keyCode is 27 # Escape key
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->
