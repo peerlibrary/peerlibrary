@@ -153,34 +153,33 @@ hideOverlay = ->
 
   Session.set 'signInOverlayActive', false
 
-Meteor.startup ->
-  $(document).on 'dragstart', (e) ->
-    # We want to prevent dragging of everything except the viewport
-    return if $(e.target).is('.viewport')
+$(document).on 'dragstart', (e) ->
+  # We want to prevent dragging of everything except the viewport
+  return if $(e.target).is('.viewport')
 
-    e.preventDefault()
+  e.preventDefault()
 
-    return # Make sure CoffeeScript does not return anything
+  return # Make sure CoffeeScript does not return anything
 
-  $(document).on 'dragenter', (e) ->
-    e.preventDefault()
+$(document).on 'dragenter', (e) ->
+  e.preventDefault()
 
-    # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
-    DRAGGING_OVER_DOM = true
-    Meteor.setTimeout ->
-      DRAGGING_OVER_DOM = false
-    , 5
+  # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
+  DRAGGING_OVER_DOM = true
+  Meteor.setTimeout ->
+    DRAGGING_OVER_DOM = false
+  , 5
 
-    if Meteor.personId()
-      Session.set 'importOverlayActive', true
-      e.originalEvent.dataTransfer.effectAllowed = 'copy'
-      e.originalEvent.dataTransfer.dropEffect = 'copy'
-    else
-      Session.set 'signInOverlayActive', true
-      e.originalEvent.dataTransfer.effectAllowed = 'none'
-      e.originalEvent.dataTransfer.dropEffect = 'none'
+  if Meteor.personId()
+    Session.set 'importOverlayActive', true
+    e.originalEvent.dataTransfer.effectAllowed = 'copy'
+    e.originalEvent.dataTransfer.dropEffect = 'copy'
+  else
+    Session.set 'signInOverlayActive', true
+    e.originalEvent.dataTransfer.effectAllowed = 'none'
+    e.originalEvent.dataTransfer.dropEffect = 'none'
 
-    return # Make sure CoffeeScript does not return anything
+  return # Make sure CoffeeScript does not return anything
 
 Template.importButton.events =
   'click .import': (e, template) ->
