@@ -5,27 +5,17 @@ Template.displayIcon.userIconUrl = ->
 Template._loginButtonsLoggedInDropdownActions.personSlug = ->
   Meteor.person()?.slug
 
-# To close sign in buttons dialog box when clicking or focusing somewhere outside
-$(document).click (e) ->
+# To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
+$(document).on 'click focus keypress', (e) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
-  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent?.dialogBoxEvent
-  return # Make sure CoffeeScript does not return anything
-
-$(document).focus (e) ->
-  # originalEvent is defined only for native events, but we are triggering
-  # click manually as well, so originalEvent is not always defined
-  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent?.dialogBoxEvent
+  Accounts._loginButtonsSession.closeDropdown() unless e.originalEvent?.accountsDialogBoxEvent
   return # Make sure CoffeeScript does not return anything
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template._loginButtons.events
-  'click #login-buttons': (e, template) ->
-    e.dialogBoxEvent = true
-    return # Make sure CoffeeScript does not return anything
-
-  'focus #login-buttons': (e, template) ->
-    e.dialogBoxEvent = true
+  'click #login-buttons, focus #login-buttons, keypress #login-buttons': (e, template) ->
+    e.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
 Handlebars.registerHelper 'currentUserId', (options) ->

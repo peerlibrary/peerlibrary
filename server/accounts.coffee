@@ -23,13 +23,13 @@ Accounts.onCreateUser (options, user) ->
 
     # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
 
-    throw new Meteor.Error 403, "Username must be at least 3 characters long." unless user.username and user.username.length >= 3
+    throw new Meteor.Error 400, "Username must be at least 3 characters long." unless user.username and user.username.length >= 3
 
-    throw new Meteor.Error 403, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
+    throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 403, 'Username conflicts with existing slug.' if user.username in FORBIDDEN_USERNAMES
+    throw new Meteor.Error 400, 'Username conflicts with existing slug.' if user.username in FORBIDDEN_USERNAMES
 
-    # TODO: Validate e-mail
+    throw new Meteor.Error 400, "Invalid e-mail address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
     user.person =
       _id: personId
@@ -51,7 +51,7 @@ Accounts.onCreateUser (options, user) ->
       throw e
     # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
     if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
-      throw new Meteor.Error 403, 'Username conflicts with existing slug.'
+      throw new Meteor.Error 400, "Username conflicts with existing slug."
     throw e
 
   user

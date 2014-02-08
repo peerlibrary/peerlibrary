@@ -18,6 +18,9 @@ setSession = (session) ->
     currentHighlightId: null
     currentAnnotationId: null
     currentPersonSlug: null
+    newsletterActive: false
+    newsletterSubscribing: false
+    newsletterError: null
 
   for key, value of session
     Session.set key, value
