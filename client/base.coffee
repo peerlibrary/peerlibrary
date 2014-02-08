@@ -21,6 +21,9 @@ setSession = (session) ->
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null
+    installInProgress: false
+    installRestarting: false
+    installError: null
 
   for key, value of session
     Session.set key, value
