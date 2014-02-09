@@ -88,8 +88,8 @@
       },
       "urlify2": {
         "git": "https://github.com/peerlibrary/meteor-urlify2.git",
-        "tag": "v0.2.0",
-        "commit": "f00dcece9a671c90c9f7c107bbea880eaa68e44d"
+        "tag": "v0.2.1",
+        "commit": "6af78cad650ee216b640a418a5557a0a7e5be538"
       },
       "fs": {
         "git": "https://github.com/peerlibrary/meteor-fs.git",
