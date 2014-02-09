@@ -5,6 +5,11 @@ Template.displayIcon.userIconUrl = ->
 Template._loginButtonsLoggedInDropdownActions.personSlug = ->
   Meteor.person()?.slug
 
+Template._loginButtonsLoggedInSingleLogoutButton.displayName = ->
+  Meteor.person()?.displayName()
+
+Template._loginButtonsLoggedInDropdown.displayName = Template._loginButtonsLoggedInSingleLogoutButton.displayName
+
 # To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
 $(document).on 'click focus keypress', (e) ->
   # originalEvent is defined only for native events, but we are triggering
