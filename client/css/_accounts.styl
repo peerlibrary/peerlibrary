@@ -1,0 +1,34 @@
+@import variables
+
+.hide-background
+  position fixed
+  width 100%
+  height 100%
+  top 0
+  left 0
+  /* Higher than header */
+  z-index 6000
+  background black-translucent
+
+.accounts-centered-dialog
+  /* Higher than hide-background */
+  z-index 6010 !important
+  font-weight 300
+  margin-top -150px !important
+
+  #reset-password-new-password-label, .reset-password-new-password-wrapper
+    margin 0 20px
+
+  #login-buttons-reset-password-button
+    padding 0
+
+  /* Hacks to get "Cancel" instead of "x" */
+  #login-buttons-cancel-reset-password
+    visibility hidden
+    display block
+
+  #login-buttons-cancel-reset-password:after
+    display block
+    visibility visible
+    content 'Cancel'
+    margin-top -36px

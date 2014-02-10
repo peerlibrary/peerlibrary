@@ -164,6 +164,9 @@ $(document).on 'dragstart', (e) ->
 $(document).on 'dragenter', (e) ->
   e.preventDefault()
 
+  # Don't allow importing while password reset is in progress
+  return if  Accounts._loginButtonsSession.get 'resetPasswordToken'
+
   # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
   DRAGGING_OVER_DOM = true
   Meteor.setTimeout ->

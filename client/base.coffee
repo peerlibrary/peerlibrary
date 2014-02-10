@@ -24,9 +24,15 @@ setSession = (session) ->
     installInProgress: false
     installRestarting: false
     installError: null
+    resetPasswordToken: null
+    enrollAccountToken: null
+    justVerifiedEmail: false
 
   for key, value of session
-    Session.set key, value
+    if key in ['resetPasswordToken', 'enrollAccountToken', 'justVerifiedEmail']
+      Accounts._loginButtonsSession.set key, value
+    else
+      Session.set key, value
 
   # Those are special and we do not clear them while routing.
   # Care has to be taken that they are set and unset manually.
@@ -118,6 +124,16 @@ else
       to: ->
         setSession
           indexActive: true
+        'index'
+
+    '/reset-password/:resetPasswordToken':
+      to: (resetPasswordToken) ->
+        # Make sure nobody is logged in, it would be confusing otherwise
+        # TODO: How to make it sure we do not log in in the first place? How could we set autoLoginEnabled in time? Because this logs out user in all tabs
+        Meteor.logout()
+        setSession
+          indexActive: true
+          resetPasswordToken: resetPasswordToken
         'index'
 
     '/p/:publicationId/:publicationSlug?/h/:highlightId':

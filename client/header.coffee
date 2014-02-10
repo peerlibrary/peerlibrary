@@ -85,7 +85,8 @@ Template.searchInput.searchFocused = ->
 Template.searchInput.rendered = ->
   # We make sure search input is focused if we know it should be focused (to make sure focus is retained between redraws)
   # Additionally, HTML5 autofocus does not work properly when routing back to / after initial load, so we focus if we are displaying index header
-  if Session.get('searchFocused') or Template.header.indexHeader()
+  # Don't try to focus if reset password is in progress
+  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get 'resetPasswordToken'
     $(@findAll '.search-input').focus()
 
 Template.searchInput.indexHeader = Template.header.indexHeader

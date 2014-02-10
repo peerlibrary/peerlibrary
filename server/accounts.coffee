@@ -64,3 +64,57 @@ Meteor.publish null, ->
     'user._id': @userId
   ,
     fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
+
+MAX_LINE_LENGTH = 68
+
+wrap = (text) ->
+  lines = for line in text.split '\n'
+    if line.length <= MAX_LINE_LENGTH
+      line
+    else
+      words = line.split ' '
+      if words.length is 1
+        line
+      else
+        ls = [words.shift()]
+        for word in words
+          if ls[ls.length - 1].length + word.length + 1 <= MAX_LINE_LENGTH
+            ls[ls.length - 1] += ' ' + word
+          else
+            ls.push word
+        ls.join '\n'
+
+  lines.join '\n'
+
+Accounts.emailTemplates.siteName = Meteor.settings?.siteName or "PeerLibrary"
+Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
+Accounts.emailTemplates.resetPassword.subject = (user) ->
+  """[#{ Accounts.emailTemplates.siteName }] Password reset"""
+Accounts.emailTemplates.resetPassword.text = (user, url) ->
+  url = url.replace '#/', ''
+
+  person = Meteor.person user._id
+
+  # When MAIL_URL is not set e-mail is printed to the console, but without empty
+  # newlines. Do not worry, when sending e-mail for real empty newlines are there.
+  wrap """
+  Hello #{ person.displayName() }!
+
+  This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this e-mail.
+
+  Please click the link below and choose a new password:
+
+  #{ url }
+
+  Please also be careful to open a complete link. Your e-mail client might have broken it into several lines.
+
+  Your username, in case you have forgotten: #{ user.username }
+
+  If you have any problems resetting your password or have any other questions just reply to this e-mail.
+
+  Yours,
+
+
+  #{ Accounts.emailTemplates.siteName }
+  #{ Meteor.absoluteUrl() }
+  """
