@@ -9,7 +9,7 @@ class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
       if fields.title
-        [fields._id, URLify2 fields.title SLUG_MAX_LENGTH]
+        [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
       else
         [fields._id, '']
     meta
