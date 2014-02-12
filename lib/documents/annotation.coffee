@@ -56,7 +56,7 @@ class @Annotation extends Document
         annotations: [@ReferenceField 'self']
         publications: [@ReferenceField Publication, ['slug', 'title']]
         persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
-#        tags: [@ReferenceField Tag, ['name', 'slug']]
-#      tags: [
-#        tag: @ReferenceField Tag
-#      ]
+        tags: [@ReferenceField Tag]
+      tags: [
+        tag: @ReferenceField Tag
+      ]
