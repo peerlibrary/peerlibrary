@@ -5,8 +5,12 @@ Meteor.startup ->
   statisticsDataId = Random.id()
   initializingPublications = true
   initializingPersons = true
+  initializingHighlights = true
+  initializingAnnotations = true
   countPublications = 0
   countPersons = 0
+  countHighlights = 0
+  countAnnotations = 0
   minPublicationDate = null
   maxPublicationDate = null
 
@@ -25,11 +29,11 @@ Meteor.startup ->
 
       if not minPublicationDate or created < minPublicationDate
         minPublicationDate = created
-        changed.minPublicationDate = minPublicationDate
+        changed.minPublicationDate = minPublicationDate.toDate()
 
       if not maxPublicationDate or created > maxPublicationDate
         maxPublicationDate = created
-        changed.maxPublicationDate = maxPublicationDate
+        changed.maxPublicationDate = maxPublicationDate.toDate()
 
       Statistics.update statisticsDataId, $set: changed if !initializingPublications
 
@@ -69,15 +73,43 @@ Meteor.startup ->
       countPersons--
       Statistics.update statisticsDataId, $set: countPersons: countPersons if !initializingPersons
 
+  Highlights.find({},
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id) =>
+      countHighlights++
+      Statistics.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
+
+    removed: (id) =>
+      countHighlights--
+      Statistics.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
+
+  Annotations.find({},
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id) =>
+      countAnnotations++
+      Statistics.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
+
+    removed: (id) =>
+      countAnnotations--
+      Statistics.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
+
   Statistics.insert
     _id: statisticsDataId
     countPublications: countPublications
     countPersons: countPersons
+    countHighlights: countHighlights
+    countAnnotations: countAnnotations
     minPublicationDate: minPublicationDate?.toDate()
     maxPublicationDate: maxPublicationDate?.toDate()
 
   initializingPublications = false
   initializingPersons = false
+  initializingHighlights = false
+  initializingAnnotations = false
 
 # We map local collection to the collection clients use
 Meteor.publish 'statistics', ->

@@ -3,11 +3,13 @@ crypto = Npm.require 'crypto'
 NUMBER_OF_VERIFICATION_SAMPLES = 3
 VERIFICATION_SAMPLE_SIZE = 64
 
+SLUG_MAX_LENGTH = 80
+
 class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
       if fields.title
-        [fields._id, URLify2 fields.title]
+        [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
       else
         [fields._id, '']
     meta
@@ -90,7 +92,7 @@ class @Publication extends @Publication
       metadata: 1
 
 Meteor.methods
-  createPublication: (filename, sha256) ->
+  'create-publication': (filename, sha256) ->
     check filename, String
     check sha256, String
 
@@ -161,7 +163,7 @@ Meteor.methods
     already: already
     samples: samples
 
-  uploadPublication: (file, options) ->
+  'upload-publication': (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
       publicationId: String
@@ -218,7 +220,7 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (publicationId, samplesData) ->
+  'verify-publication': (publicationId, samplesData) ->
     check publicationId, String
     check samplesData, [Uint8Array]
 

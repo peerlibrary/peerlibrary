@@ -25,6 +25,14 @@ class @Person extends Document
       slug: @GeneratedField 'self', ['user.username']
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
 
+  displayName: =>
+    if @givenName and @familyName
+      "#{ @givenName } #{ @familyName }"
+    else if @givenName
+      @givenName
+    else
+      @user.username
+
 Meteor.person = (userId) ->
   # Meteor.userId is reactive
   userId ?= Meteor.userId()
