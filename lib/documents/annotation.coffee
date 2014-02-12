@@ -53,14 +53,10 @@ class @Annotation extends Document
       publication: @ReferenceField Publication
       references:
         highlights: [@ReferenceField Highlight]
-        annotations: [@ReferenceField Annotation]
-        publications: [@ReferenceField Annotation, ['slug', 'title']]
+        annotations: [@ReferenceField 'self']
+        publications: [@ReferenceField Publication, ['slug', 'title']]
         persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
-        tags: [@ReferenceField Tag, ['name', 'slug']]
-      tags: [
-        tag: @ReferenceField Tag, ['name', 'slug']
-        upvoters: [@ReferenceField Person]
-        downvoters: [@ReferenceField Person]
-      ]
-      upvoters: [@ReferenceField Person]
-      downvoters: [@ReferenceField Person]
+#        tags: [@ReferenceField Tag, ['name', 'slug']]
+#      tags: [
+#        tag: @ReferenceField Tag
+#      ]
