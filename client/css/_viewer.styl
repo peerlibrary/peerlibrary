@@ -248,7 +248,7 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 300px
+annotations-control-height = 350px
 
 .annotations-control
   background white
@@ -261,6 +261,9 @@ annotations-control-height = 300px
   left annotations-left
   right annotations-right
   top meta-menu-top
+
+  input
+    color #444
 
   .annotations-form-wrapper
     padding 20px
@@ -276,11 +279,15 @@ annotations-control-height = 300px
 
     .form-content
       border 1px solid #e3e3e3
+      border-radius 2px
 
       .format-toolbar
         height 30px
-        text-align center
+        top -5px
+        position relative
+        display block
         border-bottom 1px solid #e3e3e3
+        clear left
 
         ul.format-buttons
           list-style none
@@ -290,20 +297,19 @@ annotations-control-height = 300px
           
           li
             display inline-block
-            float left
             padding 8px
             cursor pointer
 
             i
-              color rgb(148, 157, 170)
+              color icon-gray 
             
           li:hover
             i
-              color rgb(109, 117, 127)
+              color icon-gray-hover
 
           li.inactive, li.inactive:hover
             i
-              color rgb(205, 210, 216)
+              color icon-gray-hover
 
       .form-body
         height auto
@@ -320,8 +326,27 @@ annotations-control-height = 300px
           font-size 14px
           outline 0px solid transparent
         
-            
+      .form-tags
+        border-top 1px solid #e3e3e3
+        height 20px
+        padding 6px 14px
+        
+        i
+          color icon-gray
 
+        input.annotation-tags
+          border 0
+          background transparent
+          margin 0 8px
+          min-width 240px  
+
+    .form-control
+      padding 20px 0
+
+      .publish
+        margin-right 0
+        float right
+  
   .add
     background #cececf
     border none
@@ -330,6 +355,7 @@ annotations-control-height = 300px
     color white
     width 28px
     height 28px
+    padding 0
 
   .add:hover
     background rgba(46,46,44,0.5)

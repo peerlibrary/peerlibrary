@@ -1,7 +1,6 @@
 @import variables
 
 .install-wrapper
-  height 300px 
   display block
   clear both
   color black
@@ -10,14 +9,13 @@
   border-radius 5px
   border-style solid
   border-width 1px
-  position relative
+  position fixed
   left 50%
-  margin-left -151px
-  padding 20px 
-  margin-top 200px
-  margin-bottom 100px
+  top 50%
+  margin-left -161px
+  padding 20px
+  margin-top -210px
   width 280px
-  right 0px
   font-size 14px
   line-height 36px
   text-align center
@@ -70,3 +68,21 @@
 
   button.install-submit:hover
     background #327CA8 
+
+  .message
+    line-height default-line-height
+    margin-top 10px
+
+.install-wrapper.install-in-progress #install-password-input
+  background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+  background-position 50% 50%
+  background-repeat no-repeat
+  transition none
+  color gray
+
+footer.install
+  position fixed
+  bottom 10%
+  left 0
+  width 100%
+

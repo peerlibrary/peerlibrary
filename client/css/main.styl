@@ -1,5 +1,4 @@
 @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600")
-//@import url("http://fonts.googleapis.com/css?family=Signika+Negative:300,400,600")
 @import variables
 
 /* General
@@ -21,6 +20,12 @@ body
 ::selection
   background selection-color
   text-shadow none
+
+:focus 
+  outline none
+
+::-moz-focus-inner 
+  border 0
 
 hr
   display block
@@ -67,6 +72,28 @@ h2
 input
   font-family "Source Sans Pro", sans-serif
   outline none
+
+/* Buttons
+================= */
+
+.btn
+  height 32px
+  font-size 14px
+  line-height 24px
+  padding 0 11px
+  color #000
+  background white
+  border: 1px solid #ccc
+  border-radius 2px
+  font-weight normal
+  cursor pointer 
+
+  :hover
+    background #e3e3e3
+
+.btn.blue
+  
+  
 
 /* Helper classes
 ================= */

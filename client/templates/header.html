@@ -5,9 +5,9 @@
         {{#if noIndexHeader}}
           <div class="logo {{development}}">
             {{#if development}}
-              <a href="/" title="Data is NOT stored permanently and is reset as needed!">PeerLibrary<span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span></a>
+              <a href="{{indexPath}}" title="Data is NOT stored permanently and is reset as needed!">PeerLibrary<span class="banner" title="Data is NOT stored permanently and is reset as needed!">Development instance</span></a>
             {{else}}
-              <a href="/">PeerLibrary</a>
+              <a href="{{indexPath}}">PeerLibrary</a>
             {{/if}}
           </div>
         {{/if}}

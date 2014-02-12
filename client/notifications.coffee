@@ -62,7 +62,7 @@ Template.notificationsOverlayItem.destroyed = ->
 
 Template.notificationsOverlayItem.events
   'click .button': (e, template) ->
-    if $(e.target).hasClass('icon-down-open')
+    if $(e.target).hasClass('icon-down')
       e.preventDefault()
 
       Deps.afterFlush =>
@@ -73,15 +73,15 @@ Template.notificationsOverlayItem.events
             positionNotifications $('.notifications .notification'), true
           complete: =>
             positionNotifications $('.notifications .notification'), false
-            $(e.target).addClass('icon-close').removeClass('icon-down-open').attr('title', 'Close')
+            $(e.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
 
-    else if $(e.target).hasClass('icon-close')
+    else if $(e.target).hasClass('icon-cancel')
       Notifications.remove @_id unless e.isDefaultPrevented()
 
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
-    Notifications.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-close')
+    Notifications.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
 
     return # Make sure CoffeeScript does not return anything
 
