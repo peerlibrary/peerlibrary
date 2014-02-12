@@ -59,8 +59,8 @@ class @Annotation extends Document
         tags: [@ReferenceField Tag, ['name', 'slug']]
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
-        upvoters: @ReferenceField Person
-        downvoters: @ReferenceField Person
+        upvoters: [@ReferenceField Person]
+        downvoters: [@ReferenceField Person]
       ]
-      upvoters: @ReferenceField Person
-      downvoters: @ReferenceField Person
+      upvoters: [@ReferenceField Person]
+      downvoters: [@ReferenceField Person]
