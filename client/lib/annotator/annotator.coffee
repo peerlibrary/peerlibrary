@@ -300,7 +300,7 @@ class @Annotator extends Annotator
       _id: Meteor.personId()
     annotation.publication =
       _id: Session.get 'currentPublicationId'
-    annotation.highlights = []
+    annotation.references = {}
 
     # Remove fields we do not want to store into the database
     highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
@@ -341,7 +341,7 @@ class @Annotator extends Annotator
 
       annotation = createAnnotationDocument()
       annotation.local = true
-      annotation.highlights = [
+      annotation.references.highlights = [
         _id: id
       ]
 

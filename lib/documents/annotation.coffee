@@ -4,29 +4,45 @@ class @Annotation extends Document
   # created: timestamp when document was created
   # updated: timestamp of this version
   # author:
-  #   _id: author's person id
-  #   slug: author's person id
+  #   _id: person id
+  #   slug
   #   givenName
   #   familyName
   #   gravatarHash
   # body: annotation's body
   # publication:
-  #   _id: publication's id
-  # highlights: list of
-  #   _id: highlight id
-  # labels: list of
+  #   _id
+  # references: made in the body
+  #   highlights: list of
+  #     _id
+  #   annotations: list of
+  #     _id
+  #   publications: list of
+  #     _id
+  #     slug
+  #     title
+  #   persons: list of
+  #     _id
+  #     slug
+  #     givenName
+  #     familyName
+  #   tags: list of
+  #     _id
+  #     name: ISO 639-1 dictionary
+  #     slug: ISO 639-1 dictionary
+  # tags: list of
   #   tag:
-  #     _id: label's tag id
-  #     name: label's tag name (ISO 639-1 dictionary)
-  #     slug: label's tag slug (ISO 639-1 dictionary)
+  #     _id
+  #     name: ISO 639-1 dictionary
+  #     slug: ISO 639-1 dictionary
   #   upvoters: list of
-  #     _id: upvoter's person id
+  #     _id: person id
   #   downvoters: list of
-  #     _id: upvoter's person id
+  #     _id: person id
   # upvoters: list of
-  #   _id: upvoter's person id
+  #   _id: person id
   # downvoters: list of
-  #   _id: downvoter's person id
+  #   _id: person id
   # local (client only): is this annotation just a temporary annotation on the client side
 
   # Should be a function so that we can possible resolve circual references
@@ -35,8 +51,13 @@ class @Annotation extends Document
     fields:
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash']
       publication: @ReferenceField Publication
-      highlights: [@ReferenceField Highlight]
-      labels: [
+      references:
+        highlights: [@ReferenceField Highlight]
+        annotations: [@ReferenceField Annotation]
+        publications: [@ReferenceField Annotation, ['slug', 'title']]
+        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
+        tags: [@ReferenceField Tag, ['name', 'slug']]
+      tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
         upvoters: @ReferenceField Person
         downvoters: @ReferenceField Person
