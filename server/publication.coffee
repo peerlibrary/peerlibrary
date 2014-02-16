@@ -32,18 +32,26 @@ class @Publication extends @Publication
     pdf?.content
 
   process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
-    pdf ?= Storage.open @filename()
-    initCallback ?= (numberOfPages) ->
-    textCallback ?= (pageNumber, segment) ->
-    pageImageCallback ?= (pageNumber, canvasElement) ->
-    progressCallback ?= (progress) ->
+    currentlyProcessingPublication @_id
 
-    Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
+    try
+      pdf ?= Storage.open @filename()
+      initCallback ?= (numberOfPages) ->
+      textCallback ?= (pageNumber, segment) ->
+      pageImageCallback ?= (pageNumber, canvasElement) ->
+      progressCallback ?= (progress) ->
 
-    PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+      Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
 
-    @processed = true
-    Publications.update @_id, $set: processed: @processed
+      PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+
+      # TODO: Set a timestamp and not just true
+      # TODO: We could also add some additional information (statistics, how long it took and so on)
+      @processed = true
+      Publications.update @_id, $set: processed: @processed
+
+    finally
+      currentlyProcessingPublication null
 
   _temporaryFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
