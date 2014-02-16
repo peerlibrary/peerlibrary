@@ -29,6 +29,9 @@ class @Publication extends Document
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
+  # processError:
+  #   error: description of the publication processing error
+  #   stack: stack trace of the error
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   _id: id of the query, an _id of the SearchResult object for the query
