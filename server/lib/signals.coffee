@@ -7,8 +7,6 @@ currentlyProcessedPublicationId = null
   currentlyProcessedPublicationId = id
 
 SegfaultHandler.registerHandler (stack, signal, address) ->
-  console.log "IN", currentlyProcessedPublicationId
-
   # TODO: Should we log also errors outside publication processing?
   return unless currentlyProcessedPublicationId
 
