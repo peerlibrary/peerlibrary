@@ -81,19 +81,35 @@ input
   font-size 14px
   line-height 24px
   padding 0 11px
-  color #000
+  color #444
   background white
-  border: 1px solid #ccc
+  border 1px solid #ccc
   border-radius 2px
   font-weight normal
   cursor pointer 
 
-  :hover
-    background #e3e3e3
+.btn:hover
+  background #e3e3e3
 
 .btn.blue
+  background bg-blue
+  border 1px solid border-blue
+  color white
   
-  
+.btn.blue:hover
+  background hover-blue
+
+/* ui dropdown
+================*/
+.ui-dropdown
+  padding 6px 10px
+  border 1px solid transparent
+  color icon-gray
+  cursor pointer
+
+.ui-dropdown:hover
+  border-color #e3e3e3
+  color icon-gray-hover
 
 /* Helper classes
 ================= */

@@ -127,6 +127,8 @@ small-meta-menu-icon-font-size = 13px
       position relative
       /* Has to be set otherwise there is 4px of additional height to display-page */
       line-height 0
+      border-radius 2px
+      border 1px solid #e3e3e3
       margin-bottom 20px
 
       .display-canvas
@@ -248,7 +250,7 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 350px
+annotations-control-height = 340px
 
 .annotations-control
   background white
@@ -305,11 +307,11 @@ annotations-control-height = 350px
             
           li:hover
             i
-              color icon-gray-hover
+              color icon-gray-hover 
 
           li.inactive, li.inactive:hover
             i
-              color icon-gray-hover
+              color icon-gray-inactive
 
       .form-body
         height auto
@@ -325,6 +327,7 @@ annotations-control-height = 350px
           line-height 1.4
           font-size 14px
           outline 0px solid transparent
+          margin 12px 0
         
       .form-tags
         border-top 1px solid #e3e3e3
@@ -341,7 +344,12 @@ annotations-control-height = 350px
           min-width 240px  
 
     .form-control
-      padding 20px 0
+      height 34px
+      padding 18px 0 0 0
+
+      .visibility-menu
+        float right
+        margin 0 20px 
 
       .publish
         margin-right 0

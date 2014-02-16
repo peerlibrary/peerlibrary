@@ -154,8 +154,23 @@
         </div>
         <div class="form-control">
           <button type="button" class="btn blue publish">Publish</button>
+          <div class="visibility-menu">
+            {{> visibilityMenu}}
+          </div>
         </div>
       </form>
+    </div>
+  </div>
+</template>
+
+<template name="visibilityMenu">
+  <div class="ui-dropdown">
+    <div class="ui-selection-wrapper">
+      <span class="ui-selection">
+        <i class="icon-public"></i>
+        Public
+      </span>
+      <i class="icon-down"></i>
     </div>
   </div>
 </template>
