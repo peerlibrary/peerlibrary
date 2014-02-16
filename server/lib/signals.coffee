@@ -3,7 +3,7 @@
 currentlyProcessedPublicationId = null
 
 @currentlyProcessingPublication = (id) ->
-  throw new Error "A publication is already being processed, only one publication can be processed at the time" if currentlyProcessedPublicationId
+  throw new Error "A publication is already being processed, only one publication can be processed at the time" if currentlyProcessedPublicationId and id
   currentlyProcessedPublicationId = id
 
 SegfaultHandler.registerHandler (stack, signal, address) ->
