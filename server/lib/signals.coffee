@@ -7,6 +7,10 @@ currentlyProcessedPublicationId = null
   currentlyProcessedPublicationId = id
 
 SegfaultHandler.registerHandler (stack, signal, address) ->
+  message = "Received SIGSEGV/SIGBUS (#{ signal }) for address 0x#{ address.toString(16) }"
+  stack = stack.join '\n'
+  Log.error "#{ message }\n#{ stack }"
+
   # TODO: Should we log also errors outside publication processing?
   return unless currentlyProcessedPublicationId
 
@@ -14,5 +18,5 @@ SegfaultHandler.registerHandler (stack, signal, address) ->
     $set:
       processError:
         # TODO: Add a timestamp
-        error: "Received SIGSEGV/SIGBUS (#{ signal }) for address 0x#{ address.toString(16) }"
-        stack: stack.join('\n')
+        error: message
+        stack: stack
