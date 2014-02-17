@@ -325,7 +325,7 @@ Meteor.methods
 
     Log.info "Processing pending PDFs"
 
-    Publications.find(cached: {$exists: true}, processed: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
@@ -346,6 +346,12 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
+        Publications.update publication._id,
+          $set:
+            processError:
+              error: "#{ error.toString?() or error }"
+              stack: error.stack
+
         Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
 
     Log.info "Done"
