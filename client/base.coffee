@@ -18,6 +18,8 @@ setSession = (session) ->
     currentHighlightId: null
     currentAnnotationId: null
     currentPersonSlug: null
+    currentTagId: null
+    currentTagSlug: null
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null
@@ -182,6 +184,14 @@ else
         setSession()
         redirectAnnotationId annotationId
         'redirecting'
+
+    '/t/:tagId/:tagSlug?':
+      as: 'tag'
+      to: (tagId, tagSlug) ->
+        setSession()
+          currentTagId: tagId
+          currentTagSlug: tagSlug
+        'tag'
 
     '/about':
       as: 'about'

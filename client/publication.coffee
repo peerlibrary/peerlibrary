@@ -682,14 +682,6 @@ Template.publicationAnnotationsItem.events
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
-    # Focus body no matter where the annotation was clicked
-    # TODO: Improve this
-    $target = $(e.target)
-    unless $target.hasClass('delete') or $target.is('[contenteditable=true]')
-      Meteor.setTimeout ->
-        focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
-      , 100
-
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.rendered = ->
