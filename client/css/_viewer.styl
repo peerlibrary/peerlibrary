@@ -266,95 +266,7 @@ annotations-control-height = 340px
 
   input
     color #444
-
-  .annotations-form-wrapper
-    padding 20px
-
-    .form-header
-      height 30px
-
-      .form-title
-        float left
-
-      .form-status
-        float right 
-
-    .form-content
-      border 1px solid #e3e3e3
-      border-radius 2px
-
-      .format-toolbar
-        height 30px
-        top -5px
-        position relative
-        display block
-        border-bottom 1px solid #e3e3e3
-        clear left
-
-        ul.format-buttons
-          list-style none
-          display block
-          padding 0
-          margin 0 auto
-          
-          li
-            display inline-block
-            padding 8px
-            cursor pointer
-
-            i
-              color icon-gray 
-            
-          li:hover
-            i
-              color icon-gray-hover 
-
-          li.inactive, li.inactive:hover
-            i
-              color icon-gray-inactive
-
-      .form-body
-        height auto
-        min-height 130px
-        padding 8px 12px
-        font-weight normal
-        background white
-
-        p.annotation-content
-          min-height 100px
-          word-wrap break-word
-          color #444
-          line-height 1.4
-          font-size 14px
-          outline 0px solid transparent
-          margin 12px 0
-        
-      .form-tags
-        border-top 1px solid #e3e3e3
-        height 20px
-        padding 6px 14px
-        
-        i
-          color icon-gray
-
-        input.annotation-tags
-          border 0
-          background transparent
-          margin 0 8px
-          min-width 240px  
-
-    .form-control
-      height 34px
-      padding 18px 0 0 0
-
-      .visibility-menu
-        float right
-        margin 0 20px 
-
-      .publish
-        margin-right 0
-        float right
-  
+ 
   .add
     background #cececf
     border none
@@ -371,6 +283,95 @@ annotations-control-height = 340px
   .add:active, .add:focus
     outline none
     border none
+
+.annotations-form-wrapper, .annotations-control-form-wrapper
+  .form-header
+    height 30px
+
+    .form-title
+      float left
+
+    .form-status
+      float right
+
+  .form-content
+    border 1px solid #e3e3e3
+    border-radius 2px
+
+    .format-toolbar
+      height 30px
+      top -5px
+      position relative
+      display block
+      border-bottom 1px solid #e3e3e3
+      clear left
+
+      ul.format-buttons
+        list-style none
+        display block
+        padding 0
+        margin 0 auto
+
+        li
+          display inline-block
+          padding 8px
+          cursor pointer
+
+          i
+            color icon-gray
+
+        li:hover
+          i
+            color icon-gray-hover
+
+        li.inactive, li.inactive:hover
+          i
+            color icon-gray-inactive
+
+    .form-body
+      height auto
+      min-height 130px
+      padding 8px 12px
+      font-weight normal
+      background white
+
+      p.annotation-content
+        min-height 100px
+        word-wrap break-word
+        color #444
+        line-height 1.4
+        font-size 14px
+        outline 0px solid transparent
+        margin 12px 0
+
+    .form-tags
+      border-top 1px solid #e3e3e3
+      height 20px
+      padding 6px 14px
+
+      i
+        color icon-gray
+
+      input.annotation-tags
+        border 0
+        background transparent
+        margin 0 8px
+        min-width 240px
+
+  .form-control
+    height 34px
+    padding 18px 0 0 0
+
+    .visibility-menu
+      float right
+      margin 0 20px
+
+    .publish
+      margin-right 0
+      float right
+
+.annotations-control-form-wrapper
+  padding 20px
 
 .annotations-list
   list-style none
