@@ -122,7 +122,56 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    <button class="icon-plus add" title="Add an annotation"></button>
+    {{!
+    <button class="add" title="Add an annotation"><i class="icon-plus"></i></button>
+    }}
+    <div class="annotations-form-wrapper">
+      <form class="annotations-form">
+        <div class="form-header">
+          <span class="form-title"><h2>New Annotation</h2></span>
+          <span class="form-status">Changes saved</span>
+        </div>
+        <div class="form-content">
+          <div class="format-toolbar">
+            <ul class="format-buttons">
+              <li><i class="icon-bold"></i></li>
+              <li><i class="icon-italic"></i></li>
+              <li><i class="icon-list-numbered"></i></li>
+              <li><i class="icon-list-bullet"></i></li>
+              <li><i class="icon-link"></i></li>
+              <li class="inactive"><i class="icon-quote-left"></i></li>
+              <li class="inactive"><i class="icon-math"></i></li>
+              <li class="inactive"><i class="icon-code"></i></li>
+            </ul>
+          </div>
+          <div class="form-body">
+            <p class="annotation-content" contenteditable></p>
+          </div>
+          <div class="form-tags">
+            <i class="icon-tags"></i>
+            <input class="annotation-tags" name="tags" type="text" value="" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="form-control">
+          <button type="button" class="btn blue publish">Publish</button>
+          <div class="visibility-menu">
+            {{> visibilityMenu}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<template name="visibilityMenu">
+  <div class="ui-dropdown">
+    <div class="ui-selection-wrapper">
+      <span class="ui-selection">
+        <i class="icon-public"></i>
+        Public
+      </span>
+      <i class="icon-down"></i>
+    </div>
   </div>
 </template>
 
