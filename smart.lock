@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "1395f917542e1f35db9dba7b8c236913af934bd8"
+    "commit": "b78ffbbd082f6f46aef852a2d975781757e58049"
   },
   "dependencies": {
     "basePackages": {
@@ -38,13 +38,13 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.942-3",
-        "commit": "5c96a0cf84b1470fbc4d129dcb6451561bdb2a71"
+        "tag": "v0.8.1003-1",
+        "commit": "5e19ba8c60d879d829bbfa247cee740f23f79521"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
-        "tag": "v0.2.2",
-        "commit": "5f87f665ccd6c74322febaf78fe5a24dbfb7949c"
+        "tag": "v0.2.3",
+        "commit": "9c838fbf5053a9f4c9ea21cad8e2fef8f1374e7c"
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
@@ -88,8 +88,8 @@
       },
       "urlify2": {
         "git": "https://github.com/peerlibrary/meteor-urlify2.git",
-        "tag": "v0.1.1",
-        "commit": "5b6677b01382e470bd22e6a4a8a0d4399d7900d7"
+        "tag": "v0.2.1",
+        "commit": "6af78cad650ee216b640a418a5557a0a7e5be538"
       },
       "fs": {
         "git": "https://github.com/peerlibrary/meteor-fs.git",

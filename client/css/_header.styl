@@ -11,7 +11,7 @@ header
     font-weight 300
     top 0
     width 100%
-    z-index 99999
+    z-index 5000
     position fixed
     user-select none
 
@@ -217,83 +217,92 @@ Sign in buttons
     color blue-accent 
 
 /*
-unauthenticated auth menu
-========================= */
-.not-logged-in
-  #login-dropdown-list
-    color black
-    background white
-    border-color rgb(210,210,210)
-    border-radius 5px
-    border-style solid
-    border-width 1px
-    position fixed
-    top 50%
-    left 50%
-    margin-left -151px
-    margin-top -220px
-    padding 20px 0
-    width 300px
-    right 0px
-    font-size 14px
-    line-height 36px
+Authentication menu and newsletter dialog (for footer)
+====================================================== */
 
-    label
-      display block
-      font-weight bold
-      padding-top 16px
+header.not-logged-in #login-dropdown-list, .newsletter-dialog, .accounts-centered-dialog
+  color black
+  background white
+  border-color rgb(210,210,210)
+  border-radius 5px
+  border-style solid
+  border-width 1px
+  position fixed
+  top 50%
+  left 50%
+  margin-left -151px
+  margin-top -220px
+  padding 20px 0
+  width 300px
+  right 0px
+  font-size 14px
+  line-height 36px
+  /* Higher than header but below importing overlay */
+  z-index 5500
 
-    input
-      position relative
-      min-height 20px
-      width 242px
-      padding 7px 8px
-      outline medium none
-      color rgb(51,51,51)
-      background-color rgb(255,255,255)
-      background-repeat no-repeat
-      background-position right center
-      border 1px solid rgb(204,204,204)
-      border-radius 3px 3px 3px 3px
-      box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
-      -moz-box-sizing border-box
-      transition all 0.15s ease-in 0s
-      vertical-align middle
+  label
+    display block
+    font-weight bold
+    padding-top 16px
 
-    input:focus
-      border-color rgb(81,167,232)
-      box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
+  input
+    position relative
+    min-height 20px
+    width 242px
+    padding 7px 8px
+    outline medium none
+    color rgb(51,51,51)
+    background-color rgb(255,255,255)
+    background-repeat no-repeat
+    background-position right center
+    border 1px solid rgb(204,204,204)
+    border-radius 3px 3px 3px 3px
+    box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
+    -moz-box-sizing border-box
+    transition all 0.15s ease-in 0s
+    vertical-align middle
 
-    .login-button
-      width 258px
-      height 40px
-      position relative
-      margin 0 auto 10px auto
-      padding 0
-      background #4695C5
-      border 1px solid #2B729C
-      border-radius 3px
-      text-align center
-      font-weight bold
-      color white
-      cursor pointer
-      transition all 0.15s ease-in 0s
+  input:focus
+    border-color rgb(81,167,232)
+    box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
-    .login-button-form-submit
-      margin-top 20px
+  .login-button, .subscribe-form-submit
+    width 258px
+    height 40px
+    position relative
+    margin 0 auto 10px auto
+    padding 0
+    background #4695C5
+    border 1px solid #2B729C
+    border-radius 3px
+    text-align center
+    font-weight bold
+    color white
+    cursor pointer
+    transition all 0.15s ease-in 0s
 
-    .login-button:hover
-      background #327CA8
+  .login-button-form-submit, .subscribe-form-submit
+    margin-top 20px
 
-    .additional-link
-      background transparent
-      color blue-accent
-      text-align center
-    
-    .loading
-      display none
+  .login-button:hover, .subscribe-form-submit:hover
+    background #327CA8
 
-.logged-in
+  .additional-link, .accounts-close
+    background transparent
+    color blue-accent
+    text-align center
+
+  .loading
+    display none
+
+  .description
+    text-align center
+
+  .message, .description
+    line-height default-line-height
+    margin-top 10px
+
+header.logged-in
   #login-dropdown-list
     background white 
     border-color rgb(210,210,210)
@@ -303,8 +312,8 @@ unauthenticated auth menu
     position  absolute
     width 180px
     padding 5px 0
-    top 56px
-    right 24px
+    top 55px
+    right 10px
     font-size 14px
     line-height 20px
 
@@ -319,7 +328,7 @@ unauthenticated auth menu
     z-index 1
     margin-left -10px
     top -8px
-    left 149px
+    left 161px
 
   #login-dropdown-list:before
     content ''
@@ -332,7 +341,7 @@ unauthenticated auth menu
     z-index 0
     margin-left -10px
     top -9px
-    left 149px
+    left 161px
 
   .menu-item
     padding 5px 20px
@@ -361,7 +370,18 @@ unauthenticated auth menu
     a
       cursor pointer
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
+header.index-header.logged-in
+  #login-dropdown-list
+    top 56px
+    right 24px
+
+  #login-dropdown-list:after
+    left 149px
+
+  #login-dropdown-list:before
+    left 149px
+
+#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button, .newsletter-dialog .email-label-and-input, .newsletter-dialog .description, .newsletter-dialog .message
   padding 0 20px
 
 .login-close-text
@@ -378,9 +398,6 @@ unauthenticated auth menu
 /*
 Auth form buttons
 ============ */
-
-
-
 
 .user-icon
   width 24px
@@ -430,9 +447,11 @@ header.index-header
         width 616px
         font-size 24px
         background transparent
+
       input::-webkit-input-placeholder
           font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
+
       input::-moz-placeholder
           font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
