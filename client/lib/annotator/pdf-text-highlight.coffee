@@ -50,7 +50,7 @@ class PDFTextHighlight extends Annotator.Highlight
         @_box.height = segment.top + segment.height - @_box.top
 
   _precomputeHover: (segments) =>
-    # TODO: Improve polygon drawing, split segment array by chunks 
+    # TODO: Improve polygon drawing, split segment array by chunks
 
     # _hover is an array of vertices coordinates
     @_hover = []
