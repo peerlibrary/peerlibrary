@@ -35,3 +35,5 @@ audit-argument-checks
 useragent
 dom-text-mapper
 annotator
+medium-editor
+segfault-handler

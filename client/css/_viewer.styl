@@ -20,6 +20,7 @@ meta-menu-height = 22px
 meta-menu-padding = 10px
 meta-menu-top = header-height + 15px
 meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+meta-menu-icon-font-size = 20px
 
 .meta-menu
   position fixed
@@ -43,21 +44,27 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
     color white
 
   i.icon-menu
-    font-size 20px
+    font-size meta-menu-icon-font-size
     color white
 
   .meta-content
     display none
     color white
     padding 5px
+    overflow-x hidden
+    overflow-y auto
 
-  .meta-content.description
     .authors
       span::after
         content ","
 
       span:last-child::after
         content ""
+
+    .time
+      margin-bottom 0
+      margin-top 0
+      font-size smaller
 
 .meta-menu:hover
   background rgba(46,46,44,0.5)
@@ -100,6 +107,11 @@ meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-m
 
 viewer-left = scroller-width + 2 * scroller-left
 viewer-top = meta-menu-top - header-height
+
+small-meta-menu-width = 20px
+small-meta-menu-height = 18px
+small-meta-menu-padding = 5px
+small-meta-menu-icon-font-size = 13px
 
 .viewer
   .display-wrapper
@@ -159,19 +171,28 @@ viewer-top = meta-menu-top - header-height
           user-select text
 
       .highlights-control
-        .meta-menu.control
+        line-height default-line-height
+
+        .meta-menu
           position absolute
           display none
-          width 20px
-          height 18px
-          padding 5px
+          width small-meta-menu-width
+          height small-meta-menu-height
+          padding small-meta-menu-padding
           z-index 200
-          text-align left
 
           i.icon-menu
-            font-size 13px
+            font-size small-meta-menu-icon-font-size
 
-        .meta-menu.control:hover
+          .meta-content
+            .annotations
+              span::after
+                content ","
+
+              span:last-child::after
+                content ""
+
+        .meta-menu:hover
           width 150px
           min-height 220px
 
@@ -190,6 +211,7 @@ viewer-top = meta-menu-top - header-height
         text-align center
 
       .text-layer-dummy
+        line-height default-line-height
         position absolute
         color transparent
         cursor default
@@ -223,40 +245,181 @@ viewer-top = meta-menu-top - header-height
 /* Annotations
 ============== */
 
-annotations-left = meta-menu-left
+/* Initially we set it based on display-canvas-loading width and
+   then in code we update it to real width based on the PDF */
+annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
+annotations-control-height = 28px
 
-.annotations
+.annotations-control
+  background #cececf
+  border-radius 2px
+  height annotations-control-height
   z-index 90
   position fixed
-  /* Initially we set it based on display-canvas-loading width and
-     then in code we update it to real width based on the PDF */
-  left viewer-left + display-canvas-loading-width + annotations-left
+  left annotations-left
   right annotations-right
   top meta-menu-top
-  bottom scroller-bottom
-  overflow-x hidden
-  overflow-y auto
 
-  ul.annotations-list
-    list-style none
+  .add
+    background #cececf
+    border none
+    border-radius 2px
+    font-size 20px
+    color white
+    width 28px
+    height 28px
     padding 0
-    /* To not crop shadow */
-    margin 5px
 
-    li
-      background white
-      padding 20px
-      margin 10px 0
+  .add:hover
+    background rgba(46,46,44,0.5)
 
-      /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      border-radius 2px
-      box-shadow 0 0 0 1px box-shadow-border
-      transition 0.2s
+  .add:active, .add:focus
+    outline none
+    border none
 
-    li:hover
+.annotations-list
+  list-style none
+  margin 0
+  padding 0
+  overflow auto
+  position fixed
+  z-index 90
+  /* To not crop the shadow of annotations we move the left edge
+     for 5px to the left and then add 5px (in fact 6px, so that
+     it looks better with our 1px shadow border) left margin to
+     each annotation. Same value is used in the publication.coffee
+     as well. */
+  left annotations-left - 5px
+  /* To not have scroll bar overlapping the content we move the right
+     edge for 10px to the right and then add 10px right margin to each
+     annotation */
+  right annotations-right - 10px
+  top meta-menu-top + annotations-control-height + 10px
+  bottom 15px
+
+  .annotation
+    position relative
+    display block
+    background white
+    padding 20px
+    /* To not crop the shadow of annotations we move the left edge
+       for 5px to the left and then add 5px (in fact 6px, so that
+       it looks better with our 1px shadow border) left margin to each
+       annotation. Additionally, we add right margin to provide space
+       for meta menu + 10px to not have scroll bar overlapping the
+       content (we moved the right edge for 10px for that). */
+    margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px
+
+    /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
+    border-radius 2px
+    box-shadow 0 0 0 1px box-shadow-border
+    transition 0.2s
+
+    .user-icon
+      width 24px
+      height 24px
+      margin 0
+      display inline-block
+
+    .author-name
+      margin 0 0 12px 6px
+      display inline-block
+ 
+    .body[contenteditable=true]:focus
+      outline none
+
+    .body:empty:not(:focus):before
+      content attr(data-placeholder)
+      color #cececf
+      font-style italic
+
+    .saved
+      position absolute
+      right 4px
+      bottom 2px
+      color #cececf
+      transition opacity .5s ease-in-out
+
+      /* Initially hidden. To show "Saved" notification, change the opacity. */
+      opacity 0
+
+    .saved.display
+      opacity 1
+
+    .meta-menu
+      position absolute
+      width small-meta-menu-width
+      height small-meta-menu-height
+      padding small-meta-menu-padding
+      /* We re-set this dynamically in Template.annotationMetaMenu.rendered */
+      z-index 200
+      top 0
+      left initial
+      right 0
+      margin-right -(small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
+
+      i.icon-menu
+        font-size small-meta-menu-icon-font-size
+        float right
+        /* No idea why 1px margin is needed with float right but otherwise
+           icon is not positioned correctly */
+        margin-top 1px
+
+      .meta-content
+        .highlights
+          span::after
+            content ","
+
+          span:last-child::after
+            content ""
+
+    .meta-menu:hover
+      width 150px
+      min-height 220px
+
+  .annotation:hover, .annotation.selected, .annotation.hovered
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
       box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+  /* We use only 1px here to still have shadow border visible, but not 5px
+     top margin which makes visible lower than the crop top line when
+     scrolling. Otherwise when you have an initial list of annotations and
+     you scroll down there is 5px lag before annotation is cropped. With 1px
+     we fake things to look more or less normal, with shadow border, but
+     there it is not noticeable that cropping does not happen immediately. */
+  .annotation:first-child
+    margin-top 1px
+
+  .annotation.local, .annotation.invite
+    /* 11px instead of 10px for the same reason we are using 6px for left margin
+       instead of 5px - so that it looks better with our 1px shadow border. */
+    margin-right 11px
+
+    .body
+      text-align center
+      color gray
+
+  .annotation.invite
+    position absolute
+    left 0
+    right 0
+    top 0
+    bottom 0
+    margin-top 0
+    margin-bottom 0
+    padding 0
+    background-color transparent
+    box-shadow none
+
+    .vertical-align-outer
+      display table
+      height 100%
+      width 100%
+
+      .vertical-align-inner
+        display table-cell
+        vertical-align middle
 
 /* Footer
 ========= */

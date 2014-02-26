@@ -3,11 +3,13 @@ crypto = Npm.require 'crypto'
 NUMBER_OF_VERIFICATION_SAMPLES = 3
 VERIFICATION_SAMPLE_SIZE = 64
 
+SLUG_MAX_LENGTH = 80
+
 class @Publication extends @Publication
   @MixinMeta (meta) =>
     meta.fields.slug.generator = (fields) ->
       if fields.title
-        [fields._id, URLify2 fields.title]
+        [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
       else
         [fields._id, '']
     meta
@@ -30,18 +32,26 @@ class @Publication extends @Publication
     pdf?.content
 
   process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
-    pdf ?= Storage.open @filename()
-    initCallback ?= (numberOfPages) ->
-    textCallback ?= (pageNumber, segment) ->
-    pageImageCallback ?= (pageNumber, canvasElement) ->
-    progressCallback ?= (progress) ->
+    currentlyProcessingPublication @_id
 
-    Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
+    try
+      pdf ?= Storage.open @filename()
+      initCallback ?= (numberOfPages) ->
+      textCallback ?= (pageNumber, segment) ->
+      pageImageCallback ?= (pageNumber, canvasElement) ->
+      progressCallback ?= (progress) ->
 
-    PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+      Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
 
-    @processed = true
-    Publications.update @_id, $set: processed: @processed
+      PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+
+      # TODO: Set a timestamp and not just true
+      # TODO: We could also add some additional information (statistics, how long it took and so on)
+      @processed = true
+      Publications.update @_id, $set: processed: @processed
+
+    finally
+      currentlyProcessingPublication null
 
   _temporaryFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
@@ -90,7 +100,7 @@ class @Publication extends @Publication
       metadata: 1
 
 Meteor.methods
-  createPublication: (filename, sha256) ->
+  'create-publication': (filename, sha256) ->
     check filename, String
     check sha256, String
 
@@ -161,7 +171,7 @@ Meteor.methods
     already: already
     samples: samples
 
-  uploadPublication: (file, options) ->
+  'upload-publication': (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
       publicationId: String
@@ -218,7 +228,7 @@ Meteor.methods
           library:
             _id: publication._id
 
-  verifyPublication: (publicationId, samplesData) ->
+  'verify-publication': (publicationId, samplesData) ->
     check publicationId, String
     check samplesData, [Uint8Array]
 

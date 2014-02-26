@@ -10,6 +10,7 @@ html, button, input, select, textarea
 
 body
   font 14px "Source Sans Pro", sans-serif
+  line-height default-line-height
   margin 0 auto
   background light-grey
 
@@ -46,12 +47,17 @@ textarea
   color #000
   padding 0.2em 0
 
-a
+a, ul.top-menu li .search-wrapper .development-comment a
+  display inline
+  padding 0
   color blue-accent
   text-decoration none
 
 a:hover
   text-decoration underline
+
+ul.top-menu li .search-wrapper .development-comment a:hover
+  text-decoration underline !important
 
 h2
   font-size 18px

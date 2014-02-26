@@ -20,7 +20,7 @@ verifyFile = (file, fileContent, publicationId, samples) ->
 
   samplesData = _.map samples, (sample) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
-  Meteor.call 'verifyPublication', publicationId, samplesData, (error) ->
+  Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
       ImportingFiles.update file._id,
         $set:
@@ -37,7 +37,7 @@ uploadFile = (file, publicationId) ->
   meteorFile = new MeteorFile file,
     collection: ImportingFiles
 
-  meteorFile.upload file, 'uploadPublication',
+  meteorFile.upload file, 'upload-publication',
     size: UPLOAD_CHUNK_SIZE,
     publicationId: publicationId
   ,
@@ -87,7 +87,7 @@ importFile = (file) ->
         $set:
           sha256: sha256
 
-      Meteor.call 'createPublication', file.name, sha256, (error, result) ->
+      Meteor.call 'create-publication', file.name, sha256, (error, result) ->
         if error
           ImportingFiles.update file._id,
             $set:
@@ -118,7 +118,9 @@ importFile = (file) ->
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
-      throw error if error
+      if error
+        Notify.meteorError error, true
+        return
 
       # So that meteor-file knows what to update
       file._id = id
@@ -143,38 +145,44 @@ hideOverlay = ->
       errored: true
     ]
   ).count()
+
   # We prevent hiding if user is uploading files
-  Session.set 'importOverlayActive', false if allCount == finishedAndErroredCount
-  ImportingFiles.remove({})
+  if allCount == finishedAndErroredCount
+    Session.set 'importOverlayActive', false
+    ImportingFiles.remove({})
 
-Meteor.startup ->
-  $(document).on 'dragstart', (e) ->
-    # We want to prevent dragging of everything except the viewport
-    return if $(e.target).is('.viewport')
+  Session.set 'signInOverlayActive', false
 
-    e.preventDefault()
+$(document).on 'dragstart', (e) ->
+  # We want to prevent dragging of everything except the viewport
+  return if $(e.target).is('.viewport')
 
-    return # Make sure CoffeeScript does not return anything
+  e.preventDefault()
 
-  $(document).on 'dragenter', (e) ->
-    e.preventDefault()
+  return # Make sure CoffeeScript does not return anything
 
-    # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
-    DRAGGING_OVER_DOM = true
-    Meteor.setTimeout ->
-      DRAGGING_OVER_DOM = false
-    , 5
+$(document).on 'dragenter', (e) ->
+  e.preventDefault()
 
-    if Meteor.personId()
-      Session.set 'importOverlayActive', true
-      e.originalEvent.dataTransfer.effectAllowed = 'copy'
-      e.originalEvent.dataTransfer.dropEffect = 'copy'
-    else
-      Session.set 'signInOverlayActive', true
-      e.originalEvent.dataTransfer.effectAllowed = 'none'
-      e.originalEvent.dataTransfer.dropEffect = 'none'
+  # Don't allow importing while password reset is in progress
+  return if  Accounts._loginButtonsSession.get 'resetPasswordToken'
 
-    return # Make sure CoffeeScript does not return anything
+  # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
+  DRAGGING_OVER_DOM = true
+  Meteor.setTimeout ->
+    DRAGGING_OVER_DOM = false
+  , 5
+
+  if Meteor.personId()
+    Session.set 'importOverlayActive', true
+    e.originalEvent.dataTransfer.effectAllowed = 'copy'
+    e.originalEvent.dataTransfer.dropEffect = 'copy'
+  else
+    Session.set 'signInOverlayActive', true
+    e.originalEvent.dataTransfer.effectAllowed = 'none'
+    e.originalEvent.dataTransfer.dropEffect = 'none'
+
+  return # Make sure CoffeeScript does not return anything
 
 Template.importButton.events =
   'click .import': (e, template) ->
@@ -269,12 +277,12 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
-  $(document).on 'keyup.importOverlay', (e) ->
-    hideOverlay() if e.keyCode is 27 # esc key
+  $(document).off('.importOverlay').on 'keyup.importOverlay', (e) =>
+    hideOverlay() if e.keyCode is 27 # Escape key
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->
-  $(document).off 'keyup.importOverlay'
+  $(document).off '.importOverlay'
 
 Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'
@@ -293,8 +301,10 @@ Deps.autorun ->
 
   if importingFilesCount is 1
     assert finishedImportingFiles.length is 1
+    Notify.success "Imported the publication."
     Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
+    Notify.success "Imported #{ finishedImportingFiles.length } publications."
     Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
 
   Session.set 'importOverlayActive', false

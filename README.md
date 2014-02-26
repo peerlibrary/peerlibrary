@@ -3,7 +3,7 @@ PeerLibrary
 
 Capturing the global conversation on scholarly literature.
 
-http://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
+https://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
 * [GitHub](https://github.com/peerlibrary/peerlibrary)
 * [Wiki](https://github.com/peerlibrary/peerlibrary/wiki)
@@ -62,12 +62,12 @@ From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) t
     mrt
 
 And open [http://localhost:3000/](http://localhost:3000/), which is an address of
-your local development instance.
+your local development instance, to start an installation wizard process in which you
+create an admin user (which has username `admin`). After you create an admin
+user, PeerLibrary will reload.
 
 To demo the tool, you will need to populate your instance of the database with publications.
-At first run it was already populated with dummy users `carl-sagan`, `hannah-arendt`,
-`paul-feyerabend` with password `hello`. User `carl-sagan` was set as administrator.
-Log in as `carl-sagan` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
+Log in as `admin` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
 Click on the _Initialize database with sample data_ button, to initialize the database with
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
@@ -82,23 +82,12 @@ Sometimes when installing dependencies, Meteor will throw the following error:
 This just means that there was a timeout while downloading a dependency, probably because of
 a networking issue. Just retry.
 
-If you get the following error:
-
-    npm http 404 https://registry.npmjs.org/esprima/1.1.0-dev
-    npm ERR! Error: version not found: 1.1.0-dev : esprima/1.1.0-dev
-
-This error can occur because a development version of the `esprima` package is
-installed among the dependencies, and `npm` gets confused with versions when upgrading. You should just the delete old
-version with the command:
-
-    rm -rf ~/.meteorite/packages/pdf.js
-
 If you have not cloned recursively (`git clone --recursive ...`), you will at some point get a such or similar error:
 
     While building package `blob`:
     error: File not found: Blob/Blob.js
 
-You just have to manually initialize submodules we are using:
+Or similar errors for other packages, you just have to manually initialize git submodules we are using:
 
     git submodule update --init --recursive
 

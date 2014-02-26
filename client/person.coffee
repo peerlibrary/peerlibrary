@@ -38,3 +38,9 @@ Template.profile.myPublications = ->
   Publications.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
+
+Handlebars.registerHelper 'currentPerson', (options) ->
+  Meteor.person()
+
+Handlebars.registerHelper 'currentPersonId', (options) ->
+  Meteor.personId()

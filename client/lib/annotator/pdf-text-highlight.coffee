@@ -11,10 +11,18 @@ class PDFTextHighlight extends Annotator.Highlight
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
     @_$highlightsControl = @_$textLayer.next('.highlights-control')
 
+    @_offset = @_$highlightsLayer.offsetParent().offset()
+
     @_area = null
     @_box = null
     @_hover = null
     @_$highlight = null
+
+    # We are displaying hovering effect also when mouse is not really over the highlighting, but we
+    # have to know if mouse is over the highlight to know if we should remove or not the hovering effect
+    # TODO: Rename hovering effect to something else (engaged? active?) and then hovering and other actions should just engage highlight as neccessary
+    # TODO: Sync this naming terminology with annotations (there are same states there)
+    @_mouseHovering = false
 
     @_createHighlight()
 
@@ -109,6 +117,9 @@ class PDFTextHighlight extends Annotator.Highlight
     context = @_highlightsCanvas.getContext('2d')
     context.clearRect 0, 0, @_highlightsCanvas.width, @_highlightsCanvas.height
 
+    # We restore hovers for other highlights
+    highlight._drawHover() for highlight in @anchor.annotator.getHighlights() when @pageIndex is highlight.pageIndex and highlight._$highlight.hasClass 'hovered'
+
   _sortHighlights: =>
     @_$highlightsLayer.find('.highlights-layer-highlight').detach().sort(
       (a, b) =>
@@ -119,7 +130,10 @@ class PDFTextHighlight extends Annotator.Highlight
     ).appendTo(@_$highlightsLayer)
 
   _showControl: =>
-    $control = @_$highlightsControl.find('.control')
+    $control = @_$highlightsControl.find('.meta-menu')
+
+    return if $control.is(':visible')
+
     $control.css(
       left: @_box.left + @_box.width + 1 # + 1 to not overlap border
       top: @_box.top - 2 # - 1 to align with fake border we style
@@ -129,7 +143,8 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    $control.find('.meta-content').html(Template.highlightsControl()).find('.delete').on 'click.highlight', (e) =>
+    # TODO: Make reactive content of the template?
+    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
       @anchor.annotator._removeHighlight @annotation._id
 
       return # Make sure CoffeeScript does not return anything
@@ -137,12 +152,16 @@ class PDFTextHighlight extends Annotator.Highlight
     $control.show()
 
   _hideControl: =>
-    @_$highlightsControl.find('.control').hide().off(
+    $control = @_$highlightsControl.find('.meta-menu')
+
+    return unless $control.is(':visible')
+
+    $control.hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
     )
-    @_$highlightsControl.find('.control .meta-content .delete').off '.highlight'
+    @_$highlightsControl.find('.meta-menu .meta-content .delete').off '.highlight'
 
   _clickHandler: (e) =>
     @anchor.annotator._selectHighlight @annotation._id
@@ -172,34 +191,66 @@ class PDFTextHighlight extends Annotator.Highlight
         e.type = 'mouseout'
 
   _mouseenterHandler: (e) =>
+    @_mouseHovering = true
+
+    @hover false
+    return # Make sure CoffeeScript does not return anything
+
+  _mouseleaveHandler: (e) =>
+    @_mouseHovering = false
+
+    if @_$highlight.hasClass 'selected'
+      @_hideControl()
+    else
+      @unhover false
+
+    return # Make sure CoffeeScript does not return anything
+
+  hover: (noControl) =>
     # We have to check if highlight already is marked as hovered because of mouse events forwarding
     # we use, which makes the event be send twice, once when mouse really hovers the highlight, and
     # another time when user moves from a highlight to a control - in fact mouseover handler above
     # gets text layer as related target (instead of underlying highlight) so it makes a second event.
     # This would be complicated to solve, so it is easier to simply have this check here.
-    return if @_$highlight.hasClass 'hovered'
+    if @_$highlight.hasClass 'hovered'
+      # We do not do anything, but we still show control if it was not shown already
+      @_showControl() unless noControl
+      return
 
     @_$highlight.addClass 'hovered'
     @_drawHover()
-    @_showControl()
+    # When mouseenter handler is called by _annotationMouseenterHandler we do not want to show control
+    @_showControl() unless noControl
 
-    return # Make sure CoffeeScript does not return anything
+    # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
+    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if noControl
 
-  _mouseleaveHandler: (e) =>
+  unhover: (noControl) =>
     # Probably not really necessary to check if highlight already marked as hovered but to match check above
-    return unless @_$highlight.hasClass 'hovered'
+    unless @_$highlight.hasClass 'hovered'
+      # We do not do anything, but we still hide control if it was not hidden already
+      @_hideControl() unless noControl
+      return
 
     @_$highlight.removeClass 'hovered'
     @_hideHover()
-    @_hideControl()
+    # When mouseleave handler is called by _annotationMouseleaveHandler we do not want to show control
+    @_hideControl() unless noControl
 
+    # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
+    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
+
+  _annotationMouseenterHandler: (e, annotationId) =>
+    @hover true if annotationId in _.pluck @annotation.annotations, '_id'
+    return # Make sure CoffeeScript does not return anything
+
+  _annotationMouseleaveHandler: (e, annotationId) =>
+    @unhover true if annotationId in _.pluck @annotation.annotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _createHighlight: =>
     scrollLeft = $(window).scrollLeft()
     scrollTop = $(window).scrollTop()
-
-    offset = @_$highlightsLayer.offsetParent().offset()
 
     # We cannot simply use Range.getClientRects because it returns different
     # things in different browsers: in Firefox it seems to return almost precise
@@ -213,8 +264,8 @@ class PDFTextHighlight extends Annotator.Highlight
       rect = $wrap.get(0).getBoundingClientRect()
       $node.unwrap()
 
-      left: rect.left + scrollLeft - offset.left
-      top: rect.top + scrollTop - offset.top
+      left: rect.left + scrollLeft - @_offset.left
+      top: rect.top + scrollTop - @_offset.top
       width: rect.width
       height: rect.height
 
@@ -229,6 +280,8 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseover.highlight mouseout.highlight': @_hoverHandler
       'mouseenter-highlight': @_mouseenterHandler
       'mouseleave-highlight': @_mouseleaveHandler
+      'annotationMouseenter': @_annotationMouseenterHandler
+      'annotationMouseleave': @_annotationMouseleaveHandler
 
     @_$highlight.data 'highlight', @
 
@@ -266,7 +319,7 @@ class PDFTextHighlight extends Annotator.Highlight
 
     # We fake mouse leaving if highlight was hovered by any chance
     # (this happens when you remove a highlight through a control).
-    @_mouseleaveHandler()
+    @_mouseleaveHandler null
 
     $(@_$highlight).remove()
 
@@ -277,6 +330,9 @@ class PDFTextHighlight extends Annotator.Highlight
 
     @_$textLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
+
+    # We also want that selected annotations display a hover effect
+    @hover true
 
   # Just a helper function to draw highlight unselected and make it unselected by the browser, use annotator._selectHighlight to deselect
   deselect: =>
@@ -293,6 +349,9 @@ class PDFTextHighlight extends Annotator.Highlight
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
 
+    # If mouse is not over the highlight we unhover
+    @unhover true unless @_mouseHovering
+
   # Is highlight currently drawn as selected, use annotator.selectedAnnotationId to get ID of a selected annotation
   isSelected: =>
     @_$highlight.hasClass 'selected'
@@ -307,6 +366,15 @@ class PDFTextHighlight extends Annotator.Highlight
   # Get the HTML elements making up the highlight
   _getDOMElements: =>
     @_$highlight
+
+  # Get bounding box with coordinates relative to the outer bounds of the display wrapper
+  getBoundingBox: =>
+    wrapperOffset = @anchor.annotator.wrapper.outerOffset()
+
+    left: @_box.left + @_offset.left - wrapperOffset.left
+    top: @_box.top + @_offset.top - wrapperOffset.top
+    width: @_box.width
+    height: @_box.height
 
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>

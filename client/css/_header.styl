@@ -11,8 +11,9 @@ header
     font-weight 300
     top 0
     width 100%
-    z-index 99999
+    z-index 5000
     position fixed
+    user-select none
 
 .logo
   width 145px
@@ -49,6 +50,8 @@ ul.top-menu
       color white
       display block
       padding 0 20px
+      user-select none
+      cursor pointer
       transition 0.2s
 
     span.search-button
@@ -60,7 +63,6 @@ ul.top-menu
 
   .search-wrapper
     padding 0 20px
-    cursor pointer
     width 400px
     transition 0.2s
 
@@ -92,6 +94,9 @@ ul.top-menu
 
 ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
   text-decoration none !important
+
+.no-index-header ul.top-menu .search-wrapper
+  cursor pointer
 
 .no-index-header
   ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
@@ -164,14 +169,41 @@ span.cursor
 .development
   position relative
 
-  .banner
-    color red
-    position absolute
-    font-size 80%
-    font-weight bold
-    top 25%
-    left 10px
-    transform rotate(-10deg)
+.development .banner, .development-banner
+  color red
+  position absolute
+  font-size 12px
+  line-height default-line-height
+  font-weight bold
+  text-align center
+  top 33%
+  left 0
+  right 0
+  padding 0
+  transform rotate(-10deg)
+
+.development-banner
+  transform none
+  position static
+  font-size 18px
+  width 90%
+  margin-left auto
+  margin-right auto
+  margin-bottom 0
+
+  .warning
+    font-size 36px
+    margin-top ((18px * default-line-height * 2 - 36px) / 2)
+
+  .left
+    float left
+
+  .right
+    float right
+
+.development-comment
+  text-align center
+  margin 0
 
 /*
 Sign in buttons
@@ -181,51 +213,175 @@ Sign in buttons
   display inline-block
   float right
 
-  a
-    cursor pointer
+  a.additional-link
+    color blue-accent 
 
+/*
+Authentication menu and newsletter dialog (for footer)
+====================================================== */
+
+header.not-logged-in #login-dropdown-list, .newsletter-dialog, .accounts-centered-dialog
+  color black
+  background white
+  border-color rgb(210,210,210)
+  border-radius 5px
+  border-style solid
+  border-width 1px
+  position fixed
+  top 50%
+  left 50%
+  margin-left -151px
+  margin-top -220px
+  padding 20px 0
+  width 300px
+  right 0px
+  font-size 14px
+  line-height 36px
+  /* Higher than header but below importing overlay */
+  z-index 5500
+
+  label
+    display block
+    font-weight bold
+    padding-top 16px
+
+  input
+    position relative
+    min-height 20px
+    width 242px
+    padding 7px 8px
+    outline medium none
+    color rgb(51,51,51)
+    background-color rgb(255,255,255)
+    background-repeat no-repeat
+    background-position right center
+    border 1px solid rgb(204,204,204)
+    border-radius 3px 3px 3px 3px
+    box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
+    -moz-box-sizing border-box
+    transition all 0.15s ease-in 0s
+    vertical-align middle
+
+  input:focus
+    border-color rgb(81,167,232)
+    box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
+
+  .login-button, .subscribe-form-submit
+    width 258px
+    height 40px
+    position relative
+    margin 0 auto 10px auto
+    padding 0
+    background #4695C5
+    border 1px solid #2B729C
+    border-radius 3px
+    text-align center
+    font-weight bold
+    color white
+    cursor pointer
+    transition all 0.15s ease-in 0s
+
+  .login-button-form-submit, .subscribe-form-submit
+    margin-top 20px
+
+  .login-button:hover, .subscribe-form-submit:hover
+    background #327CA8
+
+  .additional-link, .accounts-close
+    background transparent
+    color blue-accent
+    text-align center
+
+  .loading
+    display none
+
+  .description
+    text-align center
+
+  .message, .description
+    line-height default-line-height
+    margin-top 10px
+
+header.logged-in
   #login-dropdown-list
-    color black
-    background rgb(230,230,230)
+    background white 
     border-color rgb(210,210,210)
     border-style solid
-    border-width 0 0 1px 1px
-    position absolute
-    width 293px
-    right 0px
+    border-width 1px
+    border-radius 3px
+    position  absolute
+    width 180px
+    padding 5px 0
+    top 55px
+    right 10px
     font-size 14px
-    line-height 36px
+    line-height 20px
 
-    label
-      display block
-      font-weight bold
-      padding-top 16px
+  #login-dropdown-list:after
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px
+    border-color #FFFFFF transparent
+    display block
+    width 0
+    z-index 1
+    margin-left -10px
+    top -8px
+    left 161px
 
-    input
-      position relative
-      min-height 20px
-      width 235px
-      padding 7px 8px
-      outline medium none
-      color rgb(51,51,51)
-      background-color rgb(255,255,255)
-      background-repeat no-repeat
-      background-position right center
-      border 1px solid rgb(204,204,204)
-      border-radius 3px 3px 3px 3px
-      box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
-      -moz-box-sizing border-box
-      transition all 0.15s ease-in 0s
-      vertical-align middle
+  #login-dropdown-list:before
+    content ''
+    position absolute
+    border-style solid
+    border-width 0 8px 8px;
+    border-color rgb(210,210,210) transparent
+    display block
+    width 0
+    z-index 0
+    margin-left -10px
+    top -9px
+    left 161px
 
-    input:focus
-      border-color rgb(81,167,232)
-      box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
+  .menu-item
+    padding 5px 20px
+    background transparent
+    text-align center
+    font-weight bold
+    color blue-accent
+    cursor pointer
+    transition all 0.15s ease-in 0s
 
-    .loading
-      display none
+    a
+      color blue-accent
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .message, .login-button
+  .menu-item:hover
+      background blue-accent
+      color white
+      a
+        color white
+  
+  .menu-item a:hover
+    color white
+    background blue-accent
+
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
+
+header.index-header.logged-in
+  #login-dropdown-list
+    top 56px
+    right 24px
+
+  #login-dropdown-list:after
+    left 149px
+
+  #login-dropdown-list:before
+    left 149px
+
+#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button, .newsletter-dialog .email-label-and-input, .newsletter-dialog .description, .newsletter-dialog .message
   padding 0 20px
 
 .login-close-text
@@ -240,31 +396,13 @@ Sign in buttons
   float right
 
 /*
-Auth buttons
+Auth form buttons
 ============ */
-
-.login-button
-  padding 5px 20px
-  background #68E468
-  text-align center
-  font-weight bold
-  color white
-  cursor pointer
-  transition all 0.15s ease-in 0s
-
-.login-button-form-submit
-  margin-top 30px
-
-.login-button:hover
-  background #7BC97B
-
-.additional-link
-  background blue
-  text-align center
 
 .user-icon
   width 24px
   height 24px
+  margin-left 12px
 
 /*
 Import button
@@ -309,9 +447,11 @@ header.index-header
         width 616px
         font-size 24px
         background transparent
+
       input::-webkit-input-placeholder
           font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
+
       input::-moz-placeholder
           font-family "Source Sans Pro", sans-serif
           color rgba(20,20,20,0.8)
@@ -324,8 +464,12 @@ header.index-header
 
   .drop-files-to-import
     text-align center
+    cursor pointer
 
   ul.top-menu
+    a
+      cursor pointer
+
     li > a, li a.login-link-text
       font-size 14px
       font-weight 600
@@ -334,15 +478,17 @@ header.index-header
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
-      background rgba(87,173,104,0.7)
-      border-radius 4px
+      background #4695c5
+      border 1px solid #2B729C
+      border-radius 3px
       transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
-      background rgba(87,173,104,1)
+      background #327CA8
 
     li a.login-link-text
       margin-right 25px
+      color white
 
   .user-icon
     margin-top -5px

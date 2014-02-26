@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "d8ba6ada91328cb0b67e9c09db039906e10b75b0"
+    "commit": "b78ffbbd082f6f46aef852a2d975781757e58049"
   },
   "dependencies": {
     "basePackages": {
@@ -38,13 +38,13 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.942-3",
-        "commit": "5c96a0cf84b1470fbc4d129dcb6451561bdb2a71"
+        "tag": "v0.8.1003-1",
+        "commit": "5e19ba8c60d879d829bbfa247cee740f23f79521"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
-        "tag": "v0.2.2",
-        "commit": "5f87f665ccd6c74322febaf78fe5a24dbfb7949c"
+        "tag": "v0.2.3",
+        "commit": "9c838fbf5053a9f4c9ea21cad8e2fef8f1374e7c"
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
@@ -63,8 +63,8 @@
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
-        "tag": "v2.2.1",
-        "commit": "9ee12e714afe56b189f53076447b7b54f3012065"
+        "tag": "v2.5.1",
+        "commit": "8c9bc5d3fc96705057737cb9743d555417f6e551"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
@@ -88,8 +88,8 @@
       },
       "urlify2": {
         "git": "https://github.com/peerlibrary/meteor-urlify2.git",
-        "tag": "v0.1.1",
-        "commit": "5b6677b01382e470bd22e6a4a8a0d4399d7900d7"
+        "tag": "v0.2.1",
+        "commit": "6af78cad650ee216b640a418a5557a0a7e5be538"
       },
       "fs": {
         "git": "https://github.com/peerlibrary/meteor-fs.git",
@@ -108,8 +108,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.3.5",
-        "commit": "ef2e0fe0c9889ceb70de89c3da79e48d608ec901"
+        "tag": "v0.3.8",
+        "commit": "952d877e6ef615f9d8fe5ac57969d35e506233af"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",

@@ -8,6 +8,12 @@ Template.indexStatistics.publications = ->
 Template.indexStatistics.persons = ->
   Statistics.findOne()?.countPersons or 0
 
+Template.indexStatistics.highlights = ->
+  Statistics.findOne()?.countHighlights or 0
+
+Template.indexStatistics.annotations = ->
+  Statistics.findOne()?.countAnnotations or 0
+
 Template.index.searchActive = ->
   Session.get 'searchActive'
 
@@ -22,10 +28,10 @@ Template.indexMain.rendered = ->
   @_backgroundRendered = true
 
   Deps.nonreactive =>
-    $(@find '.landing').append @_background.render()
+    $(@findAll '.landing').append @_background.render()
 
 Template.indexMain.destroyed = ->
-  $(window).off 'resize.background'
+  $(window).off '.background'
 
   @_background.destroy()
   @_background = null

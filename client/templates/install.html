@@ -1,0 +1,24 @@
+<template name="install">
+  <div class="landing">
+    {{> installWizard}}
+  </div>
+</template>
+
+<template name="installWizard">
+  <div class="install-wrapper {{installInProgress}}">
+    <div class="welcome">Welcome to the PeerLibrary installation wizard.</div>
+    {{#if installRestarting}}
+      <div class="instruction">Done. Restarting PeerLibrary. Please wait.</div>
+    {{else}}
+      <div class="instruction">To begin, please create an admin account.</div>
+      <form class="password">
+        <div class="username">Username: <code>admin</code></div>
+        <input id="install-password-input" type="password" placeholder="Enter new password" {{#if installInProgress}}disabled="disabled"{{/if}} />
+        {{#if installError}}
+          <div class="message error-message">{{installError}}</div>
+        {{/if}}
+        <button type="submit" class="install-submit" {{#if installInProgress}}disabled="disabled"{{/if}}>Enter PeerLibrary</button>
+      </form>
+    {{/if}}
+  </div>
+</template>

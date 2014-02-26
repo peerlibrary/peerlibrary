@@ -219,15 +219,15 @@ Meteor.methods
       # We split at : too, so that collaboration information is seen as a separate author (see examples below)
       authors = for author in authors.split /^\s*|\s*[,:]\s*|\s*\band\b\s*|\s*$/i when author
         # To support casses like: F.Foobar and F. Foobar Jr.
-        [foreNames, lastName] = author.split /\s*([^\s.]+.?)\s*$/
+        [givenName, familyName] = author.split /\s*([^\s.]+.?)\s*$/
 
-        bad |= not foreNames or not lastName
+        bad |= not givenName or not familyName
 
         # Are there still escaped characters?
-        bad |= /[\\{}]/.test(foreNames) or /[\\{}]/.test(lastName)
+        bad |= /[\\{}]/.test(givenName) or /[\\{}]/.test(familyName)
 
-        foreNames: foreNames
-        lastName: lastName
+        givenName: givenName
+        familyName: familyName
 
       if bad
         # Using inspect because records can be heavily nested
@@ -239,7 +239,7 @@ Meteor.methods
       #   Author One, Author Two, for the ABCD Collaboration
       #   ABCD Collaboration: Author One, Author Two, Author Three
       #   C.Sfienti, M. De Napoli, S. Bianchin, A.S. Botvina, J. Brzychczyk, A. Le Fevre, J. Lukasik, P. Pawlowski, W. Trautmann and the ALADiN2000 Collaboration
-      authors = (author for author in authors when not (/collaboration/i.test(author.foreNames) or /collaboration/i.test(author.lastName)))
+      authors = (author for author in authors when not (/collaboration/i.test(author.givenName) or /collaboration/i.test(author.familyName)))
 
       if authors.length == 0
         # Using inspect because records can be heavily nested
@@ -250,8 +250,8 @@ Meteor.methods
         # TODO: We could just define id ourselves, we do not have to do two queries
         id = Persons.insert
           user: null
-          foreNames: author.foreNames
-          lastName: author.lastName
+          givenName: author.givenName
+          familyName: author.familyName
           work: []
           education: []
           publications: []
@@ -325,7 +325,7 @@ Meteor.methods
 
     Log.info "Processing pending PDFs"
 
-    Publications.find(cached: {$exists: true}, processed: {$ne: true}).forEach (publication) ->
+    Publications.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
@@ -346,6 +346,12 @@ Meteor.methods
         publication.process null, initCallback, textCallback, pageImageCallback
         Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
+        Publications.update publication._id,
+          $set:
+            processError:
+              error: "#{ error.toString?() or error }"
+              stack: error.stack
+
         Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
 
     Log.info "Done"

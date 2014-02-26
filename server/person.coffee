@@ -21,8 +21,8 @@ class @Person extends @Person
       'user'
       'slug'
       'gravatarHash'
-      'foreNames'
-      'lastName'
+      'givenName'
+      'familyName'
       'isAdmin'
     ]
 
@@ -32,8 +32,8 @@ class @Person extends @Person
       user: 1
       slug: 1
       gravatarHash: 1
-      foreNames: 1
-      lastName: 1
+      givenName: 1
+      familyName: 1
       isAdmin: 1
       work: 1
       education: 1

@@ -2,8 +2,9 @@
 
 class @LoggedError extends Document
   # errorMsg: the error message
-  # url: url that error ocurred on
-  # lineNumber: line number in the code where error occured on
+  # url: url that error ocurred on (can be also just a string "eval" or "anonymous" or even null)
+  # lineNumber: line number in the code where error occured on (can be null as well)
+  # stack: optional stack when logging an error ourselves
   # location: document location (URL) as seen by JavaScript at the moment of the error
   # userAgent: browser information string
   # language: language set in the browser (not language from HTTP headers)
@@ -32,6 +33,7 @@ class @LoggedError extends Document
   # serverTime: server time when the error was received (in UTC)
   # parsedUserAgent: parsed and more structured information about user's browser
   # person: if user was logged in and has not opted-out, reference to the person for whom the error occured, otherwise null
+  #   _id: person's id
 
   @Meta =>
     collection: LoggedErrors

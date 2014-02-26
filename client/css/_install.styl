@@ -1,0 +1,88 @@
+@import variables
+
+.install-wrapper
+  display block
+  clear both
+  color black
+  background white
+  border-color rgb(210,210,210)
+  border-radius 5px
+  border-style solid
+  border-width 1px
+  position fixed
+  left 50%
+  top 50%
+  margin-left -161px
+  padding 20px
+  margin-top -210px
+  width 280px
+  font-size 14px
+  line-height 36px
+  text-align center
+
+  .welcome
+    font-size 32px
+    font-weight 300
+
+  label
+    display block
+    font-weight bold
+    padding-top 16px
+
+  input
+    position relative
+    min-height 20px
+    width 242px
+    padding 7px 8px
+    outline medium none
+    color rgb(51,51,51)
+    background-color rgb(255,255,255)
+    background-repeat no-repeat
+    background-position right center
+    border 1px solid rgb(204,204,204)
+    border-radius 3px 3px 3px 3px
+    box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
+    -moz-box-sizing border-box
+    transition all 0.15s ease-in 0s
+    vertical-align middle
+
+  input:focus
+    border-color rgb(81,167,232)
+    box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
+
+  button.install-submit
+    width 258px
+    height 40px
+    position relative
+    margin 0 auto 10px auto
+    padding 0
+    background #4695C5
+    border 1px solid #2B729C
+    border-radius 3px 
+    text-align center
+    font-weight bold
+    color white
+    cursor pointer
+    transition all 0.15s ease-in 0s
+    margin-top 20px
+
+  button.install-submit:hover
+    background #327CA8 
+
+  .message
+    line-height default-line-height
+    margin-top 10px
+
+.install-wrapper.install-in-progress #install-password-input
+  background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+  background-position 50% 50%
+  background-repeat no-repeat
+  transition none
+  color gray
+
+footer.install
+  position fixed
+  bottom 10%
+  left 0
+  width 100%
+

@@ -4,13 +4,18 @@
 </head>
 
 <body>
-  {{> header}}
+  {{#unless INSTALL}}
+    {{> header}}
+  {{/unless}}
   <section class="{{currentPage}}">
     <div class="container">
       {{renderPage}}
     </div>
   </section>
   {{> baseFooter}}
-  {{> importOverlay}}
-  {{> signInOverlay}}
+  {{#unless INSTALL}}
+    {{> importOverlay}}
+    {{> signInOverlay}}
+  {{/unless}}
+  {{> notificationsOverlay}}
 </body>

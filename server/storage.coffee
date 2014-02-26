@@ -14,7 +14,7 @@ class @Storage extends @Storage
     fs.writeFileSync filename, data
 
   @saveMeteorFile: (meteorFile, filename) ->
-    throw new Meteor.Error 403, 'Null filename.' unless filename
+    throw new Meteor.Error 403, "Null filename." unless filename
 
     path = @_storageDirectory + @_path.sep + filename
     directory = path.split('/').slice(0, -1).join('/')

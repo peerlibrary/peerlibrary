@@ -7,8 +7,8 @@ class @Publication extends Document
   # authors: list of
   #   _id: author's person id
   #   slug: author's person id
-  #   foreNames
-  #   lastName
+  #   givenName
+  #   familyName
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -29,6 +29,9 @@ class @Publication extends Document
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
   # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
+  # processError:
+  #   error: description of the publication processing error
+  #   stack: stack trace of the error
   # numberOfPages
   # searchResult (client only): the last search query this publication is a result for, if any
   #   _id: id of the query, an _id of the SearchResult object for the query
@@ -38,7 +41,7 @@ class @Publication extends Document
   @Meta =>
     collection: Publications
     fields:
-      authors: [@ReferenceField Person, ['slug', 'foreNames', 'lastName']]
+      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
       importing: [
         person: @ReferenceField Person
       ]
