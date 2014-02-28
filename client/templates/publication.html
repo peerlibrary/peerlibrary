@@ -60,19 +60,8 @@
     {{else}}
       <img src="{{ authorIconUrl }}" class="user-icon" />
       <h4 class="author-name">{{authorName}}</h4>
-      {{#if selected}}
-        {{#if canEdit}}
-          <div class="annotations-form-wrapper">
-            {{> annotationEditor}}
-          </div>
-        {{else}}
-          <div class="body">{{body}}</div>
-        {{/if}}
-      {{else}}
-        <div class="body" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
-      {{/if}}
+      <div class="body">{{body}}</div>
       {{> annotationTags}}
-      </div>
       {{> annotationMetaMenu}}
     {{/if}}
   </li>

@@ -660,12 +660,6 @@ Template.publicationAnnotationsItem.events
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
-    # Focus immediately after converting local annotation
-    # TODO: Improve this
-    Meteor.setTimeout ->
-      focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
-    , 100
-
     # On click to convert local annotation we are for sure inside the annotation, so we can
     # immediatelly send a mouse enter event to make sure related highlight has a hovered state
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [template.data._id]
@@ -733,31 +727,31 @@ Template.annotationEditor.rendered = ->
   return if @_rendered or @data.local
   @_rendered = true
 
-  $saved = $(@findAll '.saved')
-
-  saveAnnotation = _.debounce (text) =>
-    LocalAnnotations.update @data._id,
-      $set:
-        body: text
-    ,
-      (error) ->
-        if error
-          Notify.meteorError error, true
-          return
-
-        $saved.addClass('display')
-  , 1000
-
-  # TODO: Improve cross-browser compatibility
-  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-  $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
-    $saved.removeClass('display')
-    saveAnnotation $(e.target).text()
-
-    return # Make sure CoffeeScript does not return anything
+  return # Make sure CoffeeScript does not return anything
 
 Template.annotationEditor.destroyed = ->
   @_rendered = false
+
+Template.annotationEditor.events
+  'click .publish': (e, template) ->
+    $content = $(template.findAll '.annotation-content')
+    annotation = createAnnotationDocument()
+
+    # TODO: Set tags, privacy settings
+    annotation.body = $content.text()
+
+    annotationId = LocalAnnotations.insert annotation, (error, id) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      Notify.meteorError error, true if error
+
+      # Reset editor
+      $content.empty()
+
+      focusAnnotationId = annotationId
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
