@@ -37,21 +37,30 @@ Install it as well:
     
 ### Other requirements to run PeerLibrary ###
 
-On first run, PeerLibrary compiles and locally installs additional libraries.
-[Cairo](http://cairographics.org/) graphic library is required for this and you
-might have to setup your system so that it can be successfully compiled.
+On first run, PeerLibrary compiles and locally installs additional Meteor packages,
+some of them have non-Meteor dependencies. The following libraries have
+to be available on your system for PeerLibrary to successfully run:
 
-On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) and
-run the following before you run `mrt` to configure environment:
+ * [Cairo](http://cairographics.org/) graphic library
+ * [FreeType](http://www.freetype.org/)
+ * [Pango](http://www.pango.org/)
+ * [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)
+
+On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) (Pango
+and FreeType are already available on the system) and run the following before you
+run `mrt` to configure the environment:
 
     export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
-To be able to compile libraries, you need [Xcode](https://developer.apple.com/xcode/)
-with command line tools installed (from _Preferences_ > _Downloads_ > _Components_),
-and `pkg-config` as well. The latter you can install using [Homebrew](http://brew.sh/)
-([MacPorts](https://www.macports.org/) also works, if you prefer it).
+To be able to compile Meteor packages, you need [Xcode](https://developer.apple.com/xcode/)
+with command line tools installed (from _Preferences_ > _Downloads_ > _Components_).
 
-On Debian you can install:
+You can install `pkg-config` using [Homebrew](http://brew.sh/) ([MacPorts](https://www.macports.org/)
+also works, if you prefer it):
+
+    brew install pkg-config
+
+On Debian you can install all dependencies by:
 
     sudo aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
 
@@ -90,6 +99,16 @@ If you have not cloned recursively (`git clone --recursive ...`), you will at so
 Or similar errors for other packages, you just have to manually initialize git submodules we are using:
 
     git submodule update --init --recursive
+
+If you are getting an error like:
+
+    Error: Cannot find module '../build/Release/canvas'
+
+Then there is an issue compiling the [node-canvas](https://github.com/LearnBoost/node-canvas) dependency. Check
+if you have all required non-Meteor dependencies installed and retry by removing the whole `meteor-pdf.js` package
+and running `mrt` again:
+
+    rm -rf ~/.meteorite/packages/pdf.js/
 
 If you are getting Stylus errors like:
 
