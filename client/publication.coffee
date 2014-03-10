@@ -727,8 +727,12 @@ Template.annotationEditor.rendered = ->
   return if @_rendered or @data.local
   @_rendered = true
 
+  # Load MediumEditor
   editor = new MediumEditor @findAll('.annotation-content'),
     buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
+
+  # Load tag-it
+  $(@findAll '.annotation-tags').tagit()
 
   return # Make sure CoffeeScript does not return anything
 

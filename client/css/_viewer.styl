@@ -350,16 +350,17 @@ annotations-control-height = 340px
 
     .form-tags
       border-top 1px solid #e3e3e3
-      height 20px
+      min-height 20px
       padding 6px 14px
 
       i
+        position absolute
         color icon-gray
 
-      input.annotation-tags
+      ul.annotation-tags
+        font-size smaller
         border 0
-        background transparent
-        margin 0 8px
+        margin 0 0 0 24px
         min-width 240px
 
   .form-control
