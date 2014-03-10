@@ -756,7 +756,7 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown ul.format-buttons li': (e, template) ->
+  'mousedown .format-buttons li': (e, template) ->
     e.preventDefault()
     e.stopPropagation()
 
