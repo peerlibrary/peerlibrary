@@ -727,7 +727,8 @@ Template.annotationEditor.rendered = ->
   return if @_rendered or @data.local
   @_rendered = true
 
-  editor = new MediumEditor @findAll '.annotation-content'
+  editor = new MediumEditor @findAll('.annotation-content'),
+    buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
 
   return # Make sure CoffeeScript does not return anything
 
@@ -752,6 +753,17 @@ Template.annotationEditor.events
       focusAnnotationId = annotationId
 
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mousedown ul.format-buttons li': (e, template) ->
+    e.preventDefault()
+    e.stopPropagation()
+
+    # Let meteor-editor handle the action
+    # TODO: Link, LaTeX, code
+    action = $(e.currentTarget).data 'action'
+    console.log $('.medium-editor-action[data-action=' + action + ']').click()
 
     return # Make sure CoffeeScript does not return anything
 
