@@ -727,6 +727,8 @@ Template.annotationEditor.rendered = ->
   return if @_rendered or @data.local
   @_rendered = true
 
+  editor = new MediumEditor @findAll '.annotation-content'
+
   return # Make sure CoffeeScript does not return anything
 
 Template.annotationEditor.destroyed = ->
@@ -738,7 +740,7 @@ Template.annotationEditor.events
     annotation = createAnnotationDocument()
 
     # TODO: Set tags, privacy settings
-    annotation.body = $content.text()
+    annotation.body = $content.html()
 
     annotationId = LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
