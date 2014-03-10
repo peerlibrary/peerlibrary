@@ -719,6 +719,11 @@ Template.publicationAnnotationsItem.authorIconUrl = ->
   # TODO: gravatarHash does not appear
   "https://secure.gravatar.com/avatar/#{ @author.gravatarHash }?s=24"
 
+Template.annotationTags.rendered = ->
+  # TODO: Make links work
+  $(@findAll '.annotation-tags-list').tagit
+    readOnly: true
+
 Template.annotationEditor.created = ->
   @_rendered = false
 
@@ -741,18 +746,22 @@ Template.annotationEditor.destroyed = ->
 
 Template.annotationEditor.events
   'click .publish': (e, template) ->
-    $content = $(template.findAll '.annotation-content')
     annotation = createAnnotationDocument()
 
-    # TODO: Set tags, privacy settings
+    $content = $(template.findAll '.annotation-content')
     annotation.body = $content.html()
 
+    $tags = $(template.findAll '.annotation-tags')
+    annotation.tags = $tags.tagit 'assignedTags'
+
+    # TODO: Set privacy settings
     annotationId = LocalAnnotations.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 
       # Reset editor
       $content.empty()
+      $tags.tagit 'removeAll'
 
       focusAnnotationId = annotationId
 
@@ -767,7 +776,7 @@ Template.annotationEditor.events
     # Let meteor-editor handle the action
     # TODO: Link, LaTeX, code
     action = $(e.currentTarget).data 'action'
-    console.log $('.medium-editor-action[data-action=' + action + ']').click()
+    $('.medium-editor-action[data-action=' + action + ']').click()
 
     return # Make sure CoffeeScript does not return anything
 

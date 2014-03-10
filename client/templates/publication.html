@@ -149,12 +149,11 @@
         </ul>
       </div>
       <div class="form-body">
-        <p class="annotation-content" contenteditable></p>
+        <div class="annotation-content" contenteditable></div>
       </div>
       <div class="form-tags">
         <i class="icon-tags"></i>
         <ul class="annotation-tags"></ul>
-        <input name="tags" type="hidden">
       </div>
     </div>
     <div class="form-control">
@@ -170,7 +169,7 @@
   <div class="tags">
     <ul class="annotation-tags-list">
       {{#each tags}}
-        <a href="{{tagPathFromId _id}}">{{name.en}}</a>
+        <li><a href="{{tagPathFromId _id}}">{{name.en}}</a></li>
       {{/each}}
     </ul>
   </div>
