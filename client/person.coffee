@@ -33,11 +33,28 @@ Template.profile.person = ->
 Template.profile.isMine = ->
   Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
+# Helper that tells if person has any authored publications
+Template.profile.hasAuthoredPublications = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+  person.publications?.length > 0
+
+# Publications authored by this person
+Template.profile.authoredPublications = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+  Publications.find
+    _id:
+      $in: _.pluck person.publications, '_id'
+
 # Publications in logged user's library
 Template.profile.myPublications = ->
   Publications.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
+
+Template.profile.rendered = ->
+  $(@findAll '.scrubber').iscrubber()
 
 Handlebars.registerHelper 'currentPerson', (options) ->
   Meteor.person()
