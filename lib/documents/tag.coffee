@@ -9,6 +9,6 @@ class @Tag extends Document
 
   # Should be a function so that we can possible resolve circual references
   @Meta =>
-   collection: Tags
-   fields:
-     slug: @GeneratedField 'self', ['name']
+    collection: Tags
+    fields:
+      slug: @GeneratedField 'self', ['name']
