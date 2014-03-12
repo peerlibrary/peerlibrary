@@ -13,3 +13,4 @@ class @Tag extends Document
    # TODO: Define generator function for slugs
    #fields:
      #slug: @GeneratedField 'self', ['name']
+
