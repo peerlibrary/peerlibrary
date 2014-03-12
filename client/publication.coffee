@@ -719,6 +719,9 @@ Template.publicationAnnotationsItem.authorIconUrl = ->
   # TODO: gravatarHash does not appear
   "https://secure.gravatar.com/avatar/#{ @author.gravatarHash }?s=24"
 
+Template.publicationAnnotationsItem.updatedFromNow = ->
+  moment(@updated).fromNow()
+
 Template.annotationTags.rendered = ->
   # TODO: Make links work
   $(@findAll '.annotation-tags-list').tagit
