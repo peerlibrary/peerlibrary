@@ -48,9 +48,6 @@ Template.profile.myPublications = ->
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
 
-Template.profile.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
 Handlebars.registerHelper 'currentPerson', (options) ->
   Meteor.person()
 
