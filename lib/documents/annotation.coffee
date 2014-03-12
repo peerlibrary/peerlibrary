@@ -56,7 +56,11 @@ class @Annotation extends Document
         annotations: [@ReferenceField 'self']
         publications: [@ReferenceField Publication, ['slug', 'title']]
         persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
-        tags: [@ReferenceField Tag]
+        tags: [@ReferenceField Tag, ['name', 'slug']]
       tags: [
-        tag: @ReferenceField Tag
+        tag: @ReferenceField Tag, ['name', 'slug']
+
+        # TODO: Field cannot be in a nested array (PeerDB)
+        #upvoters: [@ReferenceField Person]
+        #downvoters: [@ReferenceField Person]
       ]
