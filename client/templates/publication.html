@@ -58,11 +58,20 @@
     {{#if local}}
       {{> annotationInvite}}
     {{else}}
-      <img src="{{ authorIconUrl }}" class="user-icon" />
-      <h4 class="author-name">{{authorName}}</h4>
-      <div class="body">{{{body}}}</div>
-      {{> annotationTags}}
-      {{> annotationMetaMenu}}
+      <a href="#">
+        <img src="{{ authorIconUrl }}" class="user-icon" />
+      </a>
+      <div class="annotation-wrapper">
+        <div class="annotation-header">
+          <h4 class="author-name">{{authorName}}</h4>
+          <span class="timestamp">{{updated}}</span>
+          <span class="edit-button"><a href="#">edit</a></span>
+        </div>
+        <div class="annotation-content">
+          <div class="body">{{{body}}}</div>
+          {{> annotationTags}}
+        </div>
+      </div>
     {{/if}}
   </li>
 </template>

@@ -382,6 +382,8 @@ annotations-control-height = 340px
 .annotations-list
   list-style none
   margin 0
+  /* temporary margin */
+  margin-top 20px
   padding 0
   overflow auto
   position fixed
@@ -402,55 +404,103 @@ annotations-control-height = 340px
   .annotation
     position relative
     display block
-    background white
-    padding 20px
     /* To not crop the shadow of annotations we move the left edge
        for 5px to the left and then add 5px (in fact 6px, so that
        it looks better with our 1px shadow border) left margin to each
        annotation. Additionally, we add right margin to provide space
        for meta menu + 10px to not have scroll bar overlapping the
        content (we moved the right edge for 10px for that). */
-    margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px
+    /* margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px */
+    margin 10px 10px 10px 6px
 
     /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-    border-radius 2px
-    box-shadow 0 0 0 1px box-shadow-border
-    transition 0.2s
 
     .user-icon
-      width 24px
-      height 24px
-      margin 0
+      width 48px
+      height 48px
+      margin-left 0
+      float left
+      border-radius 4px
       display inline-block
+    
+    .annotation-wrapper
+      position relative
+      display block
+      background white
+      margin 0 0 0 64px
+      box-shadow 0 0 0 1px box-shadow-border
+      transition 0.2s
 
-    .author-name
-      margin 0 0 12px 6px
-      display inline-block
- 
-    .body[contenteditable=true]:focus
-      outline none
+      .annotation-header
+        padding 15px
+        color #777
+        background-color #f7f7f7
+        border-bottom 1px solid #e3e3e3
+        border-top-left-radius 4px
+        border-top-right-radius 4px
 
-    .body:empty:not(:focus):before
-      content attr(data-placeholder)
-      color #cececf
-      font-style italic
+        .author-name
+          margin 0 10px 0 0
+          display inline-block
 
-    .saved
+        .timestamp
+          color #444
+
+        .edit-button
+          display inline-block
+          float right
+
+      .annotation-content
+        padding 15px 20px 15px 15px     
+
+        .body[contenteditable=true]:focus
+          outline none
+
+        .body:empty:not(:focus):before
+          content attr(data-placeholder)
+          color #cececf
+          font-style italic
+
+      .saved
+        position absolute
+        right 4px
+        bottom 2px
+        color #cececf
+        transition opacity .5s ease-in-out
+
+        /* Initially hidden. To show "Saved" notification, change the opacity. */
+        opacity 0
+
+      .saved.display
+        opacity 1
+
+      ul.annotation-tags-list
+        font-size smaller
+        border 0
+
+    .annotation-wrapper:after
+      content ''
       position absolute
-      right 4px
-      bottom 2px
-      color #cececf
-      transition opacity .5s ease-in-out
+      border-style solid
+      border-width 7px 9px 7px 0
+      border-color transparent #f7f7f7
+      display block
+      width 0
+      z-index 1
+      left -9px
+      top 16px
 
-      /* Initially hidden. To show "Saved" notification, change the opacity. */
-      opacity 0
-
-    .saved.display
-      opacity 1
-
-    ul.annotation-tags-list
-      font-size smaller
-      border 0
+    .annotation-wrapper:before
+      content ''
+      position absolute
+      border-style solid
+      border-width 7px 9px 7px 0
+      border-color transparent #e3e3e3
+      display block
+      width 0
+      z-index 0
+      left -10px
+      top 16px
 
     .meta-menu
       position absolute
@@ -483,9 +533,11 @@ annotations-control-height = 340px
       width 150px
       min-height 220px
 
-  .annotation:hover, .annotation.selected, .annotation.hovered
+  .annotation:hover .annotation-wrapper, .annotation.selected annotation-wrapper, .annotation.hovered annotation-wrapper
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+      /*disable highlighting*/
+      /*box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow*/
+
 
   /* We use only 1px here to still have shadow border visible, but not 5px
      top margin which makes visible lower than the crop top line when
