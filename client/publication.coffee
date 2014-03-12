@@ -373,6 +373,21 @@ Deps.autorun ->
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
+Deps.autorun ->
+  return unless Session.get 'currentPublicationId'
+
+  localAnnotation = LocalAnnotations.find
+    'publication._id': Session.get 'currentPublicationId'
+    local: true
+  return unless localAnnotation
+
+  createLocalAnnotation()
+
+createLocalAnnotation = ->
+  annotation = createAnnotationDocument()
+  annotation.local = true
+  LocalAnnotations.insert annotation
+
 Template.publicationMetaMenu.publication = ->
   Publications.findOne Session.get 'currentPublicationId'
 
@@ -533,6 +548,11 @@ Template.highlightsControl.canEdit = ->
   # Only the author can edit for now
   return @author._id is Meteor.personId()
 
+Template.annotationsControl.newAnnotation = ->
+  LocalAnnotations.find
+    'publication._id': Session.get 'currentPublicationId'
+    local: true
+
 Template.annotationsControl.events
   'click .add': (e, template) ->
     annotation = createAnnotationDocument()
@@ -558,17 +578,17 @@ Template.publicationAnnotations.annotations = ->
 
   LocalAnnotations.find
     $or: [
-      # We display local annotations
-      local: true
-    ,
       # We display all annotations which are not linked to any highlight
-      highlights:
+      'references.highlights':
         $in: [null, []]
     ,
       # We display those which have a corresponding highlight visible
       'highlights._id':
         $in: visibleHighlights
     ]
+    # Except the local one
+    local:
+      $ne: true
     'publication._id': Session.get 'currentPublicationId'
 
 Template.publicationAnnotations.created = ->
@@ -645,7 +665,8 @@ Template.publicationAnnotationsItem.events
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) =>
-    return unless template.data.local
+    # TODO: Get rid of this. Annotation invites are being replaced.
+    return # unless template.data.local
 
     LocalAnnotations.update template.data._id,
       $unset:
@@ -731,13 +752,14 @@ Template.annotationEditor.created = ->
   @_rendered = false
 
 Template.annotationEditor.rendered = ->
-  # Run for the first time only and if not a local annotation
-  return if @_rendered or @data.local
+  # Run for the first time only
+  return if @_rendered
   @_rendered = true
 
   # Load MediumEditor
   editor = new MediumEditor @findAll('.annotation-content'),
     buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
+    placeholder: 'New Annotation'
 
   # Load tag-it
   $(@findAll '.annotation-tags').tagit()
@@ -749,26 +771,31 @@ Template.annotationEditor.destroyed = ->
 
 Template.annotationEditor.events
   'click .publish': (e, template) ->
-    annotation = createAnnotationDocument()
-
+    # TODO: Do this in autosave
     $content = $(template.findAll '.annotation-content')
-    annotation.body = $content.html()
+    body = $content.html()
 
     $tags = $(template.findAll '.annotation-tags')
-    annotation.tags = $tags.tagit 'assignedTags'
+    tags = $tags.tagit 'assignedTags'
 
     # TODO: Set privacy settings
-    annotationId = LocalAnnotations.insert annotation, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      Notify.meteorError error, true if error
+    LocalAnnotations.update
+      _id: @_id
+    ,
+      $set:
+        local: false
+        body: body
+        tags: tags
+    ,
+      (error, docs) =>
+        return error if error
 
-      # Reset editor
-      $content.empty()
-      $tags.tagit 'removeAll'
+        # TODO: Integrate this call into Deps.autorun
+        createLocalAnnotation()
 
-      focusAnnotationId = annotationId
+        focusAnnotationId = @_id
 
-      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     return # Make sure CoffeeScript does not return anything
 

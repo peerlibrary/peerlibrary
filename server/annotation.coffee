@@ -43,22 +43,25 @@ Annotations.deny
     doc.references = {} if not doc.references
 
     # Convert list of tag names (strings) to tag subdocuments
-    tags = _.map doc.tags, (name) ->
-      existingTag = Tags.findOne
-        'name.en': name
+    if doc.tags
+      tags = _.map doc.tags, (name) ->
+        existingTag = Tags.findOne
+          'name.en': name
 
-      return _.pick(existingTag, '_id', 'name') if existingTag?
+        return _.pick(existingTag, '_id', 'name') if existingTag?
 
-      annotationId = Tags.insert
+        annotationId = Tags.insert
+          name:
+            en: name
+
+        # return
+        _id: annotationId
         name:
           en: name
 
-      # return
-      _id: annotationId
-      name:
-        en: name
-
-    doc.tags = tags
+      doc.tags = tags
+    else
+      doc.tags = []
 
     # We return false as we are not
     # checking anything, just adding fields

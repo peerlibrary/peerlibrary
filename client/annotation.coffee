@@ -75,7 +75,13 @@ Meteor.startup ->
   author: _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName'
   publication:
     _id: Session.get 'currentPublicationId'
-  highlights: []
+  references:
+    highlights: []
+    annotations: []
+    publications: []
+    persons: []
+    tags: []
+  tags: []
 
 # If we have the annotation and the publication available on the client,
 # we can create full path directly, otherwise we have to use annotationIdPath

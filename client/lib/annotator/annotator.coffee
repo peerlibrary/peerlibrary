@@ -339,15 +339,7 @@ class @Annotator extends Annotator
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
 
-      annotation = createAnnotationDocument()
-      annotation.local = true
-      annotation.references.highlights = [
-        _id: id
-      ]
-
-      LocalAnnotations.remove
-        local: true
-      LocalAnnotations.insert annotation
+      # TODO: Add h:[id] to editor
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has
@@ -360,9 +352,6 @@ class @Annotator extends Annotator
       @selectedAnnotationId = null
 
       @_deselectAllHighlights()
-
-      LocalAnnotations.remove
-        local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()

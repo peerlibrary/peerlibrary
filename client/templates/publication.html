@@ -47,32 +47,26 @@
   <ul class="annotations-list">
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
-    {{else}}
-      {{> highlightInvite}}
     {{/each}}
   </ul>
 </template>
 
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
-    {{#if local}}
-      {{> annotationInvite}}
-    {{else}}
-      <a href="#">
-        <img src="{{ authorIconUrl }}" class="user-icon" />
-      </a>
-      <div class="annotation-wrapper">
-        <div class="annotation-header">
-          <h4 class="author-name">{{authorName}}</h4>
-          <span class="timestamp">{{updatedFromNow}}</span>
-          <span class="edit-button"><a href="#">edit</a></span>
-        </div>
-        <div class="annotation-content">
-          <div class="body">{{{body}}}</div>
-          {{> annotationTags}}
-        </div>
+    <a href="#">
+      <img src="{{ authorIconUrl }}" class="user-icon" />
+    </a>
+    <div class="annotation-wrapper">
+      <div class="annotation-header">
+        <h4 class="author-name">{{authorName}}</h4>
+        <span class="timestamp">{{updatedFromNow}}</span>
+        <span class="edit-button"><a href="#">edit</a></span>
       </div>
-    {{/if}}
+      <div class="annotation-content">
+        <div class="body">{{{body}}}</div>
+        {{> annotationTags}}
+      </div>
+    </div>
   </li>
 </template>
 
@@ -121,7 +115,9 @@
   }}
   <div class="annotations-control">
     <div class="annotations-control-form-wrapper">
-      {{> annotationEditor}}
+      {{#each newAnnotation}}
+        {{> annotationEditor}}
+      {{/each}}
     </div>
   </div>
 </template>
@@ -140,10 +136,12 @@
 
 <template name="annotationEditor">
   <form class="annotations-form">
+    <!--
     <div class="form-header">
       <span class="form-title"><h2>New Annotation</h2></span>
       <span class="form-status">Changes saved</span>
     </div>
+    -->
     <div class="form-content">
       <div class="format-toolbar">
         <ul class="format-buttons">
