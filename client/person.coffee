@@ -33,12 +33,6 @@ Template.profile.person = ->
 Template.profile.isMine = ->
   Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
-# Helper that tells if person has any authored publications
-Template.profile.hasAuthoredPublications = ->
-  person = Persons.findOne
-    slug: Session.get 'currentPersonSlug'
-  person.publications?.length > 0
-
 # Publications authored by this person
 Template.profile.authoredPublications = ->
   person = Persons.findOne

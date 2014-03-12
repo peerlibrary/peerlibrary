@@ -2,7 +2,7 @@
   {{#if person}}
     <div id="profile">
       <h1>{{person.displayName}}</h1>
-      {{#if hasAuthoredPublications}}
+      {{#if authoredPublications.count}}
         <h2>Publications</h2>
         <ol class="item-list">
             {{#each authoredPublications}}
