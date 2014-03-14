@@ -13,7 +13,7 @@ class @Highlight extends Document
   #   _id: publication's id
   # quote: quote made by this highlight
   # target: open annotation standard compatible target information
-  # annotations: list of
+  # annotations: list of (reverse field from Annotation.highlights)
   #   _id: annotation id
 
   @Meta
@@ -21,4 +21,3 @@ class @Highlight extends Document
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
-      annotations: [@ReferenceField Annotation]

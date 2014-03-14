@@ -655,13 +655,6 @@ Template.publicationAnnotationsItem.events
       $unset:
         local: ''
 
-    # TODO: Should this syncing be done automatically by PeerDB?
-    for highlight in template.data.highlights
-      Highlight.documents.update highlight._id,
-        $addToSet:
-          annotations:
-            _id: template.data._id
-
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
     # Focus immediately after converting local annotation

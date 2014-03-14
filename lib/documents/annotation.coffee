@@ -21,4 +21,4 @@ class @Annotation extends Document
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
-      highlights: [@ReferenceField Highlight]
+      highlights: [@ReferenceField Highlight, [], true, 'annotations']
