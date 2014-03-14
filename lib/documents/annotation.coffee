@@ -1,5 +1,3 @@
-@Annotations = new Meteor.Collection 'Annotations', transform: (doc) => new @Annotation doc
-
 class @Annotation extends Document
   # created: timestamp when document was created
   # updated: timestamp of this version
@@ -15,10 +13,9 @@ class @Annotation extends Document
   #   _id: highlight id
   # local (client only): is this annotation just a temporary annotation on the cliend side
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Annotations
-    fields:
+  @Meta
+    name: 'Annotation'
+    fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash']
       publication: @ReferenceField Publication
       highlights: [@ReferenceField Highlight]

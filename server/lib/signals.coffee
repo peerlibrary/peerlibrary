@@ -14,7 +14,7 @@ SegfaultHandler.registerHandler (stack, signal, address) ->
   # TODO: Should we log also errors outside publication processing?
   return unless currentlyProcessedPublicationId
 
-  Publications.update currentlyProcessedPublicationId,
+  Publication.documents.update currentlyProcessedPublicationId,
     $set:
       processError:
         # TODO: Add a timestamp

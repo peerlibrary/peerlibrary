@@ -1,9 +1,12 @@
-# A special client-only collection which mirrors Annotations collection, but allows adding
+# A special client-only documenet which mirrors Annotation document, but allows adding
 # temporary client-only annotations. We use this to be able to add temporary annotations
 # for a current user which are not stored on the server until user inserts some real data.
 # Then we upgrade a client-only annotation to a real annotation. You should always use
 # LocalAnnotations for everything on the client side and leave to syncing code to do the rest.
-@LocalAnnotations = new Meteor.Collection null, transform: (doc) => new @Annotation doc
+class @LocalAnnotation extends Annotation
+  @Meta
+    name: 'LocalAnnotation'
+    collection: null
 
 Meteor.startup ->
   syncing = false
@@ -17,27 +20,27 @@ Meteor.startup ->
     finally
       syncing = false
 
-  Annotations.find({}).observeChanges
+  Annotation.documents.find({}).observeChanges
     added: (id, fields) -> wrapSyncing ->
-      LocalAnnotations.insert _.extend {}, fields,
+      LocalAnnotation.documents.insert _.extend {}, fields,
         _id: id
 
     changed: (id, fields) -> wrapSyncing ->
-      LocalAnnotations.update id,
+      LocalAnnotation.documents.update id,
         $set: fields
 
     removed: (id) -> wrapSyncing ->
-      LocalAnnotations.remove id
+      LocalAnnotation.documents.remove id
 
   localIds = {}
 
-  LocalAnnotations.find({}).observeChanges
+  LocalAnnotation.documents.find({}).observeChanges
     added: (id, fields) -> wrapSyncing ->
       if fields.local
         localIds[id] = true
       else
         delete fields.local
-        Annotations.insert _.extend {}, fields,
+        Annotation.documents.insert _.extend {}, fields,
           _id: id
 
     changed: (id, fields) -> wrapSyncing ->
@@ -45,22 +48,22 @@ Meteor.startup ->
         if 'local' of fields and not fields.local
           delete localIds[id]
           delete fields.local
-          annotation = LocalAnnotations.findOne id,
+          annotation = LocalAnnotation.documents.findOne id,
             transform: null
-          Annotations.insert _.extend annotation, fields
+          Annotation.documents.insert _.extend annotation, fields
       else
         if fields.local
           localIds[id] = true
-          Annotations.remove id
+          Annotation.documents.remove id
         else
-          Annotations.update id,
+          Annotation.documents.update id,
             $set: fields
 
     removed: (id) -> wrapSyncing ->
       if localIds[id]
         delete localIds[id]
       else
-        Annotations.remove id
+        Annotation.documents.remove id
 
 # Create an annotation document for current publication and current person
 @createAnnotationDocument = ->
@@ -80,11 +83,11 @@ Meteor.startup ->
 # If we have the annotation and the publication available on the client,
 # we can create full path directly, otherwise we have to use annotationIdPath
 Handlebars.registerHelper 'annotationPathFromId', (annotatonId, options) ->
-  annotation = Annotations.findOne annotatonId
+  annotation = LocalAnnotation.documents.findOne annotatonId
 
   return Meteor.Router.annotationIdPath annotatonId unless annotation
 
-  publication = Publications.findOne annotation.publication._id
+  publication = Publication.documents.findOne annotation.publication._id
 
   return Meteor.Router.annotationIdPath annotatonId unless publication
 

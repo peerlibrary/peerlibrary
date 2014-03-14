@@ -25,7 +25,7 @@ Template.notificationsOverlay.rendered = ->
   positionNotifications $(@findAll '.notification'), false
 
 Template.notificationsOverlay.notifications = ->
-  Notifications.find {},
+  Notify.documents.find {},
     sort:
       ['timestamp', 'asc']
 
@@ -41,7 +41,7 @@ Template.notificationsOverlayItem.rendered = ->
   @_timeout = new VisibleTimeout =>
     @_seen = true
     $notification.fadeOut 'slow', =>
-      Notifications.remove @data._id
+      Notify.documents.remove @data._id
     @_timeout = null
   ,
     7000 # ms
@@ -76,12 +76,12 @@ Template.notificationsOverlayItem.events
             $(e.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
 
     else if $(e.target).hasClass('icon-cancel')
-      Notifications.remove @_id unless e.isDefaultPrevented()
+      Notify.documents.remove @_id unless e.isDefaultPrevented()
 
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
-    Notifications.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
+    Notify.documents.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
 
     return # Make sure CoffeeScript does not return anything
 

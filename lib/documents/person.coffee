@@ -1,5 +1,3 @@
-@Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
-
 class @Person extends Document
   # user: (null if without user account)
   #   _id
@@ -15,10 +13,9 @@ class @Person extends Document
   # library: list of
   #   _id: added publication id
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Persons
-    fields:
+  @Meta
+    name: 'Person'
+    fields: =>
       user: @ReferenceField User, ['username'], false
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
@@ -39,7 +36,7 @@ Meteor.person = (userId) ->
 
   return null unless userId
 
-  Persons.findOne
+  Person.documents.findOne
     'user._id': userId
 
 Meteor.personId = (userId) ->
@@ -48,7 +45,7 @@ Meteor.personId = (userId) ->
 
   return null unless userId
 
-  person = Persons.findOne
+  person = Person.documents.findOne
     'user._id': userId
   ,
     _id: 1
