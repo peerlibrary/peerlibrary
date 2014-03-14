@@ -31,6 +31,7 @@ class @Publication extends Document
   #   error: description of the publication processing error
   #   stack: stack trace of the error
   # numberOfPages
+  # fullText: full plain text content suitable for searching
   # searchResult (client only): the last search query this publication is a result for, if any
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher

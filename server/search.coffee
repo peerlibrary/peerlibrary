@@ -1,29 +1,25 @@
 Meteor.publish 'search-results', (query, limit) ->
-  # TODO: Support real queries
   check query, String
   check limit, PositiveNumber
 
   return unless query
 
-  if _.isString(query)
-    realQuery = [
-      key: ""
-      filter: "contains"
-      value: query
-    ]
-  else
-    # TODO: Validate?
-    realQuery = query
+  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
   findQuery =
-    title: new RegExp(query, 'i')
+    $and: []
     processed: true
+
+  for keyword in keywords when keyword
+    findQuery.$and.push
+      fullText: new RegExp keyword, 'i'
+
+  return unless findQuery.$and.length
 
   queryId = Random.id()
 
-  # TODO: Do some real seaching
+  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
   # TODO: How to influence order of results? Should we have just simply a field?
-  # TODO: Escape query in regexp
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
   resultsHandle = Publication.documents.find(findQuery,
     limit: limit
