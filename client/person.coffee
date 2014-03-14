@@ -35,10 +35,10 @@ Template.profile.isMine = ->
 
 # Publications authored by this person
 Template.profile.authoredPublications = ->
-  person = Persons.findOne
+  person = Person.documents.findOne
     slug: Session.get 'currentPersonSlug'
 
-  Publications.find
+  Publication.documents.find
     _id:
       $in: _.pluck person?.publications, '_id'
 
