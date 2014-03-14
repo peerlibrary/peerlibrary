@@ -37,9 +37,6 @@ Template.results.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-Template.results.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 
@@ -111,6 +108,9 @@ Template.publicationSearchResult.events =
         $(template.findAll '.abstract').slideToggle(200)
 
     return # Make sure CoffeeScript does not return anything
+
+Template.publicationSearchResult.rendered = ->
+  $(@findAll '.scrubber').iscrubber()
 
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen

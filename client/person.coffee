@@ -33,6 +33,15 @@ Template.profile.person = ->
 Template.profile.isMine = ->
   Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
+# Publications authored by this person
+Template.profile.authoredPublications = ->
+  person = Persons.findOne
+    slug: Session.get 'currentPersonSlug'
+
+  Publications.find
+    _id:
+      $in: _.pluck person?.publications, '_id'
+
 # Publications in logged user's library
 Template.profile.myPublications = ->
   Publication.documents.find
