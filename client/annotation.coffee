@@ -73,9 +73,12 @@ Meteor.startup ->
 
   timestamp = moment.utc().toDate()
 
+  author = _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName', 'gravatarHash'
+  author.user =  _.pick Meteor.person().user, 'username'
+
   created: timestamp
   updated: timestamp
-  author: _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName'
+  author: author
   publication:
     _id: Session.get 'currentPublicationId'
   highlights: []

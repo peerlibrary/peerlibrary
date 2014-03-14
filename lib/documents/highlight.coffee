@@ -6,6 +6,9 @@ class @Highlight extends Document
   #   slug: author's person id
   #   givenName
   #   familyName
+  #   gravatarHash
+  #   user
+  #     username
   # publication:
   #   _id: publication's id
   # quote: quote made by this highlight
@@ -16,6 +19,6 @@ class @Highlight extends Document
   @Meta
     name: 'Highlight'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName']
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
       annotations: [@ReferenceField Annotation]

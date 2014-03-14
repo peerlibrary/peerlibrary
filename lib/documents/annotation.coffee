@@ -6,6 +6,9 @@ class @Annotation extends Document
   #   slug: author's person id
   #   givenName
   #   familyName
+  #   gravatarHash
+  #   user
+  #     username
   # body: annotation's body
   # publication:
   #   _id: publication's id
@@ -16,6 +19,6 @@ class @Annotation extends Document
   @Meta
     name: 'Annotation'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash']
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
       highlights: [@ReferenceField Highlight]
