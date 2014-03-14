@@ -1,34 +1,3 @@
-SEARCH_PROPOSE_LIMIT = 4
-
-Meteor.methods
-  # "key" is parsed user-provided string serving as keyword
-  # "filter" is internal filter field so that "value" can be mapped to filters
-  'search-propose': (query) ->
-    # TODO: Support real queries
-    check query, String
-
-    # TODO: For now we just ignore query, we should do something smart with it
-    proposals = Publication.documents.find(
-      processed: true
-    ,
-      limit: SEARCH_PROPOSE_LIMIT - 1
-    ).map (publication) ->
-      [
-        key: "publication titled"
-        filter: "title"
-        value: publication.title
-      ,
-        key: "by"
-        filter: "authors"
-        value: "#{ publication.authors[0].familyName } et al."
-      ]
-    proposals.push [
-      key: ""
-      filter: "contains"
-      value: query
-    ]
-    proposals
-
 Meteor.publish 'search-results', (query, limit) ->
   # TODO: Support real queries
   check query, String
@@ -37,7 +6,6 @@ Meteor.publish 'search-results', (query, limit) ->
   return unless query
 
   if _.isString(query)
-    # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
     realQuery = [
       key: ""
       filter: "contains"
