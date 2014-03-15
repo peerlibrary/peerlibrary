@@ -58,6 +58,11 @@
   <div class="menu-item">
     <a href="{{profilePath personSlug}}">Profile</a>
   </div>
+  {{#if currentPerson.isAdmin}}
+    <div class="menu-item">
+      <a href="{{adminPath}}">Admin dashboard</a>
+    </div>
+  {{/if}}
 
   <div class="login-button menu-item" id="login-buttons-logout">
     Sign out
