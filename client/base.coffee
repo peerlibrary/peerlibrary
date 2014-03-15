@@ -113,7 +113,7 @@ redirectAnnotationId = (annotationId) ->
 
 if INSTALL
   Meteor.Router.add
-    '*': ->
+    '/': ->
       setSession()
       'install'
 
@@ -183,30 +183,6 @@ else
         redirectAnnotationId annotationId
         'redirecting'
 
-    '/about':
-      as: 'about'
-      to: ->
-        setSession()
-        'about'
-
-    '/help':
-      as: 'help'
-      to: ->
-        setSession()
-        'help'
-
-    '/privacy':
-      as: 'privacy'
-      to: ->
-        setSession()
-        'privacy'
-
-    '/terms':
-      as: 'terms'
-      to: ->
-        setSession()
-        'terms'
-
     '/admin':
       as: 'admin'
       to: ->
@@ -214,9 +190,34 @@ else
           adminActive: true
         'admin'
 
-    '*': ->
+Meteor.Router.add
+  '/about':
+    as: 'about'
+    to: ->
       setSession()
-      'notfound'
+      'about'
+
+  '/help':
+    as: 'help'
+    to: ->
+      setSession()
+      'help'
+
+  '/privacy':
+    as: 'privacy'
+    to: ->
+      setSession()
+      'privacy'
+
+  '/terms':
+    as: 'terms'
+    to: ->
+      setSession()
+      'terms'
+
+  '*': ->
+    setSession()
+    'notfound'
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->
