@@ -8,7 +8,8 @@ Meteor.publish 'search-results', (query, limit) ->
 
   findQuery =
     $and: []
-    processed: true
+    processed:
+      $exists: true
 
   for keyword in keywords when keyword
     findQuery.$and.push

@@ -3,6 +3,7 @@
     {{> adminCheck}}
     {{> adminDevelopment}}
     {{> adminPublications}}
+    {{> adminDatabase}}
     {{> adminErrors}}
     {{> adminSources}}
   </div>
@@ -24,7 +25,14 @@
 <template name="adminPublications">
   <h2>Publications</h2>
   <div class="admin-buttons">
-    <button class="process-pdfs">Process pending PDFs</button>
+    <button class="reprocess-pdfs">Reprocess all PDFs</button>
+  </div>
+</template>
+
+<template name="adminDatabase">
+  <h2>Database</h2>
+  <div class="admin-buttons">
+    <button class="update-all">Update all references in documents</button>
   </div>
 </template>
 

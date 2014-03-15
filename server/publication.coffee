@@ -15,6 +15,26 @@ class @Publication extends Publication
           [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
+      fields.fullText.generator = (fields) ->
+        return [null, null] unless fields.cached
+        return [null, null] if fields.processed
+        return [null, null] if fields.processError
+
+        try
+          return [fields._id, new Publication(fields).process()]
+        catch error
+          # TODO: What if exception is just because of the concurrent processing? Should we retry? After a delay?
+
+          Publication.documents.update fields._id,
+            $set:
+              processError:
+                error: "#{ error.toString?() or error }"
+                stack: error.stack
+
+          Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
+
+          return [null, null]
+
       fields
 
   checkCache: =>
@@ -32,26 +52,53 @@ class @Publication extends Publication
     @cached = moment.utc().toDate()
     Publication.documents.update @_id, $set: cached: @cached
 
-    pdf?.content
-
-  process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
+  process: =>
     currentlyProcessingPublication @_id
 
     try
-      pdf ?= Storage.open @filename()
-      initCallback ?= (numberOfPages) ->
-      textCallback ?= (pageNumber, segment) ->
-      pageImageCallback ?= (pageNumber, canvasElement) ->
-      progressCallback ?= (progress) ->
+      pdf = Storage.open @filename()
+
+      textContents = []
+
+      initCallback = (numberOfPages) =>
+        @numberOfPages = numberOfPages
+
+      textContentCallback = (pageNumber, textContent) =>
+        textContents.push textContent
+
+      textSegmentCallback = (pageNumber, segment) =>
+
+      pageImageCallback = (pageNumber, canvasElement) =>
+        thumbnailCanvas = new PDFJS.canvas 95, 125
+        thumbnailContext = thumbnailCanvas.getContext '2d'
+
+        # TODO: Do better image resizing, antialias doesn't really help
+        thumbnailContext.antialias = 'subpixel'
+
+        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
+
+        Storage.save @thumbnail(pageNumber), thumbnailCanvas.toBuffer()
+
+      progressCallback = (progress) =>
 
       Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
 
-      PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+      PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
-      # TODO: Set a timestamp and not just true
+      assert textContents.length, @numberOfPages
+
+      @fullText = PDFJS.pdfExtractText textContents...
+
       # TODO: We could also add some additional information (statistics, how long it took and so on)
-      @processed = true
-      Publication.documents.update @_id, $set: processed: @processed
+      @processed = moment.utc().toDate()
+      Publication.documents.update @_id,
+        $set:
+          numberOfPages: @numberOfPages
+          processed: @processed
+          fullText: @fullText
+
+      # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
+      return @fullText
 
     finally
       currentlyProcessingPublication null
@@ -163,12 +210,11 @@ Meteor.methods
         ]
         sha256: sha256
         metadata: false
-        processed: false
       verify = false
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
 
-    # return
+    # Return
     publicationId: id
     verify: verify
     already: already
@@ -382,7 +428,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
           cached:
             $exists: true
           $or: [
-            processed: true
+            processed:
+              $exists: true
           ,
             _id:
               $in: newLibrary
@@ -504,7 +551,8 @@ Meteor.publish 'publications-by-id', (id) ->
       cached:
         $exists: true
       $or: [
-        processed: true
+        processed:
+          $exists: true
       ,
         _id:
           $in: library
@@ -529,7 +577,8 @@ Meteor.publish 'publications-by-ids', (ids) ->
       cached:
         $exists: true
       $or: [
-        processed: true
+        processed:
+          $exists: true
       ,
         _id:
           $in: library

@@ -26,7 +26,7 @@ class @Publication extends Document
   #   temporaryFilename: temporary filename of the imported file
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
-  # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
+  # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
   #   error: description of the publication processing error
   #   stack: stack trace of the error
@@ -44,6 +44,7 @@ class @Publication extends Document
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
+      fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
