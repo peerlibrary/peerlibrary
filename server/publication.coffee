@@ -18,6 +18,7 @@ class @Publication extends Publication
       fields.fullText.generator = (fields) ->
         return [null, null] unless fields.cached
         return [null, null] if fields.processed
+        # That we exit if processError is true is important becaus it is used in admin methods to force (re)precessing
         return [null, null] if fields.processError
 
         try

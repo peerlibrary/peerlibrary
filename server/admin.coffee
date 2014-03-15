@@ -45,6 +45,30 @@ Meteor.methods
     Meteor.call 'sync-arxiv-metadata'
     Meteor.call 'sync-local-pdf-cache'
 
+  'process-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    # To force reprocessing, we first set processError to true everywhere to assure there will be
+    # change afterwards when we unset it. We set to true so that value is still true and processing
+    # is not already triggered (but only when we unset the field).
+    Publication.documents.update
+      processed:
+        $exists: false
+    ,
+      $set:
+        processError: true
+    ,
+      multi: true
+    Publication.documents.update
+      processed:
+        $exists: false
+      processError: true
+    ,
+      $unset:
+        processError: ''
+    ,
+      multi: true
+
   'reprocess-pdfs': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 

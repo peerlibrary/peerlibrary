@@ -14,6 +14,13 @@ Template.adminDevelopment.events
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
+  'click button.process-pdfs': (e, template) ->
+    Meteor.call 'process-pdfs', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.adminPublications.events
   'click button.reprocess-pdfs': (e, template) ->
     Meteor.call 'reprocess-pdfs', (error, result) ->
       Notify.meteorError error if error
