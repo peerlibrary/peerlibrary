@@ -103,14 +103,25 @@ Template.publicationSearchResult.displayDay = (time) ->
 Template.publicationSearchResult.events =
   'click .preview-link': (e, template) ->
     e.preventDefault()
-    Meteor.subscribe 'publications-by-id', @_id, ->
-      Deps.afterFlush =>
-        $(template.findAll '.abstract').slideToggle(200)
+
+    if template._publicationHandle
+      # We ignore the click if handle is not yet ready
+      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
+    else
+      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
+        Deps.afterFlush =>
+          $(template.findAll '.abstract').slideToggle('fast')
 
     return # Make sure CoffeeScript does not return anything
 
+Template.publicationSearchResult.created = ->
+  @_publicationHandle = null
+
 Template.publicationSearchResult.rendered = ->
   $(@findAll '.scrubber').iscrubber()
+
+Template.publicationSearchResult.destroyed = ->
+  @_publicationHandle.stop() if @_publicationHandle
 
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen
