@@ -16,7 +16,7 @@ Meteor.startup ->
 
   Publication.documents.find({},
     fields:
-      # id field is implicitly added
+      # _id field is implicitly added
       created: 1
   ).observeChanges
     added: (id, fields) =>

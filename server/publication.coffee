@@ -133,6 +133,7 @@ class @Publication extends Publication
       'authors'
       'title'
       'numberOfPages'
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
     ]
 
   # A set of fields which are public and can be published to the client
@@ -148,7 +149,6 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
-      metadata: 1
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
@@ -366,7 +366,7 @@ publishUsingMyLibrary = (publish, selector, options) ->
       _id: publish.personId
     ,
       fields:
-        # id field is implicitly added
+        # _id field is implicitly added
         isAdmin: 1
         library: 1
       transform: null # We are only interested in data
@@ -478,7 +478,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       _id: @personId
     ,
       fields:
-        # id field is implicitly added
+        # _id field is implicitly added
         isAdmin: 1
         library: 1
     ).observeChanges

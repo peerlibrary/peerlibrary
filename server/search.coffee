@@ -33,11 +33,19 @@ Meteor.publish 'search-results', (query, limit) ->
         # TODO: Implement
         order: 1
 
+      fields.hasAbstract = !!fields.abstract
+      delete fields.abstract
+
       @added 'Publications', id, fields
 
     changed: (id, fields) =>
       # TODO: Maybe order changed now?
       # We just pass on the changes
+
+      if 'abstract' of fields
+        fields.hasAbstract = !!fields.abstract
+        delete fields.abstract
+
       @changed 'Publications', id, fields
 
     removed: (id) =>

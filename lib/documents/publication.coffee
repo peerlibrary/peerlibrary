@@ -11,6 +11,7 @@ class @Publication extends Document
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
   # abstract
+  # hasAbstract (client only): boolean if document has an abstract, used only in search results (cheaper to send than the whole abstract)
   # doi
   # msc2010: list of MSC 2010 classes
   # acm1998: list of ACM 1998 classes
@@ -32,7 +33,7 @@ class @Publication extends Document
   #   stack: stack trace of the error
   # numberOfPages
   # fullText: full plain text content suitable for searching
-  # searchResult (client only): the last search query this publication is a result for, if any
+  # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
