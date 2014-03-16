@@ -1,7 +1,7 @@
 class @Publication extends Document
+  # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
-  # created: timestamp when the publication was published
-  # updated: timestamp when the publication (or its metadata) was last updated
   # authors: list of
   #   _id: author's person id
   #   slug: author's person id
@@ -80,4 +80,4 @@ class @Publication extends Document
     @thumbnailUrl page for page in [1..@numberOfPages]
 
   createdDay: =>
-    moment(@created).format 'MMMM Do YYYY'
+    moment(@createdAt).format 'MMMM Do YYYY'

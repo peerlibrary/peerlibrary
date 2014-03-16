@@ -97,9 +97,6 @@ Template.resultsLoad.events =
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
-Template.publicationSearchResult.displayDay = (time) ->
-  moment(time).format 'MMMM Do YYYY'
-
 Template.publicationSearchResult.events =
   'click .preview-link': (e, template) ->
     e.preventDefault()

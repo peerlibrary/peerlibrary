@@ -241,8 +241,8 @@ Meteor.methods
         continue
 
       # TODO: Really process versions
-      created = moment.utc(record.version[0].date[0]).toDate()
-      updated = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
+      createdAt = moment.utc(record.version[0].date[0]).toDate()
+      updatedAt = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
 
       authors = record.authors[0]
 
@@ -313,8 +313,8 @@ Meteor.methods
 
       publication =
         slug: Publication.Meta.fields.slug.generator(title: record.title[0])[1]
-        created: created
-        updated: updated
+        createdAt: createdAt
+        updatedAt: updatedAt
         authors: authors
         authorsRaw: record.authors[0]
         title: record.title[0]

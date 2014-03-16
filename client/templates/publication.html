@@ -19,7 +19,7 @@
         {{/each}}
       </p>
       <p>Published in: {{publication.source}}</p>
-      <p>{{publication.created}}</p>
+      <p>{{publication.createdAt}}</p>
     </div>
   </div>
 </template>
@@ -109,8 +109,8 @@
       <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
     {{/with}}
   </p>
-  <p class="time">{{created}}</p>
-  <p class="time">{{updated}}</p>
+  <p class="time">{{createdAt}}</p>
+  <p class="time">{{updatedAt}}</p>
   <p class="annotations">
     {{#each annotations}}
       <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
@@ -138,8 +138,8 @@
           <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
-      <p class="time">{{created}}</p>
-      <p class="time">{{updated}}</p>
+      <p class="time">{{createdAt}}</p>
+      <p class="time">{{updatedAt}}</p>
       <p class="highlights">
         {{#each highlights}}
           <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>

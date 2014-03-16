@@ -128,8 +128,7 @@ class @Publication extends Publication
   @PUBLIC_SEARCH_RESULTS_FIELDS: ->
     [
       'slug'
-      'created'
-      'updated'
+      'createdAt'
       'authors'
       'title'
       'numberOfPages'
@@ -140,8 +139,8 @@ class @Publication extends Publication
   @PUBLIC_FIELDS: ->
     fields:
       slug: 1
-      created: 1
-      updated: 1
+      createdAt: 1
+      updatedAt: 1
       authors: 1
       title: 1
       numberOfPages: 1
@@ -200,8 +199,8 @@ Meteor.methods
     else
       # We don't have anything, so create a new publication and ask for upload
       id = Publication.documents.insert
-        created: moment.utc().toDate()
-        updated: moment.utc().toDate()
+        createdAt: moment.utc().toDate()
+        updatedAt: moment.utc().toDate()
         source: 'import'
         importing: [
           person:

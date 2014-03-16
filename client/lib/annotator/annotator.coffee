@@ -313,7 +313,7 @@ class @Annotator extends Annotator
         Notify.meteorError error, true
         return
 
-      # TODO: Should we update also other fields (like full author, created timestamp)
+      # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
       # Finally select it (until now it was just drawn selected) and update location
