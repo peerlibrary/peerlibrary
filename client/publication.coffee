@@ -62,7 +62,11 @@ highlightsDependency = new Deps.Dependency()
   _highlights = highlights
   highlightsDependency.changed()
 
-class @Publication extends @Publication
+class @Publication extends Publication
+  @Meta
+    name: 'Publication'
+    replaceParent: true
+
   constructor: (args...) ->
     super args...
 
@@ -353,7 +357,7 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get('currentPublicationId'),
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
       slug: 1
@@ -374,7 +378,7 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.publicationMetaMenu.publication = ->
-  Publications.findOne Session.get 'currentPublicationId'
+  Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
@@ -386,7 +390,7 @@ Template.publicationDisplay.rendered = ->
 
   Deps.nonreactive =>
     @_displayHandle = Deps.autorun =>
-      publication = Publications.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+      publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
       return unless publication
 
@@ -537,7 +541,7 @@ Template.annotationsControl.events
   'click .add': (e, template) ->
     annotation = createAnnotationDocument()
 
-    annotationId = LocalAnnotations.insert annotation, (error, id) =>
+    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 
@@ -556,7 +560,7 @@ Template.publicationAnnotations.annotations = ->
 
   visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
 
-  LocalAnnotations.find
+  LocalAnnotation.documents.find
     $or: [
       # We display local annotations
       local: true
@@ -647,16 +651,9 @@ Template.publicationAnnotationsItem.events
   'mousedown': (e, template) =>
     return unless template.data.local
 
-    LocalAnnotations.update template.data._id,
+    LocalAnnotation.documents.update template.data._id,
       $unset:
         local: ''
-
-    # TODO: Should this syncing be done automatically by PeerDB?
-    for highlight in template.data.highlights
-      Highlights.update highlight._id,
-        $addToSet:
-          annotations:
-            _id: template.data._id
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
@@ -724,15 +721,6 @@ Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
 
-Template.publicationAnnotationsItem.authorName = ->
-  return @author.slug unless @author.givenName? and @author.familyName?
-  @author.givenName + ' ' + @author.familyName
-
-Template.publicationAnnotationsItem.authorIconUrl = ->
-  # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-  # TODO: gravatarHash does not appear
-  "https://secure.gravatar.com/avatar/#{ @author.gravatarHash }?s=24"
-
 Template.annotationEditor.created = ->
   @_rendered = false
 
@@ -744,7 +732,7 @@ Template.annotationEditor.rendered = ->
   $saved = $(@findAll '.saved')
 
   saveAnnotation = _.debounce (text) =>
-    LocalAnnotations.update @data._id,
+    LocalAnnotation.documents.update @data._id,
       $set:
         body: text
     ,
@@ -775,7 +763,7 @@ Template.annotationInvite.rendered = ->
 
 Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
-    LocalAnnotations.remove @_id, (error) =>
+    LocalAnnotation.documents.remove @_id, (error) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 

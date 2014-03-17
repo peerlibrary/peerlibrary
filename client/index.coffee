@@ -3,16 +3,16 @@ Deps.autorun ->
     Meteor.subscribe 'statistics'
 
 Template.indexStatistics.publications = ->
-  Statistics.findOne()?.countPublications or 0
+  Statistics.documents.findOne()?.countPublications or 0
 
 Template.indexStatistics.persons = ->
-  Statistics.findOne()?.countPersons or 0
+  Statistics.documents.findOne()?.countPersons or 0
 
 Template.indexStatistics.highlights = ->
-  Statistics.findOne()?.countHighlights or 0
+  Statistics.documents.findOne()?.countHighlights or 0
 
 Template.indexStatistics.annotations = ->
-  Statistics.findOne()?.countAnnotations or 0
+  Statistics.documents.findOne()?.countAnnotations or 0
 
 Template.index.searchActive = ->
   Session.get 'searchActive'

@@ -307,7 +307,7 @@ class @Annotator extends Annotator
     highlight.target = _.map highlight.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlights.insert highlight, (error, id) =>
+    Highlight.documents.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       if error
         Notify.meteorError error, true
@@ -322,7 +322,7 @@ class @Annotator extends Annotator
     annotation
 
   _removeHighlight: (id) =>
-    Highlights.remove id, (error) =>
+    Highlight.documents.remove id, (error) =>
       Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
@@ -345,9 +345,9 @@ class @Annotator extends Annotator
         _id: id
       ]
 
-      LocalAnnotations.remove
+      LocalAnnotation.documents.remove
         local: true
-      LocalAnnotations.insert annotation
+      LocalAnnotation.documents.insert annotation
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has
@@ -361,7 +361,7 @@ class @Annotator extends Annotator
 
       @_deselectAllHighlights()
 
-      LocalAnnotations.remove
+      LocalAnnotation.documents.remove
         local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight

@@ -53,7 +53,7 @@ redirectHighlightId = (highlightId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      highlight = Highlights.findOne highlightId
+      highlight = Highlight.documents.findOne highlightId
 
       unless highlight
         highlightsHandle.stop()
@@ -65,7 +65,7 @@ redirectHighlightId = (highlightId) ->
           highlightsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne highlight.publication._id
+          publication = Publication.documents.findOne highlight.publication._id
 
           # We do not need subscriptions anymore
           highlightsHandle.stop()
@@ -85,7 +85,7 @@ redirectAnnotationId = (annotationId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      annotation = Annotations.findOne annotationId
+      annotation = LocalAnnotation.documents.findOne annotationId
 
       unless annotation
         annotationsHandle.stop()
@@ -97,7 +97,7 @@ redirectAnnotationId = (annotationId) ->
           annotationsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne annotation.publication._id
+          publication = Publication.documents.findOne annotation.publication._id
 
           # We do not need subscriptions anymore
           annotationsHandle.stop()

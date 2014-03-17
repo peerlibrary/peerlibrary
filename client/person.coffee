@@ -13,7 +13,7 @@ Deps.autorun ->
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
-  person = Persons.findOne
+  person = Person.documents.findOne
     $or: [
       slug: slug
     ,
@@ -26,7 +26,7 @@ Deps.autorun ->
   Meteor.Router.toNew Meteor.Router.profilePath person.slug unless slug is person.slug
 
 Template.profile.person = ->
-  Persons.findOne
+  Person.documents.findOne
     # We can search by slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
@@ -35,16 +35,16 @@ Template.profile.isMine = ->
 
 # Publications authored by this person
 Template.profile.authoredPublications = ->
-  person = Persons.findOne
+  person = Person.documents.findOne
     slug: Session.get 'currentPersonSlug'
 
-  Publications.find
+  Publication.documents.find
     _id:
       $in: _.pluck person?.publications, '_id'
 
 # Publications in logged user's library
 Template.profile.myPublications = ->
-  Publications.find
+  Publication.documents.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
 

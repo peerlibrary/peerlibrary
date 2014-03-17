@@ -27,7 +27,7 @@ Template.adminErrors.events
     throw new Error "Dummy error"
 
 Template.adminErrors.errors = ->
-  LoggedErrors.find {}
+  LoggedError.documents.find {}
 
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (e, template) ->
@@ -50,7 +50,7 @@ Template.adminArXiv.events
     return # Make sure CoffeeScript does not return anything
 
 Template.adminArXiv.PDFs = ->
-  ArXivPDFs.find {},
+  ArXivPDF.documents.find {},
     sort: [
       ['processingStart', 'desc']
     ]

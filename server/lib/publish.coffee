@@ -8,7 +8,7 @@ unless originalPublish
       # store personId in the current method invocation context and then just retrieve it
       # here.
       # TODO: Optimize this code
-      person = Persons.findOne
+      person = Person.documents.findOne
         'user._id': @userId
       ,
         _id: 1

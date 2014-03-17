@@ -1,14 +1,5 @@
-Template.displayIcon.userIconUrl = ->
-  # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-  "https://secure.gravatar.com/avatar/#{ Meteor.person()?.gravatarHash }?s=24"
-
-Template._loginButtonsLoggedInDropdownActions.personSlug = ->
-  Meteor.person()?.slug
-
-Template._loginButtonsLoggedInSingleLogoutButton.displayName = ->
+Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
   Meteor.person()?.displayName()
-
-Template._loginButtonsLoggedInDropdown.displayName = Template._loginButtonsLoggedInSingleLogoutButton.displayName
 
 changingPasswordInResetPassword = false
 
