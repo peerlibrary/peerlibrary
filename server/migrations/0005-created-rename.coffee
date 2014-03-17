@@ -1,4 +1,4 @@
-class Migration extends Document.MinorMigration
+class Migration extends Document.MajorMigration
   name: "Renaming created and updated fields to createdAt and updatedAt"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
