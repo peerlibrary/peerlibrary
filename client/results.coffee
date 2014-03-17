@@ -119,8 +119,16 @@ Template.publicationSearchResult.rendered = ->
 
 Template.publicationSearchResult.destroyed = ->
   @_publicationHandle.stop() if @_publicationHandle
+  @_publicationHandle = null
+
+Template.sidebarSearch.created = ->
+  @_autorunHandle = null
 
 Template.sidebarSearch.rendered = ->
+  unless @_publicationHandle
+    @_publicationHandle = Deps.autorun =>
+      $(@findAll '#general').val(Session.get 'currentSearchQuery')
+
   $(@findAll '.chzn').chosen
     no_results_text: "No tag match"
 
@@ -141,28 +149,32 @@ Template.sidebarSearch.rendered = ->
 
   publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
 
+Template.sidebarSearch.destroyed = ->
+  @_autorunHandle.stop() if @_autorunHandle
+  @_autorunHandle = null
+
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well
-  title: $(template.findAll '#title').val()
+  general: $(template.findAll '#general').val()
 
 Template.sidebarSearch.events =
-  'blur #title': (e, template) ->
+  'blur #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'change #title': (e, template) ->
+  'change #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'keyup #title': (e, template) ->
+  'keyup #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'paste #title': (e, template) ->
+  'paste #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'cut #title': (e, template) ->
+  'cut #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
@@ -180,5 +192,5 @@ Template.sidebarSearch.maxPublicationDate = ->
   moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->
-  # TODO: Set from structured query
-  $('#title').val(Session.get 'currentSearchQuery')
+  if Session.get 'searchActive'
+    Meteor.Router.toNew Meteor.Router.searchPath Session.get 'currentSearchQuery'

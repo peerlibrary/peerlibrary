@@ -15,13 +15,13 @@ Template.header.events =
 
   'click .search-button': (e, template) ->
     Session.set 'searchActive', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -29,7 +29,7 @@ Template.header.events =
     Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -42,7 +42,7 @@ Template.header.events =
       Session.set 'searchActive', true
       Session.set 'searchFocused', true
 
-    simpleQueryChange val
+    generalQueryChange val
 
     return # Make sure CoffeeScript does not return anything
 
@@ -50,14 +50,14 @@ Template.header.events =
     Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'cut .search-input': (e, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -66,7 +66,7 @@ Template.header.events =
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
