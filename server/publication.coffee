@@ -5,14 +5,17 @@ VERIFICATION_SAMPLE_SIZE = 64
 
 SLUG_MAX_LENGTH = 80
 
-class @Publication extends @Publication
-  @MixinMeta (meta) =>
-    meta.fields.slug.generator = (fields) ->
-      if fields.title
-        [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
-      else
-        [fields._id, '']
-    meta
+class @Publication extends Publication
+  @Meta
+    name: 'Publication'
+    replaceParent: true
+    fields: (fields) =>
+      fields.slug.generator = (fields) ->
+        if fields.title
+          [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
+        else
+          [fields._id, '']
+      fields
 
   checkCache: =>
     return if @cached
@@ -27,7 +30,7 @@ class @Publication extends @Publication
       Storage.save @filename(), pdf.content
 
     @cached = moment.utc().toDate()
-    Publications.update @_id, $set: cached: @cached
+    Publication.documents.update @_id, $set: cached: @cached
 
     pdf?.content
 
@@ -48,7 +51,7 @@ class @Publication extends @Publication
       # TODO: Set a timestamp and not just true
       # TODO: We could also add some additional information (statistics, how long it took and so on)
       @processed = true
-      Publications.update @_id, $set: processed: @processed
+      Publication.documents.update @_id, $set: processed: @processed
 
     finally
       currentlyProcessingPublication null
@@ -106,7 +109,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    existingPublication = Publications.findOne
+    existingPublication = Publication.documents.findOne
       sha256: sha256
 
     # Filter importing to contain only this person
@@ -129,7 +132,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
-      Publications.update
+      Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
           $ne: Meteor.personId()
@@ -148,7 +151,7 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
-      id = Publications.insert
+      id = Publication.documents.insert
         created: moment.utc().toDate()
         updated: moment.utc().toDate()
         source: 'import'
@@ -178,7 +181,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    publication = Publications.findOne
+    publication = Publication.documents.findOne
       _id: options.publicationId
       'importing.person._id': Meteor.personId()
       cached:
@@ -213,7 +216,7 @@ Meteor.methods
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
         Storage.rename publication._temporaryFilename(), publication.filename()
-        Publications.update
+        Publication.documents.update
           _id: publication._id
         ,
           $set:
@@ -221,7 +224,7 @@ Meteor.methods
             size: file.size
 
       # Hash was verified, so add it to uploader's library
-      Persons.update
+      Person.documents.update
         '_id': Meteor.personId()
       ,
         $addToSet:
@@ -234,7 +237,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    publication = Publications.findOne
+    publication = Publication.documents.findOne
       _id: publicationId
       cached:
         $exists: true
@@ -253,7 +256,7 @@ Meteor.methods
     throw new Meteor.Error 403, "Verification failed." unless verified
 
     # Samples were verified, so add it to person's library
-    Persons.update
+    Person.documents.update
       '_id': Meteor.personId()
     ,
       $addToSet:
@@ -277,7 +280,7 @@ publishUsingMyLibrary = (publish, selector, options) ->
     initializedPublications = []
 
     oldHandlePublications = handlePublications
-    handlePublications = Publications.find(selector(newIsAdmin, newLibrary), options).observeChanges
+    handlePublications = Publication.documents.find(selector(newIsAdmin, newLibrary), options).observeChanges
       added: (id, fields) =>
         initializedPublications.push id if initializing
 
@@ -312,7 +315,7 @@ publishUsingMyLibrary = (publish, selector, options) ->
   currentPersonId = null # Just for asserts
 
   if publish.personId
-    handlePersons = Persons.find(
+    handlePersons = Person.documents.find(
       _id: publish.personId
     ,
       fields:
@@ -369,7 +372,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
     oldHandlePublications = handlePublications
     if authorId
-      handlePublications = Publications.find(
+      handlePublications = Publication.documents.find(
         if newIsAdmin
           'authors._id': authorId
           cached:
@@ -423,7 +426,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   lastLibrary = []
 
   if @personId
-    handlePersons = Persons.find(
+    handlePersons = Person.documents.find(
       _id: @personId
     ,
       fields:
@@ -459,7 +462,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   currentAuthorId = null # Just for asserts
 
-  handleAuthors = Persons.find(
+  handleAuthors = Person.documents.find(
     slug: slug
   ,
     fields:
@@ -548,7 +551,7 @@ Meteor.publish 'my-publications', ->
 # but it is easier to have two and leave to Meteor to merge them together,
 # because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
-  Publications.find
+  Publication.documents.find
     'importing.person._id': @personId
     cached:
       $exists: true

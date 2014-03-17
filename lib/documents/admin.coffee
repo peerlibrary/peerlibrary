@@ -1,5 +1,3 @@
-@ArXivPDFs = new Meteor.Collection 'ArXivPDFs', transform: (doc) => new @ArXivPDF doc
-
 class @ArXivPDF extends Document
   # key: key (filename) of the tar file containing PDFs
   # lastModified: last modified timestamp of the file
@@ -13,6 +11,5 @@ class @ArXivPDF extends Document
   #   size
   #   mtime
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: ArXivPDFs
+  @Meta
+    name: 'ArXivPDF'

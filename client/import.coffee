@@ -1,20 +1,23 @@
-# Local (client-only) collection of importing files
-# Fields:
-#   name: user's file name
-#   readProgress: progress of reading from file, in %
-#   uploadProgress: progress of uploading file, in %
-#   status: current status or error message
-#   finished: true when importing has finished
-#   errored: true when there was an error
-#   publicationId: publication ID for the imported file
-#   sha256: SHA256 hash for the file
-ImportingFiles = new Meteor.Collection null
+# Local (client-only) document of importing files
+class ImportingFile extends Document
+  # name: user's file name
+  # readProgress: progress of reading from file, in %
+  # uploadProgress: progress of uploading file, in %
+  # status: current status or error message
+  # finished: true when importing has finished
+  # errored: true when there was an error
+  # publicationId: publication ID for the imported file
+  # sha256: SHA256 hash for the file
+
+  @Meta
+    name: 'ImportingFile'
+    collection: null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
-  ImportingFiles.update file._id,
+  ImportingFile.documents.update file._id,
     $set:
       status: "Verifying file"
 
@@ -22,20 +25,20 @@ verifyFile = (file, fileContent, publicationId, samples) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
-      ImportingFiles.update file._id,
+      ImportingFile.documents.update file._id,
         $set:
           errored: true
           status: error.toString()
       return
 
-    ImportingFiles.update file._id,
+    ImportingFile.documents.update file._id,
       $set:
         finished: true
         publicationId: publicationId
 
 uploadFile = (file, publicationId) ->
   meteorFile = new MeteorFile file,
-    collection: ImportingFiles
+    collection: ImportingFile.Meta.collection
 
   meteorFile.upload file, 'upload-publication',
     size: UPLOAD_CHUNK_SIZE,
@@ -43,20 +46,20 @@ uploadFile = (file, publicationId) ->
   ,
     (error) ->
       if error
-        ImportingFiles.update file._id,
+        ImportingFile.documents.update file._id,
           $set:
             errored: true
             status: error.toString()
         return
 
-      ImportingFiles.update file._id,
+      ImportingFile.documents.update file._id,
         $set:
           finished: true
           publicationId: publicationId
 
 testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
-    ImportingFiles.update file._id,
+    ImportingFile.documents.update file._id,
       $set:
         errored: true
         status: "Invalid PDF file"
@@ -73,9 +76,9 @@ importFile = (file) ->
       hash.update fileContent
       sha256 = hash.finalize()
 
-      alreadyImporting = ImportingFiles.findOne(sha256: sha256)
+      alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
       if alreadyImporting
-        ImportingFiles.update file._id,
+        ImportingFile.documents.update file._id,
           $set:
             finished: true
             status: "File is already importing"
@@ -83,20 +86,20 @@ importFile = (file) ->
             publicationId: alreadyImporting.publicationId
         return
 
-      ImportingFiles.update file._id,
+      ImportingFile.documents.update file._id,
         $set:
           sha256: sha256
 
       Meteor.call 'create-publication', file.name, sha256, (error, result) ->
         if error
-          ImportingFiles.update file._id,
+          ImportingFile.documents.update file._id,
             $set:
               errored: true
               status: error.toString()
           return
 
         if result.already
-          ImportingFiles.update file._id,
+          ImportingFile.documents.update file._id,
             $set:
               finished: true
               status: "File already imported"
@@ -108,7 +111,7 @@ importFile = (file) ->
         else
           uploadFile file, result.publicationId
 
-  ImportingFiles.insert
+  ImportingFile.documents.insert
     name: file.name
     status: "Preprocessing file"
     readProgress: 0
@@ -137,8 +140,8 @@ importFile = (file) ->
       , 5 # 0 does not seem to work, 5 seems to work
 
 hideOverlay = ->
-  allCount = ImportingFiles.find().count()
-  finishedAndErroredCount = ImportingFiles.find(
+  allCount = ImportingFile.documents.find().count()
+  finishedAndErroredCount = ImportingFile.documents.find(
     $or: [
       finished: true
     ,
@@ -149,7 +152,7 @@ hideOverlay = ->
   # We prevent hiding if user is uploading files
   if allCount == finishedAndErroredCount
     Session.set 'importOverlayActive', false
-    ImportingFiles.remove({})
+    ImportingFile.documents.remove({})
 
   Session.set 'signInOverlayActive', false
 
@@ -254,7 +257,7 @@ Template.importOverlay.events =
   'dragleave': (e, template) ->
     e.preventDefault()
 
-    if ImportingFiles.find().count() == 0 and not DRAGGING_OVER_DOM
+    if ImportingFile.documents.find().count() == 0 and not DRAGGING_OVER_DOM
       Session.set 'importOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
@@ -288,14 +291,14 @@ Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'
 
 Template.importOverlay.importingFiles = ->
-  ImportingFiles.find()
+  ImportingFile.documents.find()
 
 Deps.autorun ->
-  importingFilesCount = ImportingFiles.find().count()
+  importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
 
-  finishedImportingFiles = ImportingFiles.find(finished: true).fetch()
+  finishedImportingFiles = ImportingFile.documents.find(finished: true).fetch()
 
   return if importingFilesCount isnt finishedImportingFiles.length
 
@@ -309,4 +312,4 @@ Deps.autorun ->
 
   Session.set 'importOverlayActive', false
 
-  ImportingFiles.remove({})
+  ImportingFile.documents.remove({})

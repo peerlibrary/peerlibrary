@@ -44,7 +44,7 @@ Accounts.onCreateUser (options, user) ->
 
     _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
-    Persons.insert person
+    Person.documents.insert person
 
   catch e
     if e.name isnt 'MongoError'
@@ -60,7 +60,7 @@ Accounts.onCreateUser (options, user) ->
 Meteor.publish null, ->
   return unless @userId
 
-  Persons.find
+  Person.documents.find
     'user._id': @userId
   ,
     fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()

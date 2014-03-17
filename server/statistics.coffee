@@ -14,7 +14,7 @@ Meteor.startup ->
   minPublicationDate = null
   maxPublicationDate = null
 
-  Publications.find({},
+  Publication.documents.find({},
     fields:
       # id field is implicitly added
       created: 1
@@ -35,7 +35,7 @@ Meteor.startup ->
         maxPublicationDate = created
         changed.maxPublicationDate = maxPublicationDate.toDate()
 
-      Statistics.update statisticsDataId, $set: changed if !initializingPublications
+      Statistics.documents.update statisticsDataId, $set: changed if !initializingPublications
 
     changed: (id, fields) =>
       return unless fields.created
@@ -52,52 +52,52 @@ Meteor.startup ->
         maxPublicationDate = created
         changed.maxPublicationDate = created.toDate()
 
-      Statistics.update statisticsDataId, $set: changed if !initializingPublications and _.size changed
+      Statistics.documents.update statisticsDataId, $set: changed if !initializingPublications and _.size changed
 
     removed: (id) =>
       countPublications--
-      Statistics.update statisticsDataId, $set: countPublications: countPublications if !initializingPublications
+      Statistics.documents.update statisticsDataId, $set: countPublications: countPublications if !initializingPublications
 
       # We ignore removed publications for minPublicationDate and maxPublicationDate.
       # This much simplifies the code and there is not really a big drawback because of this.
 
-  Persons.find({},
+  Person.documents.find({},
     fields:
       _id: 1 # We want only id
   ).observeChanges
     added: (id) =>
       countPersons++
-      Statistics.update statisticsDataId, $set: countPersons: countPersons if !initializingPersons
+      Statistics.documents.update statisticsDataId, $set: countPersons: countPersons if !initializingPersons
 
     removed: (id) =>
       countPersons--
-      Statistics.update statisticsDataId, $set: countPersons: countPersons if !initializingPersons
+      Statistics.documents.update statisticsDataId, $set: countPersons: countPersons if !initializingPersons
 
-  Highlights.find({},
+  Highlight.documents.find({},
     fields:
       _id: 1 # We want only id
   ).observeChanges
     added: (id) =>
       countHighlights++
-      Statistics.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
+      Statistics.documents.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
 
     removed: (id) =>
       countHighlights--
-      Statistics.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
+      Statistics.documents.update statisticsDataId, $set: countHighlights: countHighlights if !initializingHighlights
 
-  Annotations.find({},
+  Annotation.documents.find({},
     fields:
       _id: 1 # We want only id
   ).observeChanges
     added: (id) =>
       countAnnotations++
-      Statistics.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
+      Statistics.documents.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
 
     removed: (id) =>
       countAnnotations--
-      Statistics.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
+      Statistics.documents.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
 
-  Statistics.insert
+  Statistics.documents.insert
     _id: statisticsDataId
     countPublications: countPublications
     countPersons: countPersons
@@ -113,7 +113,7 @@ Meteor.startup ->
 
 # We map local collection to the collection clients use
 Meteor.publish 'statistics', ->
-  handle = Statistics.find().observeChanges
+  handle = Statistics.documents.find().observeChanges
     added: (id, fields) =>
       @added 'Statistics', id, fields
 

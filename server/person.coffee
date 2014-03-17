@@ -1,18 +1,21 @@
 crypto = Npm.require 'crypto'
 
-class @Person extends @Person
-  @MixinMeta (meta) =>
-    meta.fields.slug.generator = (fields) ->
-      if fields.user?.username
-        [fields._id, fields.user.username]
-      else
-        [fields._id, fields._id]
-    meta.fields.gravatarHash.generator = (fields) ->
-      address = fields.emails?[0]?.address
-      return [null, undefined] unless fields.person?._id and address
+class @Person extends Person
+  @Meta
+    name: 'Person'
+    replaceParent: true
+    fields: (fields) =>
+      fields.slug.generator = (fields) ->
+        if fields.user?.username
+          [fields._id, fields.user.username]
+        else
+          [fields._id, fields._id]
+      fields.gravatarHash.generator = (fields) ->
+        address = fields.emails?[0]?.address
+        return [null, undefined] unless fields.person?._id and address
 
-      [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
-    meta
+        [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+      fields
 
   # A subset of public fields used for automatic publishing
   # This list is applied to PUBLIC_FIELDS to get a subset
@@ -45,7 +48,7 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
 
   return unless slug
 
-  Persons.find
+  Person.documents.find
     $or: [
         slug: slug
       ,
@@ -54,5 +57,5 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
     ,
       Person.PUBLIC_FIELDS()
 
-Persons._ensureIndex 'slug',
+Person.Meta.collection._ensureIndex 'slug',
   unique: 1

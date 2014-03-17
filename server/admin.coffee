@@ -24,7 +24,11 @@ ARXIV_ACCENTS =
   '''{\\AA}''': 'Å', '''{\\aa}''': 'å', '''{\\ae}''': 'æ', '''{\\AE}''': 'Æ', '''{\\L}''': 'Ł', '''{\\l}''': 'ł'
   '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
-class @ArXivPDF extends @ArXivPDF
+class @ArXivPDF extends ArXivPDF
+  @Meta
+    name: 'ArXivPDF'
+    replaceParent: true
+
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields: {} # All, only admins have access
@@ -72,7 +76,7 @@ Meteor.methods
         eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
         size: file.Size
 
-      if ArXivPDFs.find(fileObj, limit: 1).count() != 0
+      if ArXivPDF.documents.find(fileObj, limit: 1).count() != 0
         continue
 
       processPDF = (fun, props, pdf) ->
@@ -87,7 +91,7 @@ Meteor.methods
             Log.error "Invalid filename #{ props.path }"
             throw new Meteor.Error 500, "Invalid filename #{ props.path }"
 
-        ArXivPDFs.update fileObj._id,
+        ArXivPDF.documents.update fileObj._id,
           $addToSet:
             PDFs:
               id: id
@@ -97,7 +101,7 @@ Meteor.methods
         fun id, pdf
 
       finishPDF = ->
-        ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
+        ArXivPDF.documents.update fileObj._id, $set: processingEnd: moment.utc().toDate()
 
       Meteor.bindEnvironment processPDF, ((e) -> throw e), @
       Meteor.bindEnvironment finishPDF, ((e) -> throw e), @
@@ -120,7 +124,7 @@ Meteor.methods
         Log.info "Processing tar: #{ key }"
 
         fileObj.processingStart = moment.utc().toDate()
-        fileObj._id = ArXivPDFs.insert fileObj
+        fileObj._id = ArXivPDF.documents.insert fileObj
 
         s3.getObject(
           Bucket: 'arxiv'
@@ -248,14 +252,14 @@ Meteor.methods
 
       for author in authors
         # TODO: We could just define id ourselves, we do not have to do two queries
-        id = Persons.insert
+        id = Person.documents.insert
           user: null
           givenName: author.givenName
           familyName: author.familyName
           work: []
           education: []
           publications: []
-        Persons.update id,
+        Person.documents.update id,
           $set:
             slug: id
         author._id = id
@@ -288,10 +292,10 @@ Meteor.methods
       #assert.equal (cls for cls in publication.msc2010 when cls.match(/[()]/)).length, 0, "#{ publication.foreignId }: #{ publication.msc2010 }"
 
       # TODO: Upsert would be better
-      if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
-        id = Publications.insert publication
+      if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+        id = Publication.documents.insert publication
         for author in publication.authors
-          Persons.update author._id,
+          Person.documents.update author._id,
             $addToSet:
               publications:
                 _id: id # TODO: Entity resolution
@@ -309,7 +313,7 @@ Meteor.methods
 
     count = 0
 
-    Publications.find(cached: {$exists: false}).forEach (publication) ->
+    Publication.documents.find(cached: {$exists: false}).forEach (publication) ->
       try
         publication.checkCache()
         count++ if publication.cached
@@ -325,7 +329,7 @@ Meteor.methods
 
     Log.info "Processing pending PDFs"
 
-    Publications.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
+    Publication.documents.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
       initCallback = (numberOfPages) ->
         publication.numberOfPages = numberOfPages
 
@@ -344,9 +348,9 @@ Meteor.methods
 
       try
         publication.process null, initCallback, textCallback, pageImageCallback
-        Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
+        Publication.documents.update publication._id, $set: numberOfPages: publication.numberOfPages
       catch error
-        Publications.update publication._id,
+        Publication.documents.update publication._id,
           $set:
             processError:
               error: "#{ error.toString?() or error }"
@@ -368,7 +372,7 @@ Meteor.publish 'arxiv-pdfs', ->
 
   publishArXivPDFs = =>
     oldHandleArXivPDFs = handleArXivPDFs
-    handleArXivPDFs = ArXivPDFs.find(
+    handleArXivPDFs = ArXivPDF.documents.find(
       {}
     ,
       fields: ArXivPDF.PUBLIC_FIELDS().fields
@@ -399,7 +403,7 @@ Meteor.publish 'arxiv-pdfs', ->
     # were still processed by the old handle
     oldHandleArXivPDFs.stop() if oldHandleArXivPDFs
 
-  handlePersons = Persons.find(
+  handlePersons = Person.documents.find(
     _id: @personId
     isAdmin: true
   ,

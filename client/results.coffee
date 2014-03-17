@@ -54,7 +54,7 @@ Template.results.publications = ->
   if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
     return
 
-  searchResult = SearchResults.findOne
+  searchResult = SearchResult.documents.findOne
     query: Session.get 'currentSearchQuery'
 
   if not searchResult
@@ -63,7 +63,7 @@ Template.results.publications = ->
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
   Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
-  Publications.find
+  Publication.documents.find
     'searchResult._id': searchResult._id
   ,
     sort: [
@@ -164,11 +164,11 @@ Template.sidebarSearch.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.sidebarSearch.minPublicationDate = ->
-  statistics = Statistics.findOne()
+  statistics = Statistics.documents.findOne()
   moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
 
 Template.sidebarSearch.maxPublicationDate = ->
-  statistics = Statistics.findOne()
+  statistics = Statistics.documents.findOne()
   moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->

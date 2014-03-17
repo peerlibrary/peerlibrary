@@ -1,6 +1,6 @@
 path = Npm.require 'path'
 
-class @Storage extends @Storage
+class @Storage extends Storage
   @_assurePath: (path) ->
     path = path.split @_path.sep
     for segment, i in path[1...path.length-1]

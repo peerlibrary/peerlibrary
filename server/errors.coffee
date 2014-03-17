@@ -1,15 +1,19 @@
-class @LoggedError extends @LoggedError
+class @LoggedError extends LoggedError
+  @Meta
+    name: 'LoggedError'
+    replaceParent: true
+
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields: {} # All, only admins have access
 
-LoggedErrors.allow
+LoggedError.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
     true
 
 # Misuse insert validation to add additional fields on the server before insertion
-LoggedErrors.deny
+LoggedError.Meta.collection.deny
   # We have to disable transformation so that we have
   # access to the document object which will be inserted
   transform: null
@@ -45,7 +49,7 @@ Meteor.publish 'logged-errors', ->
 
   publishLoggedErrors = =>
     oldHandleLoggedErrors = handleLoggedErrors
-    handleLoggedErrors = LoggedErrors.find(
+    handleLoggedErrors = LoggedError.documents.find(
       {}
     ,
       LoggedError.PUBLIC_FIELDS()
@@ -72,7 +76,7 @@ Meteor.publish 'logged-errors', ->
     # were still processed by the old handle
     oldHandleLoggedErrors.stop() if oldHandleLoggedErrors
 
-  handlePersons = Persons.find(
+  handlePersons = Person.documents.find(
     _id: @personId
     isAdmin: true
   ,
