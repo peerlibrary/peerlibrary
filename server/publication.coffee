@@ -150,6 +150,8 @@ class @Publication extends Publication
       foreignId: 1
       source: 1
       access: 1
+      readUsers: 1
+      readGroups: 1
 
 Publication.Meta.collection.allow
   update: (userId, doc) ->
@@ -234,6 +236,7 @@ Meteor.methods
         ]
         sha256: sha256
         metadata: false
+        access: Publication.ACCESS.OPEN
       verify = false
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
@@ -577,6 +580,16 @@ Meteor.publish 'publications-by-id', (id) ->
       $or: [
         processed:
           $exists: true
+        $or: [
+          access: Publication.ACCESS.OPEN
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readUsers._id': @personId
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readGroups._id':
+            $in: @personGroups
+        ]
       ,
         _id:
           $in: library
@@ -603,6 +616,16 @@ Meteor.publish 'publications-by-ids', (ids) ->
       $or: [
         processed:
           $exists: true
+        $or: [
+          access: Publication.ACCESS.OPEN
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readUsers._id': @personId
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readGroups._id':
+            $in: @personGroups
+        ]
       ,
         _id:
           $in: library

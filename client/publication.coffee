@@ -391,10 +391,21 @@ Template.publicationMetaMenu.private = ->
 
 Template.publicationMetaMenu.events
   'change .access input:radio': (e, template) ->
-    Publication.documents.update Session.get('currentPublicationId'),
+    access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    update =
       $set:
-        access: Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
-    ,
+        access: access
+
+    if access is Publication.ACCESS.PRIVATE
+      update.$push =
+        readUsers:
+          _id: Meteor.personId()
+    else
+      update.$set.readUsers = []
+      update.$set.readGroups = []
+
+    Publication.documents.update Session.get('currentPublicationId'), update,
       (error, count) ->
         return Notify.meteorError error, true if error
 

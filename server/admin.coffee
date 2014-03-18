@@ -302,8 +302,6 @@ Meteor.methods
           user: null
           givenName: author.givenName
           familyName: author.familyName
-          work: []
-          education: []
           publications: []
         Person.documents.update id,
           $set:
@@ -331,6 +329,7 @@ Meteor.methods
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
         source: 'arXiv'
+        access: Publication.ACCESS.OPEN
 
       # TODO: Deal with this
       #if publication.msc2010?
