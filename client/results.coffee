@@ -128,7 +128,8 @@ Template.sidebarSearch.created = ->
 Template.sidebarSearch.rendered = ->
   @_searchQueryHandle.stop() if @_searchQueryHandle
   @_searchQueryHandle = Deps.autorun =>
-    $(@findAll '#general').val(Session.get 'currentSearchQuery')
+    # Sync input field unless change happened because of this input field itself
+    $(@findAll '#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
 
   @_dateRangeHandle.stop() if @_dateRangeHandle
   @_dateRangeHandle = Deps.autorun =>
@@ -208,10 +209,10 @@ Template.sidebarSearch.events =
 
 # We do not want location to be updated for every key press, because this really makes browser history hard to navigate
 # TODO: This might make currentSearchQuery be overriden with old value if it happens that exactly after 500 ms user again presses a key, but location is changed to old value which sets currentSearchQuery and thus input field back to old value
-updateLoction = _.debounce (query) ->
+updateSearchLoction = _.debounce (query) ->
   Meteor.Router.toNew Meteor.Router.searchPath query
 , 500
 
 Deps.autorun ->
   if Session.get 'searchActive'
-    updateLoction Session.get 'currentSearchQuery'
+    updateSearchLoction Session.get 'currentSearchQuery'
