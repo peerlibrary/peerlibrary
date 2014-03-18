@@ -66,8 +66,44 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
-     .access .description
-      display block
+    .access-panel
+      background-color rgba(100,100,100,0.9)
+
+      .access
+
+        .selections
+          display table
+          border-collapse separate
+          border-spacing 10px
+          width 100%
+
+          .selection
+            display table-cell
+            width 33%
+            padding 10px
+            background none
+            text-align center
+            cursor pointer
+            transition 0.2s
+            border-radius 2px
+
+            input
+              display none
+
+            label
+              cursor pointer
+
+              i
+                display block
+                margin-bottom 10px
+                cursor pointer
+
+          .selection:hover, .selection.selected
+            background-color rgba(200,200,200,0.7)
+
+        .description
+          padding 10px
+          text-align center
 
 .meta-menu:hover
   background rgba(46,46,44,0.5)
