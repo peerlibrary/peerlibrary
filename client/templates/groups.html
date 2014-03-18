@@ -1,6 +1,32 @@
 <template name="groups">
-  <form class="add-group">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Create a new group</button>
-  </form>
+  <h1>Groups</h1>
+  <div class="row">
+    <div class="col12">
+      <h2>Directory</h2>
+      <ul class="groups-list">
+        {{#each groups}}
+          {{> groupListing}}
+        {{/each}}
+      </ul>
+    </div>
+    {{> myGroups}}
+  </div>
+</template>
+
+<template name="groupListing">
+  <li>
+    <span class="group-name">{{name}}</span>
+    <span class="group-count">{{countDescription}}</span>
+  </li>
+</template>
+
+
+<template name="myGroups">
+  <div class="col4 push12 my-groups">
+    <h2>My Groups</h2>
+    <form class="add-group">
+      <input type="text" class="name" />
+      <button type="submit" class="add">Create a new group</button>
+    </form>
+  </div>
 </template>
