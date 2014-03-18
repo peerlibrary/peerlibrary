@@ -412,14 +412,15 @@ publishUsingMyLibrary = (publish, selector, options) ->
   currentPublications = {}
   handlePublications = null
 
-  publishPublications = (newIsAdmin, newLibrary) =>
+  publishPublications = (newIsAdmin, newGroups, newLibrary) =>
+    newGroups ||= []
     newLibrary ||= []
 
     initializing = true
     initializedPublications = []
 
     oldHandlePublications = handlePublications
-    handlePublications = Publication.documents.find(selector(newIsAdmin, newLibrary), options).observeChanges
+    handlePublications = Publication.documents.find(selector(newIsAdmin, newGroups, newLibrary), options).observeChanges
       added: (id, fields) =>
         initializedPublications.push id if initializing
 
@@ -460,6 +461,7 @@ publishUsingMyLibrary = (publish, selector, options) ->
       fields:
         # _id field is implicitly added
         isAdmin: 1
+        inGroups: 1
         library: 1
       transform: null # We are only interested in data
     ).observe
@@ -468,26 +470,26 @@ publishUsingMyLibrary = (publish, selector, options) ->
         assert.equal currentPersonId, null
 
         currentPersonId = person._id
-        publishPublications person.isAdmin, _.pluck person.library, '_id'
+        publishPublications person.isAdmin, _.pluck(person.inGroups, '_id'), _.pluck(person.library, '_id')
 
       changed: (newPerson, oldPerson) =>
         # Person should already be added
         assert.equal currentPersonId, newPerson._id
 
-        publishPublications newPerson.isAdmin, _.pluck newPerson.library, '_id'
+        publishPublications newPerson.isAdmin, _.pluck(newPerson.inGroups, '_id'), _.pluck(newPerson.library, '_id')
 
       removed: (oldPerson) =>
         # We cannot remove the person if we never added the person before
         assert.equal currentPersonId, oldPerson._id
 
         currentPersonId = null
-        publishPublications false, []
+        publishPublications false, [], []
 
   # If we get to here and currentPersonId was not set when initializing,
   # we call publishPublications with empty list so that possibly something
   # is published. If later on person is added, publishPublications will be
   # simply called again.
-  publishPublications false, [] unless currentPersonId
+  publishPublications false, [], [] unless currentPersonId
 
   publish.ready()
 
@@ -503,7 +505,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   currentPublications = {}
   handlePublications = null
 
-  publishPublications = (authorId, newIsAdmin, newLibrary) =>
+  publishPublications = (authorId, newIsAdmin, newGroups, newLibrary) =>
+    newGroups || []
     newLibrary ||= []
 
     initializing = true
@@ -523,6 +526,16 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
           $or: [
             processed:
               $exists: true
+            $or: [
+              access: Publication.ACCESS.OPEN
+            ,
+              access: Publication.ACCESS.PRIVATE
+              'readUsers._id': @personId
+            ,
+              access: Publication.ACCESS.PRIVATE
+              'readGroups._id':
+                $in: newGroups
+            ]
           ,
             _id:
               $in: newLibrary
@@ -563,6 +576,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   currentPersonId = null # Just for asserts
   lastIsAdmin = false
+  lastGroups = []
   lastLibrary = []
 
   if @personId
@@ -572,6 +586,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       fields:
         # _id field is implicitly added
         isAdmin: 1
+        inGroups: 1
         library: 1
     ).observeChanges
       added: (id, fields) =>
@@ -580,16 +595,18 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
         currentPersonId = id
         lastIsAdmin = fields.isAdmin
+        lastGroups = _.pluck fields.inGroups, '_id'
         lastLibrary = _.pluck fields.library, '_id'
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
 
       changed: (id, fields) =>
         # Person should already be added
         assert.equal currentPersonId, id
 
         lastIsAdmin = fields.isAdmin if _.has fields, 'isAdmin'
+        lastGroups = _.pluck fields.inGroups, '_id' if _.has fields, 'inGroups'
         lastLibrary = _.pluck fields.library, '_id' if _.has fields, 'library'
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
 
       removed: (id) =>
         # We cannot remove the person if we never added the person before
@@ -597,8 +614,9 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
         currentPersonId = null
         lastIsAdmin = false
+        lastGroups = []
         lastLibrary = []
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
 
   currentAuthorId = null # Just for asserts
 
@@ -613,14 +631,14 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       assert.equal currentAuthorId, null
 
       currentAuthorId = id
-      publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+      publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
 
     removed: (id) =>
       # We cannot remove the person if we never added the person before
       assert.equal currentAuthorId, id
 
       currentAuthorId = null
-      publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+      publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
 
   @ready()
 
@@ -634,7 +652,7 @@ Meteor.publish 'publications-by-id', (id) ->
 
   return unless id
 
-  publishUsingMyLibrary @, (isAdmin, library) =>
+  publishUsingMyLibrary @, (isAdmin, groups, library) =>
     if isAdmin
       _id: id
       cached:
@@ -654,7 +672,7 @@ Meteor.publish 'publications-by-id', (id) ->
         ,
           access: Publication.ACCESS.PRIVATE
           'readGroups._id':
-            $in: @personGroups
+            $in: groups
         ]
       ,
         _id:
@@ -668,7 +686,7 @@ Meteor.publish 'publications-by-ids', (ids) ->
 
   return unless ids?.length
 
-  publishUsingMyLibrary @, (isAdmin, library) =>
+  publishUsingMyLibrary @, (isAdmin, groups, library) =>
     if isAdmin
       _id:
         $in: ids
@@ -690,7 +708,7 @@ Meteor.publish 'publications-by-ids', (ids) ->
         ,
           access: Publication.ACCESS.PRIVATE
           'readGroups._id':
-            $in: @personGroups
+            $in: groups
         ]
       ,
         _id:
@@ -700,8 +718,8 @@ Meteor.publish 'publications-by-ids', (ids) ->
     Publication.PUBLIC_FIELDS()
 
 Meteor.publish 'my-publications', ->
-  # TODO: isAdmin is not really used, so this publish is not as optimized as it should be, probably we should make publishUsingMyLibrary a more general query constructor
-  publishUsingMyLibrary @, (isAdmin, library) =>
+  # TODO: isAdmin and groups are not really used, so this publish is not as optimized as it should be, probably we should make publishUsingMyLibrary a more general query constructor
+  publishUsingMyLibrary @, (isAdmin, groups, library) =>
     _id:
       $in: library
     cached:
