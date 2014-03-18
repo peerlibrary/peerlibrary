@@ -44,27 +44,7 @@ Annotation.Meta.collection.deny
     doc.created = moment.utc().toDate()
     doc.updated = doc.created
     doc.references = {} if not doc.references
-
-    # Convert list of tag names (strings) to tag subdocuments
-    if doc.tags
-      tags = _.map doc.tags, (name) ->
-        existingTag = Tag.documents.findOne
-          'name.en': name
-
-        return _.pick(existingTag, '_id', 'name') if existingTag?
-
-        annotationId = Tag.documents.insert
-          name:
-            en: name
-
-        # return
-        _id: annotationId
-        name:
-          en: name
-
-      doc.tags = tags
-    else
-      doc.tags = []
+    doc.tags = [] if not doc.tags
 
     # We return false as we are not
     # checking anything, just adding fields

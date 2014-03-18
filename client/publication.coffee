@@ -764,7 +764,20 @@ Template.annotationEditor.events
     body = $content.html()
 
     $tags = $(template.findAll '.annotation-tags')
-    tags = $tags.tagit 'assignedTags'
+    tags = _.map $tags.tagit('assignedTags'), (name) ->
+      existingTag = Tag.documents.findOne
+        'name.en': name
+
+      if existingTag?
+        return tag: _.pick(existingTag, '_id')
+
+      tagId = Tag.documents.insert
+        name:
+          en: name
+
+      # return
+      tag:
+        _id: tagId
 
     # TODO: Set privacy settings
     LocalAnnotation.documents.update @_id,
