@@ -1,6 +1,7 @@
 Template.groups.events
   'submit .add-group': (e, template) ->
     e.preventDefault()
+
     Group.documents.insert
       name: $(template.findAll '.name').val()
       members: [

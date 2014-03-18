@@ -171,7 +171,7 @@ else
         setSession
           currentGroupId: groupId
           currentGroupSlug: groupSlug
-        'grup'
+        'group'
 
     '/g':
       as: 'groups'

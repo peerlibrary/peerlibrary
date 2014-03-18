@@ -63,6 +63,31 @@ Group.Meta.collection.deny
     # checking anything, just updating fields
     false
 
+Meteor.methods
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Group.Meta.collection.allow and modifications from Group.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'add-to-group': (groupId, memberId) ->
+    check groupId, String
+    check memberId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if group exists or if user is a member of it because we have query below with these conditions
+
+    Group.documents.update
+      _id: groupId
+      $and: [
+        'members._id': Meteor.personId()
+      ,
+        'members._id':
+          $ne: memberId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        members:
+          _id: memberId
+
 Meteor.publish 'groups-by-id', (id) ->
   check id, String
 
