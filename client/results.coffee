@@ -122,36 +122,59 @@ Template.publicationSearchResult.destroyed = ->
   @_publicationHandle = null
 
 Template.sidebarSearch.created = ->
-  @_autorunHandle = null
+  @_searchQueryHandle = null
+  @_dateRangeHandle = null
 
 Template.sidebarSearch.rendered = ->
-  unless @_publicationHandle
-    @_publicationHandle = Deps.autorun =>
-      $(@findAll '#general').val(Session.get 'currentSearchQuery')
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = Deps.autorun =>
+    $(@findAll '#general').val(Session.get 'currentSearchQuery')
+
+  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle = Deps.autorun =>
+    statistics = Statistics.documents.findOne {},
+      fields:
+        minPublicationDate: 1
+        maxPublicationDate: 1
+
+    $publicationDate = $(@findAll '#publication-date')
+    $slider = $(@findAll '#date-range')
+
+    unless statistics?.minPublicationDate and statistics?.maxPublicationDate
+      $publicationDate.val('')
+      $slider.slider('destroy') if $slider.data('ui-slider')
+      return
+
+    min = moment.utc(statistics.minPublicationDate).year()
+    max = moment.utc(statistics.maxPublicationDate).year()
+
+    [start, end] = $publicationDate.val().split(' - ') if $publicationDate.val()
+    start = parseInt(start) or min
+    end = parseInt(end) or max
+
+    start = min if start < min
+    end = max if end > max
+
+    $slider.slider
+      disabled: true # TODO: For now disabled
+      range: true
+      min: min
+      max: max
+      values: [start, end]
+      step: 1
+      slide: (event, ui) ->
+        $publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
+
+    $publicationDate.val($slider.slider('values', 0) + ' - ' + $slider.slider('values', 1))
 
   $(@findAll '.chzn').chosen
     no_results_text: "No tag match"
 
-  publicationDate = $(@findAll '#publication-date')
-  [start, end] = publicationDate.val().split(' - ') if publicationDate.val()
-  start = publicationDate.data('min') unless start
-  end = publicationDate.data('max') unless end
-
-  slider = $(@findAll '#date-range').slider
-    disabled: true # TODO: For now disabled
-    range: true
-    min: publicationDate.data('min')
-    max: publicationDate.data('max')
-    values: [start, end]
-    step: 1
-    slide: (event, ui) ->
-      publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
-
-  publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
-
 Template.sidebarSearch.destroyed = ->
-  @_autorunHandle.stop() if @_autorunHandle
-  @_autorunHandle = null
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = null
+  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle = null
 
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well
@@ -182,14 +205,6 @@ Template.sidebarSearch.events =
     e.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
-
-Template.sidebarSearch.minPublicationDate = ->
-  statistics = Statistics.documents.findOne()
-  moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
-
-Template.sidebarSearch.maxPublicationDate = ->
-  statistics = Statistics.documents.findOne()
-  moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->
   if Session.get 'searchActive'
