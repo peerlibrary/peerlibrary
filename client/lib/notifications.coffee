@@ -62,6 +62,7 @@ class @Notify extends Document
       notificationAdditional += "<div class=\"stack\">#{ _.escape(stack) }</div>"
 
     if log
+      # TODO: Should we use instead PeerDB's getCurrentLocation?
       caller = Log._getCallerDetails(/client\/lib\/notifications(?:\/|(?::tests)?\.(?:js|coffee))/)
 
       loggedErrorId = @_logError [message, additional].join('\n'), caller.file, caller.line, stack
