@@ -26,6 +26,8 @@ Template.group.events
     # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
     newMemberId = $(template.findAll '.name').val()
 
+    return unless newMemberId
+
     return if newMemberId in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
     Meteor.call 'add-to-group', Session.get('currentGroupId'), newMemberId, (error, count) ->

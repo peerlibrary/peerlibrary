@@ -9,6 +9,8 @@ class @Person extends Document
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not
+  # inGroups: list of
+  #   _id: id of a group the person is in
   # publications: list of
   #   _id: authored publication id
   # library: list of

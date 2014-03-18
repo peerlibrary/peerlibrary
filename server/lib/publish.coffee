@@ -12,7 +12,9 @@ unless originalPublish
         'user._id': @userId
       ,
         _id: 1
+        inGroups: 1
 
       @personId = person?._id or null
+      @personGroups = _.pluck person?.inGroups, '_id'
 
       func.apply @, args

@@ -10,5 +10,5 @@ class @Group extends Document
     name: 'Group'
     fields: =>
       slug: @GeneratedField 'self', ['name']
-      members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']

@@ -18,10 +18,40 @@
           <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
-      <p>Published in: {{publication.source}}</p>
+      <p>Source: {{publication.source}}</p>
       <p>{{publication.createdAt}}</p>
+      <form class="access">
+        <input type="radio" value="open" name="access" id="access-open" {{#if open}}checked="checked"{{/if}} /> <label for="access-open"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
+        <input type="radio" value="closed" name="access" id="access-closed" {{#if closed}}checked="checked"{{/if}} /> <label for="access-closed"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
+        <input type="radio" value="private" name="access" id="access-private" {{#if private}}checked="checked"{{/if}} /> <label for="access-private"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
+      </form>
+      {{#if private}}
+        {{> publicationPrivateAccessControl}}
+      {{/if}}
     </div>
   </div>
+</template>
+
+<template name="publicationPrivateAccessControl">
+  <ol class="access-list access-list-users">
+    {{#each publication.readUsers}}
+      {{> groupMember}}
+    {{/each}}
+  </ol>
+  <form class="add-user">
+    <input type="text" class="name" />
+    <button type="submit" class="add">Add an user</button>
+  </form>
+  <ol class="access-list access-list-groups">
+    {{#each publication.readGroups}}
+      {{! TODO: Use some group template}}
+      <li>Group: {{name}}</li>
+    {{/each}}
+  </ol>
+  <form class="add-group">
+    <input type="text" class="name" />
+    <button type="submit" class="add">Add a group</button>
+  </form>
 </template>
 
 <template name="publicationDisplay">

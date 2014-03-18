@@ -33,6 +33,9 @@ class @Publication extends Document
   #   stack: stack trace of the error
   # numberOfPages
   # fullText: full plain text content suitable for searching
+  # access: 0 (private), 1 (closed), 2 (open)
+  # readUsers: if private access, list of users who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
@@ -40,12 +43,14 @@ class @Publication extends Document
   @Meta
     name: 'Publication'
     fields: =>
-      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
+      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username']]
       importing: [
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
+      readUsers: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
@@ -81,3 +86,8 @@ class @Publication extends Document
 
   createdDay: =>
     moment(@createdAt).format 'MMMM Do YYYY'
+
+  @ACCESS:
+    PRIVATE: 0
+    CLOSED: 1
+    OPEN: 2

@@ -84,6 +84,7 @@ Meteor.methods
     # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
 
     # TODO: Should be allowed also if user is admin
+    # TODO: Should check if memberId is a valid one?
 
     Group.documents.update
       _id: groupId

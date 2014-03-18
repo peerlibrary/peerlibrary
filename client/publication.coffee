@@ -380,6 +380,74 @@ Deps.autorun ->
 Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
+Template.publicationMetaMenu.open = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.OPEN
+
+Template.publicationMetaMenu.closed = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.CLOSED
+
+Template.publicationMetaMenu.private = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.PRIVATE
+
+Template.publicationMetaMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    update =
+      $set:
+        access: access
+
+    if access is Publication.ACCESS.PRIVATE
+      update.$push =
+        readUsers:
+          _id: Meteor.personId()
+    else
+      update.$set.readUsers = []
+      update.$set.readGroups = []
+
+    Publication.documents.update Session.get('currentPublicationId'), update,
+      (error, count) ->
+        return Notify.meteorError error, true if error
+
+        Notify.success "Access changed." if count
+
+Template.publicationPrivateAccessControl.publication = Template.publicationMetaMenu.publication
+
+Template.publicationPrivateAccessControl.events
+  'submit .add-user': (e, template) ->
+    e.preventDefault()
+
+    # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
+    newUserId = $(template.findAll '.add-user .name').val()
+
+    return unless newUserId
+
+    return if newUserId in _.pluck Publication.documents.findOne(Session.get('currentPublicationId')).readUsers, '_id'
+
+    Meteor.call 'grant-read-to-user', Session.get('currentPublicationId'), newUserId, (error, count) ->
+      return Notify.meteorError error if error
+
+      Notify.success "User added." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+  'submit .add-group': (e, template) ->
+    e.preventDefault()
+
+    # TODO: We should use autocomplete to get information about groups with a given name so that when a group is chosen, we have its ID we use here, "name" here is currently misleading because it has to be raw ID with this code
+    newGroupId = $(template.findAll '.add-group .name').val()
+
+    return unless newGroupId
+
+    return if newGroupId in _.pluck Publication.documents.findOne(Session.get('currentPublicationId')).readGroups, '_id'
+
+    Meteor.call 'grant-read-to-group', Session.get('currentPublicationId'), newGroupId, (error, count) ->
+      return Notify.meteorError error if error
+
+      Notify.success "Group added." if count
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.publicationDisplay.created = ->
   @_displayHandle = null
   @_displayRendered = false
@@ -737,9 +805,7 @@ Template.annotationEditor.rendered = ->
         body: text
     ,
       (error) ->
-        if error
-          Notify.meteorError error, true
-          return
+        return Notify.meteorError error, true if error
 
         $saved.addClass('display')
   , 1000

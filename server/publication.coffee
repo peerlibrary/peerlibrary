@@ -133,6 +133,7 @@ class @Publication extends Publication
       'title'
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
+      'access'
     ]
 
   # A set of fields which are public and can be published to the client
@@ -148,6 +149,31 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      access: 1
+      readUsers: 1
+      readGroups: 1
+
+Publication.Meta.collection.allow
+  update: (userId, doc) ->
+    return false unless userId
+
+    personId = Meteor.personId userId
+
+    # TODO: Check if user has access to changing the publication (reputation points, in permission group)
+    personId
+
+# Misuse insert validation to add additional fields on the server before insertion
+Publication.Meta.collection.deny
+  # We have to disable transformation so that we have
+  # access to the document object which will be inserted
+  transform: null
+
+  update: (userId, doc) ->
+    doc.updatedAt = moment.utc().toDate()
+
+    # We return false as we are not
+    # checking anything, just updating fields
+    false
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
@@ -210,6 +236,7 @@ Meteor.methods
         ]
         sha256: sha256
         metadata: false
+        access: Publication.ACCESS.OPEN
       verify = false
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
@@ -308,6 +335,72 @@ Meteor.methods
       $addToSet:
         library:
           _id: publication._id
+
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'grant-read-to-user': (publicationId, userId) ->
+    check publicationId, String
+    check userId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if publication exists or if user has already read permission because we have query below with these conditions
+
+    # TODO: Check that userId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can grant permissions to authors, without having for all of them to be registered?
+
+    # TODO: Should be allowed also if user is admin
+    # TODO: Should check if userId is a valid one?
+
+    Publication.documents.update
+      _id: publicationId
+      $and: [
+        $or: [
+          'readUsers._id': Meteor.personId()
+        ,
+          'readGroups._id':
+            $in: _.pluck Meteor.person().inGroups, '_id'
+        ]
+      ,
+        'readUsers._id':
+          $ne: userId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        readUsers:
+          _id: userId
+
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'grant-read-to-group': (publicationId, groupId) ->
+    check publicationId, String
+    check groupId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if publication exists or if group has already read permission because we have query below with these conditions
+
+    # TODO: Should be allowed also if user is admin
+    # TODO: Should check if groupId is a valid one?
+
+    Publication.documents.update
+      _id: publicationId
+      $and: [
+        $or: [
+          'readUsers._id': Meteor.personId()
+        ,
+          'readGroups._id':
+            $in: _.pluck Meteor.person().inGroups, '_id'
+        ]
+      ,
+        'readGroups._id':
+          $ne: groupId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        readGroups:
+          _id: groupId
 
 # TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
 publishUsingMyLibrary = (publish, selector, options) ->
@@ -553,6 +646,16 @@ Meteor.publish 'publications-by-id', (id) ->
       $or: [
         processed:
           $exists: true
+        $or: [
+          access: Publication.ACCESS.OPEN
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readUsers._id': @personId
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readGroups._id':
+            $in: @personGroups
+        ]
       ,
         _id:
           $in: library
@@ -579,6 +682,16 @@ Meteor.publish 'publications-by-ids', (ids) ->
       $or: [
         processed:
           $exists: true
+        $or: [
+          access: Publication.ACCESS.OPEN
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readUsers._id': @personId
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readGroups._id':
+            $in: @personGroups
+        ]
       ,
         _id:
           $in: library
