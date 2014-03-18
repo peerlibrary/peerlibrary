@@ -1,5 +1,3 @@
-@Persons = new Meteor.Collection 'Persons', transform: (doc) => new @Person doc
-
 class @Person extends Document
   # user: (null if without user account)
   #   _id
@@ -15,10 +13,9 @@ class @Person extends Document
   # library: list of
   #   _id: added publication id
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Persons
-    fields:
+  @Meta
+    name: 'Person'
+    fields: =>
       user: @ReferenceField User, ['username'], false
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
@@ -30,8 +27,17 @@ class @Person extends Document
       "#{ @givenName } #{ @familyName }"
     else if @givenName
       @givenName
-    else
+    else if @user?.username
       @user.username
+    else
+      @slug
+
+  avatar: (size) =>
+    # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
+    size = 24 unless _.isNumber size
+    # TODO: We should specify default URL to the image of an avatar which is generated from name initials
+    # TODO: gravatarHash does not appear
+    "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }"
 
 Meteor.person = (userId) ->
   # Meteor.userId is reactive
@@ -39,7 +45,7 @@ Meteor.person = (userId) ->
 
   return null unless userId
 
-  Persons.findOne
+  Person.documents.findOne
     'user._id': userId
 
 Meteor.personId = (userId) ->
@@ -48,7 +54,7 @@ Meteor.personId = (userId) ->
 
   return null unless userId
 
-  person = Persons.findOne
+  person = Person.documents.findOne
     'user._id': userId
   ,
     _id: 1

@@ -1,13 +1,15 @@
-# Local (client-only) collection with notifications
-# Fields:
-#   type: type of the notification (debug, warn, error)
-#   timestamp: timestamp when was notification inserted
-#   message: message of the notification
-@Notifications = new Meteor.Collection null
+# Local (client-only) document for notifications
+class @Notify extends Document
+  # type: type of the notification (debug, warn, error)
+  # timestamp: timestamp when was notification inserted
+  # message: message of the notification
 
-class @Notify
+  @Meta
+    name: 'Notify'
+    collection: null
+
   @_insert: (type, message, additional) =>
-    Notifications.insert
+    @documents.insert
       type: type
       timestamp: moment.utc().toDate()
       message: message
@@ -88,7 +90,7 @@ class @Notify
       # Values are EJSON encoded, let's decode them
       session[key] = EJSON.parse(value)
 
-    LoggedErrors.insert
+    LoggedError.documents.insert
       errorMsg: errorMsg
       url: url
       lineNumber: lineNumber

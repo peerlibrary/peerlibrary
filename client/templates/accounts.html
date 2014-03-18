@@ -1,7 +1,7 @@
 <template name="_loginButtonsLoggedInDropdown">
   <div class="login-link-and-dropdown-list">
     <a class="login-link-text" id="login-name-link">
-      {{displayName}} {{> displayIcon}}
+      {{currentPerson.displayName}} <img src="{{currentPerson.avatar}}" class="avatar" />
     </a>
 
     {{#if dropdownVisible}}
@@ -20,10 +20,6 @@
       </div>
     {{/if}}
   </div>
-</template>
-
-<template name="displayIcon">
-  <img src="{{ userIconUrl }}" class="user-icon" />
 </template>
 
 <template name="_loginButtonsLoggedOutDropdown">
@@ -56,8 +52,13 @@
   {{! TODO: Here should come a list of links for the user and notifications }}
 
   <div class="menu-item">
-    <a href="{{profilePath personSlug}}">Profile</a>
+    <a href="{{profilePath currentPerson.slug}}">Profile</a>
   </div>
+  {{#if currentPerson.isAdmin}}
+    <div class="menu-item">
+      <a href="{{adminPath}}">Admin dashboard</a>
+    </div>
+  {{/if}}
 
   <div class="login-button menu-item" id="login-buttons-logout">
     Sign out

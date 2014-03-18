@@ -8,7 +8,7 @@ Meteor.methods
     check query, String
 
     # TODO: For now we just ignore query, we should do something smart with it
-    proposals = Publications.find(
+    proposals = Publication.documents.find(
       processed: true
     ,
       limit: SEARCH_PROPOSE_LIMIT - 1
@@ -57,7 +57,7 @@ Meteor.publish 'search-results', (query, limit) ->
   # TODO: How to influence order of results? Should we have just simply a field?
   # TODO: Escape query in regexp
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
-  resultsHandle = Publications.find(findQuery,
+  resultsHandle = Publication.documents.find(findQuery,
     limit: limit
     fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
   ).observeChanges
@@ -82,7 +82,7 @@ Meteor.publish 'search-results', (query, limit) ->
   count = 0
   countInitializing = true
 
-  countHandle = Publications.find(findQuery,
+  countHandle = Publication.documents.find(findQuery,
     fields:
       _id: 1 # We want only id
   ).observeChanges

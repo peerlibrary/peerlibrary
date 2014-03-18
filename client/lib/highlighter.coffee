@@ -431,7 +431,7 @@ class @Highlighter
 
     @_annotator._scan()
 
-    @_highlightsHandle = Highlights.find(
+    @_highlightsHandle = Highlight.documents.find(
       'publication._id': Session.get 'currentPublicationId'
     ).observeChanges
       added: (id, fields) =>

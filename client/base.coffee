@@ -55,7 +55,7 @@ redirectHighlightId = (highlightId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      highlight = Highlights.findOne highlightId
+      highlight = Highlight.documents.findOne highlightId
 
       unless highlight
         highlightsHandle.stop()
@@ -67,7 +67,7 @@ redirectHighlightId = (highlightId) ->
           highlightsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne highlight.publication._id
+          publication = Publication.documents.findOne highlight.publication._id
 
           # We do not need subscriptions anymore
           highlightsHandle.stop()
@@ -87,7 +87,7 @@ redirectAnnotationId = (annotationId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      annotation = Annotations.findOne annotationId
+      annotation = LocalAnnotation.documents.findOne annotationId
 
       unless annotation
         annotationsHandle.stop()
@@ -99,7 +99,7 @@ redirectAnnotationId = (annotationId) ->
           annotationsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne annotation.publication._id
+          publication = Publication.documents.findOne annotation.publication._id
 
           # We do not need subscriptions anymore
           annotationsHandle.stop()
@@ -115,7 +115,7 @@ redirectAnnotationId = (annotationId) ->
 
 if INSTALL
   Meteor.Router.add
-    '*': ->
+    '/': ->
       setSession()
       'install'
 
@@ -188,34 +188,10 @@ else
     '/t/:tagId/:tagSlug?':
       as: 'tag'
       to: (tagId, tagSlug) ->
-        setSession()
+        setSession
           currentTagId: tagId
           currentTagSlug: tagSlug
         'tag'
-
-    '/about':
-      as: 'about'
-      to: ->
-        setSession()
-        'about'
-
-    '/help':
-      as: 'help'
-      to: ->
-        setSession()
-        'help'
-
-    '/privacy':
-      as: 'privacy'
-      to: ->
-        setSession()
-        'privacy'
-
-    '/terms':
-      as: 'terms'
-      to: ->
-        setSession()
-        'terms'
 
     '/admin':
       as: 'admin'
@@ -224,9 +200,34 @@ else
           adminActive: true
         'admin'
 
-    '*': ->
+Meteor.Router.add
+  '/about':
+    as: 'about'
+    to: ->
       setSession()
-      'notfound'
+      'about'
+
+  '/help':
+    as: 'help'
+    to: ->
+      setSession()
+      'help'
+
+  '/privacy':
+    as: 'privacy'
+    to: ->
+      setSession()
+      'privacy'
+
+  '/terms':
+    as: 'terms'
+    to: ->
+      setSession()
+      'terms'
+
+  '*': ->
+    setSession()
+    'notfound'
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->

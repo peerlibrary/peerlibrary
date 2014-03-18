@@ -37,9 +37,6 @@ Template.results.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-Template.results.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 
@@ -57,7 +54,7 @@ Template.results.publications = ->
   if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
     return
 
-  searchResult = SearchResults.findOne
+  searchResult = SearchResult.documents.findOne
     query: Session.get 'currentSearchQuery'
 
   if not searchResult
@@ -66,7 +63,7 @@ Template.results.publications = ->
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
   Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
-  Publications.find
+  Publication.documents.find
     'searchResult._id': searchResult._id
   ,
     sort: [
@@ -111,6 +108,9 @@ Template.publicationSearchResult.events =
         $(template.findAll '.abstract').slideToggle(200)
 
     return # Make sure CoffeeScript does not return anything
+
+Template.publicationSearchResult.rendered = ->
+  $(@findAll '.scrubber').iscrubber()
 
 Template.sidebarSearch.rendered = ->
   $(@findAll '.chzn').chosen
@@ -164,11 +164,11 @@ Template.sidebarSearch.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.sidebarSearch.minPublicationDate = ->
-  statistics = Statistics.findOne()
+  statistics = Statistics.documents.findOne()
   moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
 
 Template.sidebarSearch.maxPublicationDate = ->
-  statistics = Statistics.findOne()
+  statistics = Statistics.documents.findOne()
   moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
 
 Deps.autorun ->

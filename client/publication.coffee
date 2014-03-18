@@ -62,7 +62,11 @@ highlightsDependency = new Deps.Dependency()
   _highlights = highlights
   highlightsDependency.changed()
 
-class @Publication extends @Publication
+class @Publication extends Publication
+  @Meta
+    name: 'Publication'
+    replaceParent: true
+
   constructor: (args...) ->
     super args...
 
@@ -353,7 +357,7 @@ Deps.autorun ->
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get('currentPublicationId'),
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
       slug: 1
@@ -376,20 +380,20 @@ Deps.autorun ->
 Deps.autorun ->
   return unless Session.get 'currentPublicationId'
 
-  localAnnotation = LocalAnnotations.find
+  localAnnotation = LocalAnnotation.documents.findOne
     'publication._id': Session.get 'currentPublicationId'
     local: true
-  return unless localAnnotation
 
-  createLocalAnnotation()
+  return if localAnnotation
 
-createLocalAnnotation = ->
+  # There should always be one local annotation (the editor)
   annotation = createAnnotationDocument()
   annotation.local = true
-  LocalAnnotations.insert annotation
+
+  LocalAnnotation.documents.insert annotation
 
 Template.publicationMetaMenu.publication = ->
-  Publications.findOne Session.get 'currentPublicationId'
+  Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
@@ -401,7 +405,7 @@ Template.publicationDisplay.rendered = ->
 
   Deps.nonreactive =>
     @_displayHandle = Deps.autorun =>
-      publication = Publications.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+      publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
       return unless publication
 
@@ -549,7 +553,7 @@ Template.highlightsControl.canEdit = ->
   return @author._id is Meteor.personId()
 
 Template.annotationsControl.newAnnotation = ->
-  LocalAnnotations.find
+  LocalAnnotation.documents.find
     'publication._id': Session.get 'currentPublicationId'
     local: true
 
@@ -557,7 +561,7 @@ Template.annotationsControl.events
   'click .add': (e, template) ->
     annotation = createAnnotationDocument()
 
-    annotationId = LocalAnnotations.insert annotation, (error, id) =>
+    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 
@@ -576,7 +580,7 @@ Template.publicationAnnotations.annotations = ->
 
   visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
 
-  LocalAnnotations.find
+  LocalAnnotation.documents.find
     $or: [
       # We display all annotations which are not linked to any highlight
       'references.highlights':
@@ -668,16 +672,9 @@ Template.publicationAnnotationsItem.events
     # TODO: Get rid of this. Annotation invites are being replaced.
     return # unless template.data.local
 
-    LocalAnnotations.update template.data._id,
+    LocalAnnotation.documents.update template.data._id,
       $unset:
         local: ''
-
-    # TODO: Should this syncing be done automatically by PeerDB?
-    for highlight in template.data.highlights
-      Highlights.update highlight._id,
-        $addToSet:
-          annotations:
-            _id: template.data._id
 
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
 
@@ -731,15 +728,6 @@ Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
 
-Template.publicationAnnotationsItem.authorName = ->
-  return @author.slug unless @author.givenName? and @author.familyName?
-  @author.givenName + ' ' + @author.familyName
-
-Template.publicationAnnotationsItem.authorIconUrl = ->
-  # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-  # TODO: gravatarHash does not appear
-  "https://secure.gravatar.com/avatar/#{ @author.gravatarHash }?s=24"
-
 Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updated).fromNow()
 
@@ -779,9 +767,7 @@ Template.annotationEditor.events
     tags = $tags.tagit 'assignedTags'
 
     # TODO: Set privacy settings
-    LocalAnnotations.update
-      _id: @_id
-    ,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: false
         body: body
@@ -791,7 +777,7 @@ Template.annotationEditor.events
         return error if error
 
         # TODO: Integrate this call into Deps.autorun
-        createLocalAnnotation()
+        # createLocalAnnotation()
 
         focusAnnotationId = @_id
 
@@ -818,7 +804,7 @@ Template.annotationInvite.rendered = ->
 
 Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
-    LocalAnnotations.remove @_id, (error) =>
+    LocalAnnotation.documents.remove @_id, (error) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       Notify.meteorError error, true if error
 

@@ -15,7 +15,7 @@
       <p><b>{{publication.title}}</b></p>
       <p class="authors">
         {{#each publication.authors}}
-          <span><a href="{{profilePath slug}}">{{givenName}} {{familyName}}</a></span>
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
       <p>Published in: {{publication.source}}</p>
@@ -53,12 +53,12 @@
 
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
-    <a href="#">
-      <img src="{{ authorIconUrl }}" class="user-icon" />
+    <a href="{{profilePath author.slug}}">
+      <img src="{{author.avatar}}" class="avatar" />
     </a>
     <div class="annotation-wrapper">
       <div class="annotation-header">
-        <h4 class="author-name">{{authorName}}</h4>
+        <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
         <span class="timestamp">{{updatedFromNow}}</span>
         <span class="edit-button"><a href="#">edit</a></span>
       </div>
@@ -95,7 +95,7 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{profilePath slug}}">{{givenName}} {{familyName}}</a></span>
+      <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
     {{/with}}
   </p>
   <p class="time">{{created}}</p>
@@ -195,7 +195,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{profilePath slug}}">{{givenName}} {{familyName}}</a></span>
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{created}}</p>

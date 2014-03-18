@@ -307,7 +307,7 @@ class @Annotator extends Annotator
     highlight.target = _.map highlight.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlights.insert highlight, (error, id) =>
+    Highlight.documents.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       if error
         Notify.meteorError error, true
@@ -322,7 +322,7 @@ class @Annotator extends Annotator
     annotation
 
   _removeHighlight: (id) =>
-    Highlights.remove id, (error) =>
+    Highlight.documents.remove id, (error) =>
       Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
