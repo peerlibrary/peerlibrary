@@ -57,25 +57,33 @@
 </template>
 
 <template name="publicationPrivateAccessControl">
-  <ol class="access-list access-list-users">
-    {{#each readUsers}}
-      {{> groupMember}}
-    {{/each}}
-  </ol>
-  <form class="add-user">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Add an user</button>
-  </form>
-  <ol class="access-list access-list-groups">
-    {{#each readGroups}}
-      {{! TODO: Use some group template}}
-      <li>Group: {{name}}</li>
-    {{/each}}
-  </ol>
-  <form class="add-group">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Add a group</button>
-  </form>
+  <div class="private-access-control">
+    <h3>Users</h3>
+    <div class="access-list-area">
+      <ol class="access-list access-list-users">
+        {{#each readUsers}}
+          {{> groupMember}}
+        {{/each}}
+      </ol>
+      <form class="add-user input-and-button">
+        <input type="text" class="name" placeholder="Username" />
+        <button type="submit" class="add">Add</button>
+      </form>
+    </div>
+    <h3>Groups</h3>
+    <div class="access-list-area">
+      <ol class="access-list access-list-groups">
+        {{#each readGroups}}
+          {{! TODO: Use some group template}}
+          <li class="member"><h4>{{name}}</h4></li>
+        {{/each}}
+      </ol>
+      <form class="add-group input-and-button">
+        <input type="text" class="name" placeholder="Group name" />
+        <button type="submit" class="add">Add</button>
+      </form>
+    </div>
+  </div>
 </template>
 
 <template name="publicationDisplay">
