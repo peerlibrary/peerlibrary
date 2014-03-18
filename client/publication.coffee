@@ -380,6 +380,26 @@ Deps.autorun ->
 Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
+Template.publicationMetaMenu.open = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.OPEN
+
+Template.publicationMetaMenu.closed = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.CLOSED
+
+Template.publicationMetaMenu.private = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.PRIVATE
+
+Template.publicationMetaMenu.events
+  'change .access input:radio': (e, template) ->
+    Publication.documents.update Session.get('currentPublicationId'),
+      $set:
+        access: Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+    ,
+      (error, count) ->
+        return Notify.meteorError error, true if error
+
+        Notify.success "Access changed." if count
+
 Template.publicationDisplay.created = ->
   @_displayHandle = null
   @_displayRendered = false
@@ -737,9 +757,7 @@ Template.annotationEditor.rendered = ->
         body: text
     ,
       (error) ->
-        if error
-          Notify.meteorError error, true
-          return
+        return Notify.meteorError error, true if error
 
         $saved.addClass('display')
   , 1000

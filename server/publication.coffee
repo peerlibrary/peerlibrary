@@ -133,6 +133,7 @@ class @Publication extends Publication
       'title'
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
+      'access'
     ]
 
   # A set of fields which are public and can be published to the client
@@ -148,6 +149,29 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      access: 1
+
+Publication.Meta.collection.allow
+  update: (userId, doc) ->
+    return false unless userId
+
+    personId = Meteor.personId userId
+
+    # TODO: Check if user has access to changing the publication (reputation points, in permission group)
+    personId
+
+# Misuse insert validation to add additional fields on the server before insertion
+Publication.Meta.collection.deny
+  # We have to disable transformation so that we have
+  # access to the document object which will be inserted
+  transform: null
+
+  update: (userId, doc) ->
+    doc.updatedAt = moment.utc().toDate()
+
+    # We return false as we are not
+    # checking anything, just updating fields
+    false
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
