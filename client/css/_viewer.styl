@@ -250,15 +250,10 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 230px
+annotations-control-height = 0px
 
 .annotations-control
-  background white
-  border-radius 2px
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
-  min-height annotations-control-height
-  height auto
-  z-index 90
+  height 0
   position fixed
   left annotations-left
   right annotations-right
@@ -284,7 +279,15 @@ annotations-control-height = 230px
     outline none
     border none
 
-.annotations-form-wrapper, .annotations-control-form-wrapper
+.annotations-editor
+  background white
+  border-radius 2px
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+  height auto
+  z-index 90
+  margin 1px 10px 10px 1px
+
+.annotations-form-wrapper, .annotations-editor-form-wrapper
   .form-header
     height 30px
     margin 6px 0
@@ -362,7 +365,6 @@ annotations-control-height = 230px
         font-size smaller
         border 0
         margin 0 0 0 24px
-        min-width 240px
 
   .form-control
     height 34px
@@ -376,14 +378,12 @@ annotations-control-height = 230px
       margin-right 0
       float right
 
-.annotations-control-form-wrapper
+.annotations-editor-form-wrapper
   padding 20px
 
 .annotations-list
   list-style none
   margin 0
-  /* temporary margin */
-  margin-top 20px
   padding 0
   overflow auto
   position fixed
@@ -398,7 +398,7 @@ annotations-control-height = 230px
      edge for 10px to the right and then add 10px right margin to each
      annotation */
   right annotations-right - 10px
-  top meta-menu-top + annotations-control-height + 10px
+  top meta-menu-top
   bottom 15px
 
   .annotation

@@ -36,6 +36,7 @@ Meteor.startup ->
 
   LocalAnnotation.documents.find({}).observeChanges
     added: (id, fields) -> wrapSyncing ->
+      delete fields.editing
       if fields.local
         localIds[id] = true
       else
@@ -44,6 +45,7 @@ Meteor.startup ->
           _id: id
 
     changed: (id, fields) -> wrapSyncing ->
+      delete fields.editing
       if localIds[id]
         if 'local' of fields and not fields.local
           delete localIds[id]

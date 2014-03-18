@@ -46,7 +46,15 @@
 <template name="publicationAnnotations">
   <ul class="annotations-list">
     {{#each annotations}}
-      {{> publicationAnnotationsItem}}
+      {{#if local}}
+        {{> annotationEditor}}
+      {{else}}
+        {{#if editing}}
+          {{> annotationEditor}}
+        {{else}}
+          {{> publicationAnnotationsItem}}
+        {{/if}}
+      {{/if}}
     {{/each}}
   </ul>
 </template>
@@ -60,7 +68,7 @@
       <div class="annotation-header">
         <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
         <span class="timestamp">{{updatedFromNow}}</span>
-        <span class="edit-button"><a href="#">edit</a></span>
+        <span class="edit-button"><a href="">edit</a></span>
       </div>
       <div class="annotation-content">
         <div class="body">{{{body}}}</div>
@@ -70,6 +78,103 @@
   </li>
 </template>
 
+<template name="annotationEditor">
+  <div class="annotations-editor">
+    <div class="annotations-editor-form-wrapper">
+      <form class="annotations-form">
+        {{#if local}}
+          <div class="form-header">
+            <span class="form-title"><h2>New Annotation</h2></span>
+            <span class="form-status">Changes saved</span>
+          </div>
+        {{/if}}
+        <div class="form-content">
+          <div class="format-toolbar">
+            <ul class="format-buttons">
+              <li data-action="bold"><i class="icon-bold"></i></li>
+              <li data-action="italic"><i class="icon-italic"></i></li>
+              <li data-action="insertorderedlist"><i class="icon-list-numbered"></i></li>
+              <li data-action="insertunorderedlist"><i class="icon-list-bullet"></i></li>
+              {{!
+              <li class="inactive"><i class="icon-link"></i></li>
+              }}
+              <li data-action="append-blockquote"><i class="icon-quote-left"></i></li>
+              {{!
+              <li class="inactive"><i class="icon-math"></i></li>
+              }}
+              <li data-action="append-pre"><i class="icon-code"></i></li>
+            </ul>
+          </div>
+          <div class="form-body">
+            <div class="annotation-content" contenteditable>
+              {{{body}}}
+              <p>
+                <br>
+              </p>
+            </div>
+          </div>
+          <div class="form-tags">
+            <i class="icon-tags"></i>
+            <ul class="annotation-tags"></ul>
+          </div>
+        </div>
+        <div class="form-control">
+          <button type="button" class="btn blue publish">Publish</button>
+          <div class="visibility-menu">
+            {{> visibilityMenu}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<template name="annotationTags">
+  <div class="tags">
+    <ul class="annotation-tags-list">
+      {{#each tags}}
+        <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="visibilityMenu">
+  <div class="ui-dropdown">
+    <div class="ui-selection-wrapper">
+      <span class="ui-selection">
+        <i class="icon-public"></i>
+        Public
+      </span>
+      <i class="icon-down"></i>
+    </div>
+  </div>
+</template>
+
+<template name="annotationMetaMenu">
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      {{#if canEdit}}	    
+        <button class="delete">Delete</button>
+      {{/if}}
+      <p class="authors">
+        {{#with author}}
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+        {{/with}}
+      </p>
+      <p class="time">{{created}}</p>
+      <p class="time">{{updated}}</p>
+      <p class="highlights">
+        {{#each highlights}}
+          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
+        {{else}}
+          Not linked to any highlight.
+        {{/each}}
+      </p>
+    </div>
+  </div>
+</template>
 <template name="highlightInvite">
   <li class="annotation invite">
     <div class="vertical-align-outer">
@@ -113,100 +218,6 @@
   {{!
   <button class="add" title="Add an annotation"><i class="icon-plus"></i></button>
   }}
-  <div class="annotations-control">
-    <div class="annotations-control-form-wrapper">
-      {{#each newAnnotation}}
-        {{> annotationEditor}}
-      {{/each}}
-    </div>
-  </div>
+  <div class="annotations-control"></div>
 </template>
 
-<template name="visibilityMenu">
-  <div class="ui-dropdown">
-    <div class="ui-selection-wrapper">
-      <span class="ui-selection">
-        <i class="icon-public"></i>
-        Public
-      </span>
-      <i class="icon-down"></i>
-    </div>
-  </div>
-</template>
-
-<template name="annotationEditor">
-  <form class="annotations-form">
-    <!--
-    <div class="form-header">
-      <span class="form-title"><h2>New Annotation</h2></span>
-      <span class="form-status">Changes saved</span>
-    </div>
-    -->
-    <div class="form-content">
-      <div class="format-toolbar">
-        <ul class="format-buttons">
-          <li data-action="bold"><i class="icon-bold"></i></li>
-          <li data-action="italic"><i class="icon-italic"></i></li>
-          <li data-action="insertorderedlist"><i class="icon-list-numbered"></i></li>
-          <li data-action="insertunorderedlist"><i class="icon-list-bullet"></i></li>
-          <li class="inactive"><i class="icon-link"></i></li>
-          <li data-action="append-blockquote"><i class="icon-quote-left"></i></li>
-          <li class="inactive"><i class="icon-math"></i></li>
-          <li data-action="append-pre"><i class="icon-code"></i></li>
-        </ul>
-      </div>
-      <div class="form-body">
-        <div class="annotation-content" contenteditable>
-          <p>
-            <br>
-          </p>
-        </div>
-      </div>
-      <div class="form-tags">
-        <i class="icon-tags"></i>
-        <ul class="annotation-tags"></ul>
-      </div>
-    </div>
-    <div class="form-control">
-      <button type="button" class="btn blue publish">Publish</button>
-      <div class="visibility-menu">
-        {{> visibilityMenu}}
-      </div>
-    </div>
-  </form>
-</template>
-
-<template name="annotationTags">
-  <div class="tags">
-    <ul class="annotation-tags-list">
-      {{#each tags}}
-        <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
-      {{/each}}
-    </ul>
-  </div>
-</template>
-
-<template name="annotationMetaMenu">
-  <div class="meta-menu">
-    <i class="icon-menu"></i>
-    <div class="meta-content">
-      {{#if canEdit}}	    
-        <button class="delete">Delete</button>
-      {{/if}}
-      <p class="authors">
-        {{#with author}}
-          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
-        {{/with}}
-      </p>
-      <p class="time">{{created}}</p>
-      <p class="time">{{updated}}</p>
-      <p class="highlights">
-        {{#each highlights}}
-          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
-        {{else}}
-          Not linked to any highlight.
-        {{/each}}
-      </p>
-    </div>
-  </div>
-</template>

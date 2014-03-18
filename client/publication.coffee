@@ -552,25 +552,6 @@ Template.highlightsControl.canEdit = ->
   # Only the author can edit for now
   return @author._id is Meteor.personId()
 
-Template.annotationsControl.newAnnotation = ->
-  LocalAnnotation.documents.find
-    'publication._id': Session.get 'currentPublicationId'
-    local: true
-
-Template.annotationsControl.events
-  'click .add': (e, template) ->
-    annotation = createAnnotationDocument()
-
-    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      Notify.meteorError error, true if error
-
-    focusAnnotationId = annotationId
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
-
-    return # Make sure CoffeeScript does not return anything
-
 Template.publicationAnnotations.annotations = ->
   viewport = getViewport()
   highlights = @getHighlights()
@@ -590,10 +571,11 @@ Template.publicationAnnotations.annotations = ->
       'highlights._id':
         $in: visibleHighlights
     ]
-    # Except the local one
-    local:
-      $ne: true
     'publication._id': Session.get 'currentPublicationId'
+  ,
+    sort:
+      local: -1
+      created: 1
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
@@ -666,6 +648,15 @@ focusAnnotation = (body) ->
   body.focus()
 
 Template.publicationAnnotationsItem.events
+  'click .edit-button': (e, template) =>
+    e.preventDefault()
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: true
+
+    return # Make sure CoffeeScript does not return anything
+
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) =>
@@ -736,26 +727,16 @@ Template.annotationTags.rendered = ->
   $(@findAll '.annotation-tags-list').tagit
     readOnly: true
 
-Template.annotationEditor.created = ->
-  @_rendered = false
-
 Template.annotationEditor.rendered = ->
-  # Run for the first time only
-  return if @_rendered
-  @_rendered = true
-
   # Load MediumEditor
   editor = new MediumEditor @findAll('.annotation-content'),
     buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
-    placeholder: 'New Annotation'
+    placeholder: 'Write your annotation here'
 
   # Load tag-it
   $(@findAll '.annotation-tags').tagit()
 
   return # Make sure CoffeeScript does not return anything
-
-Template.annotationEditor.destroyed = ->
-  @_rendered = false
 
 Template.annotationEditor.events
   'click .publish': (e, template) ->
