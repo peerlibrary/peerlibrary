@@ -411,7 +411,7 @@ Template.publicationMetaMenu.events
 
         Notify.success "Access changed." if count
 
-Template.publicationPrivateAccessControl.publication = Template.publicationMetaMenu.publication
+    return # Make sure CoffeeScript does not return anything
 
 Template.publicationPrivateAccessControl.events
   'submit .add-user': (e, template) ->
@@ -422,9 +422,16 @@ Template.publicationPrivateAccessControl.events
 
     return unless newUserId
 
-    return if newUserId in _.pluck Publication.documents.findOne(Session.get('currentPublicationId')).readUsers, '_id'
+    return if newUserId in _.pluck template.data.readUsers, '_id'
 
-    Meteor.call 'grant-read-to-user', Session.get('currentPublicationId'), newUserId, (error, count) ->
+    if template.data instanceof Publication
+      method = 'publication-grant-read-to-user'
+    else if template.data instanceof Annotation
+      method = 'annotation-grant-read-to-user'
+    else
+      assert false
+
+    Meteor.call method, template.data._id, newUserId, (error, count) ->
       return Notify.meteorError error if error
 
       Notify.success "User added." if count
@@ -439,9 +446,16 @@ Template.publicationPrivateAccessControl.events
 
     return unless newGroupId
 
-    return if newGroupId in _.pluck Publication.documents.findOne(Session.get('currentPublicationId')).readGroups, '_id'
+    return if newGroupId in _.pluck template.data.readGroups, '_id'
 
-    Meteor.call 'grant-read-to-group', Session.get('currentPublicationId'), newGroupId, (error, count) ->
+    if template.data instanceof Publication
+      method = 'publication-grant-read-to-group'
+    else if template.data instanceof Annotation
+      method = 'annotation-grant-read-to-group'
+    else
+      assert false
+
+    Meteor.call method, template.data._id, newGroupId, (error, count) ->
       return Notify.meteorError error if error
 
       Notify.success "Group added." if count
@@ -838,3 +852,33 @@ Template.annotationMetaMenu.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+
+Template.annotationMetaMenu.public = ->
+  @access is Annotation.ACCESS.PUBLIC
+
+Template.annotationMetaMenu.private = ->
+  @access is Annotation.ACCESS.PRIVATE
+
+Template.annotationMetaMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    update =
+      $set:
+        access: access
+
+    if access is Annotation.ACCESS.PRIVATE
+      update.$push =
+        readUsers:
+          _id: Meteor.personId()
+    else
+      update.$set.readUsers = []
+      update.$set.readGroups = []
+
+    Annotation.documents.update template.data._id, update,
+      (error, count) ->
+        return Notify.meteorError error, true if error
+
+        Notify.success "Access changed." if count
+
+    return # Make sure CoffeeScript does not return anything

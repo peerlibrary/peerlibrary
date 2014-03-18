@@ -26,7 +26,7 @@
         <input type="radio" value="private" name="access" id="access-private" {{#if private}}checked="checked"{{/if}} /> <label for="access-private"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
       </form>
       {{#if private}}
-        {{> publicationPrivateAccessControl}}
+        {{> publicationPrivateAccessControl publication}}
       {{/if}}
     </div>
   </div>
@@ -34,7 +34,7 @@
 
 <template name="publicationPrivateAccessControl">
   <ol class="access-list access-list-users">
-    {{#each publication.readUsers}}
+    {{#each readUsers}}
       {{> groupMember}}
     {{/each}}
   </ol>
@@ -43,7 +43,7 @@
     <button type="submit" class="add">Add an user</button>
   </form>
   <ol class="access-list access-list-groups">
-    {{#each publication.readGroups}}
+    {{#each readGroups}}
       {{! TODO: Use some group template}}
       <li>Group: {{name}}</li>
     {{/each}}
@@ -177,6 +177,13 @@
           Not linked to any highlight.
         {{/each}}
       </p>
+      <form class="access">
+        <input type="radio" value="public" name="access" id="access-public" {{#if public}}checked="checked"{{/if}} /> <label for="access-public"><i class="icon-public"></i> Public<span class="description">Everyone can see the annotation.</span></label><br/>
+        <input type="radio" value="private" name="access" id="access-private" {{#if private}}checked="checked"{{/if}} /> <label for="access-private"><i class="icon-private"></i> Private<span class="description">Only the users listed can see the publication.</span></label>
+      </form>
+      {{#if private}}
+        {{> publicationPrivateAccessControl}}
+      {{/if}}
     </div>
   </div>
 </template>

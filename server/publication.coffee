@@ -337,7 +337,7 @@ Meteor.methods
           _id: publication._id
 
   # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'grant-read-to-user': (publicationId, userId) ->
+  'publication-grant-read-to-user': (publicationId, userId) ->
     check publicationId, String
     check userId, String
 
@@ -371,7 +371,7 @@ Meteor.methods
           _id: userId
 
   # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'grant-read-to-group': (publicationId, groupId) ->
+  'publication-grant-read-to-group': (publicationId, groupId) ->
     check publicationId, String
     check groupId, String
 
