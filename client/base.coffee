@@ -21,6 +21,7 @@ setSession = (session) ->
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
+    groupsSearchQuery: null
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null

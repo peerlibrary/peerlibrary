@@ -2,10 +2,24 @@ Deps.autorun ->
   if Session.equals 'groupsActive', true
     Meteor.subscribe 'groups'
 
+Template.groups.searchActive = ->
+  !!Session.get 'groupsSearchQuery'
+
 Template.groups.groups = ->
-  Group.documents.find {}
+  searchTerm = Session.get 'groupsSearchQuery'
+  return Group.documents.find {} unless !!searchTerm
+
+  Group.documents.find
+    name: $regex : ".*#{searchTerm}.*"
 
 Template.groups.events
+  'keyup .groups-directory .search-input': (e, template) ->
+    val = $(template.findAll '.groups-directory .search-input').val()
+
+    Session.set 'groupsSearchQuery', val
+
+    return # Make sure CoffeeScript does not return anything
+
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
@@ -25,3 +39,8 @@ Template.groups.events
 
 Template.groupListing.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{@membersCount} members"
+
+Template.myGroups.myGroups = ->
+  Group.documents.find
+    _id:
+      $in: _.pluck Meteor.person()?.inGroups, '_id'
