@@ -73,6 +73,8 @@ Meteor.methods
 
     # We do not check here if group exists or if user is a member of it because we have query below with these conditions
 
+    # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
+
     Group.documents.update
       _id: groupId
       $and: [
