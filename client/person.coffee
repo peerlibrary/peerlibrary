@@ -43,7 +43,7 @@ Template.profile.authoredPublications = ->
       $in: _.pluck person?.publications, '_id'
 
 # Publications in logged user's library
-Template.profile.myPublications = ->
+Template.library.myPublications = ->
   Publication.documents.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'

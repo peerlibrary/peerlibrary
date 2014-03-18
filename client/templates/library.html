@@ -1,0 +1,17 @@
+<template name="library">
+  <div id="library">
+    <h1>Library</h1>
+    <h2>Collections</h2>
+    <ol class="item-list">
+      {{#each myCollections}}
+        {{> collection}}
+      {{/each}}
+    </ol>
+    <h2>Publications</h2>
+    <ol class="item-list">
+      {{#each myPublications}}
+        {{> publicationSearchResult}}
+      {{/each}}
+    </ol>
+  </div>
+</template>
