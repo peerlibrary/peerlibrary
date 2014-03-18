@@ -6,10 +6,6 @@ Deps.autorun ->
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
 
-    if slug is Meteor.person()?.slug
-      Meteor.subscribe 'my-publications'
-      Meteor.subscribe 'my-publications-importing'
-
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
