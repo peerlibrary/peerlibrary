@@ -57,6 +57,74 @@ Annotation.Meta.collection.deny
     # checking anything, just updating fields
     false
 
+# TODO: Deduplicate, almost same code is in publication.coffee (in general access control should be something consistent), it is similar also to member adding to a group code
+Meteor.methods
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Annotation.Meta.collection.allow and modifications from Annotation.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'annotation-grant-read-to-user': (annotationId, userId) ->
+    check annotationId, String
+    check userId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if annotation exists or if user has already read permission because we have query below with these conditions
+
+    # TODO: Check that userId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can grant permissions to authors, without having for all of them to be registered?
+
+    # TODO: Should be allowed also if user is admin
+    # TODO: Should check if userId is a valid one?
+
+    Annotation.documents.update
+      _id: annotationId
+      $and: [
+        $or: [
+          'readUsers._id': Meteor.personId()
+        ,
+          'readGroups._id':
+            $in: _.pluck Meteor.person().inGroups, '_id'
+        ]
+      ,
+        'readUsers._id':
+          $ne: userId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        readUsers:
+          _id: userId
+
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'annotation-grant-read-to-group': (annotationId, groupId) ->
+    check annotationId, String
+    check groupId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if publication exists or if group has already read permission because we have query below with these conditions
+
+    # TODO: Should be allowed also if user is admin
+    # TODO: Should check if groupId is a valid one?
+
+    Annotation.documents.update
+      _id: annotationId
+      $and: [
+        $or: [
+          'readUsers._id': Meteor.personId()
+        ,
+          'readGroups._id':
+            $in: _.pluck Meteor.person().inGroups, '_id'
+        ]
+      ,
+        'readGroups._id':
+          $ne: groupId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        readGroups:
+          _id: groupId
+
 Meteor.publish 'annotations-by-id', (id) ->
   check id, String
 
