@@ -73,6 +73,16 @@ Meteor.methods
     # TODO: Should be allowed also if user is admin
     # TODO: Should check if userId is a valid one?
 
+    # TODO: Temporary, autocomplete would be better
+    user = Person.documents.findOne
+      $or: [
+        _id: userId
+      ,
+        'user.username': userId
+      ]
+
+    return unless user
+
     Annotation.documents.update
       _id: annotationId
       $and: [
@@ -84,14 +94,14 @@ Meteor.methods
         ]
       ,
         'readUsers._id':
-          $ne: userId
+          $ne: user._id
       ]
     ,
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         readUsers:
-          _id: userId
+          _id: user._id
 
   # TODO: Move this code to the client side so that we do not have to duplicate document checks from Annotation.Meta.collection.allow and modifications from Annotation.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
   'annotation-grant-read-to-group': (annotationId, groupId) ->
@@ -105,6 +115,16 @@ Meteor.methods
     # TODO: Should be allowed also if user is admin
     # TODO: Should check if groupId is a valid one?
 
+    # TODO: Temporary, autocomplete would be better
+    group = Group.documents.findOne
+      $or: [
+        _id: groupId
+      ,
+        name: groupId
+      ]
+
+    return unless group
+
     Annotation.documents.update
       _id: annotationId
       $and: [
@@ -116,14 +136,14 @@ Meteor.methods
         ]
       ,
         'readGroups._id':
-          $ne: groupId
+          $ne: group._id
       ]
     ,
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         readGroups:
-          _id: groupId
+          _id: group._id
 
 # TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
 # TODO: Deduplicate code: it is similar to two functions in publication.coffee

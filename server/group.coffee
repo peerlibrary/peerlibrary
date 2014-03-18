@@ -78,20 +78,30 @@ Meteor.methods
     # TODO: Should be allowed also if user is admin
     # TODO: Should check if memberId is a valid one?
 
+    # TODO: Temporary, autocomplete would be better
+    member = Person.documents.findOne
+      $or: [
+        _id: memberId
+      ,
+        'user.username': memberId
+      ]
+
+    return unless member
+
     Group.documents.update
       _id: groupId
       $and: [
         'members._id': Meteor.personId()
       ,
         'members._id':
-          $ne: memberId
+          $ne: member._id
       ]
     ,
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         members:
-          _id: memberId
+          _id: member._id
 
 Meteor.publish 'groups-by-id', (id) ->
   check id, String
