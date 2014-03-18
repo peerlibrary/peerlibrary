@@ -21,7 +21,7 @@
       <p>Source: {{publication.source}}</p>
       <p>{{publication.createdAt}}</p>
       <form class="access">
-        <input type="radio" value="open" name="access" id="access-open" {{#if open}}checked="checked"{{/if}} /> <label for="access-open"><i class="icon-public"></i> Open Access<span class="description">Everybody has access to the publication.</span></label><br/>
+        <input type="radio" value="open" name="access" id="access-open" {{#if open}}checked="checked"{{/if}} /> <label for="access-open"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
         <input type="radio" value="closed" name="access" id="access-closed" {{#if closed}}checked="checked"{{/if}} /> <label for="access-closed"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
         <input type="radio" value="private" name="access" id="access-private" {{#if private}}checked="checked"{{/if}} /> <label for="access-private"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
       </form>
