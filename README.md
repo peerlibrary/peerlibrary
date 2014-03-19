@@ -66,7 +66,11 @@ On Debian you can install all dependencies by:
 
 ### Run it! ###
 
-From a recursively cloned PeerLibrary repository (`git clone --recursive ...`) then run a development instance of PeerLibrary:
+Recursively clone a PeerLibrary repository:
+
+    git clone --recursive https://github.com/peerlibrary/peerlibrary.git
+
+And then run a development instance of PeerLibrary:
 
     mrt
 
@@ -91,7 +95,7 @@ Sometimes when installing dependencies, Meteor will throw the following error:
 This just means that there was a timeout while downloading a dependency, probably because of
 a networking issue. Just retry.
 
-If you have not cloned recursively (`git clone --recursive ...`), you will at some point get a such or similar error:
+If you have not cloned recursively (if you forgot `--recursive` in `git clone --recursive https://github.com/peerlibrary/peerlibrary.git`), you will at some point get a such or similar error:
 
     While building package `blob`:
     error: File not found: Blob/Blob.js
