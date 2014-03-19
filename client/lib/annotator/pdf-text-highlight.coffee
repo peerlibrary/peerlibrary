@@ -52,33 +52,116 @@ class PDFTextHighlight extends Annotator.Highlight
   _precomputeHover: (segments) =>
     # TODO: Improve polygon drawing, split segment array by chunks
 
+    # collect the vertices of the convex hull of the selected region.
+    # part1: vertices in the upperright, i.e., all vertices to the right of it has larger top value;  right = lefth+width;
+    # part2: upperleft; part3: lowerleft; part4: lowerright.    
+
+    L = segment.length
+
+    part1 = []
+    part2 = []
+    part3 = []
+    part4 = []
+
+    # sort by increasing right index and top down for same right index
+    sortByRight = segments
+    sortByRightsort (a,b) ->
+      return if (((a.left+a.width) < (b.left+b.width)) or (((a.left+a.width) == (b.left+b.width)) and (a.top < b.top))) then 1 else -1 
+    i=0
+    while i<L
+      witness1 = true 
+      witness4 = true
+      j=i+1
+      while j>i and j<L
+        witness1 = false  if sortByRight[j].top<sortByRight[i].top 
+	  # i should have smaller top value for part3
+        witness4 = false  if (sortByRight[j].top+sortByRight[j].height)> (sortByRight[i].top+sortByRight[i].height)
+	  # i should have larger bottom value for part4  
+        j++
+      witness1 = false  if i<L-1 and sortByLeft[i].left == sortByLeft[i-1].left and sortByLeft[i].top > sortByLeft[i-1].top 
+	# same right value, i should have smaller top
+      part1.push(sortByLeft[i])  if witness1
+      part4.push(sortByLeft[i])  if witness4
+    i++
+
+    # sort by increasing left index and bottom up for same left index
+    sortByLeft = segments
+    sortByLeft.sort (a,b) ->
+      return if ((a.left < b.left) or ((a.left == b.left) and (a.top > b.top))) then 1 else -1 
+    i=0
+    while i<L
+      witness2 = true 
+      witness3 = true
+      j=0
+      while j<i
+        witness2 = false  if sortByLeft[j].top<sortByLeft[i].top 
+	  # i should have smaller top value for part2
+        witness3 = false  if (sortByLeft[j].top+sortByLeft[j].height) > (sortByLeft[i].top+sortByLeft[i].height)
+	  # i should have larger bottom value for part3
+        j++
+      witness2 = false  if i<L-1 and sortByLeft[i].left == sortByLeft[i+1].left and sortByLeft[i].top > sortByLeft[i+1].top 
+	# same left value, i should have smaller top
+      part2.push(sortByLeft[i])  if witness2
+      part3.push(sortByLeft[i])  if witness3
+    i++
+
+
+
     # _hover is an array of vertices coordinates
+    #@_hover = []
+    #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
+    #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
+
     @_hover = []
-    @_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
-    @_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
+    @_hover.push(Math.round(part2[0].left),Math.round(part2[0].top))
+    for block in part2[1..]
+      @_hover.push(Math.round(block.left),Math.round(block.top+block.height))
+      @_hover.push(Math.round(block.left),Math.round(block.top))
 
-    curr = segments[0]
-    i = 1
-    while i < segments.length
-      # check to see if next segment is on a different line
-      if (segments[i].top > curr.top) and ((segments[i].top + segments[i].height) > (curr.top + curr.height))
-        @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top)])
-        @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top + segments[i-1].height)])
-        curr = segments[i]
-      i++
+    i = part1.length-1
+    j = 0
+    while j < i
+      @_hover.push(Math.round(part1[j].left+part1[j].width), Math.round(part1[j].top))
+      @_hover.push(Math.round(part1[j].left+part1[j].width), Math.round(part1[j].top+part1[j].height))
+      j++
+    @_hover.push(Math.round(part1[i].left+part1[i].width), Math.round(part1[i].top))
 
-    # compute bottom right vertices
-    @_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top)])
-    @_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top + segments[segments.length-1].height)])
-
-    curr = segments[segments.length-1]
-    i = segments.length-2
-    while i > 0
-      if (segments[i].top < curr.top) and ((segments[i].top + segments[i].height) < (curr.top + curr.height))
-        @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top + segments[i+1].height)])
-        @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top)])
-        curr = segments[i]
+    @_hover.push(Math.round(part4[part4.length-1].left+part4[part4.length-1].width), Math.round(part4[part4.length-1].top+part4[part4.length-1].height))
+    i = part4.length-2
+    while i >= 0
+      @_hover.push(Math.round(part4[i].left+part4[i].width), Math.round(part4[i].top))
+      @_hover.push(Math.round(part4[i].left+part4[i].width), Math.round(part4[i].top+part4[i].height))
       i--
+
+    i = part3.length-1
+    while i >0
+      @_hover.push(Math.round(part3[i].left), Math.round(part3[i].top+part3[i].height))
+      @_hover.push(Math.round(part3[i].left), Math.round(part3[i].top))
+      i--
+    @_hover.push(Math.round(part3[0].left),Math.round(part3[0].top+part3[0].height))
+
+    #curr = segments[0]
+    #i = 1
+    #while i < segments.length
+      # check to see if next segment is on a different line
+    #  if (segments[i].top > curr.top) and ((segments[i].top + segments[i].height) > (curr.top + curr.height))
+    #    @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top)])
+    #    @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top + segments[i-1].height)])
+    #    curr = segments[i]
+    #  i++
+
+    ## compute bottom right vertices
+    #@_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top)])
+    #@_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top + segments[segments.length-1].height)])
+
+    #curr = segments[segments.length-1]
+    #i = segments.length-2
+    #while i > 0
+    #  if (segments[i].top < curr.top) and ((segments[i].top + segments[i].height) < (curr.top + curr.height))
+    #    @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top + segments[i+1].height)])
+    #    @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top)])
+    #    curr = segments[i]
+    #  i--
 
     return  # Don't return the result of the for loop
 
