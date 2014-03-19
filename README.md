@@ -80,7 +80,7 @@ create an admin user (which has username `admin`). After you create an admin
 user, PeerLibrary will reload.
 
 To demo the tool, you will need to populate your instance of the database with publications.
-Log in as `admin` and go to [http://localhost:3000/admin](http://localhost:3000/admin).
+Log in as `admin` and go to _Admin dashboard_ ([http://localhost:3000/admin](http://localhost:3000/admin)).
 Click on the _Initialize database with sample data_ button, to initialize the database with
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
