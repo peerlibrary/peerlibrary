@@ -16,41 +16,41 @@ Meteor.startup ->
 
   Publication.documents.find({},
     fields:
-      # id field is implicitly added
-      created: 1
+      # _id field is implicitly added
+      createdAt: 1
   ).observeChanges
     added: (id, fields) =>
       countPublications++
 
-      created = moment.utc fields.created
+      createdAt = moment.utc fields.createdAt
 
       changed =
         countPublications: countPublications
 
-      if not minPublicationDate or created < minPublicationDate
-        minPublicationDate = created
+      if not minPublicationDate or createdAt < minPublicationDate
+        minPublicationDate = createdAt
         changed.minPublicationDate = minPublicationDate.toDate()
 
-      if not maxPublicationDate or created > maxPublicationDate
-        maxPublicationDate = created
+      if not maxPublicationDate or createdAt > maxPublicationDate
+        maxPublicationDate = createdAt
         changed.maxPublicationDate = maxPublicationDate.toDate()
 
       Statistics.documents.update statisticsDataId, $set: changed if !initializingPublications
 
     changed: (id, fields) =>
-      return unless fields.created
+      return unless fields.createdAt
 
-      created = moment.utc fields.created
+      createdAt = moment.utc fields.createdAt
 
       changed = {}
 
-      if created < minPublicationDate
-        minPublicationDate = created
-        changed.minPublicationDate = created.toDate()
+      if createdAt < minPublicationDate
+        minPublicationDate = createdAt
+        changed.minPublicationDate = createdAt.toDate()
 
-      if created > maxPublicationDate
-        maxPublicationDate = created
-        changed.maxPublicationDate = created.toDate()
+      if createdAt > maxPublicationDate
+        maxPublicationDate = createdAt
+        changed.maxPublicationDate = createdAt.toDate()
 
       Statistics.documents.update statisticsDataId, $set: changed if !initializingPublications and _.size changed
 

@@ -1,6 +1,4 @@
 MAX_TEXT_LAYER_SEGMENTS_TO_RENDER = 100000
-WHITESPACE_REGEX = /\s+/g
-TRIM_WHITESPACE_REGEX = /^\s+|\s+$/gm
 
 class Page
   constructor: (@highlighter, @pdfPage) ->
@@ -61,14 +59,7 @@ class Page
   extractText: =>
     return @_extractedText unless @_extractedText is null
 
-    text = (t.str for t in @textContent).join ' '
-
-    # Remove multiple whitespace characters and trim them away
-    text = text.replace(WHITESPACE_REGEX, ' ').replace(TRIM_WHITESPACE_REGEX, '')
-
-    # TODO: Clean-up the text: remove hypenation
-
-    @_extractedText = text
+    @_extractedText = PDFJS.pdfExtractText @textContent
 
   # For debugging: draw divs for all segments
   _showSegments: =>

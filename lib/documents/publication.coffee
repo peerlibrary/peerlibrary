@@ -1,7 +1,7 @@
 class @Publication extends Document
+  # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
-  # created: timestamp when the publication was published
-  # updated: timestamp when the publication (or its metadata) was last updated
   # authors: list of
   #   _id: author's person id
   #   slug: author's person id
@@ -11,6 +11,7 @@ class @Publication extends Document
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
   # abstract
+  # hasAbstract (client only): boolean if document has an abstract, used only in search results (cheaper to send than the whole abstract)
   # doi
   # msc2010: list of MSC 2010 classes
   # acm1998: list of ACM 1998 classes
@@ -26,12 +27,13 @@ class @Publication extends Document
   #   temporaryFilename: temporary filename of the imported file
   # cached: timestamp when the publication was cached
   # metadata: do we have metadata?
-  # processed: has PDF been processed (file checked, text extracted, thumbnails generated, etc.)
+  # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
   #   error: description of the publication processing error
   #   stack: stack trace of the error
   # numberOfPages
-  # searchResult (client only): the last search query this publication is a result for, if any
+  # fullText: full plain text content suitable for searching
+  # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
@@ -43,6 +45,7 @@ class @Publication extends Document
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
+      fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
@@ -77,4 +80,4 @@ class @Publication extends Document
     @thumbnailUrl page for page in [1..@numberOfPages]
 
   createdDay: =>
-    moment(@created).format 'MMMM Do YYYY'
+    moment(@createdAt).format 'MMMM Do YYYY'

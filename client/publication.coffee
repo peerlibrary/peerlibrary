@@ -398,7 +398,7 @@ Template.publicationDisplay.rendered = ->
       try
         unless publication.url()
           return
-      catch e
+      catch error
         return
 
       publication.show $(@findAll '.display-wrapper')

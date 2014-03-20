@@ -1,10 +1,11 @@
 class @Person extends Document
+  # createdAt: timestamp when document was created
+  # updatedAt: timestamp of this version
   # user: (null if without user account)
   #   _id
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
-  # created: timestamp when document was created
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not

@@ -20,6 +20,20 @@ Template.adminPublications.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.adminPublications.events
+  'click button.reprocess-pdfs': (e, template) ->
+    Meteor.call 'reprocess-pdfs', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.adminDatabase.events
+  'click button.update-all': (e, template) ->
+    Meteor.call 'database-update-all', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminErrors.events
   'click button.dummy-error': (e, template) ->
     # Throws a dummy error on button click, which should be logged

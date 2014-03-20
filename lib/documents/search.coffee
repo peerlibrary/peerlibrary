@@ -5,3 +5,5 @@ class @SearchResult extends Document
 
   @Meta
     name: 'SearchResult'
+    # We use local collection on the server side because we do not really want to store this into the database
+    collection: if Meteor.isServer then null else 'SearchResults'
