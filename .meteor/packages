@@ -37,3 +37,5 @@ dom-text-mapper
 annotator
 medium-editor
 segfault-handler
+blob
+facts
