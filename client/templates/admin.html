@@ -5,6 +5,7 @@
     {{> adminPublications}}
     {{> adminErrors}}
     {{> adminSources}}
+    {{> adminFacts}}
   </div>
 </template>
 
@@ -71,4 +72,9 @@
 
 <template name="adminArXivPDFsItem">
   <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
+</template>
+
+<template name="adminFacts">
+  <h2>Facts</h2>
+  {{> serverFacts}}
 </template>
