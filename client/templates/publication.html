@@ -40,11 +40,9 @@
               </label>
 
           </div>
-          <div class="description">
-            {{#if openDescription}}Everyone has access to the publication.{{/if}}
-            {{#if closedDescription}}Only those who import the PDF have access to the publication.{{/if}}
-            {{#if privateDescription}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
-          </div>
+          <div class="description {{#if open}}displayed{{/if}}" data-access="open">Everyone has access to the publication.</div>
+          <div class="description {{#if closed}}displayed{{/if}}" data-access="closed">Only those who import the PDF have access to the publication.</div>
+          <div class="description {{#if private}}displayed{{/if}}" data-access="private">Only the users who import the PDF or are listed have access to the publication.</div>
         </form>
         {{#if private}}
           {{> publicationPrivateAccessControl publication}}
@@ -222,10 +220,8 @@
             </label>
 
           </div>
-          <div class="description">
-            {{#if publicDescription}}Everyone can see the annotation.{{/if}}
-            {{#if privateDescription}}Only the users listed can see the publication.{{/if}}
-          </div>
+          <div class="description {{#if public}}displayed{{/if}}" data-access="public">Everyone can see the annotation.</div>
+          <div class="description {{#if private}}displayed{{/if}}" data-access="private">Only the users listed can see the annotation.</div>
         </form>
         {{#if private}}
         {{> publicationPrivateAccessControl publication}}

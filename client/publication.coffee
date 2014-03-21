@@ -389,24 +389,6 @@ Template.publicationMetaMenu.closed = ->
 Template.publicationMetaMenu.private = ->
   Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.PRIVATE
 
-accessHover = null
-accessHoverDependency = new Deps.Dependency;
-
-accessForDependency = ->
-  accessHoverDependency.depend()
-  return accessHover unless accessHover is null
-  Publication.documents.findOne(Session.get 'currentPublicationId')?.access
-
-Template.publicationMetaMenu.openDescription = ->
-  accessForDependency() is Publication.ACCESS.OPEN
-
-Template.publicationMetaMenu.closedDescription = ->
-  accessForDependency() is Publication.ACCESS.CLOSED
-
-Template.publicationMetaMenu.privateDescription = ->
-  accessForDependency() is Publication.ACCESS.PRIVATE
-
-
 Template.publicationMetaMenu.events
   'change .access input:radio': (e, template) ->
     access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
@@ -431,18 +413,22 @@ Template.publicationMetaMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
+accessHoverHandlers =
   'mouseenter .access .selection': (e, template) ->
-    accessHover = Publication.ACCESS[$(e.currentTarget).find("input").val().toUpperCase()]
-    accessHoverDependency.changed()
+    accessHover = $(e.currentTarget).find("input").val()
+    $(template.findAll '.access .displayed.description').removeClass("displayed")
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed");
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (e, template) ->
-    accessHover = null
-    accessHoverDependency.changed()
+    accessHover = $(template.findAll '.access input:radio:checked').val();
+    $(template.findAll '.access .displayed.description').removeClass("displayed")
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed");
 
     return # Make sure CoffeeScript does not return anything
 
+Template.publicationMetaMenu.events accessHoverHandlers
 
 
 Template.publicationPrivateAccessControl.events
@@ -891,20 +877,6 @@ Template.annotationMetaMenu.public = ->
 Template.annotationMetaMenu.private = ->
   @access is Annotation.ACCESS.PRIVATE
 
-annotationAccessHover = null
-annotationAccessHoverDependency = new Deps.Dependency;
-
-annotationAccessForDescription = (annotation) ->
-  annotationAccessHoverDependency.depend()
-  return annotationAccessHover unless annotationAccessHover is null
-  annotation.access
-
-Template.annotationMetaMenu.publicDescription = ->
-  annotationAccessForDescription(@) is Annotation.ACCESS.PUBLIC
-
-Template.annotationMetaMenu.privateDescription = ->
-  annotationAccessForDescription(@) is Annotation.ACCESS.PRIVATE
-
 Template.annotationMetaMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
@@ -929,15 +901,4 @@ Template.annotationMetaMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseenter .access .selection': (e, template) ->
-    annotationAccessHover = Annotation.ACCESS[$(e.currentTarget).find("input").val().toUpperCase()]
-    annotationAccessHoverDependency.changed()
-
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseleave .access .selections': (e, template) ->
-    annotationAccessHover = null
-    annotationAccessHoverDependency.changed()
-
-    return # Make sure CoffeeScript does not return anything
-
+Template.annotationMetaMenu.events accessHoverHandlers
