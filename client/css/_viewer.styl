@@ -66,81 +66,6 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
-    .access-panel
-      background-color rgba(100,100,100,0.9)
-
-      .access
-
-        .selections
-          display table
-          border-collapse separate
-          border-spacing 10px
-          width 100%
-
-          .selection
-            display table-cell
-            width 33%
-            padding 10px
-            background none
-            text-align center
-            cursor pointer
-            transition 0.2s
-            border-radius 2px
-
-            input
-              display none
-
-            label
-              cursor pointer
-
-              i
-                display block
-                margin-bottom 10px
-                cursor pointer
-
-          .selection:hover, .selection.selected
-            background-color rgba(200,200,200,0.7)
-
-        .description
-          padding 10px
-          text-align center
-
-      .private-access-control
-        padding 10px
-
-        .access-list-area
-
-          .access-list
-            padding 0
-            list-style none
-
-            .member
-              display inline-block
-              margin-right: 20px
-
-              img
-                margin: 0 5px 0 0
-
-              h4
-                display inline-block
-                margin 0
-                vertical-align middle
-
-          .input-and-button
-
-            input
-              color white
-              background rgba(46,46,44,0.5)
-
-            button
-              background-color rgba(200,200,200,0.3)
-
-            button:hover
-              background-color rgba(200,200,200,0.7)
-
-
-
-
 .meta-menu:hover
   background rgba(46,46,44,0.5)
   width 300px
@@ -450,6 +375,10 @@ annotations-control-height = 28px
           span:last-child::after
             content ""
 
+      .annotation-access
+        .selection
+          width: 50%
+
     .meta-menu:hover
       width 200px
       min-height 220px
@@ -497,6 +426,78 @@ annotations-control-height = 28px
       .vertical-align-inner
         display table-cell
         vertical-align middle
+
+/* Access
+========= */
+
+.access-panel
+  background-color rgba(100,100,100,0.9)
+
+  .access
+
+    .selections
+      display table
+      border-collapse separate
+      border-spacing 10px
+      width 100%
+
+      input
+        display none
+
+      .selection
+        display table-cell
+        width 33%
+        padding 10px
+        background none
+        text-align center
+        cursor pointer
+        transition 0.2s
+        border-radius 2px
+
+        i
+          display block
+          margin-bottom 10px
+          cursor pointer
+
+      .selection:hover, .selection.selected
+        background-color rgba(200,200,200,0.7)
+
+    .description
+      padding 10px
+      text-align center
+
+  .private-access-control
+    padding 10px
+
+    .access-list-area
+
+      .access-list
+        padding 0
+        list-style none
+
+        .member
+          display inline-block
+          margin-right: 20px
+
+          img
+            margin: 0 5px 0 0
+
+          h4
+            display inline-block
+            margin 0
+            vertical-align middle
+
+      .input-and-button
+
+        input
+          color white
+          background rgba(46,46,44,0.5)
+
+        button
+          background-color rgba(200,200,200,0.3)
+
+        button:hover
+          background-color rgba(200,200,200,0.7)
 
 /* Footer
 ========= */

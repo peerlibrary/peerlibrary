@@ -23,29 +23,27 @@
       <div class="access-panel">
         <form class="access">
           <div class="selections">
-            <div class="selection {{#if open}}selected{{/if}}">
-              <input type="radio" value="open" name="publication-access-{{publication._id}}" id="publication-access-open-{{publication._id}}" {{#if open}}checked="checked"{{/if}} />
-              <label for="publication-access-open-{{publication._id}}">
+
+              <label class="selection {{#if open}}selected{{/if}}" for="publication-access-open-{{publication._id}}">
+                <input type="radio" value="open" name="publication-access-{{publication._id}}" id="publication-access-open-{{publication._id}}" {{#if open}}checked="checked"{{/if}} />
                 <i class="icon-public"></i> Open<br/>Access
-              </label><br/>
-            </div>
-            <div class="selection {{#if closed}}selected{{/if}}">
-              <input type="radio" value="closed" name="publication-access-{{publication._id}}" id="publication-access-closed-{{publication._id}}" {{#if closed}}checked="checked"{{/if}} />
-              <label for="publication-access-closed-{{publication._id}}">
+              </label>
+
+              <label class="selection {{#if closed}}selected{{/if}}" for="publication-access-closed-{{publication._id}}">
+                <input type="radio" value="closed" name="publication-access-{{publication._id}}" id="publication-access-closed-{{publication._id}}" {{#if closed}}checked="checked"{{/if}} />
                 <i class="icon-closed"></i> Closed<br/>Access
               </label>
-            </div>
-            <div class="selection {{#if private}}selected{{/if}}">
-              <input type="radio" value="private" name="publication-access-{{publication._id}}" id="publication-access-private-{{publication._id}}" {{#if private}}checked="checked"{{/if}} />
-              <label for="publication-access-private-{{publication._id}}">
+
+              <label class="selection {{#if private}}selected{{/if}}" for="publication-access-private-{{publication._id}}">
+                <input type="radio" value="private" name="publication-access-{{publication._id}}" id="publication-access-private-{{publication._id}}" {{#if private}}checked="checked"{{/if}} />
                 <i class="icon-private"></i> Private
               </label>
-            </div>
+
           </div>
           <div class="description">
-            {{#if open}}Everyone has access to the publication.{{/if}}
-            {{#if closed}}Only those who import the PDF have access to the publication.{{/if}}
-            {{#if private}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
+            {{#if openDescription}}Everyone has access to the publication.{{/if}}
+            {{#if closedDescription}}Only those who import the PDF have access to the publication.{{/if}}
+            {{#if privateDescription}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
           </div>
         </form>
         {{#if private}}
@@ -209,13 +207,30 @@
           Not linked to any highlight.
         {{/each}}
       </p>
-      <form class="access annotation-access">
-        <input type="radio" value="public" name="annotation-access-{{_id}}" id="annotation-access-public-{{_id}}" {{#if public}}checked="checked"{{/if}} /> <label for="annotation-access-public-{{_id}}"><i class="icon-public"></i> Public<span class="description">Everyone can see the annotation.</span></label><br/>
-        <input type="radio" value="private" name="annotation-access-{{_id}}" id="annotation-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} /> <label for="annotation-access-private-{{_id}}"><i class="icon-private"></i> Private<span class="description">Only the users listed can see the publication.</span></label>
-      </form>
-      {{#if private}}
-        {{> publicationPrivateAccessControl}}
-      {{/if}}
+      <div class="access-panel">
+        <form class="access annotation-access">
+          <div class="selections">
+
+            <label class="selection {{#if public}}selected{{/if}}" for="annotation-access-public-{{_id}}">
+              <input type="radio" value="public" name="annotation-access-{{_id}}" id="annotation-access-public-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+              <i class="icon-closed"></i> Public
+            </label>
+
+            <label class="selection {{#if private}}selected{{/if}}" for="annotation-access-private-{{_id}}">
+              <input type="radio" value="private" name="annotation-access-{{_id}}" id="annotation-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+              <i class="icon-private"></i> Private
+            </label>
+
+          </div>
+          <div class="description">
+            {{#if publicDescription}}Everyone can see the annotation.{{/if}}
+            {{#if privateDescription}}Only the users listed can see the publication.{{/if}}
+          </div>
+        </form>
+        {{#if private}}
+        {{> publicationPrivateAccessControl publication}}
+        {{/if}}
+      </div>
     </div>
   </div>
 </template>
