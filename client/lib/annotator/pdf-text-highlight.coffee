@@ -56,7 +56,7 @@ class PDFTextHighlight extends Annotator.Highlight
     # part1: vertices in the upperright, i.e., all vertices to the right of it has larger top value;  right = lefth+width;
     # part2: upperleft; part3: lowerleft; part4: lowerright.    
 
-    L = segment.length
+    L = segments.length
 
     part1 = []
     part2 = []
@@ -65,8 +65,8 @@ class PDFTextHighlight extends Annotator.Highlight
 
     # sort by increasing right index and top down for same right index
     sortByRight = segments
-    sortByRightsort (a,b) ->
-      return if (((a.left+a.width) < (b.left+b.width)) or (((a.left+a.width) == (b.left+b.width)) and (a.top < b.top))) then 1 else -1 
+    sortByRight.sort (a,b) ->
+      return if (((a.left+a.width) < (b.left+b.width)) or (((a.left+a.width) == (b.left+b.width)) and (a.top < b.top))) then -1 else 1 
     i=0
     while i<L
       witness1 = true 
@@ -74,20 +74,20 @@ class PDFTextHighlight extends Annotator.Highlight
       j=i+1
       while j>i and j<L
         witness1 = false  if sortByRight[j].top<sortByRight[i].top 
-	  # i should have smaller top value for part3
+	  # i should have smaller top value for part1
         witness4 = false  if (sortByRight[j].top+sortByRight[j].height)> (sortByRight[i].top+sortByRight[i].height)
 	  # i should have larger bottom value for part4  
         j++
-      witness1 = false  if i<L-1 and sortByLeft[i].left == sortByLeft[i-1].left and sortByLeft[i].top > sortByLeft[i-1].top 
+      witness1 = false  if i>1 and (sortByRight[i].left+sortByRight[i].width) == (sortByRight[i-1].left+sortByRight[i-1].width) and sortByRight[i].top > sortByRight[i-1].top 
 	# same right value, i should have smaller top
-      part1.push(sortByLeft[i])  if witness1
-      part4.push(sortByLeft[i])  if witness4
+      part1.push(sortByRight[i])  if witness1
+      part4.push(sortByRight[i])  if witness4
     i++
 
     # sort by increasing left index and bottom up for same left index
     sortByLeft = segments
     sortByLeft.sort (a,b) ->
-      return if ((a.left < b.left) or ((a.left == b.left) and (a.top > b.top))) then 1 else -1 
+      return if ((a.left < b.left) or ((a.left == b.left) and (a.top > b.top))) then -1 else 1 
     i=0
     while i<L
       witness2 = true 
@@ -107,7 +107,7 @@ class PDFTextHighlight extends Annotator.Highlight
 
 
 
-    # _hover is an array of vertices coordinates
+    ## _hover is an array of vertices coordinates
     #@_hover = []
     #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
     #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
