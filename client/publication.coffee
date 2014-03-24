@@ -648,7 +648,7 @@ focusAnnotation = (body) ->
   body.focus()
 
 Template.publicationAnnotationsItem.events
-  'click .edit-button': (e, template) =>
+  'click .edit-button': (e, template) ->
     e.preventDefault()
 
     LocalAnnotation.documents.update template.data._id,
@@ -787,6 +787,15 @@ Template.annotationEditor.events
     # TODO: Link, LaTeX, code
     action = $(e.currentTarget).data 'action'
     $('.medium-editor-action[data-action=' + action + ']').click()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .cancel-button': (e, template) ->
+    e.preventDefault()
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: false
 
     return # Make sure CoffeeScript does not return anything
 

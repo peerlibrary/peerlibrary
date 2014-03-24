@@ -119,6 +119,9 @@
           </div>
         </div>
         <div class="form-control">
+          {{#unless local}}
+            <span class="cancel-button"><a href="">Cancel</a></span>
+          {{/unless}}
           <button type="button" class="btn blue publish">Publish</button>
           <div class="visibility-menu">
             {{> visibilityMenu}}
