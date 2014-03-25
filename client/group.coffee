@@ -19,6 +19,10 @@ Deps.autorun ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
+Template.group.currentUserIsMember = ->
+  console.log Group.documents.findOne {}
+  Meteor.personId() in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
+
 Template.group.events
   'submit .add-member': (e, template) ->
     e.preventDefault()

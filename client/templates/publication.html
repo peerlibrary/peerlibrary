@@ -56,7 +56,7 @@
   <div class="private-access-control">
     <h3>Users</h3>
     <div class="access-list-area">
-      <ol class="access-list access-list-users">
+      <ol class="access-list access-list-users member-list">
         {{#each readUsers}}
           {{> groupMember}}
         {{/each}}
@@ -68,7 +68,7 @@
     </div>
     <h3>Groups</h3>
     <div class="access-list-area">
-      <ol class="access-list access-list-groups">
+      <ol class="access-list access-list-groups member-list">
         {{#each readGroups}}
           {{! TODO: Use some group template}}
           <li class="member"><h4>{{name}}</h4></li>

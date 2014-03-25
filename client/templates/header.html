@@ -16,6 +16,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> groupsButton}}
           {{> importButton}}
           {{!
             <li class="explore pull-right">
@@ -73,4 +74,10 @@
   {{#constant}}
     <input class="import-file-input" type="file" multiple="multiple" />
   {{/constant}}
+</template>
+
+<template name="groupsButton">
+  <li class="pull-right">
+    <a href="{{groupsPath}}">Groups</a>
+  </li>
 </template>

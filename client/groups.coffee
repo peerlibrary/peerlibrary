@@ -7,10 +7,20 @@ Template.groups.searchActive = ->
 
 Template.groups.groups = ->
   searchTerm = Session.get 'groupsSearchQuery'
-  return Group.documents.find {} unless !!searchTerm
 
-  Group.documents.find
-    name: $regex : ".*#{searchTerm}.*"
+  selector = {}
+
+  if !!searchTerm
+    selector =
+      name:
+        $regex : ".*#{searchTerm}.*"
+        $options : "i"
+
+  Group.documents.find selector,
+    sort:
+      membersCount: -1
+      name: 1
+
 
 Template.groups.events
   'keyup .groups-directory .search-input': (e, template) ->
@@ -44,3 +54,6 @@ Template.myGroups.myGroups = ->
   Group.documents.find
     _id:
       $in: _.pluck Meteor.person()?.inGroups, '_id'
+  ,
+    sort:
+      name: 1
