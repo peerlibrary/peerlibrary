@@ -393,9 +393,9 @@ annotations-control-height = 0px
   /* To not have scroll bar overlapping the content we move the right
      edge for 10px to the right and then add 10px right margin to each
      annotation */
-  right annotations-right - 10px
-  top meta-menu-top
-  bottom 15px
+  right annotations-right - 20px
+  top header-height
+  bottom 0
 
   .annotation
     position relative
@@ -420,7 +420,7 @@ annotations-control-height = 0px
       display inline-block
     
     .annotation-wrapper
-      position relative 
+      position relative
       display block
       background white
       margin 0 0 0 40px
@@ -550,6 +550,8 @@ annotations-control-height = 0px
       color gray
 
   .annotation.local
+    margin-top 15px
+
     .annotation-wrapper:after
       border-color transparent white
 
