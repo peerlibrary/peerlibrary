@@ -127,6 +127,18 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
+  _addHighlightToEditor: _.debounce (id) =>
+    $('.annotation.local .annotation-content-editor').append(' h:' + id)
+  , 100
+
+  _removeHighlightFromEditor: (id) =>
+    $editor = $('.annotation.local .annotation-content-editor')
+
+    # Clean all occurrences of h:[id]
+    re = new RegExp ' h:' + id, 'g'
+    updatedHTML = $editor.html().replace re, ''
+    $editor.html updatedHTML
+
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
@@ -325,6 +337,9 @@ class @Annotator extends Annotator
     Highlight.documents.remove id, (error) =>
       Notify.meteorError error, true if error
 
+      # Remove h:[id] from editor
+      @_removeHighlightFromEditor id
+
   _selectHighlight: (id) =>
     if id and @_annotations[id]
       @selectedAnnotationId = id
@@ -339,7 +354,8 @@ class @Annotator extends Annotator
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
 
-      # TODO: Add h:[id] to editor
+      # Add h:[id] to editor
+      @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has

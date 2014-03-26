@@ -744,7 +744,7 @@ Template.annotationEditor.rendered = ->
   @_rendered = true
 
   # Load Scribe
-  require ['scribe'], (Scribe) ->
+  require ['scribe'], (Scribe) =>
     scribe = new Scribe @findAll('.annotation-content-editor')
 
   # Load tag-it
@@ -822,3 +822,4 @@ Template.annotationMetaMenu.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+
