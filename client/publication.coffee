@@ -736,7 +736,13 @@ Template.annotationTags.rendered = ->
   $(@findAll '.annotation-tags-list').tagit
     readOnly: true
 
+Template.annotationEditor.created = ->
+  @_rendered = false
+
 Template.annotationEditor.rendered = ->
+  return if @_rendered
+  @_rendered = true
+
   # Load MediumEditor
   editor = new MediumEditor @findAll('.annotation-content-editor'),
     buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
@@ -745,7 +751,14 @@ Template.annotationEditor.rendered = ->
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
 
+  # Create tags
+  _.each @data.tags, (item) =>
+    $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+
   return # Make sure CoffeeScript does not return anything
+
+Template.annotationEditor.destroyed = ->
+  @_rendered = false
 
 Template.annotationEditor.events
   'click .publish': (e, template) ->
