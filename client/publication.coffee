@@ -792,9 +792,6 @@ Template.annotationEditor.events
       (error, docs) =>
         return error if error
 
-        # TODO: Integrate this call into Deps.autorun
-        # createLocalAnnotation()
-
         focusAnnotationId = @_id
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
