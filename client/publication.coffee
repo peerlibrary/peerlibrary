@@ -743,10 +743,9 @@ Template.annotationEditor.rendered = ->
   return if @_rendered
   @_rendered = true
 
-  # Load MediumEditor
-  editor = new MediumEditor @findAll('.annotation-content-editor'),
-    buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
-    placeholder: 'Write your annotation here'
+  # Load Scribe
+  require ['scribe'], (Scribe) ->
+    scribe = new Scribe @findAll('.annotation-content-editor')
 
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
@@ -802,10 +801,7 @@ Template.annotationEditor.events
     e.preventDefault()
     e.stopPropagation()
 
-    # Let meteor-editor handle the action
-    # TODO: Link, LaTeX, code
-    action = $(e.currentTarget).data 'action'
-    $('.medium-editor-action[data-action=' + action + ']').click()
+    # TODO: Scribe plugins
 
     return # Make sure CoffeeScript does not return anything
 

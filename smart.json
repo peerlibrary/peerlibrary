@@ -26,6 +26,10 @@
     },
     "digest": {},
     "peerdb": {},
-    "useragent": {}
+    "useragent": {},
+    "bower": {
+      "scribe": "0.1.4"
+    },
+    "define": {}
   }
 }
