@@ -657,7 +657,16 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-  # We do conversion of local annotation already in mousedown so that
+  'click .cancel-button': (e, template) ->
+    e.preventDefault()
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: false
+
+    return # Make sure CoffeeScript does not return anything
+
+# We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) =>
     # TODO: Get rid of this. Annotation invites are being replaced.
@@ -729,22 +738,22 @@ Template.annotationTags.rendered = ->
 
 Template.annotationEditor.rendered = ->
   # Load MediumEditor
-  editor = new MediumEditor @findAll('.annotation-content'),
+  editor = new MediumEditor @findAll('.annotation-content-editor'),
     buttons: ['bold', 'italic', 'quote', 'unorderedlist', 'orderedlist', 'pre']
     placeholder: 'Write your annotation here'
 
   # Load tag-it
-  $(@findAll '.annotation-tags').tagit()
+  $(@findAll '.annotation-tags-editor').tagit()
 
   return # Make sure CoffeeScript does not return anything
 
 Template.annotationEditor.events
   'click .publish': (e, template) ->
     # TODO: Do this in autosave
-    $content = $(template.findAll '.annotation-content')
+    $content = $(template.findAll '.annotation-content-editor')
     body = $content.html()
 
-    $tags = $(template.findAll '.annotation-tags')
+    $tags = $(template.findAll '.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
       existingTag = Tag.documents.findOne
         'name.en': name
@@ -787,15 +796,6 @@ Template.annotationEditor.events
     # TODO: Link, LaTeX, code
     action = $(e.currentTarget).data 'action'
     $('.medium-editor-action[data-action=' + action + ']').click()
-
-    return # Make sure CoffeeScript does not return anything
-
-  'click .cancel-button': (e, template) ->
-    e.preventDefault()
-
-    LocalAnnotation.documents.update template.data._id,
-      $set:
-        editing: false
 
     return # Make sure CoffeeScript does not return anything
 

@@ -46,34 +46,44 @@
 <template name="publicationAnnotations">
   <ul class="annotations-list">
     {{#each annotations}}
-      {{#if local}}
-        {{> annotationEditor}}
-      {{else}}
-        {{#if editing}}
-          {{> annotationEditor}}
-        {{else}}
-          {{> publicationAnnotationsItem}}
-        {{/if}}
-      {{/if}}
+      {{> publicationAnnotationsItem}}
     {{/each}}
   </ul>
 </template>
 
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
-    <a href="{{profilePath author.slug}}">
-      <img src="{{author.avatar}}" class="avatar" />
-    </a>
+    {{#if local}}
+      <a href="{{profilePath currentPerson.slug}}">
+        <img src="{{currentPerson.avatar}}" class="avatar" />
+      </a>
+    {{else}}
+      <a href="{{profilePath author.slug}}">
+        <img src="{{author.avatar}}" class="avatar" />
+      </a>
+    {{/if}}
     <div class="annotation-wrapper">
-      <div class="annotation-header">
-        <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
-        <span class="timestamp">{{updatedFromNow}}</span>
-        <span class="edit-button"><a href="">edit</a></span>
-      </div>
-      <div class="annotation-content">
-        <div class="body">{{{body}}}</div>
-        {{> annotationTags}}
-      </div>
+      {{#if local}}
+        {{> annotationEditor}}
+      {{else}}
+        <div class="annotation-header">
+          <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
+          <span class="timestamp">{{updatedFromNow}}</span>
+          {{#if editing}}
+            <span class="cancel-button"><a href="">cancel</a></span>
+          {{else}}
+            <span class="edit-button"><a href="">edit</a></span>
+          {{/if}}
+        </div>
+        {{#if editing}}
+          {{> annotationEditor}}
+        {{else}}
+          <div class="annotation-content">
+            <div class="body">{{{body}}}</div>
+            {{> annotationTags}}
+          </div>
+        {{/if}}
+      {{/if}}
     </div>
   </li>
 </template>
@@ -106,22 +116,20 @@
             </ul>
           </div>
           <div class="form-body">
-            <div class="annotation-content" contenteditable>
-              {{{body}}}
-              <p>
-                <br>
-              </p>
-            </div>
+            {{#constant}}
+              <div class="annotation-content-editor" contenteditable>
+                {{{body}}}
+              </div>
+            {{/constant}}
           </div>
           <div class="form-tags">
             <i class="icon-tags"></i>
-            <ul class="annotation-tags"></ul>
+            {{#constant}}
+              <ul class="annotation-tags-editor"></ul>
+            {{/constant}}
           </div>
         </div>
         <div class="form-control">
-          {{#unless local}}
-            <span class="cancel-button"><a href="">Cancel</a></span>
-          {{/unless}}
           <button type="button" class="btn blue publish">Publish</button>
           <div class="visibility-menu">
             {{> visibilityMenu}}

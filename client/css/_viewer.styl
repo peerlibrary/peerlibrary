@@ -280,12 +280,8 @@ annotations-control-height = 0px
     border none
 
 .annotations-editor
-  background white
-  border-radius 2px
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
   height auto
   z-index 90
-  margin 1px 10px 10px 1px
 
 .annotations-form-wrapper, .annotations-editor-form-wrapper
   .form-header
@@ -361,7 +357,7 @@ annotations-control-height = 0px
         margin 5px 0
         color icon-gray
 
-      ul.annotation-tags
+      ul.annotation-tags, ul.annotation-tags-editor
         font-size smaller
         border 0
         margin 0 0 0 24px
@@ -446,12 +442,12 @@ annotations-control-height = 0px
         .timestamp
           color #444
 
-        .edit-button
+        .edit-button, .cancel-button
           display inline-block
           float right
 
       .annotation-content
-        padding 15px 20px 15px 15px     
+        padding 15px 20px 15px 15px
 
         .body[contenteditable=true]:focus
           outline none
