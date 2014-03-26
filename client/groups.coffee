@@ -13,8 +13,8 @@ Template.groups.groups = ->
   if !!searchTerm
     selector =
       name:
-        $regex : ".*#{searchTerm}.*"
-        $options : "i"
+        $regex: ".*#{searchTerm}.*"
+        $options: "i"
 
   Group.documents.find selector,
     sort:

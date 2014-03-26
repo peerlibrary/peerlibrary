@@ -121,5 +121,5 @@ Meteor.publish 'groups-by-id', (id) ->
   ,
     Group.PUBLIC_FIELDS()
 
-Meteor.publish 'groups', () ->
+Meteor.publish 'groups', ->
   Group.documents.find {}, Group.PUBLIC_LISTING_FIELDS()

@@ -417,14 +417,14 @@ accessHoverHandlers =
   'mouseenter .access .selection': (e, template) ->
     accessHover = $(e.currentTarget).find("input").val()
     $(template.findAll '.access .displayed.description').removeClass("displayed")
-    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed");
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed")
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (e, template) ->
-    accessHover = $(template.findAll '.access input:radio:checked').val();
+    accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass("displayed")
-    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed");
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass("displayed")
 
     return # Make sure CoffeeScript does not return anything
 
