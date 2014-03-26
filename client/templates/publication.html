@@ -72,7 +72,9 @@
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
           {{else}}
-            <span class="edit-button"><a href="">edit</a></span>
+            {{#if canEdit}}
+              <span class="edit-button"><a href="">edit</a></span>
+            {{/if}}
           {{/if}}
         </div>
         {{#if editing}}
