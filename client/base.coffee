@@ -13,6 +13,8 @@ setSession = (session) ->
     searchFocused: false
     adminActive: false
     libraryActive: false
+    currentCollectionId: null
+    currentCollectionSlug: null
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
@@ -196,6 +198,14 @@ else
             indexActive: true
             searchActive: true
         'index'
+
+    '/c/:collectionId/:collectionSlug?':
+      as: 'collection'
+      to: (collectionId, collectionSlug) ->
+        setSession
+          currentCollectonId: collectionId
+          currentCollectionSlug: collectionSlug
+        'collection'
 
     '/admin':
       as: 'admin'

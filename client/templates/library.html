@@ -1,17 +1,37 @@
 <template name="library">
-  <div id="library">
     <h1>Library</h1>
+    <div class="row">
+      <div class="col12">
+        <h2>Publications</h2>
+        <ol class="item-list">
+          {{#each myPublications}}
+            {{> publicationSearchResult}}
+          {{/each}}
+        </ol>
+      </div>
+      {{> collections}}
+    </div>
+</template>
+
+<template name="collections">
+  <div class="col4 push12 collections">
     <h2>Collections</h2>
-    <ol class="item-list">
+    <ol class="item-list collections-list">
       {{#each myCollections}}
-        {{> collection}}
+        {{> collectionListing}}
       {{/each}}
     </ol>
-    <h2>Publications</h2>
-    <ol class="item-list">
-      {{#each myPublications}}
-        {{> publicationSearchResult}}
-      {{/each}}
-    </ol>
+    <h3>Create a new collection</h3>
+    <form class="add-collection input-and-button">
+      <input type="text" class="name" placeholder="Collection name" />
+      <button type="submit" class="add">Create</button>
+    </form>
   </div>
+</template>
+
+<template name="collectionListing">
+  <li class="collection-listing">
+    <h3><a href="{{collectionPath _id slug}}" class="collection-name">{{name}}</a></h3>
+    <span class="publications-count">{{countDescription}}</span>
+  </li>
 </template>

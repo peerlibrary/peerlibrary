@@ -9,7 +9,7 @@ class @Collection extends Document
   #   gravatarHash
   #   user
   #     username
-  # title: the name of the collection
+  # name: the name of the collection
   # slug: unique slug for URL
   # publications: list of
   #   _id: publication's id
@@ -17,5 +17,6 @@ class @Collection extends Document
   @Meta
     name: 'Collection'
     fields: =>
+      slug: @GeneratedField 'self', ['name']
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publications: [@ReferenceField Publication, [], true, 'collections']
+      publications: [@ReferenceField Publication]

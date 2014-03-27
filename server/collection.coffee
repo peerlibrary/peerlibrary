@@ -1,7 +1,15 @@
+SLUG_MAX_LENGTH = 80
+
 class @Collection extends Collection
   @Meta
     name: 'Collection'
     replaceParent: true
+    fields: (fields) =>
+      fields.slug.generator = (fields) ->
+        if fields.name
+          [fields._id, URLify2 fields.name, SLUG_MAX_LENGTH]
+        else
+          [fields._id, '']
 
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
@@ -57,6 +65,37 @@ Collection.Meta.collection.deny
     # checking anything, just updating fields
     false
 
+Meteor.methods
+# TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'add-to-collection': (collectionId, publicationId) ->
+    check collectionId, String
+    check publicationId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    collection = Collection.documents.findOne
+      _id: collectionId
+
+    publication = Publication.documents.findOne
+      _id: publicationId
+
+    return unless collection and publication
+
+    Collection.documents.update
+      _id: collectionId
+      $and: [
+        'author._id': Meteor.personId()
+      ,
+        'publications._id':
+          $ne: publicationId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        publications:
+          _id: publicationId
+
 Meteor.publish 'collection-by-id', (id) ->
   check id, String
 
@@ -64,5 +103,12 @@ Meteor.publish 'collection-by-id', (id) ->
 
   Collection.documents.find
     _id: id
+  ,
+    Collection.PUBLIC_FIELDS()
+
+Meteor.publish 'my-collections', ->
+
+  Collection.documents.find
+    'author._id': @personId
   ,
     Collection.PUBLIC_FIELDS()
