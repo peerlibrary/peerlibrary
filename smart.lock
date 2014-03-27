@@ -28,7 +28,11 @@
       },
       "digest": {},
       "peerdb": {},
-      "useragent": {}
+      "useragent": {},
+      "define": {
+        "git": "https://github.com/peerlibrary/require.git",
+        "branch": "peerlibrary"
+      }
     },
     "packages": {
       "router": {
@@ -115,6 +119,11 @@
         "git": "https://github.com/awwx/meteor-useragent.git",
         "tag": "v0.0.2",
         "commit": "8737222105a50cfe484ccd09728bdfa7c35288a2"
+      },
+      "define": {
+        "git": "https://github.com/peerlibrary/require.git",
+        "branch": "peerlibrary",
+        "commit": "9d5f01c1fda9250ca77a373d837295c227fa430d"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
