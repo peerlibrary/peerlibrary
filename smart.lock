@@ -28,9 +28,7 @@
       },
       "digest": {},
       "peerdb": {},
-      "useragent": {},
-      "bower": {},
-      "define": {}
+      "useragent": {}
     },
     "packages": {
       "router": {
@@ -117,16 +115,6 @@
         "git": "https://github.com/awwx/meteor-useragent.git",
         "tag": "v0.0.2",
         "commit": "8737222105a50cfe484ccd09728bdfa7c35288a2"
-      },
-      "bower": {
-        "git": "https://github.com/mquandalle/meteor-bower.git",
-        "tag": "v0.1.5",
-        "commit": "4e96fa0365414371e412c8c5b79e7b4c2e6cefbf"
-      },
-      "define": {
-        "git": "https://github.com/apendua/require.git",
-        "tag": "v0.9.0.2",
-        "commit": "5c3bdfdf7c747dc7297e7697d5f1a28ef86772f2"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
