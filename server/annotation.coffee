@@ -10,7 +10,7 @@ class @Annotation extends Annotation
 Annotation.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the annotation
+    # TODO: Check that author really has access to the annotation (and publication)
 
     return false unless userId
 
@@ -19,7 +19,10 @@ Annotation.Meta.collection.allow
     # Only allow insertion if declared author is current user
     personId and doc.author._id is personId
 
-  update: (userId, doc) ->
+  update: (userId, doc, fieldNames, modifier) ->
+    # TODO: Check whether updated document conforms to schema
+    # TODO: Check that author really has access to the annotation (and publication)
+
     return false unless userId
 
     personId = Meteor.personId userId
@@ -42,19 +45,11 @@ Annotation.Meta.collection.deny
   transform: null
 
   insert: (userId, doc) ->
-    personId = Meteor.personId userId
-
     doc.createdAt = moment.utc().toDate()
     doc.updatedAt = doc.createdAt
     doc.highlights = [] if not doc.highlights
-    doc.access = Annotation.ACCESS.PRIVATE if not doc.access?
 
-    # Make sure does not get locked out when inserting
-    if doc.access is Annotation.ACCESS.PRIVATE
-      if personId not in _.pluck doc.readPersons, '_id'
-        doc.readPersons ?= []
-        doc.readPersons.push
-          _id: personId
+    doc = Annotation.applyDefaultAccess doc, Meteor.personId userId
 
     # We return false as we are not
     # checking anything, just adding fields
@@ -77,7 +72,7 @@ Meteor.publish 'annotations-by-id', (id) ->
   @related (person, publication) =>
     return unless publication?.hasReadAccess person
 
-    Annotation.documents.find requireReadAccess(person,
+    Annotation.documents.find Annotation.requireReadAccessSelector(person,
       _id: id
     ), Annotation.PUBLIC_FIELDS()
   ,
@@ -109,7 +104,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
   @related (person, publication) =>
     return unless publication?.hasReadAccess person
 
-    Annotation.documents.find requireReadAccess(person,
+    Annotation.documents.find Annotation.requireReadAccessSelector(person,
       'publication._id': publicationId
     ), Annotation.PUBLIC_FIELDS()
   ,
