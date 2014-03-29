@@ -46,13 +46,13 @@ Accounts.onCreateUser (options, user) ->
 
     Person.documents.insert person
 
-  catch e
-    if e.name isnt 'MongoError'
-      throw e
+  catch error
+    if error.name isnt 'MongoError'
+      throw error
     # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
-    if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
+    if /E11000 duplicate key error index:.*Persons\.\$slug/.test error.err
       throw new Meteor.Error 400, "Username conflicts with existing slug."
-    throw e
+    throw error
 
   user
 

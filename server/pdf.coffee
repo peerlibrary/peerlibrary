@@ -4,7 +4,7 @@ bindEnvironemnt = (f) ->
   Meteor.bindEnvironment f, (e) -> throw e
 
 PDF =
-  process: (pdfFile, initCallback, textCallback, pageImageCallback, progressCallback) ->
+  process: (pdfFile, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback) ->
     document = PDFJS.getDocumentSync
       data: pdfFile
       password: ''
@@ -25,6 +25,8 @@ PDF =
       #Log.debug "Annotations #{ util.inspect annotations, false, null }"
 
       textContent = page.getTextContentSync()
+
+      textContentCallback page.pageNumber, textContent
 
       viewport = page.getViewport 1.0
       canvasElement = new PDFJS.canvas viewport.width, viewport.height
@@ -70,7 +72,7 @@ PDF =
 
               canvasContext.restore()
 
-            textCallback page.pageNumber, segment
+            textSegmentCallback page.pageNumber, segment
 
     progressCallback 1.0
 

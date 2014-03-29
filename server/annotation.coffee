@@ -41,8 +41,8 @@ Annotation.Meta.collection.deny
   transform: null
 
   insert: (userId, doc) ->
-    doc.created = moment.utc().toDate()
-    doc.updated = doc.created
+    doc.createdAt = moment.utc().toDate()
+    doc.updatedAt = doc.createdAt
     doc.references = {} if not doc.references
     doc.tags = [] if not doc.tags
 
@@ -51,7 +51,7 @@ Annotation.Meta.collection.deny
     false
 
   update: (userId, doc) ->
-    doc.updated = moment.utc().toDate()
+    doc.updatedAt = moment.utc().toDate()
 
     # We return false as we are not
     # checking anything, just updating fields

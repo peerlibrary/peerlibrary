@@ -19,7 +19,7 @@
         {{/each}}
       </p>
       <p>Published in: {{publication.source}}</p>
-      <p>{{publication.created}}</p>
+      <p>{{publication.createdAt}}</p>
     </div>
   </div>
 </template>
@@ -161,30 +161,6 @@
   </div>
 </template>
 
-<template name="annotationMetaMenu">
-  <div class="meta-menu">
-    <i class="icon-menu"></i>
-    <div class="meta-content">
-      {{#if canEdit}}	    
-        <button class="delete">Delete</button>
-      {{/if}}
-      <p class="authors">
-        {{#with author}}
-          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
-        {{/with}}
-      </p>
-      <p class="time">{{created}}</p>
-      <p class="time">{{updated}}</p>
-      <p class="highlights">
-        {{#each highlights}}
-          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
-        {{else}}
-          Not linked to any highlight.
-        {{/each}}
-      </p>
-    </div>
-  </div>
-</template>
 <template name="highlightInvite">
   <li class="annotation invite">
     <div class="vertical-align-outer">
@@ -213,8 +189,8 @@
       <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
     {{/with}}
   </p>
-  <p class="time">{{created}}</p>
-  <p class="time">{{updated}}</p>
+  <p class="time">{{createdAt}}</p>
+  <p class="time">{{updatedAt}}</p>
   <p class="annotations">
     {{#each annotations}}
       <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
@@ -231,3 +207,27 @@
   <div class="annotations-control"></div>
 </template>
 
+<template name="annotationMetaMenu">
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      {{#if canEdit}}	    
+        <button class="delete">Delete</button>
+      {{/if}}
+      <p class="authors">
+        {{#with author}}
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+        {{/with}}
+      </p>
+      <p class="time">{{createdAt}}</p>
+      <p class="time">{{updatedAt}}</p>
+      <p class="highlights">
+        {{#each highlights}}
+          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
+        {{else}}
+          Not linked to any highlight.
+        {{/each}}
+      </p>
+    </div>
+  </div>
+</template>

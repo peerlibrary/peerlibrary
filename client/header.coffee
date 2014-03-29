@@ -15,21 +15,20 @@ Template.header.events =
 
   'click .search-button': (e, template) ->
     Session.set 'searchActive', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .search-input': (e, template) ->
     Session.set 'searchFocused', false
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'change .search-input': (e, template) ->
-    Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -38,26 +37,24 @@ Template.header.events =
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
     if val
-      Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
       Session.set 'searchActive', true
       Session.set 'searchFocused', true
 
-    simpleQueryChange val
+    generalQueryChange val
 
     return # Make sure CoffeeScript does not return anything
 
   'paste .search-input': (e, template) ->
-    Meteor.Router.toNew Meteor.Router.indexPath() unless Session.get 'indexActive'
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'cut .search-input': (e, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -66,7 +63,7 @@ Template.header.events =
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    simpleQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -82,12 +79,24 @@ Template.header.noIndexHeader = ->
 Template.searchInput.searchFocused = ->
   'search-focused' if Session.get 'searchFocused'
 
+Template.searchInput.created = ->
+  @_searchQueryHandle = null
+
 Template.searchInput.rendered = ->
   # We make sure search input is focused if we know it should be focused (to make sure focus is retained between redraws)
   # Additionally, HTML5 autofocus does not work properly when routing back to / after initial load, so we focus if we are displaying index header
   # Don't try to focus if reset password is in progress
   if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get 'resetPasswordToken'
     $(@findAll '.search-input').focus()
+
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = Deps.autorun =>
+    # Sync input field unless change happened because of this input field itself
+    $(@findAll '.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
+
+Template.searchInput.destroyed = ->
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = null
 
 Template.searchInput.indexHeader = Template.header.indexHeader
 
@@ -100,9 +109,6 @@ Template.searchInput.searchInvitation = ->
     "Search academic publications and people"
 
 Template.searchInput.development = Template.header.development
-
-Deps.autorun ->
-  $('.search-input').val(Session.get 'currentSearchQuery')
 
 Template.progressBar.progress = ->
   100 * Session.get 'currentPublicationProgress'

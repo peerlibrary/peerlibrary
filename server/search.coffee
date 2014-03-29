@@ -1,61 +1,26 @@
-SEARCH_PROPOSE_LIMIT = 4
-
-Meteor.methods
-  # "key" is parsed user-provided string serving as keyword
-  # "filter" is internal filter field so that "value" can be mapped to filters
-  'search-propose': (query) ->
-    # TODO: Support real queries
-    check query, String
-
-    # TODO: For now we just ignore query, we should do something smart with it
-    proposals = Publication.documents.find(
-      processed: true
-    ,
-      limit: SEARCH_PROPOSE_LIMIT - 1
-    ).map (publication) ->
-      [
-        key: "publication titled"
-        filter: "title"
-        value: publication.title
-      ,
-        key: "by"
-        filter: "authors"
-        value: "#{ publication.authors[0].familyName } et al."
-      ]
-    proposals.push [
-      key: ""
-      filter: "contains"
-      value: query
-    ]
-    proposals
-
 Meteor.publish 'search-results', (query, limit) ->
-  # TODO: Support real queries
   check query, String
   check limit, PositiveNumber
 
   return unless query
 
-  if _.isString(query)
-    # TODO: We should parse it here in a same way as we would parse in search-propose, and take the best interpretation
-    realQuery = [
-      key: ""
-      filter: "contains"
-      value: query
-    ]
-  else
-    # TODO: Validate?
-    realQuery = query
+  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
   findQuery =
-    title: new RegExp(query, 'i')
-    processed: true
+    $and: []
+    processed:
+      $exists: true
+
+  for keyword in keywords when keyword
+    findQuery.$and.push
+      fullText: new RegExp keyword, 'i'
+
+  return unless findQuery.$and.length
 
   queryId = Random.id()
 
-  # TODO: Do some real seaching
+  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
   # TODO: How to influence order of results? Should we have just simply a field?
-  # TODO: Escape query in regexp
   # TODO: Make sure that searchResult field cannot be stored on the server by accident
   resultsHandle = Publication.documents.find(findQuery,
     limit: limit
@@ -68,11 +33,19 @@ Meteor.publish 'search-results', (query, limit) ->
         # TODO: Implement
         order: 1
 
+      fields.hasAbstract = !!fields.abstract
+      delete fields.abstract
+
       @added 'Publications', id, fields
 
     changed: (id, fields) =>
       # TODO: Maybe order changed now?
       # We just pass on the changes
+
+      if 'abstract' of fields
+        fields.hasAbstract = !!fields.abstract
+        delete fields.abstract
+
       @changed 'Publications', id, fields
 
     removed: (id) =>

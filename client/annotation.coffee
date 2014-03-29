@@ -78,8 +78,8 @@ Meteor.startup ->
   author = _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName', 'gravatarHash'
   author.user = _.pick Meteor.person().user, 'username'
 
-  created: timestamp
-  updated: timestamp
+  createdAt: timestamp
+  updatedAt: timestamp
   author: author
   publication:
     _id: Session.get 'currentPublicationId'

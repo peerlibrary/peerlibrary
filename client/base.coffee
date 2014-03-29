@@ -193,6 +193,19 @@ else
           currentTagSlug: tagSlug
         'tag'
 
+    '/s/:searchQuery?':
+      as: 'search'
+      to: (searchQuery) ->
+        # If search is already active, we don't reset other session variables, just update currentSearchQuery
+        if Session.get 'searchActive'
+          Session.set 'currentSearchQuery', searchQuery
+        else
+          setSession
+            currentSearchQuery: searchQuery
+            indexActive: true
+            searchActive: true
+        'index'
+
     '/admin':
       as: 'admin'
       to: ->

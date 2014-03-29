@@ -44,7 +44,53 @@ Meteor.methods
 
     Meteor.call 'sync-arxiv-metadata'
     Meteor.call 'sync-local-pdf-cache'
-    Meteor.call 'process-pdfs'
+
+  'process-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    # To force reprocessing, we first set processError to true everywhere to assure there will be
+    # change afterwards when we unset it. We set to true so that value is still true and processing
+    # is not already triggered (but only when we unset the field).
+    Publication.documents.update
+      processed:
+        $exists: false
+    ,
+      $set:
+        processError: true
+    ,
+      multi: true
+    Publication.documents.update
+      processed:
+        $exists: false
+      processError: true
+    ,
+      $unset:
+        processError: ''
+    ,
+      multi: true
+
+  'reprocess-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    # To force reprocessing, we first set processError to true everywhere to assure there will be
+    # change afterwards when we unset it. We set to true so that value is still true and processing
+    # is not already triggered (but only when we unset the field).
+    Publication.documents.update {},
+      $set:
+        processError: true
+    ,
+      multi: true
+    Publication.documents.update {},
+      $unset:
+        processed: ''
+        processError: ''
+    ,
+      multi: true
+
+  'database-update-all': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    Document.updateAll()
 
   'sync-arxiv-pdf-cache': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
@@ -195,8 +241,8 @@ Meteor.methods
         continue
 
       # TODO: Really process versions
-      created = moment.utc(record.version[0].date[0]).toDate()
-      updated = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
+      createdAt = moment.utc(record.version[0].date[0]).toDate()
+      updatedAt = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
 
       authors = record.authors[0]
 
@@ -267,8 +313,8 @@ Meteor.methods
 
       publication =
         slug: Publication.Meta.fields.slug.generator(title: record.title[0])[1]
-        created: created
-        updated: updated
+        createdAt: createdAt
+        updatedAt: updatedAt
         authors: authors
         authorsRaw: record.authors[0]
         title: record.title[0]
@@ -319,44 +365,6 @@ Meteor.methods
         count++ if publication.cached
       catch error
         Log.error "#{ error }"
-
-    Log.info "Done"
-
-  'process-pdfs': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
-
-    @unblock()
-
-    Log.info "Processing pending PDFs"
-
-    Publication.documents.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
-      initCallback = (numberOfPages) ->
-        publication.numberOfPages = numberOfPages
-
-      textCallback = (pageNumber, segment) ->
-
-      pageImageCallback = (pageNumber, canvasElement) ->
-        thumbnailCanvas = new PDFJS.canvas 95, 125
-        thumbnailContext = thumbnailCanvas.getContext '2d'
-
-        # TODO: Do better image resizing, antialias doesn't really help
-        thumbnailContext.antialias = 'subpixel'
-
-        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
-
-        Storage.save publication.thumbnail(pageNumber), thumbnailCanvas.toBuffer()
-
-      try
-        publication.process null, initCallback, textCallback, pageImageCallback
-        Publication.documents.update publication._id, $set: numberOfPages: publication.numberOfPages
-      catch error
-        Publication.documents.update publication._id,
-          $set:
-            processError:
-              error: "#{ error.toString?() or error }"
-              stack: error.stack
-
-        Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
 
     Log.info "Done"
 

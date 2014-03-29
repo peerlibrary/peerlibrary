@@ -413,7 +413,7 @@ Template.publicationDisplay.rendered = ->
       try
         unless publication.url()
           return
-      catch e
+      catch error
         return
 
       publication.show $(@findAll '.display-wrapper')
@@ -729,7 +729,7 @@ Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
 
 Template.publicationAnnotationsItem.updatedFromNow = ->
-  moment(@updated).fromNow()
+  moment(@updatedAt).fromNow()
 
 Template.annotationTags.rendered = ->
   # TODO: Make links work
@@ -743,9 +743,7 @@ Template.annotationEditor.rendered = ->
   return if @_rendered
   @_rendered = true
 
-  # Load Scribe
-  require ['scribe'], (Scribe) =>
-    scribe = new Scribe @findAll('.annotation-content-editor')
+  # TODO: Load Scribe
 
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
