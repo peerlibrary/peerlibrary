@@ -749,7 +749,6 @@ Template.annotationEditor.rendered = ->
 
   @_scribe.use Scribe.plugins['blockquote-command']()
   @_scribe.use Scribe.plugins['link-prompt-command']()
-  @_scribe.use Scribe.plugins['smart-lists']()
   @_scribe.use Scribe.plugins['curly-quotes']()
 
   # Load tag-it

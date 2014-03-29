@@ -7,13 +7,12 @@ Package.on_use(function (api) {
 
   api.export('Scribe');
 
-  // toolbar and sanitizer do not work.
+  // toolbar, sanitizer and smart-lists do not work.
   api.add_files([
     'scribe/scribe.js',
     'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',
     'scribe-plugin-curly-quotes/scribe-plugin-curly-quotes.js',
     'scribe-plugin-link-prompt-command/scribe-plugin-link-prompt-command.js',
-    'scribe-plugin-smart-lists/scribe-plugin-smart-lists.js',
     'client.js'
   ], 'client');
 });

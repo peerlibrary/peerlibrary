@@ -30,7 +30,3 @@
 	path = packages/scribe/scribe-plugin-link-prompt-command
 	url = https://github.com/peerlibrary/scribe-plugin-link-prompt-command.git
 	branch = dist
-[submodule "packages/scribe/scribe-plugin-smart-lists"]
-	path = packages/scribe/scribe-plugin-smart-lists
-	url = https://github.com/peerlibrary/scribe-plugin-smart-lists.git
-	branch = dist
