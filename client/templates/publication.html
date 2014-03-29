@@ -55,11 +55,11 @@
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
     {{#if local}}
       <a href="{{profilePath currentPerson.slug}}">
-        <img src="{{currentPerson.avatar}}" class="avatar" />
+        <img src="{{currentPerson.avatar 30}}" class="avatar" />
       </a>
     {{else}}
       <a href="{{profilePath author.slug}}">
-        <img src="{{author.avatar}}" class="avatar" />
+        <img src="{{author.avatar 30}}" class="avatar" />
       </a>
       {{> annotationMetaMenu}}
     {{/if}}
