@@ -35,14 +35,6 @@ class @Annotation extends Document
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
-  #   upvoters: list of
-  #     _id: person id
-  #   downvoters: list of
-  #     _id: person id
-  # upvoters: list of
-  #   _id: person id
-  # downvoters: list of
-  #   _id: person id
   # local (client only): is this annotation just a temporary annotation on the client side
 
   @Meta
@@ -58,8 +50,4 @@ class @Annotation extends Document
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
-
-        # TODO: Field cannot be in a nested array (PeerDB)
-        #upvoters: [@ReferenceField Person]
-        #downvoters: [@ReferenceField Person]
       ]
