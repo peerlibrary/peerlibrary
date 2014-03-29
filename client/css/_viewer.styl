@@ -250,32 +250,35 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 0px
+annotations-control-height = 30px
 
 .annotations-control
-  height 0
+  background #cececf
+  border-radius 2px
+  height annotations-control-height
   position fixed
   left annotations-left
   right annotations-right
   top meta-menu-top
+  z-index 200
 
   input
     color #444
  
-  .add
+  .add-button
     background #cececf
     border none
     border-radius 2px
     font-size 20px
     color white
-    width 28px
-    height 28px
+    width annotations-control-height
+    height annotations-control-height
     padding 0
 
-  .add:hover
+  .add-button:hover
     background rgba(46,46,44,0.5)
 
-  .add:active, .add:focus
+  .add-button:active, .add-button:focus
     outline none
     border none
 
@@ -381,7 +384,7 @@ annotations-control-height = 0px
       float right
 
 .annotations-editor-form-wrapper
-  padding 15px
+  padding 10px
 
 .annotations-editor.collapsed
   .form-header
@@ -416,8 +419,8 @@ annotations-control-height = 0px
   /* To not have scroll bar overlapping the content we move the right
      edge for 10px to the right and then add 10px right margin to each
      annotation */
-  right annotations-right - 20px
-  top header-height
+  right annotations-right - 10px
+  top header-height + 15px + annotations-control-height
   bottom 0
 
   .annotation
@@ -545,10 +548,41 @@ annotations-control-height = 0px
       color gray
 
   .annotation.local
-    margin-top 15px
+    margin-top 10px
+    margin-bottom 20px
+
+    .avatar
+      position absolute
+      left 0
+      top 15px
+      width 30px
+      height 30px
+      margin 0
+      border-radius 4px
 
     .annotation-wrapper:after
+      content ''
+      position absolute
+      border-style solid
+      border-width 7px 9px 7px 0
       border-color transparent white
+      display block
+      width 0
+      z-index 1
+      left -9px
+      top 24px
+
+    .annotation-wrapper:before
+      content ''
+      position absolute
+      border-style solid
+      border-width 7px 9px 7px 0
+      border-color transparent #e3e3e3
+      display block
+      width 0
+      z-index 0
+      left -10px
+      top 24px
 
   .annotation.invite
     position absolute

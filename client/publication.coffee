@@ -789,6 +789,7 @@ Template.annotationEditor.events
     # TODO: Set privacy settings
     LocalAnnotation.documents.update @_id,
       $set:
+        editing: false
         local: false
         body: body
         tags: tags
@@ -867,11 +868,18 @@ updateScribeUI = (e, template) ->
 
   return # Make sure CoffeeScript does not return anything
 
-Template.highlightInvite.rendered = ->
-  $(@findAll '.body').balanceText()
+Template.annotationsControl.events
+  'click .add-button': (e, template) ->
+    e.preventDefault()
 
-Template.annotationInvite.rendered = ->
-  $(@findAll '.body').balanceText()
+    $editor = $('.annotation.local .annotation-content-editor')
+
+    # Scroll to new annotation editor and focus
+    # TODO: Set cursor to the end
+    $('.annotations-list').scrollTop 0
+    $editor.focus()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.events
   'click .delete': (e, template) ->

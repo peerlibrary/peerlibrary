@@ -53,9 +53,13 @@
 
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
-    {{#unless local}}
+    {{#if local}}
+      <a href="{{profilePath currentPerson.slug}}">
+        <img src="{{currentPerson.avatar 30}}" class="avatar" />
+      </a>
+    {{else}}
       {{> annotationMetaMenu}}
-    {{/unless}}
+    {{/if}}
     <div class="annotation-wrapper">
       {{#if local}}
         {{> annotationEditor}}
@@ -197,10 +201,9 @@
 </template>
 
 <template name="annotationsControl">
-  {{!
-  <button class="add" title="Add an annotation"><i class="icon-plus"></i></button>
-  }}
-  <div class="annotations-control"></div>
+  <div class="annotations-control">
+    <button class="add-button" title="Add an annotation"><i class="icon-plus"></i></button>
+  </div>
 </template>
 
 <template name="annotationMetaMenu">
