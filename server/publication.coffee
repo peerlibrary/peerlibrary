@@ -422,185 +422,53 @@ Meteor.methods
         readGroups:
           _id: group._id
 
-# TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
-publishUsingMyLibrary = (publish, selector, options) ->
-  # There are moments when two observes are observing mostly similar list
-  # of publications ids so it could happen that one is changing or removing
-  # publication just while the other one is adding, so we are making sure
-  # using currentPublications variable that we have a consistent view of the
-  # publications we published
-  currentPublications = {}
-  handlePublications = null
-
-  publishPublications = (newIsAdmin, newGroups, newLibrary) =>
-    newGroups ||= []
-    newLibrary ||= []
-
-    initializing = true
-    initializedPublications = []
-
-    oldHandlePublications = handlePublications
-    handlePublications = Publication.documents.find(selector(newIsAdmin, newGroups, newLibrary), options).observeChanges
-      added: (id, fields) =>
-        initializedPublications.push id if initializing
-
-        return if currentPublications[id]
-        currentPublications[id] = true
-
-        publish.added 'Publications', id, fields
-
-      changed: (id, fields) =>
-        return if not currentPublications[id]
-
-        publish.changed 'Publications', id, fields
-
-      removed: (id) =>
-        return if not currentPublications[id]
-        delete currentPublications[id]
-
-        publish.removed 'Publications', id
-
-    initializing = false
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandlePublications.stop() if oldHandlePublications
-
-    # And then we remove those which are not published anymore
-    for id in _.difference _.keys(currentPublications), initializedPublications
-      delete currentPublications[id]
-      publish.removed 'Publications', id
-
-  currentPersonId = null # Just for asserts
-
-  if publish.personId
-    handlePersons = Person.documents.find(
-      _id: publish.personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
-      transform: null # We are only interested in data
-    ).observe
-      added: (person) =>
-        # There should be only one person with the id at every given moment
-        assert.equal currentPersonId, null
-
-        currentPersonId = person._id
-        publishPublications person.isAdmin, _.pluck(person.inGroups, '_id'), _.pluck(person.library, '_id')
-
-      changed: (newPerson, oldPerson) =>
-        # Person should already be added
-        assert.equal currentPersonId, newPerson._id
-
-        publishPublications newPerson.isAdmin, _.pluck(newPerson.inGroups, '_id'), _.pluck(newPerson.library, '_id')
-
-      removed: (oldPerson) =>
-        # We cannot remove the person if we never added the person before
-        assert.equal currentPersonId, oldPerson._id
-
-        currentPersonId = null
-        publishPublications false, [], []
-
-  # If we get to here and currentPersonId was not set when initializing,
-  # we call publishPublications with empty list so that possibly something
-  # is published. If later on person is added, publishPublications will be
-  # simply called again.
-  publishPublications false, [], [] unless currentPersonId
-
-  publish.ready()
-
-  publish.onStop =>
-    handlePersons.stop() if handlePersons
-    handlePublications.stop() if handlePublications
-
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, String
 
   return unless slug
 
-  currentPublications = {}
-  handlePublications = null
+  @related (author, person) =>
+    return unless author?._id
 
-  publishPublications = (authorId, newIsAdmin, newGroups, newLibrary) =>
-    newGroups || []
-    newLibrary ||= []
-
-    initializing = true
-    initializedPublications = []
-
-    oldHandlePublications = handlePublications
-    if authorId
-      handlePublications = Publication.documents.find(
-        if newIsAdmin
-          'authors._id': authorId
-          cached:
-            $exists: true
-        else
-          'authors._id': authorId
-          cached:
-            $exists: true
-          $or: [
-            processed:
-              $exists: true
-            $or: [
-              access: Publication.ACCESS.OPEN
-            ,
-              access: Publication.ACCESS.PRIVATE
-              'readUsers._id': @personId
-            ,
-              access: Publication.ACCESS.PRIVATE
-              'readGroups._id':
-                $in: newGroups
-            ]
-          ,
-            _id:
-              $in: newLibrary
-          ]
+    if person?.person
+      Publication.documents.find
+        'authors._id': author._id
+        cached:
+          $exists: true
       ,
         Publication.PUBLIC_FIELDS()
-      ).observeChanges
-        added: (id, fields) =>
-          initializedPublications.push id if initializing
-
-          return if currentPublications[id]
-          currentPublications[id] = true
-
-          @added 'Publications', id, fields
-
-        changed: (id, fields) =>
-          return if not currentPublications[id]
-
-          @changed 'Publications', id, fields
-
-        removed: (id) =>
-          return if not currentPublications[id]
-          delete currentPublications[id]
-
-          @removed 'Publications', id
-
-    initializing = false
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandlePublications.stop() if oldHandlePublications
-
-    # And then we remove those which are not published anymore
-    for id in _.difference _.keys(currentPublications), initializedPublications
-      delete currentPublications[id]
-      @removed 'Publications', id
-
-  currentPersonId = null # Just for asserts
-  lastIsAdmin = false
-  lastGroups = []
-  lastLibrary = []
-
-  if @personId
-    handlePersons = Person.documents.find(
+    else
+      Publication.documents.find
+        'authors._id': author._id
+        cached:
+          $exists: true
+        $or: [
+          processed:
+            $exists: true
+          $or: [
+            access: Publication.ACCESS.OPEN
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readUsers._id': @personId
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readGroups._id':
+              $in: _.pluck person?.inGroups, '_id'
+          ]
+        ,
+          _id:
+            $in: _.pluck person?.library, '_id'
+        ]
+      ,
+        Publication.PUBLIC_FIELDS()
+  ,
+    Person.documents.find
+      slug: slug
+    ,
+      fields:
+        _id: 1 # We want only id
+  ,
+    Person.documents.find
       _id: @personId
     ,
       fields:
@@ -608,144 +476,119 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
         isAdmin: 1
         inGroups: 1
         library: 1
-    ).observeChanges
-      added: (id, fields) =>
-        # There should be only one person with the id at every given moment
-        assert.equal currentPersonId, null
-
-        currentPersonId = id
-        lastIsAdmin = fields.isAdmin
-        lastGroups = _.pluck fields.inGroups, '_id'
-        lastLibrary = _.pluck fields.library, '_id'
-        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
-
-      changed: (id, fields) =>
-        # Person should already be added
-        assert.equal currentPersonId, id
-
-        lastIsAdmin = fields.isAdmin if _.has fields, 'isAdmin'
-        lastGroups = _.pluck fields.inGroups, '_id' if _.has fields, 'inGroups'
-        lastLibrary = _.pluck fields.library, '_id' if _.has fields, 'library'
-        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
-
-      removed: (id) =>
-        # We cannot remove the person if we never added the person before
-        assert.equal currentPersonId, id
-
-        currentPersonId = null
-        lastIsAdmin = false
-        lastGroups = []
-        lastLibrary = []
-        publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
-
-  currentAuthorId = null # Just for asserts
-
-  handleAuthors = Person.documents.find(
-    slug: slug
-  ,
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentAuthorId, null
-
-      currentAuthorId = id
-      publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
-
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.equal currentAuthorId, id
-
-      currentAuthorId = null
-      publishPublications currentAuthorId, lastIsAdmin, lastGroups, lastLibrary
-
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handleAuthors.stop() if handleAuthors
-    handlePublications.stop() if handlePublications
 
 Meteor.publish 'publications-by-id', (id) ->
   check id, String
 
   return unless id
 
-  publishUsingMyLibrary @, (isAdmin, groups, library) =>
-    if isAdmin
-      _id: id
-      cached:
-        $exists: true
+  @related (person) =>
+    if person?.person
+      Publication.documents.find
+        _id: id
+        cached:
+          $exists: true
+      ,
+        Publication.PUBLIC_FIELDS()
     else
-      _id: id
-      cached:
-        $exists: true
-      $or: [
-        processed:
+      Publication.documents.find
+        _id: id
+        cached:
           $exists: true
         $or: [
-          access: Publication.ACCESS.OPEN
+          processed:
+            $exists: true
+          $or: [
+            access: Publication.ACCESS.OPEN
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readUsers._id': @personId
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readGroups._id':
+              $in: _.pluck person?.inGroups, '_id'
+          ]
         ,
-          access: Publication.ACCESS.PRIVATE
-          'readUsers._id': @personId
-        ,
-          access: Publication.ACCESS.PRIVATE
-          'readGroups._id':
-            $in: groups
+          _id:
+            $in: _.pluck person?.library, '_id'
         ]
       ,
-        _id:
-          $in: library
-      ]
+        Publication.PUBLIC_FIELDS()
   ,
-    Publication.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1
 
 Meteor.publish 'publications-by-ids', (ids) ->
   check ids, [String]
 
   return unless ids?.length
 
-  publishUsingMyLibrary @, (isAdmin, groups, library) =>
-    if isAdmin
-      _id:
-        $in: ids
-      cached:
-        $exists: true
+  @related (person) =>
+    if person?.person
+      Publication.documents.find
+        _id:
+          $in: ids
+        cached:
+          $exists: true
+      ,
+        Publication.PUBLIC_FIELDS()
     else
-      _id:
-        $in: ids
-      cached:
-        $exists: true
-      $or: [
-        processed:
+      Publication.documents.find
+        _id:
+          $in: ids
+        cached:
           $exists: true
         $or: [
-          access: Publication.ACCESS.OPEN
+          processed:
+            $exists: true
+          $or: [
+            access: Publication.ACCESS.OPEN
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readUsers._id': @personId
+          ,
+            access: Publication.ACCESS.PRIVATE
+            'readGroups._id':
+              $in: _.pluck person?.inGroups, '_id'
+          ]
         ,
-          access: Publication.ACCESS.PRIVATE
-          'readUsers._id': @personId
-        ,
-          access: Publication.ACCESS.PRIVATE
-          'readGroups._id':
-            $in: groups
+          _id:
+            $in: _.pluck person?.library, '_id'
         ]
       ,
-        _id:
-          $in: library
-      ]
+        Publication.PUBLIC_FIELDS()
   ,
-    Publication.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1
 
 Meteor.publish 'my-publications', ->
-  # TODO: isAdmin and groups are not really used, so this publish is not as optimized as it should be, probably we should make publishUsingMyLibrary a more general query constructor
-  publishUsingMyLibrary @, (isAdmin, groups, library) =>
-    _id:
-      $in: library
-    cached:
-      $exists: true
+  @related (person) =>
+    Publication.documents.find
+      _id:
+        $in: _.pluck person?.library, '_id'
+      cached:
+        $exists: true
+    ,
+      Publication.PUBLIC_FIELDS()
   ,
-    Publication.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        library: 1
 
 # We could try to combine my-publications and my-publications-importing,
 # but it is easier to have two and leave to Meteor to merge them together,
