@@ -53,21 +53,25 @@
 
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
-    {{#if local}}
-      <a href="{{profilePath currentPerson.slug}}">
-        <img src="{{currentPerson.avatar 30}}" class="avatar" />
-      </a>
-    {{else}}
-      <a href="{{profilePath author.slug}}">
-        <img src="{{author.avatar 30}}" class="avatar" />
-      </a>
+    {{#unless local}}
       {{> annotationMetaMenu}}
-    {{/if}}
+    {{/unless}}
     <div class="annotation-wrapper">
       {{#if local}}
         {{> annotationEditor}}
       {{else}}
-        <div class="annotation-header">
+        {{#if editing}}
+          {{> annotationEditor}}
+        {{else}}
+          <div class="annotation-content">
+            <div class="body">{{{body}}}</div>
+            {{> annotationTags}}
+          </div>
+        {{/if}}
+        <div class="annotation-footer">
+          <a href="{{profilePath author.slug}}">
+            <img src="{{author.avatar 30}}" class="avatar" />
+          </a>
           <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
@@ -78,14 +82,6 @@
             {{/if}}
           {{/if}}
         </div>
-        {{#if editing}}
-          {{> annotationEditor}}
-        {{else}}
-          <div class="annotation-content">
-            <div class="body">{{{body}}}</div>
-            {{> annotationTags}}
-          </div>
-        {{/if}}
       {{/if}}
     </div>
   </li>

@@ -411,14 +411,6 @@ annotations-control-height = 0px
 
     /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
 
-    .avatar
-      width 30px
-      height 30px
-      margin 7px 0 0 0
-      float left
-      border-radius 4px
-      display inline-block
-    
     .annotation-wrapper
       position relative
       display block
@@ -428,16 +420,21 @@ annotations-control-height = 0px
       box-shadow 0 0 0 1px box-shadow-border
       transition 0.2s
 
-      .annotation-header
-        padding 15px
+      .annotation-footer
+        padding 10px
         color #777
         background-color #f7f7f7
-        border-bottom 1px solid #e3e3e3
-        border-top-left-radius 4px
-        border-top-right-radius 4px
+        border-top 1px solid #e3e3e3
+
+        .avatar
+          width 30px
+          height 30px
+          margin 0
+          border-radius 4px
+          display inline-block
 
         .author-name
-          margin 0 10px 0 0
+          margin 0 10px
           display inline-block
 
         .timestamp
@@ -445,10 +442,11 @@ annotations-control-height = 0px
 
         .edit-button, .cancel-button
           display inline-block
+          margin 5px
           float right
 
       .annotation-content
-        padding 15px 20px 15px 15px
+        padding 15px 20px 0 15px
 
         .body[contenteditable=true]:focus
           outline none
@@ -470,30 +468,6 @@ annotations-control-height = 0px
         font-size smaller
         border 0
 
-    .annotation-wrapper:after
-      content ''
-      position absolute
-      border-style solid
-      border-width 7px 9px 7px 0
-      border-color transparent #f7f7f7
-      display block
-      width 0
-      z-index 1
-      left -9px
-      top 16px
-
-    .annotation-wrapper:before
-      content ''
-      position absolute
-      border-style solid
-      border-width 7px 9px 7px 0
-      border-color transparent #e3e3e3
-      display block
-      width 0
-      z-index 0
-      left -10px
-      top 16px
-
     .meta-menu
       position absolute
       width small-meta-menu-width
@@ -501,10 +475,8 @@ annotations-control-height = 0px
       padding small-meta-menu-padding
       /* We re-set this dynamically in Template.annotationMetaMenu.rendered */
       z-index 200
-      top 54px
+      top 0
       left 0
-      right 0
-      margin-right -(small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
 
       i.icon-menu
         font-size small-meta-menu-icon-font-size
