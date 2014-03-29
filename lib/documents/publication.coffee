@@ -107,7 +107,7 @@ class @Publication extends Document
 
     return true if @access is Publication.ACCESS.CLOSED
 
-    assert.equal @access, Publication.ACCESS.PRIVATE
+    # We assume @access is private here
 
     return false unless person?._id
 

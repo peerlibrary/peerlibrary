@@ -418,25 +418,30 @@ Template.publicationPrivateAccessControl.events
     e.preventDefault()
 
     # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
-    newUserId = $(template.findAll '.add-user .name').val()
+    personId = $(template.findAll '.add-user .name').val()
 
-    return unless newUserId
+    return unless personId
 
-    return if newUserId in _.pluck template.data.readUsers, '_id'
+    return if personId in _.pluck template.data.readUsers, '_id'
 
     if template.data instanceof Publication
-      method = 'publication-grant-read-to-user'
+      Meteor.call 'publication-grant-read-to-user', template.data._id, personId, (error, count) ->
+        return Notify.meteorError error if error
+
+        Notify.success "User added." if count
+
+      return # Make sure CoffeeScript does not return anything
+
     else if template.data instanceof Annotation
-      method = 'annotation-grant-read-to-user'
+      Meteor.call 'grant-read-access-to-person', 'Annotation', template.data._id, personId, (error, count) ->
+        return Notify.meteorError error if error
+
+        Notify.success "User added." if count
+
+      return # Make sure CoffeeScript does not return anything
+
     else
       assert false
-
-    Meteor.call method, template.data._id, newUserId, (error, count) ->
-      return Notify.meteorError error if error
-
-      Notify.success "User added." if count
-
-    return # Make sure CoffeeScript does not return anything
 
   'submit .add-group': (e, template) ->
     e.preventDefault()

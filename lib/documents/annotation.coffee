@@ -31,3 +31,21 @@ class @Annotation extends Document
   @ACCESS:
     PRIVATE: ACCESS.PRIVATE
     PUBLIC: ACCESS.PUBLIC
+
+  hasReadAccess: (person) =>
+    return true if person?.isAdmin
+
+    return true if @access is Annotation.ACCESS.PUBLIC
+
+    # We assume @access is private here
+
+    return false unless person?._id
+
+    return true if person._id in _.pluck @readUsers, '_id'
+
+    personGroups = _.pluck person?.inGroups, '_id'
+    annotationGroups = _.pluck @readGroups, '_id'
+
+    return true if _.intersection(personGroups, annotationGroups).length
+
+    return false
