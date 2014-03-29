@@ -524,55 +524,6 @@ Meteor.publish 'publications-by-id', (id) ->
         inGroups: 1
         library: 1
 
-Meteor.publish 'publications-by-ids', (ids) ->
-  check ids, [String]
-
-  return unless ids?.length
-
-  @related (person) =>
-    if person?.isAdmin
-      Publication.documents.find
-        _id:
-          $in: ids
-        cached:
-          $exists: true
-      ,
-        Publication.PUBLIC_FIELDS()
-    else
-      Publication.documents.find
-        _id:
-          $in: ids
-        cached:
-          $exists: true
-        $or: [
-          processed:
-            $exists: true
-          $or: [
-            access: Publication.ACCESS.OPEN
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readUsers._id': @personId
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readGroups._id':
-              $in: _.pluck person?.inGroups, '_id'
-          ]
-        ,
-          _id:
-            $in: _.pluck person?.library, '_id'
-        ]
-      ,
-        Publication.PUBLIC_FIELDS()
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
-
 Meteor.publish 'my-publications', ->
   @related (person) =>
     Publication.documents.find
