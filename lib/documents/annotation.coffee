@@ -10,7 +10,7 @@ class @Annotation extends Document
   #   user
   #     username
   # access: 0 (private), 1 (public)
-  # readUsers: if private access, list of users who have read permissions
+  # readPersons: if private access, list of users who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # body: annotation's body
   # publication:
@@ -23,7 +23,7 @@ class @Annotation extends Document
     name: 'Annotation'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      readUsers: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      readPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
       publication: @ReferenceField Publication, [], true, 'annotations'
       highlights: [@ReferenceField Highlight, [], true, 'annotations']
@@ -41,7 +41,7 @@ class @Annotation extends Document
 
     return false unless person?._id
 
-    return true if person._id in _.pluck @readUsers, '_id'
+    return true if person._id in _.pluck @readPersons, '_id'
 
     personGroups = _.pluck person?.inGroups, '_id'
     annotationGroups = _.pluck @readGroups, '_id'

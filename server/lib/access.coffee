@@ -8,7 +8,7 @@
       access: ACCESS.PUBLIC
     ,
       access: ACCESS.PRIVATE
-      'readUsers._id': person?._id
+      'readPersons._id': person?._id
     ,
       access: ACCESS.PRIVATE
       'readGroups._id':
@@ -49,13 +49,13 @@ Meteor.methods
 
     accessDocuments[documentName].documents.update
       _id: documentId
-      'readUsers._id':
+      'readPersons._id':
         $ne: personId
     ,
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
-        readUsers:
+        readPersons:
           _id: personId
 
   'grant-read-access-to-group': (documentName, documentId, groupId) ->

@@ -399,10 +399,10 @@ Template.publicationMetaMenu.events
 
     if access is Publication.ACCESS.PRIVATE
       update.$push =
-        readUsers:
+        readPersons:
           _id: Meteor.personId()
     else
-      update.$set.readUsers = []
+      update.$set.readPersons = []
       update.$set.readGroups = []
 
     Publication.documents.update Session.get('currentPublicationId'), update,
@@ -422,7 +422,7 @@ Template.publicationPrivateAccessControl.events
 
     return unless personId
 
-    return if personId in _.pluck template.data.readUsers, '_id'
+    return if personId in _.pluck template.data.readPersons, '_id'
 
     if template.data instanceof Publication
       Meteor.call 'publication-grant-read-to-user', template.data._id, personId, (error, count) ->
@@ -874,10 +874,10 @@ Template.annotationMetaMenu.events
 
     if access is Annotation.ACCESS.PRIVATE
       update.$push =
-        readUsers:
+        readPersons:
           _id: Meteor.personId()
     else
-      update.$set.readUsers = []
+      update.$set.readPersons = []
       update.$set.readGroups = []
 
     Annotation.documents.update template.data._id, update,

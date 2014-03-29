@@ -150,7 +150,7 @@ class @Publication extends Publication
       foreignId: 1
       source: 1
       access: 1
-      readUsers: 1
+      readPersons: 1
       readGroups: 1
 
 Publication.Meta.collection.allow
@@ -364,20 +364,20 @@ Meteor.methods
       _id: publicationId
       $and: [
         $or: [
-          'readUsers._id': Meteor.personId()
+          'readPersons._id': Meteor.personId()
         ,
           'readGroups._id':
             $in: _.pluck Meteor.person().inGroups, '_id'
         ]
       ,
-        'readUsers._id':
+        'readPersons._id':
           $ne: user._id
       ]
     ,
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
-        readUsers:
+        readPersons:
           _id: user._id
 
   # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
@@ -406,7 +406,7 @@ Meteor.methods
       _id: publicationId
       $and: [
         $or: [
-          'readUsers._id': Meteor.personId()
+          'readPersons._id': Meteor.personId()
         ,
           'readGroups._id':
             $in: _.pluck Meteor.person().inGroups, '_id'
@@ -449,7 +449,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
             access: Publication.ACCESS.OPEN
           ,
             access: Publication.ACCESS.PRIVATE
-            'readUsers._id': @personId
+            'readPersons._id': @personId
           ,
             access: Publication.ACCESS.PRIVATE
             'readGroups._id':
@@ -502,7 +502,7 @@ Meteor.publish 'publications-by-id', (id) ->
             access: Publication.ACCESS.OPEN
           ,
             access: Publication.ACCESS.PRIVATE
-            'readUsers._id': @personId
+            'readPersons._id': @personId
           ,
             access: Publication.ACCESS.PRIVATE
             'readGroups._id':

@@ -51,9 +51,9 @@ Annotation.Meta.collection.deny
 
     # Make sure does not get locked out when inserting
     if doc.access is Annotation.ACCESS.PRIVATE
-      if personId not in _.pluck doc.readUsers, '_id'
-        doc.readUsers ?= []
-        doc.readUsers.push
+      if personId not in _.pluck doc.readPersons, '_id'
+        doc.readPersons ?= []
+        doc.readPersons.push
           _id: personId
 
     # We return false as we are not
@@ -98,7 +98,7 @@ Meteor.publish 'annotations-by-id', (id) ->
         cached: 1
         processed: 1
         access: 1
-        readUsers: 1
+        readPersons: 1
         readGroups: 1
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
@@ -130,5 +130,5 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
         cached: 1
         processed: 1
         access: 1
-        readUsers: 1
+        readPersons: 1
         readGroups: 1

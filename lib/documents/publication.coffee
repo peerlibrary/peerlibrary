@@ -34,7 +34,7 @@ class @Publication extends Document
   # numberOfPages
   # fullText: full plain text content suitable for searching
   # access: 0 (private), 1 (closed), 2 (open)
-  # readUsers: if private access, list of users who have read permissions
+  # readPersons: if private access, list of users who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
@@ -51,7 +51,7 @@ class @Publication extends Document
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
-      readUsers: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      readPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @_filenamePrefix: ->
@@ -111,7 +111,7 @@ class @Publication extends Document
 
     return false unless person?._id
 
-    return true if person._id in _.pluck @readUsers, '_id'
+    return true if person._id in _.pluck @readPersons, '_id'
 
     personGroups = _.pluck person?.inGroups, '_id'
     publicationGroups = _.pluck @readGroups, '_id'
