@@ -743,9 +743,14 @@ Template.annotationEditor.rendered = ->
   return if @_rendered
   @_rendered = true
 
-  # TODO: Load Scribe
-  scribe = new Scribe @find('.annotation-content-editor'),
+  # Load Scribe
+  @_scribe = new Scribe @find('.annotation-content-editor'),
     allowBlockElements: true
+
+  @_scribe.use Scribe.plugins['blockquote-command']()
+  @_scribe.use Scribe.plugins['link-prompt-command']()
+  @_scribe.use Scribe.plugins['smart-lists']()
+  @_scribe.use Scribe.plugins['curly-quotes']()
 
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
@@ -801,9 +806,48 @@ Template.annotationEditor.events
     e.preventDefault()
     e.stopPropagation()
 
-    # TODO: Scribe plugins
+    # Port of scribe-plugin-toolbar
+    # https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
+    command = template._scribe.getCommand $(e.currentTarget).data 'command-name'
+    template._scribe.el.focus()
+    command.execute()
 
     return # Make sure CoffeeScript does not return anything
+
+  'keyup .format-buttons li': (e, template) ->
+    updateScribeUI e, template
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseup .format-buttons li': (e, template) ->
+    updateScribeUI e, template
+    return # Make sure CoffeeScript does not return anything
+
+  'focus .format-buttons li': (e, template) ->
+    updateScribeUI e, template
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .format-buttons li': (e, template) ->
+    updateScribeUI e, template
+    return # Make sure CoffeeScript does not return anything
+
+# Port of scribe-plugin-toolbar
+# https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
+updateScribeUI = (e, template) ->
+  $button = $(e.currentTarget)
+  selection = new template._scribe.api.Selection()
+  command = template._scribe.getCommand $button.data 'command-name'
+
+  if selection.range and command.queryEnabled()
+    $button.removeAttr 'disabled'
+
+    if command.queryState()
+      $button.addClass 'active'
+    else
+      $button.removeClass 'active'
+  else
+    $button.attr 'disabled', 'disabled'
+
+  return # Make sure CoffeeScript does not return anything
 
 Template.highlightInvite.rendered = ->
   $(@findAll '.body').balanceText()
