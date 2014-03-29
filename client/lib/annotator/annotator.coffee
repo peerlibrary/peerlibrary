@@ -128,14 +128,14 @@ class @Annotator extends Annotator
     highlight.deselect() for highlight in @getHighlights()
 
   _addHighlightToEditor: _.debounce (id) =>
-    $('.annotation.local .annotation-content-editor').append(' h:' + id)
+    $('.annotation.local .annotation-content-editor').append('<p>h:' + id + '<\/p>')
   , 100
 
   _removeHighlightFromEditor: (id) =>
     $editor = $('.annotation.local .annotation-content-editor')
 
     # Clean all occurrences of h:[id]
-    re = new RegExp ' h:' + id, 'g'
+    re = new RegExp 'h:' + id, 'g'
     updatedHTML = $editor.html().replace re, ''
     $editor.html updatedHTML
 

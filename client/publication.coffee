@@ -744,6 +744,8 @@ Template.annotationEditor.rendered = ->
   @_rendered = true
 
   # TODO: Load Scribe
+  scribe = new Scribe @find('.annotation-content-editor'),
+    allowBlockElements: true
 
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
