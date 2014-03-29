@@ -430,7 +430,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   @related (author, person) =>
     return unless author?._id
 
-    if person?.person
+    if person?.isAdmin
       Publication.documents.find
         'authors._id': author._id
         cached:
@@ -483,7 +483,7 @@ Meteor.publish 'publications-by-id', (id) ->
   return unless id
 
   @related (person) =>
-    if person?.person
+    if person?.isAdmin
       Publication.documents.find
         _id: id
         cached:
@@ -530,7 +530,7 @@ Meteor.publish 'publications-by-ids', (ids) ->
   return unless ids?.length
 
   @related (person) =>
-    if person?.person
+    if person?.isAdmin
       Publication.documents.find
         _id:
           $in: ids
