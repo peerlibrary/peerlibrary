@@ -18,3 +18,7 @@
 	path = packages/medium-editor/medium-editor
 	url = git://github.com/peerlibrary/medium-editor.git
 	branch = peerlibrary
+[submodule "packages/scribe/scribe"]
+	path = packages/scribe/scribe
+	url = https://github.com/peerlibrary/scribe.git
+	branch = dist
