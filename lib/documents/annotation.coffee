@@ -25,9 +25,9 @@ class @Annotation extends Document
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       readUsers: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
-      publication: @ReferenceField Publication
+      publication: @ReferenceField Publication, [], true, 'annotations'
       highlights: [@ReferenceField Highlight, [], true, 'annotations']
 
   @ACCESS:
-    PRIVATE: 0
-    PUBLIC: 1
+    PRIVATE: ACCESS.PRIVATE
+    PUBLIC: ACCESS.PUBLIC

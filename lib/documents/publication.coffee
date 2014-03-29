@@ -36,6 +36,8 @@ class @Publication extends Document
   # access: 0 (private), 1 (closed), 2 (open)
   # readUsers: if private access, list of users who have read permissions
   # readGroups: if private access, list of groups who have read permissions
+  # annotations: list of (reverse field from Annotation.publication)
+  #   _id: annotation id
   # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
@@ -88,6 +90,32 @@ class @Publication extends Document
     moment(@createdAt).format 'MMMM Do YYYY'
 
   @ACCESS:
-    PRIVATE: 0
+    PRIVATE: ACCESS.PRIVATE
     CLOSED: 1
     OPEN: 2
+
+  hasReadAccess: (person) =>
+    return false unless @cached
+
+    return true if person?.isAdmin
+
+    return true if @_id in _.pluck person?.library, '_id'
+
+    return false unless @processed
+
+    return true if @access is Publication.ACCESS.OPEN
+
+    return true if @access is Publication.ACCESS.CLOSED
+
+    assert.equal @access, Publication.ACCESS.PRIVATE
+
+    return false unless person?._id
+
+    return true if person._id in _.pluck @readUsers, '_id'
+
+    personGroups = _.pluck person?.inGroups, '_id'
+    publicationGroups = _.pluck @readGroups, '_id'
+
+    return true if _.intersection(personGroups, publicationGroups).length
+
+    return false
