@@ -802,6 +802,24 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'input .annotation-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+
+    if $editor.text()
+      unless template.data.editing
+        # Expand
+        LocalAnnotation.documents.update template.data._id,
+          $set:
+            editing: true
+    else
+      if template.data.editing
+        # Collapse
+        LocalAnnotation.documents.update template.data._id,
+          $set:
+            editing: false
+
+    return # Make sure CoffeeScript does not return anything
+
   'mousedown .format-buttons li': (e, template) ->
     e.preventDefault()
     e.stopPropagation()

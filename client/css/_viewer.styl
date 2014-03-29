@@ -381,7 +381,24 @@ annotations-control-height = 0px
       float right
 
 .annotations-editor-form-wrapper
-  padding 20px
+  padding 15px
+
+.annotations-editor.collapsed
+  .form-header
+    display none
+
+  .form-content
+    .format-toolbar
+      display none
+
+    .form-body
+      min-height 0
+
+  .form-tags
+    display none
+
+  .form-control
+    display none
 
 .annotations-list
   list-style none
@@ -452,7 +469,7 @@ annotations-control-height = 0px
           float right
 
       .annotation-content
-        padding 5px 20px
+        padding 5px 15px
 
         .body[contenteditable=true]:focus
           outline none
