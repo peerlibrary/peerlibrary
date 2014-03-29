@@ -575,7 +575,7 @@ Template.publicationAnnotations.annotations = ->
   ,
     sort:
       local: -1
-      created: 1
+      createdAt: 1
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
