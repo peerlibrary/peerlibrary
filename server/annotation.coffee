@@ -49,7 +49,7 @@ Annotation.Meta.collection.deny
     doc.updatedAt = doc.createdAt
     doc.highlights = [] if not doc.highlights
 
-    doc = Annotation.applyDefaultAccess doc, Meteor.personId userId
+    doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
 
     # We return false as we are not
     # checking anything, just adding fields
@@ -62,7 +62,7 @@ Annotation.Meta.collection.deny
     # checking anything, just updating fields
     false
 
-registerForGranting Annotation
+registerForAccess Annotation
 
 Meteor.publish 'annotations-by-id', (id) ->
   check id, String

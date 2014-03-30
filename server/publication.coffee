@@ -153,27 +153,7 @@ class @Publication extends Publication
       readPersons: 1
       readGroups: 1
 
-Publication.Meta.collection.allow
-  update: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # TODO: Check if user has access to changing the publication (reputation points, in permission group)
-    personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Publication.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
+registerForAccess Publication
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
@@ -224,7 +204,7 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
-      id = Publication.documents.insert
+      id = Publication.documents.insert Publication.applyDefaultAccess Meteor.personId(),
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
         source: 'import'
@@ -236,7 +216,6 @@ Meteor.methods
         ]
         sha256: sha256
         metadata: false
-        access: Publication.ACCESS.OPEN
       verify = false
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
@@ -336,92 +315,6 @@ Meteor.methods
         library:
           _id: publication._id
 
-  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'publication-grant-read-to-user': (publicationId, userId) ->
-    check publicationId, String
-    check userId, String
-
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
-
-    # We do not check here if publication exists or if user has already read permission because we have query below with these conditions
-
-    # TODO: Check that userId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can grant permissions to authors, without having for all of them to be registered?
-
-    # TODO: Should be allowed also if user is admin
-    # TODO: Should check if userId is a valid one?
-
-    # TODO: Temporary, autocomplete would be better
-    user = Person.documents.findOne
-      $or: [
-        _id: userId
-      ,
-        'user.username': userId
-      ]
-
-    return unless user
-
-    Publication.documents.update
-      _id: publicationId
-      $and: [
-        $or: [
-          'readPersons._id': Meteor.personId()
-        ,
-          'readGroups._id':
-            $in: _.pluck Meteor.person().inGroups, '_id'
-        ]
-      ,
-        'readPersons._id':
-          $ne: user._id
-      ]
-    ,
-      $set:
-        updatedAt: moment.utc().toDate()
-      $addToSet:
-        readPersons:
-          _id: user._id
-
-  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Publication.Meta.collection.allow and modifications from Publication.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'publication-grant-read-to-group': (publicationId, groupId) ->
-    check publicationId, String
-    check groupId, String
-
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
-
-    # We do not check here if publication exists or if group has already read permission because we have query below with these conditions
-
-    # TODO: Should be allowed also if user is admin
-    # TODO: Should check if groupId is a valid one?
-
-    # TODO: Temporary, autocomplete would be better
-    group = Group.documents.findOne
-      $or: [
-        _id: groupId
-      ,
-        name: groupId
-      ]
-
-    return unless group
-
-    Publication.documents.update
-      _id: publicationId
-      $and: [
-        $or: [
-          'readPersons._id': Meteor.personId()
-        ,
-          'readGroups._id':
-            $in: _.pluck Meteor.person().inGroups, '_id'
-        ]
-      ,
-        'readGroups._id':
-          $ne: group._id
-      ]
-    ,
-      $set:
-        updatedAt: moment.utc().toDate()
-      $addToSet:
-        readGroups:
-          _id: group._id
-
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, String
 
@@ -430,37 +323,9 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   @related (author, person) =>
     return unless author?._id
 
-    if person?.isAdmin
-      Publication.documents.find
-        'authors._id': author._id
-        cached:
-          $exists: true
-      ,
-        Publication.PUBLIC_FIELDS()
-    else
-      Publication.documents.find
-        'authors._id': author._id
-        cached:
-          $exists: true
-        $or: [
-          processed:
-            $exists: true
-          $or: [
-            access: Publication.ACCESS.OPEN
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readPersons._id': @personId
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readGroups._id':
-              $in: _.pluck person?.inGroups, '_id'
-          ]
-        ,
-          _id:
-            $in: _.pluck person?.library, '_id'
-        ]
-      ,
-        Publication.PUBLIC_FIELDS()
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      'authors._id': author._id
+    ), Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       slug: slug
@@ -483,37 +348,9 @@ Meteor.publish 'publications-by-id', (id) ->
   return unless id
 
   @related (person) =>
-    if person?.isAdmin
-      Publication.documents.find
-        _id: id
-        cached:
-          $exists: true
-      ,
-        Publication.PUBLIC_FIELDS()
-    else
-      Publication.documents.find
-        _id: id
-        cached:
-          $exists: true
-        $or: [
-          processed:
-            $exists: true
-          $or: [
-            access: Publication.ACCESS.OPEN
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readPersons._id': @personId
-          ,
-            access: Publication.ACCESS.PRIVATE
-            'readGroups._id':
-              $in: _.pluck person?.inGroups, '_id'
-          ]
-        ,
-          _id:
-            $in: _.pluck person?.library, '_id'
-        ]
-      ,
-        Publication.PUBLIC_FIELDS()
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      _id: id
+    ), Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -526,31 +363,40 @@ Meteor.publish 'publications-by-id', (id) ->
 
 Meteor.publish 'my-publications', ->
   @related (person) =>
-    Publication.documents.find
+    Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
         $in: _.pluck person?.library, '_id'
-      cached:
-        $exists: true
-    ,
-      Publication.PUBLIC_FIELDS()
+    ), Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
       fields:
         # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
         library: 1
 
 # We could try to combine my-publications and my-publications-importing,
 # but it is easier to have two and leave to Meteor to merge them together,
 # because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
-  Publication.documents.find
-    'importing.person._id': @personId
-    cached:
-      $exists: true
+  @related (person) =>
+    return unless person?._id
+
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      'importing.person._id': person._id
+    ),
+      fields: _.extend Publication.PUBLIC_FIELDS().fields,
+        # TODO: We should not push temporaryFile to the client
+        # Ensure that importing contains only this person
+        'importing.$': 1
   ,
-    fields: _.extend Publication.PUBLIC_FIELDS().fields,
-      # TODO: We should not push temporaryFile to the client
-      # Ensure that importing contains only this person
-      'importing.$': 1
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1

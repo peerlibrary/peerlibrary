@@ -5,9 +5,11 @@
 @hasReadAccess = (document, person) ->
   return true if person?.isAdmin
 
-  return true if document.access is Annotation.ACCESS.PUBLIC
+  return true if document.access is ACCESS.PUBLIC
 
-  # We assume document.access is private here
+  # Access should be private here, if it is not, we prevent access to the document
+  # TODO: Should we log this?
+  return false unless document.access is ACCESS.PRIVATE
 
   return false unless person?._id
 
@@ -23,7 +25,7 @@
 @requireReadAccessSelector = (person, selector) ->
   return selector if person?.isAdmin
 
-  # We use $or inside of $and to not override any existing $or
+  # We use $and to not override any existing selector field
   selector.$and = [] unless selector.$and
   selector.$and.push
     $or: [
@@ -62,11 +64,11 @@ class @AccessDocument extends Document
   @defaultAccess: ->
     @ACCESS.PRIVATE
 
-  @applyDefaultAccess: (document, personId) ->
+  @applyDefaultAccess: (personId, document) ->
     document.access = @defaultAccess() if not document.access?
 
     # Makes sure we do not get locked out
-    if document.access is @ACCESS.PRIVATE
+    if personId and document.access is @ACCESS.PRIVATE
       if personId not in _.pluck document.readPersons, '_id'
         document.readPersons ?= []
         document.readPersons.push

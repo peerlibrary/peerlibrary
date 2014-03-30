@@ -329,7 +329,6 @@ Meteor.methods
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
         source: 'arXiv'
-        access: Publication.ACCESS.OPEN
 
       # TODO: Deal with this
       #if publication.msc2010?
@@ -338,7 +337,7 @@ Meteor.methods
 
       # TODO: Upsert would be better
       if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
-        id = Publication.documents.insert publication
+        id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         for author in publication.authors
           Person.documents.update author._id,
             $addToSet:

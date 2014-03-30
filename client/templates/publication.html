@@ -20,16 +20,20 @@
       </p>
       <p>Source: {{publication.source}}</p>
       <p>{{publication.createdAt}}</p>
-      <form class="access publication-access">
-        <input type="radio" value="open" name="publication-access-{{publication._id}}" id="publication-access-open-{{publication._id}}" {{#if open}}checked="checked"{{/if}} /> <label for="publication-access-open-{{publication._id}}"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
-        <input type="radio" value="closed" name="publication-access-{{publication._id}}" id="publication-access-closed-{{publication._id}}" {{#if closed}}checked="checked"{{/if}} /> <label for="publication-access-closed-{{publication._id}}"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
-        <input type="radio" value="private" name="publication-access-{{publication._id}}" id="publication-access-private-{{publication._id}}" {{#if private}}checked="checked"{{/if}} /> <label for="publication-access-private-{{publication._id}}"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
-      </form>
+      {{>publicationAccessControl publication}}
       {{#if private}}
         {{> publicationPrivateAccessControl publication}}
       {{/if}}
     </div>
   </div>
+</template>
+
+<template name="publicationAccessControl">
+  <form class="access publication-access">
+    <input type="radio" value="open" name="publication-access-{{publication._id}}" id="publication-access-open-{{publication._id}}" {{#if open}}checked="checked"{{/if}} /> <label for="publication-access-open-{{publication._id}}"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
+    <input type="radio" value="closed" name="publication-access-{{publication._id}}" id="publication-access-closed-{{publication._id}}" {{#if closed}}checked="checked"{{/if}} /> <label for="publication-access-closed-{{publication._id}}"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
+    <input type="radio" value="private" name="publication-access-{{publication._id}}" id="publication-access-private-{{publication._id}}" {{#if private}}checked="checked"{{/if}} /> <label for="publication-access-private-{{publication._id}}"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
+  </form>
 </template>
 
 <template name="publicationPrivateAccessControl">
@@ -38,7 +42,7 @@
       {{> groupMember}}
     {{/each}}
   </ol>
-  <form class="add-user">
+  <form class="add-person">
     <input type="text" class="name" />
     <button type="submit" class="add">Add an user</button>
   </form>

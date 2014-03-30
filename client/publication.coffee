@@ -380,87 +380,63 @@ Deps.autorun ->
 Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
-Template.publicationMetaMenu.open = ->
-  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.OPEN
+Template.publicationAccessControl.open = ->
+  @access is Publication.ACCESS.OPEN
 
-Template.publicationMetaMenu.closed = ->
-  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.CLOSED
+Template.publicationAccessControl.closed = ->
+  @access is Publication.ACCESS.CLOSED
 
-Template.publicationMetaMenu.private = ->
-  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.PRIVATE
+Template.publicationAccessControl.private = ->
+  @access is Publication.ACCESS.PRIVATE
 
-Template.publicationMetaMenu.events
+Template.publicationAccessControl.events
   'change .access input:radio': (e, template) ->
     access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    update =
-      $set:
-        access: access
+    return if access is template.data.access
 
-    if access is Publication.ACCESS.PRIVATE
-      update.$push =
-        readPersons:
-          _id: Meteor.personId()
+    # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+    if template.data.constructor.Meta.collection._name is null
+      documentName = template.data.constructor.Meta.parent._name
     else
-      update.$set.readPersons = []
-      update.$set.readGroups = []
+      documentName = template.data.constructor.Meta._name
 
-    Publication.documents.update Session.get('currentPublicationId'), update,
-      (error, count) ->
-        return Notify.meteorError error, true if error
+    Meteor.call 'set-access', documentName, template.data._id, access, (error, count) ->
+      return Notify.meteorError error if error
 
-        Notify.success "Access changed." if count
+      Notify.success "Access changed." if count
 
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationPrivateAccessControl.events
-  'submit .add-user': (e, template) ->
+  'submit .add-person': (e, template) ->
     e.preventDefault()
 
     # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
-    personId = $(template.findAll '.add-user .name').val()
+    personId = $(template.findAll '.add-person .name').val()
 
     return unless personId
 
     return if personId in _.pluck template.data.readPersons, '_id'
 
-    if template.data instanceof Publication
-      Meteor.call 'publication-grant-read-to-user', template.data._id, personId, (error, count) ->
-        return Notify.meteorError error if error
+    Meteor.call 'grant-read-access-to-person', template.data.constructor.Meta._name, template.data._id, personId, (error, count) ->
+      return Notify.meteorError error if error
 
-        Notify.success "User added." if count
+      Notify.success "User added." if count
 
-      return # Make sure CoffeeScript does not return anything
-
-    else if template.data instanceof Annotation
-      Meteor.call 'grant-read-access-to-person', 'Annotation', template.data._id, personId, (error, count) ->
-        return Notify.meteorError error if error
-
-        Notify.success "User added." if count
-
-      return # Make sure CoffeeScript does not return anything
-
-    else
-      assert false
+    return # Make sure CoffeeScript does not return anything
 
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
     # TODO: We should use autocomplete to get information about groups with a given name so that when a group is chosen, we have its ID we use here, "name" here is currently misleading because it has to be raw ID with this code
-    newGroupId = $(template.findAll '.add-group .name').val()
+    groupId = $(template.findAll '.add-group .name').val()
 
-    return unless newGroupId
+    return unless groupId
 
-    return if newGroupId in _.pluck template.data.readGroups, '_id'
+    return if groupId in _.pluck template.data.readGroups, '_id'
 
-    if template.data instanceof Publication
-      method = 'publication-grant-read-to-group'
-    else if template.data instanceof Annotation
-      method = 'annotation-grant-read-to-group'
-    else
-      assert false
-
-    Meteor.call method, template.data._id, newGroupId, (error, count) ->
+    Meteor.call 'grant-read-access-to-group', template.data.constructor.Meta._name, template.data._id, groupId, (error, count) ->
       return Notify.meteorError error if error
 
       Notify.success "Group added." if count
@@ -868,22 +844,17 @@ Template.annotationMetaMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    update =
-      $set:
-        access: access
+    return if access is template.data.access
 
-    if access is Annotation.ACCESS.PRIVATE
-      update.$push =
-        readPersons:
-          _id: Meteor.personId()
+    # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+    if template.data.constructor.Meta.collection._name is null
+      documentName = template.data.constructor.Meta.parent._name
     else
-      update.$set.readPersons = []
-      update.$set.readGroups = []
+      documentName = template.data.constructor.Meta._name
 
-    Annotation.documents.update template.data._id, update,
-      (error, count) ->
-        return Notify.meteorError error, true if error
+    Meteor.call 'set-access', documentName, template.data._id, access, (error, count) ->
+      return Notify.meteorError error if error
 
-        Notify.success "Access changed." if count
+      Notify.success "Access changed." if count
 
     return # Make sure CoffeeScript does not return anything

@@ -1,4 +1,7 @@
-class @Publication extends Document
+class @Publication extends AccessDocument
+  # access: 0 (private), 1 (closed), 2 (open)
+  # readPersons: if private access, list of persons who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
   # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
@@ -33,9 +36,6 @@ class @Publication extends Document
   #   stack: stack trace of the error
   # numberOfPages
   # fullText: full plain text content suitable for searching
-  # access: 0 (private), 1 (closed), 2 (open)
-  # readPersons: if private access, list of users who have read permissions
-  # readGroups: if private access, list of groups who have read permissions
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
   # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
@@ -51,8 +51,6 @@ class @Publication extends Document
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
-      readPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
-      readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
@@ -107,7 +105,9 @@ class @Publication extends Document
 
     return true if @access is Publication.ACCESS.CLOSED
 
-    # We assume @access is private here
+    # Access should be private here, if it is not, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access is Publication.ACCESS.PRIVATE
 
     return false unless person?._id
 
@@ -119,3 +119,37 @@ class @Publication extends Document
     return true if _.intersection(personGroups, publicationGroups).length
 
     return false
+
+  @requireReadAccessSelector: (person, selector) ->
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+    selector.$and.push
+      cached:
+        $exists: true
+
+    return selector if person?.isAdmin
+
+    selector.$and.push
+      $or: [
+        processed:
+          $exists: true
+        $or: [
+          access: Publication.ACCESS.OPEN
+        ,
+          access: Publication.ACCESS.CLOSED
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readPersons._id': person?._id
+        ,
+          access: Publication.ACCESS.PRIVATE
+          'readGroups._id':
+            $in: _.pluck person?.inGroups, '_id'
+        ]
+      ,
+        _id:
+          $in: _.pluck person?.library, '_id'
+      ]
+    selector
+
+  @defaultAccess: ->
+    @ACCESS.OPEN
