@@ -379,7 +379,7 @@ annotations-control-height = 30px
       float right
       margin 0 20px
 
-    .publish
+    button.save
       margin-right 0
       float right
 
@@ -494,6 +494,45 @@ annotations-control-height = 30px
         font-size smaller
         border 0
 
+    ul.comments-list
+      list-style-type none
+      margin 0 0 20px 57px
+      padding 0
+
+      li
+        margin 5px 0
+        overflow hidden
+
+        .avatar
+          float left
+          width 30px
+          height 30px
+          margin 0 7px 0 0
+          border-radius 4px
+
+        .comment-content
+          overflow hidden
+          background-color #f7f7f7
+          border 1px solid #e3e3e3
+          border-radius 2px
+          padding 7px
+
+          .comment-content-editor
+            background white
+            border 1px solid #e3e3e3
+            padding 7px
+            overflow hidden
+
+          button.comment
+            float right
+            margin-left 7px
+
+      li.comment-editor
+        display none
+
+        .avatar
+          margin-top 9px
+
     .meta-menu
       position absolute
       width small-meta-menu-width
@@ -583,6 +622,11 @@ annotations-control-height = 30px
       z-index 0
       left -10px
       top 24px
+
+  .annotation.selected
+    ul.comments-list
+      li.comment-editor
+        display block
 
   .annotation.invite
     position absolute

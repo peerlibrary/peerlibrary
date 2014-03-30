@@ -88,6 +88,9 @@
         </div>
       {{/if}}
     </div>
+    {{#unless local}}
+      {{> annotationCommentsList}}
+    {{/unless}}
   </li>
 </template>
 
@@ -129,7 +132,7 @@
           </div>
         </div>
         <div class="form-control">
-          <button type="button" class="btn blue publish">Save</button>
+          <button type="button" class="btn blue save">Save</button>
           <div class="visibility-menu">
             {{> visibilityMenu}}
           </div>
@@ -147,6 +150,36 @@
       {{/each}}
     </ul>
   </div>
+</template>
+
+<template name="annotationCommentsList">
+  <ul class="comments-list">
+    {{#each comments}}
+    <li class="comment">
+      <a href="{{profilePath author.slug}}">
+        <img src="{{author.avatar 30}}" class="avatar" />
+      </a>
+      <div class="comment-content">
+        <div class="body">{{{body}}}</div>
+      </div>
+    </li>
+    {{/each}}
+    {{> annotationCommentEditor}}
+  </ul>
+</template>
+
+<template name="annotationCommentEditor">
+  <li class="comment-editor">
+    <a href="{{profilePath currentPerson.slug}}">
+      <img src="{{currentPerson.avatar 30}}" class="avatar" />
+    </a>
+    <div class="comment-content">
+      <button type="button" class="btn blue comment">Comment</button>
+      {{#constant}}
+        <div class="comment-content-editor" contenteditable></div>
+      {{/constant}}
+    </div>
+  </li>
 </template>
 
 <template name="visibilityMenu">

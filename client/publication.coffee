@@ -764,10 +764,13 @@ Template.annotationEditor.destroyed = ->
   @_rendered = false
 
 Template.annotationEditor.events
-  'click .publish': (e, template) ->
-    # TODO: Do this in autosave
-    $content = $(template.findAll '.annotation-content-editor')
-    body = $content.html()
+  'click button.save': (e, template) ->
+    $editor = $(template.findAll '.annotation-content-editor')
+
+    # Prevent empty annotations
+    return unless $editor.text()
+
+    body = $editor.html()
 
     $tags = $(template.findAll '.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
@@ -866,6 +869,47 @@ updateScribeUI = (e, template) ->
     $button.attr 'disabled', 'disabled'
 
   return # Make sure CoffeeScript does not return anything
+
+Template.annotationCommentEditor.created = ->
+  @_rendered = false
+
+Template.annotationCommentEditor.rendered = ->
+  return if @_rendered
+  @_rendered = true
+
+  @_scribe = new Scribe @find('.comment-content-editor'),
+    # No block elements, they would take up too much space
+    allowBlockElements: false
+
+Template.annotationCommentEditor.destroyed = ->
+  @_rendered = false
+
+Template.annotationCommentEditor.events
+  'click button.comment': (e, template) ->
+    $editor = $(template.findAll '.comment-content-editor')
+
+    # Prevent empty comments
+    return unless $editor.text()
+
+    body = $editor.html()
+    timestamp = moment.utc().toDate()
+
+    LocalAnnotation.documents.update @_id,
+      $addToSet:
+        comments:
+          createdAt: timestamp
+          updatedAt: timestamp
+          author:
+            _id: Meteor.personId()
+          body: body
+    ,
+      (error, docs) =>
+        return error if error
+
+        # Reset editor
+        $editor.empty()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.annotationsControl.events
   'click .add-button': (e, template) ->
