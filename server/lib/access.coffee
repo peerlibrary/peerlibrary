@@ -93,12 +93,22 @@ Meteor.methods
 
     throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
 
-    # TODO: Should add default?
+    if access is ACCESS.PRIVATE
+      accessDocuments[documentName].documents.update
+        _id: documentId
+        access:
+          $ne: access
+      ,
+        $set: _.extend accessDocuments[documentName].defaultPrivateAccessSettings(Meteor.personId(), documentId),
+          access: access
 
-    accessDocuments[documentName].documents.update
-      _id: documentId
-      access:
-        $ne: access
-    ,
-      $set:
-        access: access
+    else
+      accessDocuments[documentName].documents.update
+        _id: documentId
+        access:
+          $ne: access
+      ,
+        $set:
+          access: access
+          readPersons: []
+          readGroups: []

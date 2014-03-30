@@ -21,9 +21,6 @@
       <p>Source: {{publication.source}}</p>
       <p>{{publication.createdAt}}</p>
       {{>publicationAccessControl publication}}
-      {{#if private}}
-        {{> publicationPrivateAccessControl publication}}
-      {{/if}}
     </div>
   </div>
 </template>
@@ -34,6 +31,9 @@
     <input type="radio" value="closed" name="publication-access-{{publication._id}}" id="publication-access-closed-{{publication._id}}" {{#if closed}}checked="checked"{{/if}} /> <label for="publication-access-closed-{{publication._id}}"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
     <input type="radio" value="private" name="publication-access-{{publication._id}}" id="publication-access-private-{{publication._id}}" {{#if private}}checked="checked"{{/if}} /> <label for="publication-access-private-{{publication._id}}"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
   </form>
+  {{#if private}}
+    {{> publicationPrivateAccessControl}}
+  {{/if}}
 </template>
 
 <template name="publicationPrivateAccessControl">

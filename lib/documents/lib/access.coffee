@@ -75,3 +75,9 @@ class @AccessDocument extends Document
           _id: personId
 
     document
+
+  @defaultPrivateAccessSettings: (personId, documentId) ->
+    readPersons: [
+      _id: personId
+    ]
+    readGroups: []
