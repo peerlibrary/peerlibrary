@@ -8,14 +8,24 @@ Meteor.publish 'search-results', (query, limit) ->
 
   findQuery =
     $and: []
-    processed:
-      $exists: true
 
   for keyword in keywords when keyword
     findQuery.$and.push
       fullText: new RegExp keyword, 'i'
 
   return unless findQuery.$and.length
+
+  # TODO: Not reactive, can we make it?
+  person = Person.documents.findOne
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1
+
+  findQuery = Publication.requireReadAccessSelector person, findQuery
 
   queryId = Random.id()
 
