@@ -1,11 +1,24 @@
 <template name="publication">
-  <div class="viewer">
-    {{> publicationMetaMenu}}
-    {{> publicationScroller}}
-    {{> publicationDisplay}}
-    {{> annotationsControl}}
-    {{> publicationAnnotations}}
-  </div>
+  {{#if loading}}
+    <div class="simple loading">
+      <h2>Loading</h2>
+    </div>
+  {{else}}
+    {{#if notfound}}
+      <div class="simple notfound">
+        <h2>404 Not found</h2>
+        <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+      </div>
+    {{else}}
+      <div class="viewer">
+        {{> publicationMetaMenu}}
+        {{> publicationScroller}}
+        {{> publicationDisplay}}
+        {{> annotationsControl}}
+        {{> publicationAnnotations}}
+      </div>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="publicationMetaMenu">
@@ -59,9 +72,20 @@
 </template>
 
 <template name="publicationDisplay">
-  {{#constant}}
-    <div class="display-wrapper"></div>
-  {{/constant}}
+  {{#if cached}}
+    {{#constant}}
+      <div class="display-wrapper"></div>
+    {{/constant}}
+  {{else}}
+    <div class="display-wrapper closed-access">
+      <h2>Publication is closed access</h2>
+      <p>Publication is not open access and cannot be automatically displayed. Import its PDF to gain access.</p>
+      {{! TODO: Should we report this to Open Access Button? }}
+      {{! TODO: We should provide suggestions where to get PDF }}
+      {{! TODO: We should probably show metadata here for users to easier copy out to search for PDF }}
+      {{! TODO: We should link to user's open URL resolvers }}
+    </div>
+  {{/if}}
 </template>
 
 <template name="publicationScroller">
@@ -183,7 +207,7 @@
       </p>
       <form class="access annotation-access">
         <input type="radio" value="public" name="annotation-access-{{_id}}" id="annotation-access-public-{{_id}}" {{#if public}}checked="checked"{{/if}} /> <label for="annotation-access-public-{{_id}}"><i class="icon-public"></i> Public<span class="description">Everyone can see the annotation.</span></label><br/>
-        <input type="radio" value="private" name="annotation-access-{{_id}}" id="annotation-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} /> <label for="annotation-access-private-{{_id}}"><i class="icon-private"></i> Private<span class="description">Only the users listed can see the publication.</span></label>
+        <input type="radio" value="private" name="annotation-access-{{_id}}" id="annotation-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} /> <label for="annotation-access-private-{{_id}}"><i class="icon-private"></i> Private<span class="description">Only the users listed can see the annotation.</span></label>
       </form>
       {{#if private}}
         {{> publicationPrivateAccessControl}}

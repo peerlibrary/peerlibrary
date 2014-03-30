@@ -2,6 +2,8 @@
 
 draggingViewport = false
 currentPublication = null
+publicationHandle = null
+publicationCacheHandle = null
 
 # If set to an annotation id, focus on next render
 focusAnnotationId = null
@@ -25,6 +27,21 @@ setPublicationDOMReady = (ready) ->
 
   _publicationDOMReady = ready
   publicationDOMReadyDependency.changed()
+
+# Should not be used directly but through isPublicationSubscribing and setPublicationSubscribing
+_publicationSubscribing = false
+
+publicationSubscribingDependency = new Deps.Dependency()
+
+isPublicationSubscribing = ->
+  publicationSubscribingDependency.depend()
+  _publicationSubscribing
+
+setPublicationSubscribing = (ready) ->
+  return if _publicationSubscribing is ready
+
+  _publicationSubscribing = ready
+  publicationSubscribingDependency.changed()
 
 # Should not be used directly but through getViewport and setViewport
 _viewport =
@@ -351,10 +368,19 @@ class @Publication extends Publication
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
-    Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
-    Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
+    setPublicationSubscribing true
+    publicationHandle = Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+  else
+    setPublicationSubscribing false
+    publicationHandle = null
+    publicationCacheHandle = null
+
+Deps.autorun ->
+  if isPublicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
+    setPublicationSubscribing false
 
 Deps.autorun ->
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
@@ -376,6 +402,14 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.annotationPath publication._id, publication.slug, annotationId
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
+
+Template.publication.loading = ->
+  isPublicationSubscribing() # To register dependency
+  not publicationHandle?.ready() or not publicationCacheHandle?.ready()
+
+Template.publication.notfound = ->
+  isPublicationSubscribing() # To register dependency
+  publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
 Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
@@ -442,6 +476,10 @@ Template.publicationPrivateAccessControl.events
       Notify.success "Group added." if count
 
     return # Make sure CoffeeScript does not return anything
+
+Template.publicationDisplay.cached = ->
+  isPublicationSubscribing() # To register dependency
+  publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
@@ -858,3 +896,6 @@ Template.annotationMetaMenu.events
       Notify.success "Access changed." if count
 
     return # Make sure CoffeeScript does not return anything
+
+Template.footer.publicationSimple = ->
+  'simple' if Template.publication.loading() or Template.publication.notfound()

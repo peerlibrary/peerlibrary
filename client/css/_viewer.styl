@@ -7,6 +7,16 @@ section.publication
     margin 0
     width 100%
 
+section.publication
+  .simple
+    margin-left auto
+    margin-right auto
+    width 94%
+    margin-top simple-margin-top - header-height
+
+  .simple.loading
+    text-align center
+
 /* Meta menu
 ============ */
 
@@ -434,3 +444,7 @@ footer.publication
      then in code we update it to real width based on the PDF */
   width display-canvas-loading-width
   margin-left viewer-left
+
+footer.publication.simple
+  width inherit
+  margin-left inherit
