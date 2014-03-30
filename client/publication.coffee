@@ -874,6 +874,9 @@ updateScribeUI = (e, template) ->
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
     'annotation._id': @_id
+  ,
+    sort:
+      createdAt: 1
 
 Template.annotationCommentEditor.created = ->
   @_rendered = false
