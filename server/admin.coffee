@@ -329,6 +329,7 @@ Meteor.methods
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
         source: 'arXiv'
+        cachedId: Random.id()
 
       # TODO: Deal with this
       #if publication.msc2010?

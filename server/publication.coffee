@@ -38,26 +38,64 @@ class @Publication extends Publication
 
       fields
 
+  @_arXivFilename: (arXivId) ->
+    'arxiv' + Storage._path.sep + arXivId + '.pdf'
+
+  foreignFilename: =>
+    filename = switch @source
+      when 'arXiv' then Publication._arXivFilename @foreignId
+      else null
+
+    return unless filename
+
+    Publication._filenamePrefix() + filename
+
+  foreignUrl: =>
+    Storage.url @foreignFilename()
+
   checkCache: =>
     return if @cached
 
-    if not Storage.exists @filename()
-      Log.info "Caching PDF for #{ @_id } from the central server"
+    if not Storage.exists @cachedFilename()
+      # We provide a way for easy caching of sample publications so that
+      # developers can easily bootstrap their local development instance
+      return unless @foreignFilename()
 
-      pdf = HTTP.get 'http://stage.peerlibrary.org' + @url(),
-        timeout: 10000 # ms
-        encoding: null # PDFs are binary data
+      if Storage.exists @foreignFilename()
+        Log.info "Linking PDF for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
 
-      Storage.save @filename(), pdf.content
+        Storage.link @foreignFilename(), @cachedFilename()
+        assert Storage.exists @cachedFilename()
+
+      else
+        Log.info "Caching PDF for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
+
+        pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
+          timeout: 10000 # ms
+          encoding: null # PDFs are binary data
+
+        Storage.save @foreignFilename(), pdf.content
+        assert Storage.exists @foreignFilename()
+        Storage.link @foreignFilename(), @cachedFilename()
+        assert Storage.exists @cachedFilename()
+
+    if not @sha256
+      pdfContent = Storage.open @cachedFilename()
+      hash = new Crypto.SHA256()
+      hash.update pdfContent
+      @sha256 = hash.finalize()
 
     @cached = moment.utc().toDate()
-    Publication.documents.update @_id, $set: cached: @cached
+    Publication.documents.update @_id,
+      $set:
+        cached: @cached
+        sha256: @sha256
 
   process: =>
     currentlyProcessingPublication @_id
 
     try
-      pdf = Storage.open @filename()
+      pdf = Storage.open @cachedFilename()
 
       textContents = []
 
@@ -82,7 +120,7 @@ class @Publication extends Publication
 
       progressCallback = (progress) =>
 
-      Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
+      Log.info "Processing PDF for #{ @_id }: #{ @cachedFilename() }"
 
       PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
@@ -104,12 +142,12 @@ class @Publication extends Publication
     finally
       currentlyProcessingPublication null
 
-  _temporaryFilename: =>
+  _importingFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
     assert @importing?[0]?.person?._id
     assert.equal @importing[0].person._id, Meteor.personId()
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporaryFilename + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -149,6 +187,7 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      cachedId: 1 # TODO: Send based on permissions
       access: 1
       readPersons: 1
       readGroups: 1
@@ -195,7 +234,7 @@ Meteor.methods
             person:
               _id: Meteor.personId()
             filename: filename
-            temporaryFilename: Random.id()
+            importingId: Random.id()
       # TODO: We could check here if we updated anything, if we did not, then it seems user was just added to importing in parallel, so we could go to the case above (and reorder code a bit)
 
       # If we have the file, ask for verification. Otherwise, ask for upload
@@ -212,8 +251,9 @@ Meteor.methods
           person:
             _id: Meteor.personId()
           filename: filename
-          temporaryFilename: Random.id()
+          importingId: Random.id()
         ]
+        cachedId: Random.id()
         sha256: sha256
         metadata: false
       verify = false
@@ -252,11 +292,11 @@ Meteor.methods
 
     # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
-    Storage.saveMeteorFile file, publication._temporaryFilename()
+    Storage.saveMeteorFile file, publication._importingFilename()
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-      pdf = Storage.open publication._temporaryFilename()
+      pdf = Storage.open publication._importingFilename()
 
       hash = new Crypto.SHA256()
       hash.update pdf
@@ -267,7 +307,7 @@ Meteor.methods
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._temporaryFilename(), publication.filename()
+        Storage.rename publication._importingFilename(), publication.cachedFilename()
         Publication.documents.update
           _id: publication._id
         ,
@@ -297,7 +337,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Error verifying file. Please retry." unless publication
     throw new Meteor.Error 400, "Invalid number of samples." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
-    publicationFile = Storage.open publication.filename()
+    publicationFile = Storage.open publication.cachedFilename()
     serverSamples = publication._verificationSamples Meteor.personId()
 
     verified = _.every _.map serverSamples, (serverSample, index) ->

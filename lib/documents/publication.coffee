@@ -27,8 +27,9 @@ class @Publication extends AccessDocument
   # importing: (temporary) list of
   #   person: person importing the document
   #   filename: original name of the imported file
-  #   temporaryFilename: temporary filename of the imported file
+  #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
+  # cachedId: used for the the cached filename (available for open access publications or if user has the publication in the library)
   # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
@@ -50,25 +51,18 @@ class @Publication extends AccessDocument
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
+      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'processed', 'processError']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
 
-  @_importFilename: (id) ->
-    'import' + Storage._path.sep + id + '.pdf'
+  cachedFilename: =>
+    throw new Error "Cached filename not available" unless @cachedId
 
-  @_arXivFilename: (arXivId) ->
-    'arxiv' + Storage._path.sep + arXivId + '.pdf'
-
-  filename: =>
-    Publication._filenamePrefix() + switch @source
-      when 'import' then Publication._importFilename @_id
-      when 'arXiv' then Publication._arXivFilename @foreignId
-      else throw new Error "Unsupported source"
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.pdf'
 
   url: =>
-    Storage.url @filename()
+    Storage.url @cachedFilename()
 
   thumbnail: (page) =>
     if page < 1 or page > @numberOfPages
