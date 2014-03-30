@@ -347,8 +347,7 @@ class @Publication extends Publication
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
     fields:
-      foreignId: 1
-      source: 1
+      cachedId: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
