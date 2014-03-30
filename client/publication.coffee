@@ -355,6 +355,7 @@ Deps.autorun ->
     Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+    Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
 
 Deps.autorun ->
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
@@ -870,6 +871,10 @@ updateScribeUI = (e, template) ->
 
   return # Make sure CoffeeScript does not return anything
 
+Template.annotationCommentsList.comments = ->
+  Comment.documents.find
+    'annotation._id': @_id
+
 Template.annotationCommentEditor.created = ->
   @_rendered = false
 
@@ -892,22 +897,18 @@ Template.annotationCommentEditor.events
     return unless $editor.text()
 
     body = $editor.html()
-    timestamp = moment.utc().toDate()
 
-    LocalAnnotation.documents.update @_id,
-      $addToSet:
-        comments:
-          createdAt: timestamp
-          updatedAt: timestamp
-          author:
-            _id: Meteor.personId()
-          body: body
-    ,
-      (error, docs) =>
-        return error if error
+    Comment.documents.insert
+      author:
+        _id: Meteor.personId()
+      annotation:
+        _id: template.data._id
+      publication:
+        _id: Session.get 'currentPublicationId'
+      body: body
 
-        # Reset editor
-        $editor.empty()
+    # Reset editor
+    $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
 

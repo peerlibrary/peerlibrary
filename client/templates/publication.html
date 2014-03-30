@@ -155,14 +155,14 @@
 <template name="annotationCommentsList">
   <ul class="comments-list">
     {{#each comments}}
-    <li class="comment">
-      <a href="{{profilePath author.slug}}">
-        <img src="{{author.avatar 30}}" class="avatar" />
-      </a>
-      <div class="comment-content">
-        <div class="body">{{{body}}}</div>
-      </div>
-    </li>
+      <li class="comment">
+        <a href="{{profilePath author.slug}}">
+          <img src="{{author.avatar 30}}" class="avatar" />
+        </a>
+        <div class="comment-content">
+          <div class="body">{{{body}}}</div>
+        </div>
+      </li>
     {{/each}}
     {{> annotationCommentEditor}}
   </ul>
