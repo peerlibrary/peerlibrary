@@ -175,6 +175,7 @@ class @Publication extends Publication
     ]
 
   # A set of fields which are public and can be published to the client
+  # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
   @PUBLIC_FIELDS: ->
     fields:
       slug: 1
@@ -187,7 +188,6 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
-      cachedId: 1 # TODO: Send based on permissions
       access: 1
       readPersons: 1
       readGroups: 1
@@ -391,6 +391,30 @@ Meteor.publish 'publications-by-id', (id) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id: id
     ), Publication.PUBLIC_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1
+
+# We could try to combine publications-by-id and publications-cached-by-id,
+# but it is easier to have two and leave to Meteor to merge them together
+Meteor.publish 'publications-cached-by-id', (id) ->
+  check id, String
+
+  return unless id
+
+  @related (person) =>
+    Publication.documents.find Publication.requireCacheAccessSelector(person,
+      _id: id
+    ),
+      fields: _.extend Publication.PUBLIC_FIELDS().fields,
+        # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+        'cachedId': 1
   ,
     Person.documents.find
       _id: @personId

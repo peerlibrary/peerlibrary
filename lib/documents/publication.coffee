@@ -29,7 +29,7 @@ class @Publication extends AccessDocument
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
-  # cachedId: used for the the cached filename (available for open access publications or if user has the publication in the library)
+  # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
   # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
@@ -114,7 +114,7 @@ class @Publication extends AccessDocument
 
     return false
 
-  @requireReadAccessSelector: (person, selector) ->
+  @requireReadAccessSelector: (person, selector, cache=false) ->
     # We use $and to not override any existing selector field
     selector.$and = [] unless selector.$and
     selector.$and.push
@@ -123,27 +123,36 @@ class @Publication extends AccessDocument
 
     return selector if person?.isAdmin
 
+    accessConditions = [
+      access: Publication.ACCESS.OPEN
+    ,
+      access: Publication.ACCESS.PRIVATE
+      'readPersons._id': person?._id
+    ,
+      access: Publication.ACCESS.PRIVATE
+      'readGroups._id':
+        $in: _.pluck person?.inGroups, '_id'
+    ]
+
+    unless cache
+      # Access to publication metadata is allowed for closed access
+      # publications, only access to cache information is not
+      accessConditions.push
+        access: Publication.ACCESS.CLOSED
+
     selector.$and.push
       $or: [
         processed:
           $exists: true
-        $or: [
-          access: Publication.ACCESS.OPEN
-        ,
-          access: Publication.ACCESS.CLOSED
-        ,
-          access: Publication.ACCESS.PRIVATE
-          'readPersons._id': person?._id
-        ,
-          access: Publication.ACCESS.PRIVATE
-          'readGroups._id':
-            $in: _.pluck person?.inGroups, '_id'
-        ]
+        $or: accessConditions
       ,
         _id:
           $in: _.pluck person?.library, '_id'
       ]
     selector
+
+  @requireCacheAccessSelector: (person, selector) ->
+    @requireReadAccessSelector person, selector, true
 
   @defaultAccess: ->
     @ACCESS.OPEN
