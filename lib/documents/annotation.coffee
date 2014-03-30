@@ -9,10 +9,10 @@ class @Annotation extends Document
   #   gravatarHash
   #   user
   #     username
-  # body: annotation's body
+  # body: in HTML
   # publication:
   #   _id
-  # references: made in the body
+  # references: made in the body of annotation or comments
   #   highlights: list of
   #     _id
   #   annotations: list of
@@ -35,6 +35,18 @@ class @Annotation extends Document
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  # comments: list of
+  #   createdAt: timestamp of when the comment was created
+  #   updatedAt: timestamp of this version
+  #   author:
+  #     _id: person id
+  #     slug
+  #     givenName
+  #     familyName
+  #     gravatarHash
+  #     user
+  #       username
+  #   body: in HTML
   # local (client only): is this annotation just a temporary annotation on the client side
 
   @Meta
@@ -50,4 +62,7 @@ class @Annotation extends Document
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
+      ]
+      comments: [
+        author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       ]
