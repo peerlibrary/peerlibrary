@@ -143,13 +143,15 @@
 </template>
 
 <template name="annotationTags">
-  <div class="tags">
-    <ul class="annotation-tags-list">
-      {{#each tags}}
-        <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
-      {{/each}}
-    </ul>
-  </div>
+  {{#if tags}}
+    <div class="tags">
+      <ul class="annotation-tags-list">
+        {{#each tags}}
+          <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
 </template>
 
 <template name="annotationCommentsList">
