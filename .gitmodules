@@ -30,3 +30,6 @@
 	path = packages/scribe/scribe-plugin-link-prompt-command
 	url = https://github.com/peerlibrary/scribe-plugin-link-prompt-command.git
 	branch = dist
+[submodule "packages/scribe/scribe-plugin-sanitizer"]
+	path = packages/scribe/scribe-plugin-sanitizer
+	url = https://github.com/peerlibrary/scribe-plugin-sanitizer.git

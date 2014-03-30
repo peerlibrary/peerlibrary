@@ -13,6 +13,7 @@ Package.on_use(function (api) {
     'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',
     'scribe-plugin-curly-quotes/scribe-plugin-curly-quotes.js',
     'scribe-plugin-link-prompt-command/scribe-plugin-link-prompt-command.js',
+    'scribe-plugin-sanitizer/scribe-plugin-sanitizer.js',
     'client.js'
   ], 'client');
 });
