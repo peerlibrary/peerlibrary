@@ -751,6 +751,20 @@ Template.annotationEditor.rendered = ->
   @_scribe.use Scribe.plugins['blockquote-command']()
   @_scribe.use Scribe.plugins['link-prompt-command']()
   @_scribe.use Scribe.plugins['curly-quotes']()
+  @_scribe.use Scribe.plugins['sanitizer']
+    tags:
+      p: {}
+      br: {}
+      b: {}
+      strong: {}
+      i: {}
+      s: {}
+      blockquote: {}
+      ol: {}
+      ul: {}
+      li: {}
+      a:
+        href: true
 
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
@@ -888,6 +902,22 @@ Template.annotationCommentEditor.rendered = ->
   @_scribe = new Scribe @find('.comment-content-editor'),
     # No block elements, they would take up too much space
     allowBlockElements: false
+
+  @_scribe.use Scribe.plugins['curly-quotes']()
+  @_scribe.use Scribe.plugins['sanitizer']
+    tags:
+      p: {}
+      br: {}
+      b: {}
+      strong: {}
+      i: {}
+      s: {}
+      blockquote: {}
+      ol: {}
+      ul: {}
+      li: {}
+      a:
+        href: true
 
 Template.annotationCommentEditor.destroyed = ->
   @_rendered = false
