@@ -69,15 +69,18 @@
   {{#if results.length}}
     <ul class="access-results">
       {{#each results}}
-        {{#ifPerson}}
-          {{> groupMember}}
-        {{else}}
-          {{! TODO: Use some group template}}
-          <li>Group: {{name}}</li>
-        {{/ifPerson}}
+        {{> publicationPrivateAccessControlResultsItem}}
       {{/each}}
      </ul>
   {{/if}}
+</template>
+
+<template name="publicationPrivateAccessControlResultsItem">
+  {{#ifPerson}}
+    <li class="person">Person: {{displayName}} <button class="add-button">Add</button></li>
+  {{else}}
+    <li class="group">Group: {{name}} <button class="add-button">Add</button></li>
+  {{/ifPerson}}
 </template>
 
 <template name="publicationDisplay">

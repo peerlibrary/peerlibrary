@@ -378,35 +378,50 @@ Template.publicationAccessControl.events
   'change .access input:radio': (e, template) ->
     access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    return if access is template.data.access
+    return if access is @access
 
     # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-    if template.data.constructor.Meta.collection._name is null
-      documentName = template.data.constructor.Meta.parent._name
+    if @constructor.Meta.collection._name is null
+      documentName = @constructor.Meta.parent._name
     else
-      documentName = template.data.constructor.Meta._name
+      documentName = @constructor.Meta._name
 
-    Meteor.call 'set-access', documentName, template.data._id, access, (error, count) ->
+    Meteor.call 'set-access', documentName, @_id, access, (error, count) ->
       return Notify.meteorError error if error
 
       Notify.success "Access changed." if count
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationPrivateAccessControl.created = ->
+Template.publicationPrivateAccessControl.events
+  'change .add-access, keyup .add-access': (e, template) ->
+    e.preventDefault()
+
+    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+    @query.set $(template.findAll '.add-access').val()
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationPrivateAccessControlResults.created = ->
+  @_searchHandle = null
+
+Template.publicationPrivateAccessControlResults.rendered = ->
   # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-  @data.query = new Variable ''
+  @data.query = new Variable '' unless @data.query
+
+  @_searchHandle.stop() if @_searchHandle
   @_searchHandle = Deps.autorun =>
     if @data.query()
       Meteor.subscribe 'search-persons-groups', @data.query()
 
-Template.publicationPrivateAccessControl.destroyed = ->
+Template.publicationPrivateAccessControlResults.destroyed = ->
   @_searchHandle.stop() if @_searchHandle
   @_searchHandle = null
 
 Template.publicationPrivateAccessControlResults.results = ->
   # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-  query = @query?()
+  @query = new Variable '' unless @query # results is called before rendered, so let's initialize variable here as well
+  query = @query()
 
   return unless query
 
@@ -443,20 +458,34 @@ Template.publicationPrivateAccessControlResults.results = ->
   else
     groups = []
 
-  persons.concat groups
+  results = persons.concat groups
 
-Template.publicationPrivateAccessControlResults.ifPerson = (options) ->
+  # Because it is not possible to access parent data context from event handler, we store it into results
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  _.map results, (result) =>
+    result._parent = @
+    result
+
+Template.publicationPrivateAccessControlResultsItem.ifPerson = (options) ->
   if @ instanceof Person
     options.fn @
   else
     options.inverse @
 
-Template.publicationPrivateAccessControl.events
-  'change .add-access, keyup .add-access': (e, template) ->
-    e.preventDefault()
+Template.publicationPrivateAccessControlResultsItem.events
+  'click .add-button': (e, template) ->
+    if @ instanceof Person
+      methodName = 'grant-read-access-to-person'
+    else if @ instanceof Group
+      methodName = 'grant-read-access-to-group'
+    else
+      assert false
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    template.data.query.set $(template.findAll '.add-access').val()
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    Meteor.call methodName, @_parent.constructor.Meta._name, @_parent._id, @_id, (error, count) =>
+      return Notify.meteorError error if error
+
+      Notify.success "#{ @constructor.Meta._name } added." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -734,14 +763,14 @@ focusAnnotation = (body) ->
 Template.publicationAnnotationsItem.events
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
-  'mousedown': (e, template) =>
-    return unless template.data.local
+  'mousedown': (e, template) ->
+    return unless @local
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $unset:
         local: ''
 
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
+    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     # Focus immediately after converting local annotation
     # TODO: Improve this
@@ -751,11 +780,11 @@ Template.publicationAnnotationsItem.events
 
     # On click to convert local annotation we are for sure inside the annotation, so we can
     # immediatelly send a mouse enter event to make sure related highlight has a hovered state
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [template.data._id]
+    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
 
     return # Make sure CoffeeScript does not return anything
 
-  'click': (e, template) =>
+  'click': (e, template) ->
     # We do not select or even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
@@ -763,7 +792,7 @@ Template.publicationAnnotationsItem.events
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
-      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     # Focus body no matter where the annotation was clicked
     # TODO: Improve this
@@ -867,15 +896,15 @@ Template.annotationMetaMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    return if access is template.data.access
+    return if access is @access
 
     # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-    if template.data.constructor.Meta.collection._name is null
-      documentName = template.data.constructor.Meta.parent._name
+    if @constructor.Meta.collection._name is null
+      documentName = @constructor.Meta.parent._name
     else
-      documentName = template.data.constructor.Meta._name
+      documentName = @constructor.Meta._name
 
-    Meteor.call 'set-access', documentName, template.data._id, access, (error, count) ->
+    Meteor.call 'set-access', documentName, @_id, access, (error, count) ->
       return Notify.meteorError error if error
 
       Notify.success "Access changed." if count
