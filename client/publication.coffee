@@ -8,76 +8,23 @@ publicationCacheHandle = null
 # If set to an annotation id, focus on next render
 focusAnnotationId = null
 
-# Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
-_publicationDOMReady = false
-
-# We use our own dependency tracking for publicationDOMReady and not Session to
+# We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
 # Otherwise publicationDOMReady stored in Session would be restored to true which
 # would be an invalid initial state. But on the other hand we want it to be
 # a reactive value so that we can combine code logic easy.
-publicationDOMReadyDependency = new Deps.Dependency()
+publicationDOMReady = new Variable false
 
-isPublicationDOMReady = ->
-  publicationDOMReadyDependency.depend()
-  _publicationDOMReady
+# Mostly used just to force reevaluation of publicationHandle and publicationCacheHandle
+publicationSubscribing = new Variable false
 
-setPublicationDOMReady = (ready) ->
-  return if _publicationDOMReady is ready
-
-  _publicationDOMReady = ready
-  publicationDOMReadyDependency.changed()
-
-# Should not be used directly but through isPublicationSubscribing and setPublicationSubscribing
-_publicationSubscribing = false
-
-publicationSubscribingDependency = new Deps.Dependency()
-
-isPublicationSubscribing = ->
-  publicationSubscribingDependency.depend()
-  _publicationSubscribing
-
-setPublicationSubscribing = (ready) ->
-  return if _publicationSubscribing is ready
-
-  _publicationSubscribing = ready
-  publicationSubscribingDependency.changed()
-
-# Should not be used directly but through getViewport and setViewport
-_viewport =
+# To be able to limit shown annotations only to those with highlights in the current viewport
+currentViewport = new Variable
   top: null
   bottom: null
 
-viewportDependency = new Deps.Dependency()
-
-getViewport = ->
-  viewportDependency.depend()
-  _viewport
-
-setViewport = (top, bottom) ->
-  return if _viewport.top is top and _viewport.bottom is bottom
-
-  _viewport =
-    top: top
-    bottom: bottom
-  viewportDependency.changed()
-
-# Should not be used directly but through getHighlights and setHighlights
-_highlights = {}
-
-highlightsDependency = new Deps.Dependency()
-
-@getHighlights = ->
-  highlightsDependency.depend()
-  _highlights
-
-@setHighlights = (highlights) ->
-  a = _.keys _highlights
-  b = _.keys highlights
-  return unless a.length isnt b.length or _.difference(a, b).length
-
-  _highlights = highlights
-  highlightsDependency.changed()
+# Variable containing currently realized (added to the DOM) highlights
+@currentHighlights = new KeysEqualityVariable {}
 
 class @Publication extends Publication
   @Meta
@@ -122,9 +69,11 @@ class @Publication extends Publication
 
       # To make sure we are starting with empty slate
       @_$displayWrapper.empty()
-      setPublicationDOMReady false
-      setViewport null, null
-      setHighlights {}
+      publicationDOMReady.set false
+      currentViewport.set
+        top: null
+        bottom: null
+      currentHighlights.set {}
 
       @_highlighter.setNumPages @_pdf.numPages
 
@@ -203,7 +152,7 @@ class @Publication extends Publication
             # Check if new page should be maybe rendered?
             @checkRender()
 
-            setPublicationDOMReady true if @_pagesDone is @_pdf.numPages
+            publicationDOMReady.set true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -317,9 +266,11 @@ class @Publication extends Publication
 
     @_$displayWrapper = null
 
-    setPublicationDOMReady false
-    setViewport null, null
-    setHighlights {}
+    publicationDOMReady.set false
+    currentViewport.set
+      top: null
+      bottom: null
+    currentHighlights.set {}
 
   renderPage: (page) =>
     return if page.rendering
@@ -368,19 +319,19 @@ class @Publication extends Publication
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
-    setPublicationSubscribing true
+    publicationSubscribing.set true
     publicationHandle = Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
     publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
   else
-    setPublicationSubscribing false
+    publicationSubscribing.set false
     publicationHandle = null
     publicationCacheHandle = null
 
 Deps.autorun ->
-  if isPublicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
-    setPublicationSubscribing false
+  if publicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
+    publicationSubscribing.set false
 
 Deps.autorun ->
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
@@ -404,11 +355,11 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.publication.loading = ->
-  isPublicationSubscribing() # To register dependency
+  publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
 
 Template.publication.notfound = ->
-  isPublicationSubscribing() # To register dependency
+  publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
 Template.publicationMetaMenu.publication = ->
@@ -478,7 +429,7 @@ Template.publicationPrivateAccessControl.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationDisplay.cached = ->
-  isPublicationSubscribing() # To register dependency
+  publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
@@ -543,7 +494,9 @@ setViewportPosition = ($viewport) ->
     height: "#{ bottom - top }%"
 
   displayHeight = $('.viewer .display-wrapper').height()
-  setViewport top * displayHeight / 100, bottom * displayHeight / 100
+  currentViewport.set
+    top: top * displayHeight / 100
+    bottom: bottom * displayHeight / 100
 
 scrollToOffset = (offset) ->
   # We round ourselves to make sure we are rounding in the same way accross all browsers.
@@ -554,7 +507,7 @@ scrollToOffset = (offset) ->
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller resize.publicationScroller', (e) =>
-    return unless isPublicationDOMReady()
+    return unless publicationDOMReady()
 
     # We do not call setViewportPosition when dragging from scroll event
     # handler but directly from drag event handler because otherwise there
@@ -567,10 +520,10 @@ Template.publicationScroller.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationScroller.rendered = ->
-  # Dependency on isPublicationDOMReady value is registered because we
+  # Dependency on publicationDOMReady value is registered because we
   # are using it in sections helper as well, which means that rendered will
-  # be called multiple times as isPublicationDOMReady changes
-  return unless isPublicationDOMReady()
+  # be called multiple times as publicationDOMReady changes
+  return unless publicationDOMReady()
 
   $viewport = $(@findAll '.viewport')
 
@@ -612,7 +565,7 @@ Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  return [] unless isPublicationDOMReady()
+  return [] unless publicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
   displayTop = $displayWrapper.outerOffset().top
@@ -653,8 +606,8 @@ Template.annotationsControl.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.annotations = ->
-  viewport = getViewport()
-  highlights = @getHighlights()
+  viewport = currentViewport()
+  highlights = currentHighlights()
 
   insideViewport = (area) ->
     viewport.top <= area.top + area.height and viewport.bottom >= area.top
