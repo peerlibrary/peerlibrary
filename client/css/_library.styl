@@ -1,5 +1,17 @@
+@import variables
+
 section.library
   padding-top: 60px
+
+
+  .collection-publications
+
+    li.result-item
+      cursor: move
+
+    li.result-item.ui-sortable-helper
+      transition 0
+      opacity 0.5
 
 
   .collections
@@ -17,7 +29,18 @@ section.library
   padding 10px 15px
   margin 10px 0 10px 1px
   border-radius 2px
-  box-shadow 0 0 0 1px box-shadow-border
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+  transition 0.2s
+  cursor pointer
 
   h3
     margin: 0 0 0.2em 0
+
+.collection-listing.droppable-active
+  background light-grey
+
+.collection-listing.droppable-hover
+  background blue
+
+.collection-listing:hover
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)

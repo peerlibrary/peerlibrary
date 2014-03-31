@@ -11,10 +11,13 @@ Deps.autorun ->
     Meteor.subscribe 'my-collections'
 
 # Publications in logged user's library
-Template.library.myPublications = ->
+Template.collectionPublications.myPublications = ->
   Publication.documents.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'
+
+Template.collectionPublications.rendered = ->
+  $(@findAll '.collection-publications').sortable()
 
 Template.collections.myCollections = ->
   return unless Meteor.person()
@@ -39,14 +42,24 @@ Template.collections.events
     Collection.documents.insert
       name: $(template.findAll '.name').val()
       author: Meteor.person()
+      publications: []
     ,
       (error, id) =>
         return Notify.meteorError error, true if error
 
         Notify.success "Collection created."
-        Meteor.Router.toNew Meteor.Router.collectionPath id
 
     return # Make sure CoffeeScript does not return anything
+
+Template.collections.rendered = ->
+  $(@findAll '.collection-listing').droppable
+    accept: '.result-item'
+    activeClass: 'droppable-active'
+    hoverClass: 'droppable-hover'
+    drop: (event, ui) ->
+      console.log "dropped!"
+      console.log event
+
 
 Template.collectionListing.countDescription = ->
   if @publications.length is 1 then "1 publication" else "#{@publications.length} publications"
