@@ -17,13 +17,13 @@ Meteor.publish 'search-results', (query, limit) ->
 
   # TODO: Not reactive, can we make it?
   person = Person.documents.findOne
-      _id: @personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+    _id: @personId
+  ,
+    fields:
+      # _id field is implicitly added
+      isAdmin: 1
+      inGroups: 1
+      library: 1
 
   findQuery = Publication.requireReadAccessSelector person, findQuery
 
