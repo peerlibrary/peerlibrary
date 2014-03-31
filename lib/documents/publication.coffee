@@ -39,9 +39,6 @@ class @Publication extends AccessDocument
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
-  # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
-  #   _id: id of the query, an _id of the SearchResult object for the query
-  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Publication'
