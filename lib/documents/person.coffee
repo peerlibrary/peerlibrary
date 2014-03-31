@@ -3,6 +3,7 @@ class @Person extends Document
   # updatedAt: timestamp of this version
   # user: (null if without user account)
   #   _id
+  #   emails: list with first element of user's e-mail
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
@@ -19,7 +20,7 @@ class @Person extends Document
   @Meta
     name: 'Person'
     fields: =>
-      user: @ReferenceField User, ['username'], false
+      user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       slug: @GeneratedField 'self', ['user.username']

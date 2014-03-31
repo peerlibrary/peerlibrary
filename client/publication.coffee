@@ -393,38 +393,70 @@ Template.publicationAccessControl.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.publicationPrivateAccessControl.created = ->
+  # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+  @data.query = new Variable ''
+  @_searchHandle = Deps.autorun =>
+    if @data.query()
+      Meteor.subscribe 'search-persons-groups', @data.query()
+
+Template.publicationPrivateAccessControl.destroyed = ->
+  @_searchHandle.stop() if @_searchHandle
+  @_searchHandle = null
+
+Template.publicationPrivateAccessControlResults.results = ->
+  # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+  query = @query?()
+
+  return unless query
+
+  searchResult = SearchResult.documents.findOne
+    name: 'search-persons-groups'
+    query: query
+
+  return if not searchResult
+
+  personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
+  groupsLimit = 5 - personsLimit
+
+  if personsLimit
+    persons = Person.documents.find(
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: personsLimit
+    ).fetch()
+  else
+    persons = []
+
+  if groupsLimit
+    groups = Group.documents.find(
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: groupsLimit
+    ).fetch()
+  else
+    groups = []
+
+  persons.concat groups
+
+Template.publicationPrivateAccessControlResults.ifPerson = (options) ->
+  if @ instanceof Person
+    options.fn @
+  else
+    options.inverse @
+
 Template.publicationPrivateAccessControl.events
-  'submit .add-person': (e, template) ->
+  'change .add-access, keyup .add-access': (e, template) ->
     e.preventDefault()
 
-    # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
-    personId = $(template.findAll '.add-person .name').val()
-
-    return unless personId
-
-    return if personId in _.pluck template.data.readPersons, '_id'
-
-    Meteor.call 'grant-read-access-to-person', template.data.constructor.Meta._name, template.data._id, personId, (error, count) ->
-      return Notify.meteorError error if error
-
-      Notify.success "User added." if count
-
-    return # Make sure CoffeeScript does not return anything
-
-  'submit .add-group': (e, template) ->
-    e.preventDefault()
-
-    # TODO: We should use autocomplete to get information about groups with a given name so that when a group is chosen, we have its ID we use here, "name" here is currently misleading because it has to be raw ID with this code
-    groupId = $(template.findAll '.add-group .name').val()
-
-    return unless groupId
-
-    return if groupId in _.pluck template.data.readGroups, '_id'
-
-    Meteor.call 'grant-read-access-to-group', template.data.constructor.Meta._name, template.data._id, groupId, (error, count) ->
-      return Notify.meteorError error if error
-
-      Notify.success "Group added." if count
+    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+    template.data.query.set $(template.findAll '.add-access').val()
 
     return # Make sure CoffeeScript does not return anything
 

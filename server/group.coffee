@@ -112,3 +112,50 @@ Meteor.publish 'groups-by-id', (id) ->
     _id: id
   ,
     Group.PUBLIC_FIELDS()
+
+Meteor.publish 'search-persons-groups', (query) ->
+  check query, String
+
+  return unless query
+
+  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
+
+  findPersonQuery =
+    $and: []
+  findGroupQuery =
+    $and: []
+
+  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
+  for keyword in keywords when keyword
+    regex = new RegExp keyword, 'i'
+    findPersonQuery.$and.push
+      $or: [
+        _id: regex
+      ,
+        'user.username': regex
+      ,
+        'user.emails.0.address': regex
+      ,
+        givenName: regex
+      ,
+        familyName: regex
+      ]
+    findGroupQuery.$and.push
+      $or: [
+        _id: regex
+      ,
+        name: regex
+      ]
+
+  return unless findPersonQuery.$and.length + findGroupQuery.$and.length
+
+  # TODO: If we will allow private groups, then we will have to filter here
+
+  searchPublish @, 'search-persons-groups', query,
+    cursor: Person.documents.find findPersonQuery,
+      limit: 5
+      fields: Person.PUBLIC_FIELDS().fields
+  ,
+    cursor: Group.documents.find findGroupQuery,
+      limit: 5
+      fields: Group.PUBLIC_FIELDS().fields

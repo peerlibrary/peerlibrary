@@ -55,20 +55,29 @@
       {{> groupMember}}
     {{/each}}
   </ol>
-  <form class="add-person">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Add an user</button>
-  </form>
   <ol class="access-list access-list-groups">
     {{#each readGroups}}
       {{! TODO: Use some group template}}
       <li>Group: {{name}}</li>
     {{/each}}
   </ol>
-  <form class="add-group">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Add a group</button>
-  </form>
+  <input type="text" class="add-access" />
+  {{> publicationPrivateAccessControlResults}}
+</template>
+
+<template name="publicationPrivateAccessControlResults">
+  {{#if results.length}}
+    <ul class="access-results">
+      {{#each results}}
+        {{#ifPerson}}
+          {{> groupMember}}
+        {{else}}
+          {{! TODO: Use some group template}}
+          <li>Group: {{name}}</li>
+        {{/ifPerson}}
+      {{/each}}
+     </ul>
+  {{/if}}
 </template>
 
 <template name="publicationDisplay">
