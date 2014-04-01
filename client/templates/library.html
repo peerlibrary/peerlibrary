@@ -8,9 +8,9 @@
 
 <template name="collectionPublications">
   <div class="collection-details col12">
-    <h2 class="collection-name">Publications</h2>
+    <h2 class="collection-name">{{activeCollection.name}}</h2>
     <ol class="collection-publications item-list">
-      {{#each myPublications}}
+      {{#each activeCollection.publications}}
         {{> publicationSearchResult}}
       {{/each}}
     </ol>
@@ -21,6 +21,10 @@
   <div class="col4 push12 collections">
     <h2>Collections</h2>
     <ol class="item-list collections-list">
+      <li class="all-publications">
+        <h3>All publications</h3>
+        <span class="publications-count">{{allPublicationsCountDescription}}</span>
+      </li>
       {{#each myCollections}}
         {{> collectionListing}}
       {{/each}}

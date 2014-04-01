@@ -24,7 +24,7 @@ section.library
   list-style none
   padding 0
 
-.collection-listing
+.collection-listing, .all-publications
   background white
   padding 10px 15px
   margin 10px 0 10px 1px
@@ -36,11 +36,12 @@ section.library
   h3
     margin: 0 0 0.2em 0
 
+.collection-listing:hover, .all-publications:hover
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+
 .collection-listing.droppable-active
-  background light-grey
+  box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)
 
 .collection-listing.droppable-hover
   background blue
 
-.collection-listing:hover
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
