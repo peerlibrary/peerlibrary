@@ -184,6 +184,24 @@
   </li>
 </template>
 
+<template name="commentMetaMenu">
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      {{#if canEdit}}
+        <button class="delete">Delete</button>
+      {{/if}}
+      <p class="authors">
+        {{#with author}}
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+        {{/with}}
+      </p>
+      <p class="time">{{createdAt}}</p>
+      <p class="time">{{updatedAt}}</p>
+    </div>
+  </div>
+</template>
+
 <template name="visibilityMenu">
   <div class="ui-dropdown">
     <div class="ui-selection-wrapper">
