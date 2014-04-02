@@ -80,6 +80,13 @@ Template.notificationsOverlayItem.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'click .stack': (e, template) ->
+    e.preventDefault()
+
+    $('.stack').select()
+
+    return
+
   'click': (e, template) ->
     Notify.documents.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
 
