@@ -911,5 +911,5 @@ Template.annotationMetaMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.footer.publicationSimple = ->
-  'simple' if Template.publication.loading() or Template.publication.notfound()
+Template.footer.publicationDisplayed = ->
+  'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
