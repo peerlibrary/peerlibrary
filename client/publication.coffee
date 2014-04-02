@@ -820,10 +820,20 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'mouseup .annotation-content-editor': (e,template) ->
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: true
+
+    $(".annotation-content-editor").focus()
+
+    return
+
   'input .annotation-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
 
-    if $editor.text()
+    if $editor.text() 
       unless template.data.editing
         # Expand
         LocalAnnotation.documents.update template.data._id,
