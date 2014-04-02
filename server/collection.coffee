@@ -96,6 +96,13 @@ Meteor.methods
         publications:
           _id: publicationId
 
+  'reorder-collection': (collectionId, publications) ->
+    check collectionId, String
+    check publications, [String]
+
+    #TODO: Update collection's publications to the new order
+
+
 Meteor.publish 'collection-by-id', (id) ->
   check id, String
 

@@ -35,7 +35,17 @@ Template.collectionPublications.activeCollection = ->
     '_id': activeCollectionId
 
 Template.collectionPublications.rendered = ->
-  $(@findAll '.collection-publications').sortable()
+  $(@findAll '.collection-publications').sortable
+    opacity: 0.5
+    update: (event, ui) ->
+      newOrder = []
+      $(this).children("li").each () ->
+        newOrder.push $(this).attr("data-id")
+
+      if activeCollectionId
+        Meteor.call "reorder-collection", activeCollectionId, newOrder
+      else
+        Meteor.call "reorder-library", newOrder
 
 # Publications in logged user's library
 Template.collections.allPublications = ->
@@ -86,8 +96,9 @@ Template.collections.rendered = ->
     hoverClass: 'droppable-hover'
     tolerance: 'pointer'
     drop: (event, ui) ->
-      console.log "dropped!"
-      console.log event
+      publicationId = ui.draggable.attr("data-id")
+      collectionId = $(this).attr("data-id")
+      Meteor.call 'add-to-collection', collectionId, publicationId
 
 Template.collectionListing.countDescription = ->
   countDescription @publications

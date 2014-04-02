@@ -43,6 +43,12 @@ class @Person extends Person
       publications: 1
       library: 1
 
+Meteor.methods
+  'reorder-library': (publications) ->
+    check publications, [String]
+
+    #TODO: Update user's library to the new order of publications
+
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, String
 
