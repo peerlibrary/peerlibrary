@@ -919,7 +919,7 @@ Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text()
+  if $editor.text() or $editor.is ':focus'
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
@@ -952,14 +952,18 @@ Template.annotationCommentEditor.destroyed = ->
   @_rendered = false
 
 Template.annotationCommentEditor.events
+  'focus .comment-content-editor': (e, template) ->
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.addClass 'active'
+
+    return # Make sure CoffeeScript does not return anything
+
   'input .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
 
     if $editor.text()
       $wrapper.addClass 'active'
-    else
-      $wrapper.removeClass 'active'
 
     return # Make sure CoffeeScript does not return anything
 

@@ -528,7 +528,7 @@ annotations-control-height = 30px
             overflow hidden
 
           button.comment
-            margin-top 7px
+            display none
 
       li.comment-editor
         display none
@@ -538,6 +538,12 @@ annotations-control-height = 30px
 
       li.comment-editor.active
         display block
+
+        .comment-content
+          button.comment
+            display inline-block
+            float right
+            margin-top 7px
 
     .meta-menu
       position absolute
