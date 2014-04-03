@@ -164,6 +164,14 @@ else
           currentPublicationSlug: publicationSlug
         'publication'
 
+    '/t/:tagId/:tagSlug?':
+      as: 'tag'
+      to: (tagId, tagSlug) ->
+        setSession
+          currentTagId: tagId
+          currentTagSlug: tagSlug
+        'tag'
+
     '/u/:personSlug':
       as: 'profile'
       to: (personSlug) ->
@@ -184,14 +192,6 @@ else
         setSession()
         redirectAnnotationId annotationId
         'redirecting'
-
-    '/t/:tagId/:tagSlug?':
-      as: 'tag'
-      to: (tagId, tagSlug) ->
-        setSession
-          currentTagId: tagId
-          currentTagSlug: tagSlug
-        'tag'
 
     '/s/:searchQuery?':
       as: 'search'
