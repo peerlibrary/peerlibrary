@@ -916,6 +916,15 @@ Template.annotationCommentEditor.created = ->
   @_rendered = false
 
 Template.annotationCommentEditor.rendered = ->
+  $wrapper = $(@findAll '.comment-editor')
+  $editor = $(@findAll '.comment-content-editor')
+
+  if $editor.text()
+    $wrapper.addClass 'active'
+  else
+    $wrapper.removeClass 'active'
+
+  # Run only once
   return if @_rendered
   @_rendered = true
 
@@ -943,6 +952,17 @@ Template.annotationCommentEditor.destroyed = ->
   @_rendered = false
 
 Template.annotationCommentEditor.events
+  'input .comment-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+    $wrapper = $(template.findAll '.comment-editor')
+
+    if $editor.text()
+      $wrapper.addClass 'active'
+    else
+      $wrapper.removeClass 'active'
+
+    return # Make sure CoffeeScript does not return anything
+
   'click button.comment': (e, template) ->
     $editor = $(template.findAll '.comment-content-editor')
 
