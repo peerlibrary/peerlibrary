@@ -32,5 +32,5 @@
 	branch = dist
 [submodule "packages/scribe/scribe-plugin-sanitizer"]
 	path = packages/scribe/scribe-plugin-sanitizer
-  url = https://github.com/peerlibrary/scribe-plugin-sanitizer.git
-  branch = peerlibrary
+	url = https://github.com/peerlibrary/scribe-plugin-sanitizer.git
+	branch = peerlibrary
