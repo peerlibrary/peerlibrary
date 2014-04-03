@@ -47,7 +47,16 @@ Meteor.methods
   'reorder-library': (publications) ->
     check publications, [String]
 
-    #TODO: Update user's library to the new order of publications
+    #TODO: This code does not work and corrupts Person records. Please correct.
+
+    personId = Meteor.personId
+    return unless personId
+
+    Person.documents.update
+      _id: personId
+    ,
+      $set:
+        library: publications
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, String
