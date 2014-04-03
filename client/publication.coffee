@@ -675,7 +675,7 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We do conversion of local annotation already in mousedown so that
+  # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) =>
     # TODO: Get rid of this. Annotation invites are being replaced.
