@@ -245,7 +245,7 @@
   <p class="time">{{createdAt}}</p>
   <p class="time">{{updatedAt}}</p>
   <p class="annotations">
-    {{#each annotations}}
+    {{#each referencingAnnotations}}
       <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
     {{else}}
       Not linked to any annotation.
@@ -274,7 +274,7 @@
       <p class="time">{{createdAt}}</p>
       <p class="time">{{updatedAt}}</p>
       <p class="highlights">
-        {{#each highlights}}
+        {{#each references.highlights}}
           <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
         {{else}}
           Not linked to any highlight.

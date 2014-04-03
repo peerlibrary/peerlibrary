@@ -573,7 +573,7 @@ Template.publicationAnnotations.annotations = ->
         $in: [null, []]
     ,
       # We display those which have a corresponding highlight visible
-      'highlights._id':
+      'references.highlights._id':
         $in: visibleHighlights
     ,
       # We display the annotation editor
