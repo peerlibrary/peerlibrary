@@ -381,9 +381,13 @@ Deps.autorun ->
 Deps.autorun ->
   return unless Session.get 'currentPublicationId'
 
+  # No editor unless logged in
+  return unless Meteor.person()
+
   localAnnotation = LocalAnnotation.documents.findOne
-    'publication._id': Session.get 'currentPublicationId'
     local: true
+    'author._id': Meteor.personId()
+    'publication._id': Session.get 'currentPublicationId'
 
   return if localAnnotation
 
@@ -571,6 +575,10 @@ Template.publicationAnnotations.annotations = ->
       # We display those which have a corresponding highlight visible
       'highlights._id':
         $in: visibleHighlights
+    ,
+      # We display the annotation editor
+      local: true
+      'author._id': Meteor.personId()
     ]
     'publication._id': Session.get 'currentPublicationId'
   ,
