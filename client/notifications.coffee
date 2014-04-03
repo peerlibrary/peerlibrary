@@ -44,7 +44,7 @@ Template.notificationsOverlayItem.rendered = ->
       Notify.documents.remove @data._id
     @_timeout = null
   ,
-    7000 # ms
+    3000 # ms
 
   # Pause the timeout while user is hovering over the notification
   $notification.on 'mouseenter.notification', (e) =>
