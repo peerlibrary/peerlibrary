@@ -821,19 +821,21 @@ Template.annotationEditor.events
     return # Make sure CoffeeScript does not return anything
 
   'mouseup .annotation-content-editor': (e,template) ->
+    return if template.data.editing
 
     LocalAnnotation.documents.update template.data._id,
       $set:
         editing: true
 
-    $(".annotation-content-editor").focus()
+    $editor = $(e.currentTarget)
+    $editor.focus()
 
-    return
+    return # Make sure CoffeeScript does not return anything
 
   'input .annotation-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
 
-    if $editor.text() 
+    if $editor.text()
       unless template.data.editing
         # Expand
         LocalAnnotation.documents.update template.data._id,
@@ -959,12 +961,19 @@ Template.annotationsControl.events
   'click .add-button': (e, template) ->
     e.preventDefault()
 
+    LocalAnnotation.documents.update
+      local: true
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        editing: true
+
     $editor = $('.annotation.local .annotation-content-editor')
+    $editor.focus()
 
     # Scroll to new annotation editor and focus
     # TODO: Set cursor to the end
     $('.annotations-list').scrollTop 0
-    $editor.focus()
 
     return # Make sure CoffeeScript does not return anything
 
