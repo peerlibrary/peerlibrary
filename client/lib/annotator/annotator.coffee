@@ -132,9 +132,13 @@ class @Annotator extends Annotator
       local: true
       'publication._id': Session.get 'currentPublicationId'
     ,
+      $set:
+        editing: true
       $addToSet:
         'references.highlights':
           _id: id
+
+    $('.annotation-content-editor').focus()
 
   updateLocation: =>
     # This is our annotations
