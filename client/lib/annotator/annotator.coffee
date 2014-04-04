@@ -127,7 +127,7 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
-  _addHighlightToEditor: _.debounce (id) =>
+  _addHighlightToEditor: (id) =>
     LocalAnnotation.documents.update
       local: true
       'publication._id': Session.get 'currentPublicationId'
@@ -137,8 +137,6 @@ class @Annotator extends Annotator
       $addToSet:
         'references.highlights':
           _id: id
-
-    $('.annotation-content-editor').focus()
 
   updateLocation: =>
     # This is our annotations

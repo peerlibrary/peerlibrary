@@ -656,6 +656,10 @@ focusAnnotation = (body) ->
 
   body.focus()
 
+focusEditor = ($editor) ->
+  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
+  $editor.focus()
+
 Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
     e.preventDefault()
@@ -835,8 +839,7 @@ Template.annotationEditor.events
       $set:
         editing: true
 
-    $editor = $(e.currentTarget)
-    $editor.focus()
+    focusEditor $(e.currentTarget)
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1000,8 +1003,7 @@ Template.annotationsControl.events
       $set:
         editing: true
 
-    $editor = $('.annotation.local .annotation-content-editor')
-    $editor.focus()
+    focusEditor $('.annotation.local .annotation-content-editor')
 
     # Scroll to new annotation editor and focus
     # TODO: Set cursor to the end
