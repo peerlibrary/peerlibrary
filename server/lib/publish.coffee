@@ -25,53 +25,82 @@ unless originalPublish
         # using currentDocuments variable that we have a consistent view of the
         # documents we published
         currentDocuments = {}
-        handleDocuments = null
-        collectionName = null
+        relatedPublish = null
 
         publishDocuments = (relatedDocuments) ->
+          assert relatedDocuments.length
+
           initializing = true
-          initializedDocuments = []
+          initializedDocuments = {}
 
-          oldHandleDocuments = handleDocuments
-          newCursor = publishFunction relatedDocuments...
-          unless newCursor
-            handleDocuments = null
+          oldRelatedPublish = relatedPublish
+
+          relatedPublish = publish._recreate()
+          relatedPublish.personId = publish.personId
+          relatedPublish.related = publish.related
+
+          relatedPublishAdded = relatedPublish.added
+          relatedPublishChanged = relatedPublish.changed
+          relatedPublishRemoved = relatedPublish.removed
+
+          _.extend relatedPublish,
+            added: (collectionName, id, fields) ->
+              currentDocuments[collectionName] ?= {}
+              initializedDocuments[collectionName] ?= []
+
+              initializedDocuments[collectionName].push id if initializing
+
+              return if currentDocuments[collectionName][id]
+              currentDocuments[collectionName][id] = true
+
+              relatedPublishAdded.call @, collectionName, id, fields
+
+            changed: (collection, id, fields) ->
+              currentDocuments[collectionName] ?= {}
+              initializedDocuments[collectionName] ?= []
+
+              return if not currentDocuments[collectionName][id]
+
+              relatedPublishChanged.call @, collectionName, id, fields
+
+            removed: (collection, id) ->
+              currentDocuments[collectionName] ?= {}
+              initializedDocuments[collectionName] ?= []
+
+              return if not currentDocuments[collectionName][id]
+              delete currentDocuments[collectionName][id]
+
+              relatedPublishRemoved.call @, collectionName, id
+
+            ready: -> # Noop
+
+            stop: (onlyRelated) ->
+              @_deactivate()
+              publish.stop() unless onlyRelated
+
+          if Package['audit-argument-checks']
+            relatedPublish._handler = (args...) ->
+              # Related parameters are trusted
+              check arg, Match.Any for arg in args
+              publishFunction args...
           else
-            collectionName = newCursor._cursorDescription.collectionName unless collectionName
-            assert.equal newCursor._cursorDescription.collectionName, collectionName
-
-            handleDocuments = newCursor.observeChanges
-              added: (id, fields) ->
-                initializedDocuments.push id if initializing
-
-                return if currentDocuments[id]
-                currentDocuments[id] = true
-
-                publish.added collectionName, id, fields
-
-              changed: (id, fields) ->
-                return if not currentDocuments[id]
-
-                publish.changed collectionName, id, fields
-
-              removed: (id) ->
-                return if not currentDocuments[id]
-                delete currentDocuments[id]
-
-                publish.removed collectionName, id
+            relatedPublish._handler = publishFunction
+          relatedPublish._params = relatedDocuments
+          relatedPublish._runHandler()
 
           initializing = false
 
-          # We stop the handle after we established the new handle,
+          # We call stop after we established the new related publish,
           # so that any possible changes hapenning in the meantime
-          # were still processed by the old handle
-          oldHandleDocuments.stop() if oldHandleDocuments
-          oldHandleDocuments = null
+          # were still processed by the old related publish
+          oldRelatedPublish.stop true if oldRelatedPublish
+          oldRelatedPublish = null
 
           # And then we remove those which are not published anymore
-          for id in _.difference _.keys(currentDocuments), initializedDocuments
-            delete currentDocuments[id]
-            publish.removed collectionName, id
+          for collectionName, documents of currentDocuments
+            for id in _.difference _.keys(documents), initializedDocuments[collectionName]
+              delete documents[id]
+              publish.removed collectionName, id
 
         currentRelatedDocuments = []
         handleRelatedDocuments = []
@@ -121,7 +150,7 @@ unless originalPublish
           for handle, i in handleRelatedDocuments
             handle.stop() if handle
             handleRelatedDocuments[i] = null
-          handleDocuments.stop() if handleDocuments
-          handleDocuments = null
+          relatedPublish.stop true if relatedPublish
+          relatedPublish = null
 
       func.apply publish, args
