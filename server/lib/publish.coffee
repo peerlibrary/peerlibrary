@@ -19,19 +19,10 @@ unless originalPublish
 
       # TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
       publish.related = (publishFunction, related...) ->
-        # There are moments when two observes are observing mostly similar list
-        # of document ids so it could happen that one is changing or removing
-        # a document just while the other one is adding, so we are making sure
-        # using currentDocuments variable that we have a consistent view of the
-        # documents we published
-        currentDocuments = {}
         relatedPublish = null
 
         publishDocuments = (relatedDocuments) ->
           assert relatedDocuments.length
-
-          initializing = true
-          initializedDocuments = {}
 
           oldRelatedPublish = relatedPublish
 
@@ -39,44 +30,12 @@ unless originalPublish
           relatedPublish.personId = publish.personId
           relatedPublish.related = publish.related
 
-          relatedPublishAdded = relatedPublish.added
-          relatedPublishChanged = relatedPublish.changed
-          relatedPublishRemoved = relatedPublish.removed
+          relatedPublish.ready = -> # Noop
 
-          _.extend relatedPublish,
-            added: (collectionName, id, fields) ->
-              currentDocuments[collectionName] ?= {}
-              initializedDocuments[collectionName] ?= []
-
-              initializedDocuments[collectionName].push id if initializing
-
-              return if currentDocuments[collectionName][id]
-              currentDocuments[collectionName][id] = true
-
-              relatedPublishAdded.call @, collectionName, id, fields
-
-            changed: (collection, id, fields) ->
-              currentDocuments[collectionName] ?= {}
-              initializedDocuments[collectionName] ?= []
-
-              return if not currentDocuments[collectionName][id]
-
-              relatedPublishChanged.call @, collectionName, id, fields
-
-            removed: (collection, id) ->
-              currentDocuments[collectionName] ?= {}
-              initializedDocuments[collectionName] ?= []
-
-              return if not currentDocuments[collectionName][id]
-              delete currentDocuments[collectionName][id]
-
-              relatedPublishRemoved.call @, collectionName, id
-
-            ready: -> # Noop
-
-            stop: (onlyRelated) ->
-              @_deactivate()
-              publish.stop() unless onlyRelated
+          relatedPublish.stop = (onlyRelated) ->
+            # We only deactivate, but not stop subscription
+            @_deactivate()
+            publish.stop() unless onlyRelated
 
           if Package['audit-argument-checks']
             relatedPublish._handler = (args...) ->
@@ -88,19 +47,15 @@ unless originalPublish
           relatedPublish._params = relatedDocuments
           relatedPublish._runHandler()
 
-          initializing = false
+          return unless oldRelatedPublish
 
-          # We call stop after we established the new related publish,
-          # so that any possible changes hapenning in the meantime
-          # were still processed by the old related publish
-          oldRelatedPublish.stop true if oldRelatedPublish
+          # We remove those which are not published anymore
+          for collectionName in _.difference _.keys(oldRelatedPublish._documents), _.keys(relatedPublish._documents)
+            for id in _.difference _.keys(oldRelatedPublish._documents[collectionName] or {}), _.keys(relatedPublish._documents[collectionName] or {})
+              oldRelatedPublish.removed collectionName, id
+
+          oldRelatedPublish.stop true
           oldRelatedPublish = null
-
-          # And then we remove those which are not published anymore
-          for collectionName, documents of currentDocuments
-            for id in _.difference _.keys(documents), initializedDocuments[collectionName]
-              delete documents[id]
-              publish.removed collectionName, id
 
         currentRelatedDocuments = []
         handleRelatedDocuments = []
