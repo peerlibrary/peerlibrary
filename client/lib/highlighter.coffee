@@ -333,6 +333,7 @@ class @Highlighter
     @_annotator.addPlugin 'DomTextMapper'
     @_annotator.addPlugin 'TextAnchors'
     @_annotator.addPlugin 'PeerLibraryPDF'
+    @_annotator.addPlugin 'DOMAnchors'
 
     # Because TextHighlights is loaded after TextAnchors, we have to manually
     # set Annotator.TextHighlight value in TextAnchors plugin instance
