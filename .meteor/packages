@@ -28,7 +28,6 @@ accounts-ui-unstyled
 HTML5-History-API
 page-js-ie-support
 meteor-file
-digest
 peerdb
 logging
 audit-argument-checks

@@ -24,7 +24,6 @@
       "branch": "master",
       "git": "https://github.com/EventedMind/meteor-file.git"
     },
-    "digest": {},
     "peerdb": {},
     "useragent": {},
     "define": {
