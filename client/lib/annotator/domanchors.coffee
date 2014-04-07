@@ -89,6 +89,7 @@ class Annotator.Plugin.DOMAnchors extends Annotator.Plugin
 
   deserializeRange: (selector) =>
     # TODO: Do smarter matching, but for now simply convert to XPath
+    selector = _.clone selector
     selector.startContainer = @_convertToXPath selector.startContainer
     selector.endContainer = @_convertToXPath selector.endContainer
     new @Annotator.Range.SerializedRange selector
@@ -120,4 +121,4 @@ class Annotator.Plugin.DOMAnchors extends Annotator.Plugin
 
     # Create a TextPositionAnchor from the start and end offsets
     # of this range (to be used with dom-text-mapper)
-    new TextPositionAnchor @annotator, annotation, target, startInfo.start, endInfo.end, (startInfo.pageIndex ? 0), (endInfo.pageIndex ? 0), currentQuote
+    new @annotator.TextPositionAnchor @annotator, annotation, target, startInfo.start, endInfo.end, (startInfo.pageIndex ? 0), (endInfo.pageIndex ? 0), currentQuote

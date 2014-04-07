@@ -281,6 +281,7 @@ class Page
 
     return unless $textLayerDummy.is(':visible')
 
+    return if @rendering
     @rendering = true
 
     $textLayerDummy.hide()
