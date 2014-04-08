@@ -29,6 +29,7 @@
     "define": {
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/require.git"
-    }
+    },
+    "digest": {}
   }
 }
