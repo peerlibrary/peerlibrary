@@ -412,7 +412,7 @@ Template.publicationPrivateAccessControlResults.rendered = ->
   @_searchHandle.stop() if @_searchHandle
   @_searchHandle = Deps.autorun =>
     if @data.query()
-      Meteor.subscribe 'search-persons-groups', @data.query()
+      Meteor.subscribe 'search-persons-groups', @data.query(), _.pluck(@data.readPersons, '_id').concat(_.pluck(@data.readGroups, '_id'))
 
 Template.publicationPrivateAccessControlResults.destroyed = ->
   @_searchHandle.stop() if @_searchHandle
