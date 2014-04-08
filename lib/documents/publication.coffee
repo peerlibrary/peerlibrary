@@ -112,6 +112,9 @@ class @Publication extends AccessDocument
     return false
 
   @requireReadAccessSelector: (person, selector, cache=false) ->
+    # To not modify input
+    selector = EJSON.clone selector
+
     # We use $and to not override any existing selector field
     selector.$and = [] unless selector.$and
     selector.$and.push

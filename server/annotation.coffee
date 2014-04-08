@@ -69,7 +69,7 @@ Meteor.publish 'annotations-by-id', (id) ->
 
   return unless id
 
-  @related (person, publication) =>
+  @related (person, publication) ->
     return unless publication?.hasReadAccess person
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
@@ -101,7 +101,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
 
   return unless publicationId
 
-  @related (person, publication) =>
+  @related (person, publication) ->
     return unless publication?.hasReadAccess person
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,

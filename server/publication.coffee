@@ -360,7 +360,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   return unless slug
 
-  @related (author, person) =>
+  @related (author, person) ->
     return unless author?._id
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
@@ -387,7 +387,7 @@ Meteor.publish 'publications-by-id', (id) ->
 
   return unless id
 
-  @related (person) =>
+  @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id: id
     ), Publication.PUBLIC_FIELDS()
@@ -408,7 +408,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
 
   return unless id
 
-  @related (person) =>
+  @related (person) ->
     Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
     ),
@@ -426,7 +426,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
         library: 1
 
 Meteor.publish 'my-publications', ->
-  @related (person) =>
+  @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
         $in: _.pluck person?.library, '_id'
@@ -445,7 +445,7 @@ Meteor.publish 'my-publications', ->
 # but it is easier to have two and leave to Meteor to merge them together,
 # because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
-  @related (person) =>
+  @related (person) ->
     return unless person?._id
 
     Publication.documents.find Publication.requireReadAccessSelector(person,

@@ -28,7 +28,19 @@ unless originalPublish
 
           relatedPublish = publish._recreate()
           relatedPublish.personId = publish.personId
+          # TODO: Test how recursive @related works
           relatedPublish.related = publish.related
+
+          relatedPublishAdded = relatedPublish.added
+          relatedPublish.added = (collectionName, id, fields) ->
+            relatedPublishAdded.call @, collectionName, id, fields
+            id = @_idFilter.idStringify id
+            # If document as already present in oldRelatedPublish then call above
+            # will just register it with relatedPublish but not really send anything
+            # to the client. We call changed to send updated fields (Meteor sends
+            # only a diff).
+            if oldRelatedPublish?._documents[collectionName]?[id]
+              @changed collectionName, id, fields
 
           relatedPublish.ready = -> # Noop
 
@@ -41,7 +53,7 @@ unless originalPublish
             relatedPublish._handler = (args...) ->
               # Related parameters are trusted
               check arg, Match.Any for arg in args
-              publishFunction args...
+              publishFunction.apply @, args
           else
             relatedPublish._handler = publishFunction
           relatedPublish._params = relatedDocuments
@@ -49,8 +61,13 @@ unless originalPublish
 
           return unless oldRelatedPublish
 
-          # We remove those which are not published anymore
-          for collectionName in _.difference _.keys(oldRelatedPublish._documents), _.keys(relatedPublish._documents)
+          # We call this first, so that we can offer onStop to cleanup things properly.
+          # _callStopCallbacks can be called multiple times because it unregisters run
+          # callbacks. This is why we can call stop below.
+          oldRelatedPublish._callStopCallbacks()
+
+          # We remove those which are not published anymore (or were not cleaned up in onStop)
+          for collectionName in _.keys(oldRelatedPublish._documents)
             for id in _.difference _.keys(oldRelatedPublish._documents[collectionName] or {}), _.keys(relatedPublish._documents[collectionName] or {})
               oldRelatedPublish.removed collectionName, id
 

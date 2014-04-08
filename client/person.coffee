@@ -8,7 +8,8 @@ Deps.autorun ->
 
     if slug is Meteor.person()?.slug
       Meteor.subscribe 'my-publications'
-      Meteor.subscribe 'my-publications-importing'
+      # TODO: Display also publications which are currently being imported? Publications which have not been completed? Should canceling the import then not just stop importing, but also remove it from this list? Or should it stay in the list and should we require additional action to really remove it?
+      #Meteor.subscribe 'my-publications-importing'
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'

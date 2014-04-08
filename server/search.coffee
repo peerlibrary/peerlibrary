@@ -17,29 +17,29 @@ Meteor.publish 'search-results', (query, limit) ->
 
   return unless findQuery.$and.length
 
-  # TODO: Not reactive, can we make it?
-  person = Person.documents.findOne
-    _id: @personId
-  ,
-    fields:
-      # _id field is implicitly added
-      isAdmin: 1
-      inGroups: 1
-      library: 1
+  @related (person) ->
+    restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
-  findQuery = Publication.requireReadAccessSelector person, findQuery
-
-  searchPublish @, 'search-results', query,
-    cursor: Publication.documents.find(findQuery,
-      limit: limit
-      fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
-    )
-    added: (id, fields) =>
-      fields.hasAbstract = !!fields.abstract
-      delete fields.abstract
-      fields
-    changed: (id, fields) =>
-      if 'abstract' of fields
+    searchPublish @, 'search-results', query,
+      cursor: Publication.documents.find(restrictedFindQuery,
+        limit: limit
+        fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
+      )
+      added: (id, fields) =>
         fields.hasAbstract = !!fields.abstract
         delete fields.abstract
-      fields
+        fields
+      changed: (id, fields) =>
+        if 'abstract' of fields
+          fields.hasAbstract = !!fields.abstract
+          delete fields.abstract
+        fields
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1

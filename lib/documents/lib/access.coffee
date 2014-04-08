@@ -25,6 +25,9 @@
 @requireReadAccessSelector = (person, selector) ->
   return selector if person?.isAdmin
 
+  # To not modify input
+  selector = EJSON.clone selector
+
   # We use $and to not override any existing selector field
   selector.$and = [] unless selector.$and
   selector.$and.push
