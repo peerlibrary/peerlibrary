@@ -206,6 +206,13 @@ Template.importButton.events =
     Session.set 'importOverlayActive', true
     _.each e.target.files, importFile
 
+    # Replaces file input with a new version which does not have any file
+    # selected. This assures that change event is triggered even if the user
+    # selects the same file. It is not really reasonable to do that, but
+    # it is still better that we do something than simply nothing because
+    # no event is triggered.
+    $(e.target, template).replaceWith($(e.target).clone())
+
     return # Make sure CoffeeScript does not return anything
 
 Template.searchInput.events =
@@ -302,13 +309,13 @@ Deps.autorun ->
 
   return if importingFilesCount isnt finishedImportingFiles.length
 
-  if importingFilesCount is 1
-    assert finishedImportingFiles.length is 1
-    Notify.success "Imported the publication."
-    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
-  else
-    Notify.success "Imported #{ finishedImportingFiles.length } publications."
-    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
+  #if importingFilesCount is 1
+  #  assert finishedImportingFiles.length is 1
+  #  Notify.success "Imported the publication."
+  #  Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+  #else
+  #Notify.success "Imported #{ finishedImportingFiles.length } publications."
+  #Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
 
   Session.set 'importOverlayActive', false
 
