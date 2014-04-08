@@ -155,7 +155,7 @@ class @Annotator extends Annotator
     # We ignore if mouse movement was to small to select really anything meaningful
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
-    quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
+    quote = @getQuoteForTarget? @selectedTargets[0]
     # Quote should be a non-empty string
     return false unless quote
 
