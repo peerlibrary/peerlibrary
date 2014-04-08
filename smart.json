@@ -24,12 +24,12 @@
       "branch": "master",
       "git": "https://github.com/EventedMind/meteor-file.git"
     },
-    "digest": {},
     "peerdb": {},
     "useragent": {},
     "define": {
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/require.git"
-    }
+    },
+    "digest": {}
   }
 }

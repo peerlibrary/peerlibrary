@@ -57,8 +57,8 @@ uploadFile = (file, publicationId) ->
           finished: true
           publicationId: publicationId
 
-testPDF = (file, fileContent, callback) ->
-  PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
+testPDF = (file, source, callback) ->
+  PDFJS.getDocument(source).then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
       $set:
         errored: true
@@ -68,13 +68,12 @@ importFile = (file) ->
   reader = new FileReader()
   reader.onload = ->
     fileContent = @result
-
-    testPDF file, fileContent, ->
-      # TODO: Compute SHA in chunks
-      # TODO: Compute SHA in a web worker?
-      hash = new Crypto.SHA256()
-      hash.update fileContent
-      sha256 = hash.finalize()
+    if URL and URL.createObjectURL
+      source = url: URL.createObjectURL(file), password: ''
+    else
+      source = data: fileContent, password: ''
+    testPDF file, source, (dataContext) ->
+      sha256 = dataContext.sha256
 
       alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
       if alreadyImporting
