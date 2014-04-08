@@ -355,6 +355,41 @@ class PDFTextHighlight extends Annotator.Highlight
     width: @_box.width
     height: @_box.height
 
+# TODO: Rename to PDFTextHighlights when TextAnchors will not depend on hard-coded TextHighlights plugin anymore
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>
+    # TODO: Remove after renaming to PDFTextHighlights
     Annotator.TextHighlight = PDFTextHighlight
+
+    # Register this highlighting implementation
+    @annotator.highlighters.unshift
+      name: 'PDF text highlighter'
+      highlight: @_createTextHighlight
+
+  _createTextHighlight: (anchor, pageIndex) =>
+    switch anchor.type
+      when 'text range'
+        new PDFTextHighlight anchor, pageIndex, anchor.range
+      when 'text position'
+        # TODO: We could try to still create a range from trying to anchor with a DOM anchor again, and if it fails, go back to DTM
+
+        # Cannot do this without DTM
+        return unless @annotator.domMapper
+
+        # First we create the range from the stored stard and end offsets
+        mappings = @annotator.domMapper.getMappingsForCharRange anchor.start, anchor.end, [pageIndex]
+
+        # Get the wanted range out of the response of DTM
+        realRange = mappings.sections[pageIndex].realRange
+
+        # Get a BrowserRange
+        browserRange = new Annotator.Range.BrowserRange realRange
+
+        # Get a NormalizedRange
+        normedRange = browserRange.normalize @annotator.wrapper[0]
+
+        # Create the highligh
+        new PDFTextHighlight anchor, pageIndex, normedRange
+      else
+        # Unsupported anchor type
+        null

@@ -76,14 +76,6 @@ class Annotator.Plugin.DOMAnchors extends Annotator.Plugin
     startOffset: start[1]
     endOffset: end[1]
 
-  # Look up the quote from the appropriate selector
-  getQuoteForTarget: (target) =>
-    selector = @annotator.findSelector target.selector, 'TextQuoteSelector'
-    if selector?
-      @annotator.normalizeString selector.exact
-    else
-      null
-
   _convertToXPath: (path) =>
     ("/#{ segment.t }[#{ segment.r + 1 }]" for segment in path).join ''
 
@@ -115,10 +107,11 @@ class Annotator.Plugin.DOMAnchors extends Annotator.Plugin
     currentQuote = @annotator.normalizeString @annotator.domMapper.getCorpus()[startOffset..endOffset-1]
 
     # Look up the saved quote
-    savedQuote = @getQuoteForTarget target
+    savedQuote = @annotator.getQuoteForTarget? target
     if savedQuote? and currentQuote isnt savedQuote
       return null
 
+    # TODO: Should we create here TextRangeAnchor instead? So that we do not convert to TextPositionAnchor and then back to the range for PDFTextHighlight in PDFTextHighlights?
     # Create a TextPositionAnchor from the start and end offsets
     # of this range (to be used with dom-text-mapper)
-    new @annotator.TextPositionAnchor @annotator, annotation, target, startInfo.start, endInfo.end, (startInfo.pageIndex ? 0), (endInfo.pageIndex ? 0), currentQuote
+    new @Annotator.TextPositionAnchor @annotator, annotation, target, startInfo.start, endInfo.end, (startInfo.pageIndex ? 0), (endInfo.pageIndex ? 0), currentQuote
