@@ -123,14 +123,13 @@ Meteor.publish 'search-persons-groups', (query, except) ->
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
-  # TODO: Except list does not really work (at least for groups, for persons it somehow works): https://jira.mongodb.org/browse/SERVER-13511
   findPersonQuery =
     $and: []
     _id:
       $nin: except
   findGroupQuery =
     $and: []
-    _in:
+    _id:
       $nin: except
 
   # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
