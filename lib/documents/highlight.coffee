@@ -1,4 +1,7 @@
-class @Highlight extends Document
+class @Highlight extends AccessDocument
+  # access: 0 (private), 1 (public)
+  # readPersons: if private access, list of persons who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:

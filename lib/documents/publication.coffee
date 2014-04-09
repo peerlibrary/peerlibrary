@@ -83,7 +83,7 @@ class @Publication extends AccessDocument
     CLOSED: 1
     OPEN: 2
 
-  hasReadAccess: (person) =>
+  hasReadAccess: (person, cache=false) =>
     return false unless @cached
 
     return true if person?.isAdmin
@@ -94,7 +94,7 @@ class @Publication extends AccessDocument
 
     return true if @access is Publication.ACCESS.OPEN
 
-    return true if @access is Publication.ACCESS.CLOSED
+    return not cache if @access is Publication.ACCESS.CLOSED
 
     # Access should be private here, if it is not, we prevent access to the document
     # TODO: Should we log this?
@@ -110,6 +110,9 @@ class @Publication extends AccessDocument
     return true if _.intersection(personGroups, publicationGroups).length
 
     return false
+
+  hasCacheAccess: (person) =>
+    @hasReadAccess person, true
 
   @requireReadAccessSelector: (person, selector, cache=false) ->
     # To not modify input

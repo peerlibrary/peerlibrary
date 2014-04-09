@@ -379,7 +379,6 @@ for spec, callbacks of Template.accessControl._tmpl_data.events
   for callback in callbacks
     eventMap = {}
     eventMap[spec] = callback
-    console.log eventMap
     Template.publicationAccessControl.events eventMap
 
 Template.publicationDisplay.cached = ->
@@ -543,7 +542,20 @@ Template.publicationScroller.events
 
 Template.highlightsControl.canEdit = ->
   # Only the author can edit for now
-  return @author._id is Meteor.personId()
+  return @author?._id is Meteor.personId()
+
+Template.highlightsControl.events
+  'click .delete': (e, template) ->
+    Highlight.documents.remove @_id, (error) =>
+      Notify.meteorError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mousedown .add-access': (e, template) ->
+    # A special case to prevent defocus after click on the input box
+    e.stopPropagation()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.annotationsControl.events
   'click .add': (e, template) ->

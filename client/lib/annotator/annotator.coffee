@@ -236,7 +236,12 @@ class @Annotator extends Annotator
     id of @_annotations
 
   setupAnnotation: (annotation) ->
-    annotation = super
+    # We transform the Annotator's annotation into PeerLibrary highlight document.
+    # Read below for more information on how we are using Annotator's annotations
+    # as highlights.
+    annotation = new Highlight annotation
+
+    annotation = super annotation
 
     @_annotations[annotation._id] = annotation
 
