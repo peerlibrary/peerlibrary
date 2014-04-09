@@ -50,6 +50,11 @@
 </template>
 
 <template name="publicationPrivateAccessControl">
+  {{> publicationPrivateAccessControlList}}
+  {{> publicationPrivateAccessControlAdd}}
+</template>
+
+<template name="publicationPrivateAccessControlList">
   <ol class="access-list access-list-users">
     {{#each readPersons}}
       {{> groupMember}}
@@ -61,8 +66,19 @@
       <li>Group: {{name}}</li>
     {{/each}}
   </ol>
+</template>
+
+<template name="publicationPrivateAccessControlAdd">
   <input type="text" class="add-access" />
+  {{> publicationPrivateAccessControlNoResults}}
   {{> publicationPrivateAccessControlResults}}
+  {{> publicationPrivateAccessControlLoading}}
+</template>
+
+<template name="publicationPrivateAccessControlNoResults">
+  {{#if noResults}}
+    <div class="no-results">No people or groups found</div>
+  {{/if}}
 </template>
 
 <template name="publicationPrivateAccessControlResults">
@@ -81,6 +97,12 @@
   {{else}}
     <li class="group">Group: {{name}} <button class="add-button">Add</button></li>
   {{/ifPerson}}
+</template>
+
+<template name="publicationPrivateAccessControlLoading">
+  {{#if loading}}
+    <div class="results-loading">Loading...</div>
+  {{/if}}
 </template>
 
 <template name="publicationDisplay">

@@ -393,35 +393,70 @@ Template.publicationAccessControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationPrivateAccessControl.events
+Template.publicationPrivateAccessControlAdd.events
   'change .add-access, keyup .add-access': (e, template) ->
     e.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @query.set $(template.findAll '.add-access').val()
+    @_query.set $(template.findAll '.add-access').val()
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationPrivateAccessControlResults.created = ->
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addAccessControlReactiveVariables = (data) ->
+  if data._query
+    assert data._loading
+    return
+
+  data._query = new Variable ''
+  data._loading = new Variable 0
+
+  data._newDataContext = true
+
+Template.publicationPrivateAccessControlAdd.created = ->
   @_searchHandle = null
 
-Template.publicationPrivateAccessControlResults.rendered = ->
-  # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-  @data.query = new Variable '' unless @data.query
+  addAccessControlReactiveVariables @data
 
-  @_searchHandle.stop() if @_searchHandle
+Template.publicationPrivateAccessControlAdd.rendered = ->
+  addAccessControlReactiveVariables @data
+
+  if @_searchHandle and @data._newDataContext
+    @_searchHandle.stop()
+    @_searchHandle = null
+
+  delete @data._newDataContext
+
+  return if @_searchHandle
   @_searchHandle = Deps.autorun =>
-    if @data.query()
-      Meteor.subscribe 'search-persons-groups', @data.query(), _.pluck(@data.readPersons, '_id').concat(_.pluck(@data.readGroups, '_id'))
+    if @data._query()
+      loading = true
+      @data._loading.set Deps.nonreactive(@data._loading) + 1
+      Meteor.subscribe 'search-persons-groups', @data._query(), _.pluck(@data.readPersons, '_id').concat(_.pluck(@data.readGroups, '_id')),
+        onReady: =>
+          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          loading = false
+        onError: =>
+          # TODO: Should we display some error?
+          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          loading = false
+      Deps.onInvalidate =>
+        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+        loading = false
 
-Template.publicationPrivateAccessControlResults.destroyed = ->
+Template.publicationPrivateAccessControlAdd.destroyed = ->
   @_searchHandle.stop() if @_searchHandle
   @_searchHandle = null
 
-Template.publicationPrivateAccessControlResults.results = ->
-  # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-  @query = new Variable '' unless @query # results is called before rendered, so let's initialize variable here as well
-  query = @query()
+  @data._query = null
+  @data._loading = null
+
+  delete @data._newDataContext
+
+Template.publicationPrivateAccessControlNoResults.noResults = ->
+  addAccessControlReactiveVariables @
+
+  query = @_query()
 
   return unless query
 
@@ -429,7 +464,27 @@ Template.publicationPrivateAccessControlResults.results = ->
     name: 'search-persons-groups'
     query: query
 
-  return if not searchResult
+  return unless searchResult
+
+  not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+
+Template.publicationPrivateAccessControlLoading.loading = ->
+  addAccessControlReactiveVariables @
+
+  @_loading()
+
+Template.publicationPrivateAccessControlResults.results = ->
+  addAccessControlReactiveVariables @
+
+  query = @_query()
+
+  return unless query
+
+  searchResult = SearchResult.documents.findOne
+    name: 'search-persons-groups'
+    query: query
+
+  return unless searchResult
 
   personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
   groupsLimit = 5 - personsLimit
