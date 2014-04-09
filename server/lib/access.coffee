@@ -81,6 +81,56 @@ Meteor.methods
         readGroups:
           _id: groupId
 
+  'revoke-read-access-for-person': (documentName, documentId, personId) ->
+    check documentName, RegisteredForAccess
+    check documentId, String
+    check personId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Optimize, not all fields are necessary
+    document = accessDocuments[documentName].documents.findOne documentId
+
+    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+
+    return 0 unless document.access is ACCESS.PRIVATE
+
+    accessDocuments[documentName].documents.update
+      _id: documentId
+      'readPersons._id': personId
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $pull:
+        readPersons:
+          _id: personId
+
+  'revoke-read-access-for-group': (documentName, documentId, groupId) ->
+    check documentName, RegisteredForAccess
+    check documentId, String
+    check groupId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Optimize, not all fields are necessary
+    document = accessDocuments[documentName].documents.findOne documentId
+
+    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+
+    return 0 unless document.access is ACCESS.PRIVATE
+
+    # TODO: If we will allow private groups, then we have to call hasReadAccess on the group as well
+
+    accessDocuments[documentName].documents.update
+      _id: documentId
+      'readGroups._id': groupId
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $pull:
+        readGroups:
+          _id: groupId
+
   'set-access': (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
     check documentId, String

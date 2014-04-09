@@ -56,14 +56,15 @@
 
 <template name="publicationPrivateAccessControlList">
   <ol class="access-list access-list-users">
-    {{#each readPersons}}
-      {{> groupMember}}
+    {{#each readPersonsList}}
+      {{! TODO: Use some person template}}
+      <li class="member person">Person: {{displayName}} <button class="remove-button">Remove</button></li>
     {{/each}}
   </ol>
   <ol class="access-list access-list-groups">
-    {{#each readGroups}}
+    {{#each readGroupsList}}
       {{! TODO: Use some group template}}
-      <li>Group: {{name}}</li>
+      <li class="member group">Group: {{name}} <button class="remove-button">Remove</button></li>
     {{/each}}
   </ol>
 </template>

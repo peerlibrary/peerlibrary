@@ -521,6 +521,37 @@ Template.publicationPrivateAccessControlResults.results = ->
     result._parent = @
     result
 
+Template.publicationPrivateAccessControlList.events
+  'click .remove-button': (e, template) ->
+    if @ instanceof Person
+      methodName = 'revoke-read-access-for-person'
+    else if @ instanceof Group
+      methodName = 'revoke-read-access-for-group'
+    else
+      assert false
+
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    Meteor.call methodName, @_parent.constructor.Meta._name, @_parent._id, @_id, (error, count) =>
+      return Notify.meteorError error if error
+
+      Notify.success "#{ @constructor.Meta._name } removed." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationPrivateAccessControlList.readPersonsList = ->
+  # Because it is not possible to access parent data context from event handler, we map it
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  _.map @readPersons, (person) =>
+    person._parent = @
+    person
+
+Template.publicationPrivateAccessControlList.readGroupsList = ->
+  # Because it is not possible to access parent data context from event handler, we map it
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  _.map @readGroups, (group) =>
+    group._parent = @
+    group
+
 Template.publicationPrivateAccessControlResultsItem.ifPerson = (options) ->
   if @ instanceof Person
     options.fn @
