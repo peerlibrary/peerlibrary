@@ -126,7 +126,8 @@ class PDFTextHighlight extends Annotator.Highlight
     # based on _id (which is immutable) to rerender the fragment
     # as document changes.
     highlightsControl = Meteor.render =>
-      Template.highlightsControl Highlight.documents.findOne @annotation?._id
+      highlight = Highlight.documents.findOne @annotation?._id
+      Template.highlightsControl highlight if highlight
 
     $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
