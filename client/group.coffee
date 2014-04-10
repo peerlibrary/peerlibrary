@@ -1,6 +1,8 @@
 Deps.autorun ->
-  if Session.get 'currentGroupId'
-    Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+  currentGroupId = Session.get 'currentGroupId'
+
+  if currentGroupId
+    Meteor.subscribe 'groups-by-id', currentGroupId
 
 Deps.autorun ->
   group = Group.documents.findOne Session.get('currentGroupId'),
@@ -18,6 +20,9 @@ Deps.autorun ->
 
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
+
+Template.group.currentUserIsMember = ->
+  Meteor.personId() in _.pluck Group.documents.findOne(Session.get('currentGroupId'))?.members, '_id'
 
 Template.group.events
   'submit .add-member': (e, template) ->

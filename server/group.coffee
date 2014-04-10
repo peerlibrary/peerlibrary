@@ -10,10 +10,18 @@ class @Group extends Group
           [fields._id, URLify2 fields.name, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
+      fields.membersCount.generator = (fields) ->
+        [fields._id, fields.members.length]
 
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields: {} # All
+
+  @PUBLIC_LISTING_FIELDS: ->
+    fields:
+      slug: 1
+      name: 1
+      membersCount: 1
 
 Group.Meta.collection.allow
   insert: (userId, doc) ->
@@ -112,3 +120,6 @@ Meteor.publish 'groups-by-id', (id) ->
     _id: id
   ,
     Group.PUBLIC_FIELDS()
+
+Meteor.publish 'groups', ->
+  Group.documents.find {}, Group.PUBLIC_LISTING_FIELDS()

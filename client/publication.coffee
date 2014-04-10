@@ -354,6 +354,71 @@ Deps.autorun ->
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
+###
+Template.publicationMetaMenu.publication = ->
+  Publication.documents.findOne Session.get 'currentPublicationId'
+
+Template.publicationMetaMenu.open = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.OPEN
+
+Template.publicationMetaMenu.closed = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.CLOSED
+
+Template.publicationMetaMenu.private = ->
+  Publication.documents.findOne(Session.get 'currentPublicationId')?.access is Publication.ACCESS.PRIVATE
+
+Template.publicationMetaMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Publication.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    update =
+      $set:
+        access: access
+
+    if access is Publication.ACCESS.PRIVATE
+      update.$push =
+        readUsers:
+          _id: Meteor.personId()
+    else
+      update.$set.readUsers = []
+      update.$set.readGroups = []
+
+    Publication.documents.update Session.get('currentPublicationId'), update,
+      (error, count) ->
+        return Notify.meteorError error, true if error
+
+        Notify.success "Access changed." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+accessHoverHandlers =
+  'mouseenter .access .selection': (e, template) ->
+    accessHover = $(e.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (e, template) ->
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description[data-access=#{accessHover}]").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationMetaMenu.events accessHoverHandlers
+
+
+Template.publicationPrivateAccessControl.events
+  'submit .add-user': (e, template) ->
+    e.preventDefault()
+
+    # TODO: We should use autocomplete to get information about users with a given name so that when an user is chosen, we have their ID we use here, "name" here is currently misleading because it has to be raw ID with this code
+    newUserId = $(template.findAll '.add-user .name').val()
+
+    return unless newUserId
+###
+
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
@@ -790,6 +855,40 @@ Template.annotationMetaMenu.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+
+###
+Template.annotationMetaMenu.public = ->
+  @access is Annotation.ACCESS.PUBLIC
+
+Template.annotationMetaMenu.private = ->
+  @access is Annotation.ACCESS.PRIVATE
+
+Template.annotationMetaMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    update =
+      $set:
+        access: access
+
+    if access is Annotation.ACCESS.PRIVATE
+      update.$push =
+        readUsers:
+          _id: Meteor.personId()
+    else
+      update.$set.readUsers = []
+      update.$set.readGroups = []
+
+    Annotation.documents.update template.data._id, update,
+      (error, count) ->
+        return Notify.meteorError error, true if error
+
+        Notify.success "Access changed." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationMetaMenu.events accessHoverHandlers
+###
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
