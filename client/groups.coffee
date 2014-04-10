@@ -2,31 +2,36 @@ Deps.autorun ->
   if Session.equals 'groupsActive', true
     Meteor.subscribe 'groups'
 
-Template.groups.searchActive = ->
-  !!Session.get 'groupsSearchQuery'
+groupSearchQuery = null
+groupSearchQueryDependency = new Deps.Dependency
+
+Template.groups.searchQuery = ->
+  groupSearchQuery
 
 Template.groups.groups = ->
-  searchTerm = Session.get 'groupsSearchQuery'
+  groupSearchQueryDependency.depend()
 
   selector = {}
 
-  if !!searchTerm
+  #TODO: Move filtering of the groups to server, escape query
+  if groupSearchQuery
     selector =
       name:
-        $regex: ".*#{searchTerm}.*"
+        $regex: ".*#{groupSearchQuery}.*"
         $options: "i"
 
   Group.documents.find selector,
-    sort:
-      membersCount: -1
-      name: 1
-
+    sort: [
+      ['membersCount', 'desc']
+      ['name', 'asc']
+    ]
 
 Template.groups.events
   'keyup .groups-directory .search-input': (e, template) ->
     val = $(template.findAll '.groups-directory .search-input').val()
 
-    Session.set 'groupsSearchQuery', val
+    groupSearchQuery = val
+    groupSearchQueryDependency.changed()
 
     return # Make sure CoffeeScript does not return anything
 

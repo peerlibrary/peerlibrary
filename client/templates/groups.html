@@ -19,7 +19,7 @@
       </ul>
       {{else}}
       <p class="no-groups">
-        {{#if searchActive}}
+        {{#if searchQuery}}
           The search matches no groups.
         {{else}}
           There are no groups yet. Create the first using the form on the right.
@@ -39,7 +39,6 @@
     <span class="group-count">{{countDescription}}</span>
   </li>
 </template>
-
 
 <template name="myGroups">
   <div class="col4 push12 my-groups">
