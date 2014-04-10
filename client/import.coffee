@@ -307,13 +307,13 @@ Deps.autorun ->
 
   return if importingFilesCount isnt finishedImportingFiles.length
 
-  #if importingFilesCount is 1
-  #  assert finishedImportingFiles.length is 1
-  #  Notify.success "Imported the publication."
-  #  Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
-  #else
-  #Notify.success "Imported #{ finishedImportingFiles.length } publications."
-  #Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
+  if importingFilesCount is 1
+    assert finishedImportingFiles.length is 1
+    Notify.success "Imported the publication."
+    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+  else
+    Notify.success "Imported #{ finishedImportingFiles.length } publications."
+    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
 
   Session.set 'importOverlayActive', false
 
