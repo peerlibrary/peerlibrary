@@ -75,9 +75,7 @@
 
   publish.ready()
 
-  publish.onStop =>
-    publish.removed 'SearchResults', queryId
-
+  publish.onStop ->
     for handle, i in resultsHandles
       handle.stop() if handle
       resultsHandles[i] = null

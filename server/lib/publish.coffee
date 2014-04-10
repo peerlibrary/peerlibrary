@@ -22,8 +22,6 @@ unless originalPublish
         relatedPublish = null
 
         publishDocuments = (relatedDocuments) ->
-          assert relatedDocuments.length
-
           oldRelatedPublish = relatedPublish
 
           relatedPublish = publish._recreate()
@@ -44,10 +42,17 @@ unless originalPublish
 
           relatedPublish.ready = -> # Noop
 
-          relatedPublish.stop = (onlyRelated) ->
-            # We only deactivate, but not stop subscription
-            @_deactivate()
-            publish.stop() unless onlyRelated
+          relatedPublish.stop = (relatedChange) ->
+            if relatedChange
+              # We only deactivate (which calls stop callbacks as well) because we
+              # have manually removed only documents which are not published again.
+              @_deactivate()
+            else
+              # We do manually what would _stopSubscription do, but without
+              # subscription handling. This should be done by the parent publish.
+              @_removeAllDocuments()
+              @_deactivate()
+              publish.stop()
 
           if Package['audit-argument-checks']
             relatedPublish._handler = (args...) ->
@@ -61,12 +66,7 @@ unless originalPublish
 
           return unless oldRelatedPublish
 
-          # We call this first, so that we can offer onStop to cleanup things properly.
-          # _callStopCallbacks can be called multiple times because it unregisters run
-          # callbacks. This is why we can call stop below.
-          oldRelatedPublish._callStopCallbacks()
-
-          # We remove those which are not published anymore (or were not cleaned up in onStop)
+          # We remove those which are not published anymore
           for collectionName in _.keys(oldRelatedPublish._documents)
             for id in _.difference _.keys(oldRelatedPublish._documents[collectionName] or {}), _.keys(relatedPublish._documents[collectionName] or {})
               oldRelatedPublish.removed collectionName, id
@@ -122,7 +122,7 @@ unless originalPublish
           for handle, i in handleRelatedDocuments
             handle.stop() if handle
             handleRelatedDocuments[i] = null
-          relatedPublish.stop true if relatedPublish
+          relatedPublish.stop() if relatedPublish
           relatedPublish = null
 
       func.apply publish, args
