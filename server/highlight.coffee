@@ -11,7 +11,7 @@ Highlight.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
     # TODO: Check the target (try to apply it on the server)
-    # TODO: Check that author really has access to the publication
+    # TODO: Check that author really has access to the highlight (and publication)
 
     return false unless userId
 
@@ -20,7 +20,7 @@ Highlight.Meta.collection.allow
     # Only allow insertion if declared author is current user
     personId and doc.author._id is personId
 
-  update: (userId, doc) ->
+  update: (userId, doc, fieldNames, modifier) ->
     return false unless userId
 
     personId = Meteor.personId userId
@@ -47,6 +47,8 @@ Highlight.Meta.collection.deny
     doc.updatedAt = doc.createdAt
     doc.annotations = [] if not doc.annotations
 
+    doc = Highlight.applyDefaultAccess Meteor.personId(userId), doc
+
     # We return false as we are not
     # checking anything, just adding fields
     false
@@ -58,22 +60,68 @@ Highlight.Meta.collection.deny
     # checking anything, just updating fields
     false
 
+registerForAccess Highlight
+
 Meteor.publish 'highlights-by-id', (id) ->
   check id, String
 
   return unless id
 
-  Highlight.documents.find
-    _id: id
+  @related (person, publication) ->
+    return unless publication?.hasCacheAccess person
+
+    Highlight.documents.find Highlight.requireReadAccessSelector(person,
+      _id: id
+    ), Highlight.PUBLIC_FIELDS()
   ,
-    Highlight.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1 # Needed by hasReadAccess
+  ,
+    Publication.documents.find
+      'annotations._id': id
+    ,
+      fields:
+        # _id field is implicitly added
+        cached: 1
+        processed: 1
+        access: 1
+        readPersons: 1
+        readGroups: 1
 
 Meteor.publish 'highlights-by-publication', (publicationId) ->
   check publicationId, String
 
   return unless publicationId
 
-  Highlight.documents.find
-    'publication._id': publicationId
+  @related (person, publication) ->
+    return unless publication?.hasCacheAccess person
+
+    Highlight.documents.find Highlight.requireReadAccessSelector(person,
+      'publication._id': publicationId
+    ), Highlight.PUBLIC_FIELDS()
   ,
-    Highlight.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1 # Needed by hasReadAccess
+  ,
+    Publication.documents.find
+      _id: publicationId
+    ,
+      fields:
+        # _id field is implicitly added
+        cached: 1
+        processed: 1
+        access: 1
+        readPersons: 1
+        readGroups: 1

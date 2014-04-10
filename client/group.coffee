@@ -36,7 +36,7 @@ Template.group.events
     return if newMemberId in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
     Meteor.call 'add-to-group', Session.get('currentGroupId'), newMemberId, (error, count) ->
-      return Notify.meteorError error if error
+      return Notify.meteorError error, true if error
 
       Notify.success "Member added." if count
 

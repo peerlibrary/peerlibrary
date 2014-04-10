@@ -281,6 +281,7 @@ class Page
 
     return unless $textLayerDummy.is(':visible')
 
+    return if @rendering
     @rendering = true
 
     $textLayerDummy.hide()
@@ -329,14 +330,22 @@ class @Highlighter
 
     @_annotator = new Annotator @, @_$displayWrapper
 
+    # TODO: Change to PDFTextHighlights after TextHighlights is renamed to PDFTextHighlights
     @_annotator.addPlugin 'TextHighlights'
     @_annotator.addPlugin 'DomTextMapper'
     @_annotator.addPlugin 'TextAnchors'
+    @_annotator.addPlugin 'TextRange'
+    @_annotator.addPlugin 'TextPosition'
+    @_annotator.addPlugin 'TextQuote'
     @_annotator.addPlugin 'PeerLibraryPDF'
+    @_annotator.addPlugin 'DOMAnchors'
 
     # Because TextHighlights is loaded after TextAnchors, we have to manually
     # set Annotator.TextHighlight value in TextAnchors plugin instance
     @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
+    # On the other hand, Annotator.TextPositionAnchor does not seem to be set
+    # globally from the TextPosition's pluginInit, so let's do it here again
+    Annotator.TextPositionAnchor = @_annotator.plugins.TextPosition.Annotator.TextPositionAnchor
 
     $(window).on 'scroll.highlighter resize.highlighter', @checkRender
 

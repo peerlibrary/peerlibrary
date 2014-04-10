@@ -55,10 +55,10 @@ Template.results.publications = ->
     return
 
   searchResult = SearchResult.documents.findOne
+    name: 'search-results'
     query: Session.get 'currentSearchQuery'
 
-  if not searchResult
-    return
+  return if not searchResult
 
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
   Session.set 'currentSearchQueryCountPersons', searchResult.countPersons

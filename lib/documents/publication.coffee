@@ -1,4 +1,7 @@
-class @Publication extends Document
+class @Publication extends AccessDocument
+  # access: 0 (private), 1 (closed), 2 (open)
+  # readPersons: if private access, list of persons who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
   # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
@@ -7,6 +10,8 @@ class @Publication extends Document
   #   slug: author's person id
   #   givenName
   #   familyName
+  #   user
+  #     username
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -24,8 +29,9 @@ class @Publication extends Document
   # importing: (temporary) list of
   #   person: person importing the document
   #   filename: original name of the imported file
-  #   temporaryFilename: temporary filename of the imported file
+  #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
+  # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
   # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
@@ -33,10 +39,9 @@ class @Publication extends Document
   #   stack: stack trace of the error
   # numberOfPages
   # fullText: full plain text content suitable for searching
-  # access: 0 (private), 1 (closed), 2 (open)
-  # readUsers: if private access, list of users who have read permissions
-  # readGroups: if private access, list of groups who have read permissions
-  # searchResult (client only): the last search query this publication is a result for, if any, used only in search results
+  # annotations: list of (reverse field from Annotation.publication)
+  #   _id: annotation id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
 
@@ -48,27 +53,18 @@ class @Publication extends Document
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'processed', 'processError', 'importing', 'source', 'foreignId']
-      readUsers: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
-      readGroups: [@ReferenceField Group, ['slug', 'name']]
+      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'processed', 'processError']
 
   @_filenamePrefix: ->
     'pdf' + Storage._path.sep
 
-  @_importFilename: (id) ->
-    'import' + Storage._path.sep + id + '.pdf'
+  cachedFilename: =>
+    throw new Error "Cached filename not available" unless @cachedId
 
-  @_arXivFilename: (arXivId) ->
-    'arxiv' + Storage._path.sep + arXivId + '.pdf'
-
-  filename: =>
-    Publication._filenamePrefix() + switch @source
-      when 'import' then Publication._importFilename @_id
-      when 'arXiv' then Publication._arXivFilename @foreignId
-      else throw new Error "Unsupported source"
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.pdf'
 
   url: =>
-    Storage.url @filename()
+    Storage.url @cachedFilename()
 
   thumbnail: (page) =>
     if page < 1 or page > @numberOfPages
@@ -88,6 +84,83 @@ class @Publication extends Document
     moment(@createdAt).format 'MMMM Do YYYY'
 
   @ACCESS:
-    PRIVATE: 0
+    PRIVATE: ACCESS.PRIVATE
     CLOSED: 1
     OPEN: 2
+
+  hasReadAccess: (person, cache=false) =>
+    return false unless @cached
+
+    return true if person?.isAdmin
+
+    return true if @_id in _.pluck person?.library, '_id'
+
+    return false unless @processed
+
+    return true if @access is Publication.ACCESS.OPEN
+
+    return not cache if @access is Publication.ACCESS.CLOSED
+
+    # Access should be private here, if it is not, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access is Publication.ACCESS.PRIVATE
+
+    return false unless person?._id
+
+    return true if person._id in _.pluck @readPersons, '_id'
+
+    personGroups = _.pluck person?.inGroups, '_id'
+    publicationGroups = _.pluck @readGroups, '_id'
+
+    return true if _.intersection(personGroups, publicationGroups).length
+
+    return false
+
+  hasCacheAccess: (person) =>
+    @hasReadAccess person, true
+
+  @requireReadAccessSelector: (person, selector, cache=false) ->
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+    selector.$and.push
+      cached:
+        $exists: true
+
+    return selector if person?.isAdmin
+
+    accessConditions = [
+      access: Publication.ACCESS.OPEN
+    ,
+      access: Publication.ACCESS.PRIVATE
+      'readPersons._id': person?._id
+    ,
+      access: Publication.ACCESS.PRIVATE
+      'readGroups._id':
+        $in: _.pluck person?.inGroups, '_id'
+    ]
+
+    unless cache
+      # Access to publication metadata is allowed for closed access
+      # publications, only access to cache information is not
+      accessConditions.push
+        access: Publication.ACCESS.CLOSED
+
+    selector.$and.push
+      $or: [
+        processed:
+          $exists: true
+        $or: accessConditions
+      ,
+        _id:
+          $in: _.pluck person?.library, '_id'
+      ]
+    selector
+
+  @requireCacheAccessSelector: (person, selector) ->
+    @requireReadAccessSelector person, selector, true
+
+  @defaultAccess: ->
+    @ACCESS.OPEN

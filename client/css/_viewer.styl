@@ -7,6 +7,16 @@ section.publication
     margin 0
     width 100%
 
+section.publication
+  .simple
+    margin-left auto
+    margin-right auto
+    width 94%
+    margin-top simple-margin-top - header-height
+
+  .simple.loading
+    text-align center
+
 /* Meta menu
 ============ */
 
@@ -490,7 +500,7 @@ annotations-control-height = 28px
 /* Footer
 ========= */
 
-footer.publication
+footer.publication-displayed
   /* Initially we set it to display-canvas-loading width and
      then in code we update it to real width based on the PDF */
   width display-canvas-loading-width

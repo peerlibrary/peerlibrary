@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding access, readUsers, and readGroups fields to Annotation"
+  name: "Adding access, readPersons, and readGroups fields to Annotation"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>

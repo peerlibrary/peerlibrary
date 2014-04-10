@@ -1,7 +1,7 @@
 PeerLibrary
 ===========
 
-Capturing the global conversation on academic literature.
+Facilitating the global conversation on academic literature.
 
 https://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
