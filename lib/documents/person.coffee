@@ -16,6 +16,9 @@ class @Person extends Document
   #   _id: authored publication id
   # library: list of
   #   _id: added publication id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Person'

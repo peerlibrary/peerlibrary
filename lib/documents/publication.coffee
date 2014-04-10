@@ -10,6 +10,8 @@ class @Publication extends AccessDocument
   #   slug: author's person id
   #   givenName
   #   familyName
+  #   user
+  #     username
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -39,6 +41,9 @@ class @Publication extends AccessDocument
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Publication'
