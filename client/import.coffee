@@ -57,8 +57,8 @@ uploadFile = (file, publicationId) ->
           finished: true
           publicationId: publicationId
 
-testPDF = (file, fileContent, callback) ->
-  PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
+testPDF = (file, source, callback) ->
+  PDFJS.getDocument(source).then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
       $set:
         errored: true
@@ -69,7 +69,12 @@ importFile = (file) ->
   reader.onload = ->
     fileContent = @result
 
-    testPDF file, fileContent, (dataContext) ->
+    if URL and URL.createObjectURL
+      source = url: URL.createObjectURL(file), password: ''
+    else
+      source = data: fileContent, password: ''
+
+    testPDF file, source, (dataContext) ->
       dataContext.sha256().then (sha256) ->
         alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
         if alreadyImporting
