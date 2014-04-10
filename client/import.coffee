@@ -121,9 +121,7 @@ importFile = (file) ->
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
-      if error
-        Notify.meteorError error, true
-        return
+      return Notify.meteorError error, true if error
 
       # So that meteor-file knows what to update
       file._id = id
