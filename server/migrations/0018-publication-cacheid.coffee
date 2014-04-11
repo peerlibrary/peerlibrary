@@ -1,6 +1,6 @@
 getOldFilename = (document) ->
     if document.source is 'arXiv'
-      'pdf' + Storage._path.sep + 'arXiv' + Storage._path.sep + document.foreignId + '.pdf'
+      'pdf' + Storage._path.sep + 'arxiv' + Storage._path.sep + document.foreignId + '.pdf'
     else
       # We use import also as a fallback for any unsupported document source.
       # This allows us to go first backward in migrations and then again forward.
