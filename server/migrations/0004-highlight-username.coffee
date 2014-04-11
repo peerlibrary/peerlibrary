@@ -12,4 +12,4 @@ class Migration extends Document.MinorMigration
         return callback error if error
         super db, collectionName, currentSchema, oldSchema, callback
 
-Annotation.addMigration new Migration()
+Highlight.addMigration new Migration()
