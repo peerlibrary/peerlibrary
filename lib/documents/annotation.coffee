@@ -1,5 +1,5 @@
 class @Annotation extends AccessDocument
-  # access: 0 (private), 1 (public)
+  # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when document was created
