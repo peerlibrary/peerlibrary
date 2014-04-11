@@ -17,6 +17,14 @@ unless originalPublish
 
       publish.personId = person?._id or null
 
+      # This function wraps the logic of publishing related documents. publishFunction gets
+      # as arguments documents returned from related querysets. Everytime any related document
+      # changes, publishFunction is rerun. The requirement is that related quertsets return
+      # exactly one document. publishFunction can be anything a normal publish endpoint function
+      # can be, it can return querysets or can call added/changed/removed. It does not have to
+      # care about unpublishing documents which are not published anymore after the rerun, or
+      # care about publishing only changes to documents after the rerun.
+
       # TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
       publish.related = (publishFunction, related...) ->
         relatedPublish = null
