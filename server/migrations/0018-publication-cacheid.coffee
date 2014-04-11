@@ -15,7 +15,7 @@ class Migration extends Document.MajorMigration
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>
       return callback error if error
-      cursor = collection.find {_schema: currentSchema, cachedId: $exists: false}, {source: 1, foreignId: 1}
+      cursor = collection.find {_schema: currentSchema, cached: {$exists: true}, cachedId: {$exists: false}}, {source: 1, foreignId: 1}
       document = null
       async.doWhilst (callback) =>
         cursor.nextObject (error, doc) =>
@@ -52,7 +52,7 @@ class Migration extends Document.MajorMigration
   backward: (db, collectionName, currentSchema, oldSchema, callback) =>
     db.collection collectionName, (error, collection) =>
       return callback error if error
-      cursor = collection.find {_schema: currentSchema, cachedId: $exists: true}, {cachedId: 1, source: 1, foreignId: 1}
+      cursor = collection.find {_schema: currentSchema, cached: {$exists: true}, cachedId: $exists: true}, {cachedId: 1, source: 1, foreignId: 1}
       document = null
       async.doWhilst (callback) =>
         cursor.nextObject (error, doc) =>
