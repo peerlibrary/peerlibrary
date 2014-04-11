@@ -187,7 +187,7 @@ Meteor.publish 'search-persons-groups', (query, except) ->
     regex = new RegExp keyword, 'i'
     findPersonQuery.$and.push
       $or: [
-        _id: regex
+        _id: keyword
       ,
         'user.username': regex
       ,
@@ -199,7 +199,7 @@ Meteor.publish 'search-persons-groups', (query, except) ->
       ]
     findGroupQuery.$and.push
       $or: [
-        _id: regex
+        _id: keyword
       ,
         name: regex
       ]
