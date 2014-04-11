@@ -1,4 +1,6 @@
 class Migration extends Document.MinorMigration
-  name: "Adding readPersons and readGroups fields to Publication"
+  name: "Adding hasAbstract field to Publication"
+
+  # Client-only
 
 Publication.addMigration new Migration()

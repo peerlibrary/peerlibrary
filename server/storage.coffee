@@ -41,6 +41,9 @@ class @Storage extends Storage
     @_assurePath newPath
     fs.symlinkSync @_fullPath(existingFilename), newPath
 
+  @remove: (filename) ->
+    fs.unlinkSync @_fullPath filename
+
 # Find .meteor directory
 directoryPath = process.mainModule.filename.split path.sep
 while directoryPath.length > 0

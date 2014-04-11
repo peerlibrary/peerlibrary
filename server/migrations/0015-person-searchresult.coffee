@@ -1,4 +1,6 @@
 class Migration extends Document.MinorMigration
-  name: "Adding inGroups field to Person"
+  name: "Adding searchResults field to Person"
+
+  # Client-only
 
 Person.addMigration new Migration()
