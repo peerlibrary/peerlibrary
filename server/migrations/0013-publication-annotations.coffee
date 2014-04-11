@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding annotations field to Publication"
+  name: "Adding annotations field"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

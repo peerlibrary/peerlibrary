@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding fullText field to Publication"
+  name: "Adding fullText field"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

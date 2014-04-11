@@ -1,5 +1,5 @@
 class Migration extends Document.MajorMigration
-  name: "Converting Publication's processed field to a timestamp"
+  name: "Converting processed field to a timestamp"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>

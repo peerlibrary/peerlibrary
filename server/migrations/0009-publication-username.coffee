@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding user.username to Publication's authors"
+  name: "Adding user.username to authors"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

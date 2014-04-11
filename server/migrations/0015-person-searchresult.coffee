@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding searchResults field to Person"
+  name: "Adding searchResults field"
 
   # Client-only
 

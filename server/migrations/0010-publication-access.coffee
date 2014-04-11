@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding access, readPersons, readGroups fields to Publication"
+  name: "Adding access, readPersons, readGroups fields"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>

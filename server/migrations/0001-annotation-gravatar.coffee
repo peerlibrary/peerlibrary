@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding gravatarHash to Annotation's author"
+  name: "Adding gravatarHash to author"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

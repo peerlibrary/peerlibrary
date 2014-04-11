@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Generalizing SearchResults' fields"
+  name: "Generalizing count fields"
 
   # Client-only
 

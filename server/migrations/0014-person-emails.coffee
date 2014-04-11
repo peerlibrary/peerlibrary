@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding the first user's e-mail to Person"
+  name: "Adding the first user's e-mail"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

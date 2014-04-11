@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding hasAbstract field to Publication"
+  name: "Adding hasAbstract field"
 
   # Client-only
 

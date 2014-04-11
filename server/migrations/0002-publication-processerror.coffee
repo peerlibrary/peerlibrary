@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding processError field to Publication"
+  name: "Adding processError field"
 
   backward: (db, collectionName, currentSchema, oldSchema, callback) =>
     db.collection collectionName, (error, collection) =>

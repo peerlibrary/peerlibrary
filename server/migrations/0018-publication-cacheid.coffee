@@ -10,7 +10,7 @@ getNewFilename = (cachedId) ->
   'pdf' + Storage._path.sep + 'cache' + Storage._path.sep + cachedId + '.pdf'
 
 class Migration extends Document.MajorMigration
-  name: "Adding cachedId field to Publication"
+  name: "Adding cachedId field"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>

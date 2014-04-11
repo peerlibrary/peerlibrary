@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding inGroups field to Person"
+  name: "Adding inGroups field"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     @updateAll()

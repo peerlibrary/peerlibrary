@@ -1,5 +1,5 @@
 class Migration extends Document.MinorMigration
-  name: "Adding stack field to LoggedError"
+  name: "Adding stack field"
 
   backward: (db, collectionName, currentSchema, oldSchema, callback) =>
     db.collection collectionName, (error, collection) =>

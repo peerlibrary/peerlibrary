@@ -1,5 +1,5 @@
 class Migration extends Document.MajorMigration
-  name: "Renaming temporaryFilename field to importingId in Publication"
+  name: "Renaming temporaryFilename field to importingId"
 
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>
