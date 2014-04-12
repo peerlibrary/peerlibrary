@@ -254,6 +254,7 @@ Meteor.methods
           importingId: Random.id()
         ]
         cachedId: Random.id()
+        mediaType: 'pdf'
         sha256: sha256
         metadata: false
       verify = false
