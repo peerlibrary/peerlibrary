@@ -231,7 +231,7 @@ Meteor.methods
       Log.error error
       throw error
 
-    page = blocking(xml2js.parseString) page.content
+    page = xml2js.parseStringSync page.content
 
     count = 0
 
@@ -514,6 +514,52 @@ Meteor.methods
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         Log.info "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
+
+    Log.info "Done (#{ count })"
+
+  'sync-fsm-cache': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    @unblock()
+
+    if not Meteor.settings.FSM
+      Log.error "FSM settings missing"
+      throw new Meteor.Error 500, "FSM settings missing"
+
+    Log.info "Syncing FSM cache"
+
+    count = 0
+
+    Publication.documents.find(source: 'FSM', cached: {$exists: false}).forEach (publication) ->
+      try
+        if not Storage.exists publication.cachedFilename()
+          Log.info "Caching file for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
+
+          tei = HTTP.get publication.foreignUrl,
+            timeout: 10000 # ms
+            encoding: null # PDFs are binary data
+
+          Storage.save publication.foreignFilename(), tei.content
+          assert Storage.exists publication.foreignFilename()
+          Storage.link publication.foreignFilename(), publication.cachedFilename()
+          assert Storage.exists publication.cachedFilename()
+
+        if not publication.sha256
+          pdfContent = Storage.open publication.cachedFilename()
+          hash = new Crypto.SHA256()
+          hash.update pdfContent
+          publication.sha256 = hash.finalize()
+
+        publication.cached = moment.utc().toDate()
+        Publication.documents.update publication._id,
+          $set:
+            cached: publication.cached
+            sha256: publication.sha256
+
+        count++
+
+      catch error
+        Log.error "#{ error }"
 
     Log.info "Done (#{ count })"
 

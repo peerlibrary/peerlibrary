@@ -56,15 +56,15 @@ class @Publication extends AccessDocument
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'processed', 'processError']
+      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
 
   @_filenamePrefix: ->
-    'pdf' + Storage._path.sep
+    'publication' + Storage._path.sep
 
   cachedFilename: =>
     throw new Error "Cached filename not available" unless @cachedId
 
-    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.pdf'
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.' + @mediaType
 
   url: =>
     Storage.url @cachedFilename()
