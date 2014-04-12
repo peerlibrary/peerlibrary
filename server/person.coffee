@@ -44,16 +44,20 @@ class @Person extends Person
       library: 1
 
 Meteor.methods
-  'reorder-library': (publications) ->
-    check publications, [String]
+  'reorder-library': (publicationIds) ->
+    check publicationIds, [String]
 
-    #TODO: This code does not work and corrupts Person records. Please correct.
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    personId = Meteor.personId
-    return unless personId
+    library = _.pluck person.library, '_id'
+
+    throw new Meteor.Error 400, "Provided Ids don't match." if _.difference(library, publicationIds).length
+
+    publications = (_id: publicationId for publicationId in publicationIds)
 
     Person.documents.update
-      _id: personId
+      _id: person._id
     ,
       $set:
         library: publications

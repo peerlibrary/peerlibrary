@@ -3,39 +3,34 @@
 section.library
   padding-top: 60px
 
+.library-publications
 
-  .collection-publications
+  li.result-item
+    cursor move
 
-    li.result-item
-      cursor: move
+  li.result-item.ui-sortable-helper
+    transition 0
 
-    li.result-item.ui-sortable-helper
-      transition 0
-
-
-  .collections
-
-    h3
-      font-weight 300
+.library-collections
+  margin-top 34px
 
 
 .collections-list
   list-style none
   padding 0
 
-.collection-listing, .all-publications
+.collection-listing
   background white
   padding 10px 15px
   margin 10px 0 10px 1px
   border-radius 2px
   box-shadow 0 0 0 1px rgba(14,41,57,0.12)
   transition 0.2s
-  cursor pointer
 
   h3
-    margin: 0 0 0.2em 0
+    margin 0 0 0.2em 0
 
-.collection-listing:hover, .all-publications:hover
+.collection-listing:hover
   box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
 
 .collection-listing.droppable-active

@@ -10,53 +10,29 @@ Deps.autorun ->
 
     Meteor.subscribe 'my-collections'
 
-allPublications = ->
-  Publication.documents.find
+Template.libraryPublications.myPublications = ->
+  person = Meteor.person()
+  return unless person
+
+  publications = Publication.documents.find
     _id:
-      $in: _.pluck Meteor.person()?.library, '_id'
+      $in: _.pluck person.library, '_id'
+  .fetch()
 
-allPublicationsCollection = ->
-  name: "All Publications"
-  publications: allPublications()
+  # Order documents according to library
+  _.map person.library, (libraryPublication) ->
+    _.find publications, (publication) ->
+      libraryPublication._id is publication._id
 
-activeCollectionId = null
-activeCollectionDependency = new Deps.Dependency
-
-setActiveCollection = (collectionId) ->
-  activeCollectionId = collectionId
-  activeCollectionDependency.changed()
-
-Template.collectionPublications.activeCollection = ->
-  activeCollectionDependency.depend()
-
-  return allPublicationsCollection() unless activeCollectionId
-
-  Collection.documents.findOne
-    '_id': activeCollectionId
-
-Template.collectionPublications.rendered = ->
-  $(@findAll '.collection-publications').sortable
+Template.libraryPublications.rendered = ->
+  $(@findAll '.library-publications').sortable
     opacity: 0.5
     update: (event, ui) ->
       newOrder = []
       $(this).children("li").each () ->
         newOrder.push $(this).attr("data-id")
 
-      if activeCollectionId
-        Meteor.call "reorder-collection", activeCollectionId, newOrder
-      else
-        Meteor.call "reorder-library", newOrder
-
-# Publications in logged user's library
-Template.collections.allPublications = ->
-  allPublications()
-
-countDescription = (publications) ->
-  return "0 publications" unless publications
-  if publications.length is 1 then "1 publication" else "#{publications.length} publications"
-
-Template.collections.allPublicationsCountDescription = ->
-  countDescription Meteor.person()?.library
+      Meteor.call "reorder-library", newOrder
 
 Template.collections.myCollections = ->
   return unless Meteor.person()
@@ -65,15 +41,6 @@ Template.collections.myCollections = ->
     'author._id': Meteor.personId()
 
 Template.collections.events
-  'click .all-publications': (e, template) ->
-    setActiveCollection null
-
-    return # Make sure CoffeeScript does not return anything
-
-  'click .collection-listing': (e, template) ->
-    setActiveCollection this._id
-
-    return # Make sure CoffeeScript does not return anything
 
   'submit .add-collection': (e, template) ->
     e.preventDefault()
@@ -101,4 +68,5 @@ Template.collections.rendered = ->
       Meteor.call 'add-to-collection', collectionId, publicationId
 
 Template.collectionListing.countDescription = ->
-  countDescription @publications
+  return "0 publications" unless @publications
+  if @publications.length is 1 then "1 publication" else "#{@publications.length} publications"

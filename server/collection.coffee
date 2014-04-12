@@ -96,11 +96,31 @@ Meteor.methods
         publications:
           _id: publicationId
 
-  'reorder-collection': (collectionId, publications) ->
+  'reorder-collection': (collectionId, publicationIds) ->
     check collectionId, String
-    check publications, [String]
+    check publicationIds, [String]
 
-    #TODO: Update collection's publications to the new order
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    collection = Collection.documents.find
+      _id: collectionId
+
+    throw new Meteor.Error 401, "Collection not found." unless collection
+
+    throw new Meteor.Error 403, "User not collection's author." unless collection.author._id is person._id
+
+    oldOrderIds = _.pluck collection.publications, '_id'
+
+    throw new Meteor.Error 400, "Provided Ids don't match." if _.difference(oldOrderIds, publicationIds).length
+
+    publications = (_id: publicationId for publicationId in publicationIds)
+
+    Collection.documents.update
+      _id: collectionId
+    ,
+      $set:
+        publications: publications
 
 
 Meteor.publish 'collection-by-id', (id) ->

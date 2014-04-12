@@ -1,16 +1,15 @@
 <template name="library">
-    <h1>Library</h1>
     <div class="row">
-      {{> collectionPublications}}
+      {{> libraryPublications}}
       {{> collections}}
     </div>
 </template>
 
-<template name="collectionPublications">
-  <div class="collection-details col12">
-    <h2 class="collection-name">{{activeCollection.name}}</h2>
-    <ol class="collection-publications item-list">
-      {{#each activeCollection.publications}}
+<template name="libraryPublications">
+  <div class="col12">
+    <h1>Library</h1>
+    <ol class="library-publications item-list">
+      {{#each myPublications}}
         {{> publicationSearchResult}}
       {{/each}}
     </ol>
@@ -18,13 +17,9 @@
 </template>
 
 <template name="collections">
-  <div class="col4 push12 collections">
+  <div class="col4 push12 library-collections">
     <h2>Collections</h2>
     <ol class="item-list collections-list">
-      <li class="all-publications">
-        <h3>All publications</h3>
-        <span class="publications-count">{{allPublicationsCountDescription}}</span>
-      </li>
       {{#each myCollections}}
         {{> collectionListing}}
       {{/each}}
@@ -39,7 +34,11 @@
 
 <template name="collectionListing">
   <li class="collection-listing" data-id="{{_id}}">
-    <h3 class="collection-name">{{name}}</h3>
+    <h3 class="collection-name">
+      <a href="{{collectionPath _id slug}}">
+        {{name}}
+      </a>
+    </h3>
     <span class="publications-count">{{countDescription}}</span>
   </li>
 </template>
