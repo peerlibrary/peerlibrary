@@ -101,7 +101,7 @@ class @Publication extends Publication
     switch @mediaType
       when 'pdf' then @processPDF()
       when 'tei' then @processTEI()
-      else throw new Error "Unsupported media type for processing: #{ @mediaType }"
+      else throw new Error "Unsupported media type: #{ @mediaType }"
 
   processPDF: =>
     currentlyProcessingPublication @_id
@@ -157,7 +157,17 @@ class @Publication extends Publication
   processTEI: =>
     tei = Storage.open @cachedFilename()
 
-    cheerio.load(tei).root().text().replace(/\s+/g, ' ').trim()
+    @fullText = cheerio.load(tei).root().text().replace(/\s+/g, ' ').trim()
+
+    # TODO: We could also add some additional information (statistics, how long it took and so on)
+    @processed = moment.utc().toDate()
+    Publication.documents.update @_id,
+      $set:
+        processed: @processed
+        fullText: @fullText
+
+    # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
+    @fullText
 
   _importingFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
