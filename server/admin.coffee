@@ -533,7 +533,7 @@ Meteor.methods
     Publication.documents.find(source: 'FSM', cached: {$exists: false}).forEach (publication) ->
       try
         if not Storage.exists publication.cachedFilename()
-          Log.info "Caching file for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
+          Log.info "Caching file for #{ publication._id }: #{ publication.foreignFilename() } -> #{ publication.cachedFilename() }"
 
           tei = HTTP.get publication.foreignUrl,
             timeout: 10000 # ms
