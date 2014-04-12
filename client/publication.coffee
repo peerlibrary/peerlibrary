@@ -55,6 +55,12 @@ class @Publication extends Publication
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"
 
+    switch @mediaType
+      when 'pdf' then @showPDF()
+      when 'tei' then @showTEI()
+      else Notify.error "Unsupported media type: #{ @mediaType }", null, true
+
+  showPDF: =>
     assert.strictEqual @_pages, null
 
     @_pagesDone = 0
@@ -312,10 +318,35 @@ class @Publication extends Publication
       # TODO: Handle errors better (call destroy?)
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
+  showTEI: =>
+    # TODO: Handle errors
+    $.ajax
+      url: @url()
+      dataType: 'xml'
+      success: (xml, textStatus, jqXHR) =>
+        $.ajax
+          url: '/tei/teibp.xsl'
+          dataType: 'xml'
+          success: (xsl, textStatus, jqXHR) =>
+            xsltProcessor = new XSLTProcessor()
+            xsltProcessor.importStylesheet xsl
+            # TODO: How to set parameters?
+            # xsltProcessor.setParameter null, 'includeToolbox', 'false()'
+            fragment = xsltProcessor.transformToFragment xml, document
+            try
+              @_$displayWrapper.append(fragment)
+            catch error
+              # Ignore
+            $teiWrapper = @_$displayWrapper.find('html').remove().find('#tei_wrapper')
+            $teiWrapper.appendTo @_$displayWrapper
+            @_$displayWrapper.find('#tei_wrapper > * > *').each (i, element) ->
+              $(element).remove() if element.tagName.toLowerCase() is 'teiheader'
+
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
     fields:
       cachedId: 1
+      mediaType: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
