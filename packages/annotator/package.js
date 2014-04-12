@@ -17,6 +17,7 @@ Package.on_use(function (api) {
     'annotator/src/annotator.coffee',
     'annotator/src/xpath.coffee',
     'annotator/src/plugin/domtextmapper.coffee',
+    'annotator/src/plugin/texthighlights.coffee',
     'annotator/src/plugin/textanchors.coffee',
     'annotator/src/plugin/textrange.coffee',
     'annotator/src/plugin/textposition.coffee',

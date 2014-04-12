@@ -358,10 +358,10 @@ class PDFTextHighlight extends Annotator.Highlight
     height: @_box.height
 
 # TODO: Rename to PDFTextHighlights when TextAnchors will not depend on hard-coded TextHighlights plugin anymore
-class Annotator.Plugin.TextHighlights extends Annotator.Plugin
+class Annotator.Plugin.PDFTextHighlights extends Annotator.Plugin
   pluginInit: =>
     # TODO: Remove after renaming to PDFTextHighlights
-    Annotator.TextHighlight = PDFTextHighlight
+    Annotator.PDFTextHighlight = PDFTextHighlight
 
     # Register this highlighting implementation
     @annotator.highlighters.unshift

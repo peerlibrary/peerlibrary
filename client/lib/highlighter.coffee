@@ -337,12 +337,12 @@ class @Highlighter
     @_annotator.addPlugin 'TextRange'
     @_annotator.addPlugin 'TextPosition'
     @_annotator.addPlugin 'TextQuote'
-    @_annotator.addPlugin 'PeerLibraryPDF'
+    #@_annotator.addPlugin 'PeerLibraryPDF'
     @_annotator.addPlugin 'DOMAnchors'
 
     # Because TextHighlights is loaded after TextAnchors, we have to manually
     # set Annotator.TextHighlight value in TextAnchors plugin instance
-    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
+    #@_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
     # On the other hand, Annotator.TextPositionAnchor does not seem to be set
     # globally from the TextPosition's pluginInit, so let's do it here again
     Annotator.TextPositionAnchor = @_annotator.plugins.TextPosition.Annotator.TextPositionAnchor
@@ -425,9 +425,9 @@ class @Highlighter
     @_pages[pageNumber - 1]?.isRendered()
 
   _checkHighlighting: =>
-    return unless @_pages.length is @_numPages
+    #return unless @_pages.length is @_numPages
 
-    return unless _.every @_pages, (page) -> page.hasTextContent()
+    #return unless _.every @_pages, (page) -> page.hasTextContent()
 
     @_annotator._scan()
 

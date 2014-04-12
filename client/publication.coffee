@@ -338,9 +338,12 @@ class @Publication extends Publication
             catch error
               # Ignore
             $teiWrapper = @_$displayWrapper.find('html').remove().find('#tei_wrapper')
-            $teiWrapper.appendTo @_$displayWrapper
+            $('<div/>').addClass('display-page').append($teiWrapper).appendTo @_$displayWrapper
             @_$displayWrapper.find('#tei_wrapper > * > *').each (i, element) ->
               $(element).remove() if element.tagName.toLowerCase() is 'teiheader'
+
+            @_highlighter = new Highlighter @_$displayWrapper
+            @_highlighter._checkHighlighting()
 
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
@@ -607,7 +610,8 @@ Template.publicationAnnotations.annotations = ->
   highlights = currentHighlights()
 
   insideViewport = (area) ->
-    viewport.top <= area.top + area.height and viewport.bottom >= area.top
+    #viewport.top <= area.top + area.height and viewport.bottom >= area.top
+    true
 
   visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
 
