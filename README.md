@@ -85,6 +85,14 @@ Click on the _Initialize database with sample data_ button, to initialize the da
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
+### #HackFSM publications ###
+
+To load and use [HackFSM](http://digitalhumanities.berkeley.edu/hackfsm/) publications, open _Admin dashboard_
+([http://localhost:3000/admin](http://localhost:3000/admin)) and click on _Sync FSM metadata_ button first
+and after it loads all the metadata, click _Sync FSM cache_ button to load all the TEI documents. After the
+caching finishes you will be able to search and open all FSM publications in PeerLibrary. Now you can
+highlight and annotate publications with others in real-time.
+
 ### Troubleshooting ###
 
 Sometimes when installing dependencies, Meteor will throw the following error:
