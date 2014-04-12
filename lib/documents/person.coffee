@@ -3,21 +3,27 @@ class @Person extends Document
   # updatedAt: timestamp of this version
   # user: (null if without user account)
   #   _id
+  #   emails: list with first element of user's e-mail
   #   username
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not
+  # inGroups: list of
+  #   _id: id of a group the person is in
   # publications: list of
   #   _id: authored publication id
   # library: list of
   #   _id: added publication id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Person'
     fields: =>
-      user: @ReferenceField User, ['username'], false
+      user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       slug: @GeneratedField 'self', ['user.username']

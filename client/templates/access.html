@@ -1,0 +1,66 @@
+<template name="accessControl">
+  <form class="access {{documentName}}-access">
+    <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" id="{{documentName}}-access-public-{{_id}}" {{#if public}}checked="checked"{{/if}} /> <label for="{{documentName}}-access-public-{{_id}}"><i class="icon-public"></i> Public<span class="description">Everyone can see the {{documentName}}.</span></label><br/>
+    <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" id="{{documentName}}-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} /> <label for="{{documentName}}-access-private-{{_id}}"><i class="icon-private"></i> Private<span class="description">Only the users listed can see the {{documentName}}.</span></label>
+  </form>
+  {{#if private}}
+    {{> privateAccessControl}}
+  {{/if}}
+</template>
+
+<template name="privateAccessControl">
+  {{> privateAccessControlList}}
+  {{> privateAccessControlAdd}}
+</template>
+
+<template name="privateAccessControlList">
+  <ol class="access-list access-list-users">
+    {{#each readPersonsList}}
+      {{! TODO: Use some person template}}
+      <li class="member person">Person: {{displayName}} <button class="remove-button">Remove</button></li>
+    {{/each}}
+  </ol>
+  <ol class="access-list access-list-groups">
+    {{#each readGroupsList}}
+      {{! TODO: Use some group template}}
+      <li class="member group">Group: {{name}} <button class="remove-button">Remove</button></li>
+    {{/each}}
+  </ol>
+</template>
+
+<template name="privateAccessControlAdd">
+  <input type="text" class="add-access" />
+  {{> privateAccessControlNoResults}}
+  {{> privateAccessControlResults}}
+  {{> privateAccessControlLoading}}
+</template>
+
+<template name="privateAccessControlNoResults">
+  {{#if noResults}}
+    <div class="no-results">No people or groups found</div>
+  {{/if}}
+</template>
+
+<template name="privateAccessControlResults">
+  {{#if results.length}}
+    <ul class="access-results">
+      {{#each results}}
+        {{> privateAccessControlResultsItem}}
+      {{/each}}
+     </ul>
+  {{/if}}
+</template>
+
+<template name="privateAccessControlResultsItem">
+  {{#ifPerson}}
+    <li class="person">Person: {{displayName}} <button class="add-button">Add</button></li>
+  {{else}}
+    <li class="group">Group: {{name}} <button class="add-button">Add</button></li>
+  {{/ifPerson}}
+</template>
+
+<template name="privateAccessControlLoading">
+  {{#if loading}}
+    <div class="results-loading">Loading...</div>
+  {{/if}}
+</template>

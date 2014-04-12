@@ -122,12 +122,14 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    # TODO: Make reactive content of the template?
-    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
-      @anchor.annotator._removeHighlight @annotation._id
+    # Create a reactive fragment. We fetch a reactive document
+    # based on _id (which is immutable) to rerender the fragment
+    # as document changes.
+    highlightsControl = Meteor.render =>
+      highlight = Highlight.documents.findOne @annotation?._id
+      Template.highlightsControl highlight if highlight
 
-      return # Make sure CoffeeScript does not return anything
-
+    $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
 
   _hideControl: =>

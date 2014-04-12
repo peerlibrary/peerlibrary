@@ -18,6 +18,9 @@ setSession = (session) ->
     currentHighlightId: null
     currentAnnotationId: null
     currentPersonSlug: null
+    currentGroupId: null
+    currentGroupSlug: null
+    groupsActive: false
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null
@@ -161,6 +164,21 @@ else
           currentPublicationId: publicationId
           currentPublicationSlug: publicationSlug
         'publication'
+
+    '/g/:groupId/:groupSlug?':
+      as: 'group'
+      to: (groupId, groupSlug) ->
+        setSession
+          currentGroupId: groupId
+          currentGroupSlug: groupSlug
+        'group'
+
+    '/g':
+      as: 'groups'
+      to: ->
+        setSession
+          groupsActive: true
+        'groups'
 
     '/u/:personSlug':
       as: 'profile'

@@ -1,0 +1,19 @@
+<template name="group">
+  <h2>{{group.name}}</h2>
+  <ol class="members">
+    {{#each group.members}}
+      {{> groupMember}}
+    {{/each}}
+  </ol>
+  <form class="add-member">
+    <input type="text" class="name" />
+    <button type="submit" class="add">Add a member</button>
+  </form>
+</template>
+
+<template name="groupMember">
+  <li class="member">
+    <img src="{{avatar}}" class="avatar" />
+    <h4 class="member-name"><a href="{{profilePath slug}}">{{displayName}}</a></h4>
+  </li>
+</template>

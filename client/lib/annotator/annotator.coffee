@@ -236,11 +236,16 @@ class @Annotator extends Annotator
     id of @_annotations
 
   setupAnnotation: (annotation) ->
-    annotation = super
+    # We transform the Annotator's annotation into PeerLibrary highlight document.
+    # Read below for more information on how we are using Annotator's annotations
+    # as highlights.
+    annotation = new Highlight annotation
+
+    annotation = super annotation
 
     @_annotations[annotation._id] = annotation
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
@@ -252,21 +257,21 @@ class @Annotator extends Annotator
 
     delete @_annotations[annotation._id]
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
   _realizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
   _virtualizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -285,7 +290,7 @@ class @Annotator extends Annotator
 
   _highlightChanged: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
-    # TODO: Do we have to call setHighlights in updateAnnotation?
+    # TODO: Do we have to call currentHighlights.set in updateAnnotation? Currently we are ignoring values, only comparing keys when setting highlights
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
@@ -309,9 +314,7 @@ class @Annotator extends Annotator
 
     Highlight.documents.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      if error
-        Notify.meteorError error, true
-        return
+      return Notify.meteorError error, true if error
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?

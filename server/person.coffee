@@ -27,6 +27,7 @@ class @Person extends Person
       'givenName'
       'familyName'
       'isAdmin'
+      'inGroups'
     ]
 
   # A set of fields which are public and can be published to the client
@@ -38,6 +39,7 @@ class @Person extends Person
       givenName: 1
       familyName: 1
       isAdmin: 1
+      inGroups: 1
       work: 1
       education: 1
       publications: 1

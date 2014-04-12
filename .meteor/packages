@@ -22,7 +22,6 @@ random
 dimsum
 connect
 stylus
-fs
 urlify2
 accounts-ui-unstyled
 HTML5-History-API
@@ -40,3 +39,5 @@ segfault-handler
 blob
 facts
 scribe
+variable
+async

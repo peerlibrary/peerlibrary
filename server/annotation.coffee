@@ -10,7 +10,7 @@ class @Annotation extends Annotation
 Annotation.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the publication
+    # TODO: Check that author really has access to the annotation (and publication)
 
     return false unless userId
 
@@ -19,7 +19,10 @@ Annotation.Meta.collection.allow
     # Only allow insertion if declared author is current user
     personId and doc.author._id is personId
 
-  update: (userId, doc) ->
+  update: (userId, doc, fieldNames, modifier) ->
+    # TODO: Check whether updated document conforms to schema
+    # TODO: Check that author really has access to the annotation (and publication)
+
     return false unless userId
 
     personId = Meteor.personId userId
@@ -46,6 +49,8 @@ Annotation.Meta.collection.deny
     doc.updatedAt = doc.createdAt
     doc.highlights = [] if not doc.highlights
 
+    doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
+
     # We return false as we are not
     # checking anything, just adding fields
     false
@@ -57,22 +62,68 @@ Annotation.Meta.collection.deny
     # checking anything, just updating fields
     false
 
+registerForAccess Annotation
+
 Meteor.publish 'annotations-by-id', (id) ->
   check id, String
 
   return unless id
 
-  Annotation.documents.find
-    _id: id
+  @related (person, publication) ->
+    return unless publication?.hasReadAccess person
+
+    Annotation.documents.find Annotation.requireReadAccessSelector(person,
+      _id: id
+    ), Annotation.PUBLIC_FIELDS()
   ,
-    Annotation.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1 # Needed by hasReadAccess
+  ,
+    Publication.documents.find
+      'annotations._id': id
+    ,
+      fields:
+        # _id field is implicitly added
+        cached: 1
+        processed: 1
+        access: 1
+        readPersons: 1
+        readGroups: 1
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
   check publicationId, String
 
   return unless publicationId
 
-  Annotation.documents.find
-    'publication._id': publicationId
+  @related (person, publication) ->
+    return unless publication?.hasReadAccess person
+
+    Annotation.documents.find Annotation.requireReadAccessSelector(person,
+      'publication._id': publicationId
+    ), Annotation.PUBLIC_FIELDS()
   ,
-    Annotation.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1 # Needed by hasReadAccess
+  ,
+    Publication.documents.find
+      _id: publicationId
+    ,
+      fields:
+        # _id field is implicitly added
+        cached: 1
+        processed: 1
+        access: 1
+        readPersons: 1
+        readGroups: 1

@@ -7,6 +7,16 @@ section.publication
     margin 0
     width 100%
 
+section.publication
+  .simple
+    margin-left auto
+    margin-right auto
+    width 94%
+    margin-top simple-margin-top - header-height
+
+  .simple.loading
+    text-align center
+
 /* Meta menu
 ============ */
 
@@ -66,10 +76,14 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
+    .access .description
+      display block
+
 .meta-menu:hover
   background rgba(46,46,44,0.5)
   width 300px
   min-height 420px
+  height auto
 
   .meta-content
     display block
@@ -194,6 +208,7 @@ small-meta-menu-icon-font-size = 13px
         .meta-menu:hover
           width 150px
           min-height 220px
+          height auto
 
       .loading
         position absolute
@@ -374,8 +389,9 @@ annotations-control-height = 28px
             content ""
 
     .meta-menu:hover
-      width 150px
+      width 200px
       min-height 220px
+      height auto
 
   .annotation:hover, .annotation.selected, .annotation.hovered
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
@@ -423,7 +439,7 @@ annotations-control-height = 28px
 /* Footer
 ========= */
 
-footer.publication
+footer.publication-displayed
   /* Initially we set it to display-canvas-loading width and
      then in code we update it to real width based on the PDF */
   width display-canvas-loading-width
