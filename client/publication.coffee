@@ -597,16 +597,24 @@ Template.publicationAnnotations.annotations = ->
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
-    # Left mouse button and mousedown happened on a target inside a display-page
-    if e.which is 1 and $(e.target).closest('.display-page').length and currentPublication?._highlighter?._annotator?._inAnyHighlight e.clientX, e.clientY
-      # If mousedown happened inside a highlight, we leave location unchanged
+    if Session.get 'currentHighlightId'
+      # Highlight is currently selected, so we do not update location and
+      # leave to Annotator.updateLocation to handel this. This allows making
+      # one highlight immediatelly after another, without having to go through
+      # a publication-only location after new highlight is created, befure
+      # location is updated to this new highlight location.
+      return
+
+    # Left mouse button and mouseup happened on a target inside a display-page
+    else if e.which is 1 and $(e.target).closest('.display-page').length and currentPublication?._highlighter?._annotator?._inAnyHighlight e.clientX, e.clientY
+      # If mouseup happened inside a highlight, we leave location unchanged
       # so that we update location to the highlight location without going
       # through a publication-only location
       return
 
-    # Left mouse button and mousedown happened on an annotation
+    # Left mouse button and mouseup happened on an annotation
     else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
-      # If mousedown happened inside an annotation, we leave location unchanged
+      # If mouseup happened inside an annotation, we leave location unchanged
       # so that we update location to the annotation location without going
       # through a publication-only location
       return

@@ -5,18 +5,24 @@ class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
     # Just to be sure we reset the variable
     @mouseStartingInsideSelectedHighlight = false
 
-    if event
-      return unless @annotator.mouseIsDown
+    # checkForEndSelection is called without an event object after the enableAnnotating
+    # event, but we are not really using that (calling things manually instead, based on
+    # how/when publication is renderes) so we don't do anything. This also fixes occasional
+    # duplication of a highlight if it was in the URL and got selected on page load, calling
+    # checkForEndSelection sometimes then duplicates it and creates a new one.
+    return unless event
 
-      return unless event.which is 1 # Left mouse button
+    return unless @annotator.mouseIsDown
 
-      event.previousMousePosition = @annotator.mousePosition
-      @annotator.mousePosition = null
+    return unless event.which is 1 # Left mouse button
 
-      # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
-      # we prevent default to prevent deselection of the highlight
-      if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
-        event.preventDefault()
+    event.previousMousePosition = @annotator.mousePosition
+    @annotator.mousePosition = null
+
+    # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
+    # we prevent default to prevent deselection of the highlight
+    if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
+      event.preventDefault()
 
     super event
 
@@ -151,8 +157,8 @@ class @Annotator extends Annotator
   confirmSelection: (event) =>
     return true unless @selectedTargets.length is 1
 
-    # event.previousMousePosition might not exist if checkForEndSelection was called manually without an event object
-    # We ignore if mouse movement was to small to select really anything meaningful
+    # event.previousMousePosition might not exist if checkForEndSelection was called manually without
+    # an event object. We ignore if mouse movement was to small to select really anything meaningful.
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
     quote = @getQuoteForTarget? @selectedTargets[0]
