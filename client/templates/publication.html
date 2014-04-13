@@ -68,36 +68,6 @@
   </div>
 </template>
 
-<!--
-<template name="publicationPrivateAccessControl">
-  <div class="private-access-control">
-    <h3>Users</h3>
-    <div class="access-list-area">
-      <ol class="access-list access-list-users member-list">
-        {{#each readUsers}}
-          {{> groupMember}}
-        {{/each}}
-      </ol>
-      <form class="add-user input-and-button">
-        <input type="text" class="name" placeholder="Username" />
-        <button type="submit" class="add">Add</button>
-      </form>
-    </div>
-    <h3>Groups</h3>
-    <div class="access-list-area">
-      <ol class="access-list access-list-groups member-list">
-        {{#each readGroups}}
-          {{! TODO: Use some group template}}
-          <li class="member"><h4>{{name}}</h4></li>
-        {{/each}}
-      </ol>
-      <form class="add-group input-and-button">
-        <input type="text" class="name" placeholder="Group name" />
-        <button type="submit" class="add">Add</button>
-      </form>
-    </div>
-  </div>
--->
 <template name="publicationAccessControl">
   <form class="access publication-access">
     <input type="radio" value="open" name="publication-access-{{_id}}" id="publication-access-open-{{_id}}" {{#if open}}checked="checked"{{/if}} /> <label for="publication-access-open-{{_id}}"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
@@ -244,30 +214,6 @@
           Not linked to any highlight.
         {{/each}}
       </p>
-<!--
-      <div class="access-panel">
-        <form class="access annotation-access">
-          <div class="selections">
-
-            <label class="selection {{#if public}}selected{{/if}}" for="annotation-access-public-{{_id}}">
-              <input type="radio" value="public" name="annotation-access-{{_id}}" id="annotation-access-public-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-              <i class="icon-closed"></i> Public
-            </label>
-
-            <label class="selection {{#if private}}selected{{/if}}" for="annotation-access-private-{{_id}}">
-              <input type="radio" value="private" name="annotation-access-{{_id}}" id="annotation-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-              <i class="icon-private"></i> Private
-            </label>
-
-          </div>
-          <div class="description {{#if public}}displayed{{/if}}" data-access="public">Everyone can see the annotation.</div>
-          <div class="description {{#if private}}displayed{{/if}}" data-access="private">Only the users listed can see the annotation.</div>
-        </form>
-        {{#if private}}
-        {{> publicationPrivateAccessControl publication}}
-        {{/if}}
-      </div>
--->
       {{> accessControl}}
     </div>
   </div>
