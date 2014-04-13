@@ -62,7 +62,7 @@ class @Publication extends AccessDocument
     'publication' + Storage._path.sep
 
   cachedFilename: =>
-    throw new Error "Cached filename not available" unless @cachedId
+    throw new Error "Cached filename not available" unless @cachedId and @mediaType
 
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.' + @mediaType
 

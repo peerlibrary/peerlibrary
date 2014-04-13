@@ -313,6 +313,7 @@ Meteor.methods
         'importing.$': 1
         sha256: 1
         cachedId: 1
+        mediaType: 1
 
     # File maybe finished by somebody else, or wrong publicationId, or something else.
     # If the file was maybe finished by somebody else, we do not want really to continue writing
