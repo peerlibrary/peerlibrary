@@ -76,7 +76,7 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
-.meta-menu:hover
+.meta-menu:hover, .meta-menu.displayed
   background rgba(46,46,44,0.5)
   width 300px
   min-height 420px
@@ -389,7 +389,7 @@ annotations-control-height = 28px
         .selection
           width 50%
 
-    .meta-menu:hover
+    .meta-menu:hover, .meta-menu.displayed
       width 200px
       min-height 220px
       height auto
@@ -504,6 +504,17 @@ annotations-control-height = 28px
     .add-control-results
       padding 0 10px 10px
       font-weight 300
+
+.meta-menu .access-panel .private-access-control
+  .member
+    display inline-block
+    width auto
+
+  .add-control .member
+    display block
+    width 100%
+
+
 
 
 /* Footer
