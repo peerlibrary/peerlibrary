@@ -78,8 +78,8 @@ class @Annotator extends Annotator
     false
 
   _inAnySelectedHighlight: (clientX, clientY) =>
-    #for highlight in @getHighlights() when highlight.isSelected()
-    #  return true if highlight.in clientX, clientY
+    for highlight in @getHighlights() when highlight.isSelected()
+      return true if highlight.in clientX, clientY
 
     false
 
@@ -131,7 +131,7 @@ class @Annotator extends Annotator
 
   # Just a helper function, to really deselect call _selectHighlight(null)
   _deselectAllHighlights: =>
-    #highlight.deselect() for highlight in @getHighlights()
+    highlight.deselect() for highlight in @getHighlights()
 
   updateLocation: =>
     # This is our annotations
@@ -197,7 +197,7 @@ class @Annotator extends Annotator
     # And re-select it as a selected highlight
     # This just draws it selected and does not yet update location
     # We do this re-selection to make sure selection matches stored selection
-    #highlight.select() for highlight in @getHighlights [annotation]
+    highlight.select() for highlight in @getHighlights [annotation]
 
     # TODO: Optimize time it takes to create a new highlight, for example, if you select whole PDF page it takes quite some time (> 1s) currently
     #console.log "Time (s):", (new Date().valueOf() - time) / 1000
@@ -346,7 +346,7 @@ class @Annotator extends Annotator
       # annotation (our highlight) are not realized (Annotator's highlights created),
       # but we do not care because we set selectedAnnotationId and highlight will be
       # selected when it is finally created in _createHighlight.
-      #highlight.select() for highlight in highlights when not highlight.isSelected()
+      highlight.select() for highlight in highlights when not highlight.isSelected()
 
       annotation = createAnnotationDocument()
       annotation.local = true
@@ -380,7 +380,7 @@ class @Annotator extends Annotator
     highlights = {}
     for highlight in @getHighlights()
       if highlights[highlight.annotation._id]
-        highlights[highlight.annotation._id].push null
+        highlights[highlight.annotation._id].push highlight.getBoundingBox()
       else
-        highlights[highlight.annotation._id] = [null]
+        highlights[highlight.annotation._id] = [highlight.getBoundingBox()]
     highlights

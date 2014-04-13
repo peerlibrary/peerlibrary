@@ -610,8 +610,7 @@ Template.publicationAnnotations.annotations = ->
   highlights = currentHighlights()
 
   insideViewport = (area) ->
-    #viewport.top <= area.top + area.height and viewport.bottom >= area.top
-    true
+    viewport.top <= area.top + area.height and viewport.bottom >= area.top
 
   visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
 
