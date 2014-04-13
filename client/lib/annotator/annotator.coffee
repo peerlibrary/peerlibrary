@@ -155,7 +155,8 @@ class @Annotator extends Annotator
         pageY: event.pageY
 
   confirmSelection: (event) =>
-    return true unless @selectedTargets.length is 1
+    # TODO: We currently support only when there is one selected target
+    return false unless @selectedTargets.length is 1
 
     # event.previousMousePosition might not exist if checkForEndSelection was called manually without
     # an event object. We ignore if mouse movement was to small to select really anything meaningful.
@@ -175,10 +176,10 @@ class @Annotator extends Annotator
 
   onSuccessfulSelection: (event, immediate) =>
     assert event
-    assert event.targets
+    assert event.segments
 
-    # Store the selected targets
-    @selectedTargets = event.targets
+    # Describe the selection with targets
+    @selectedTargets = (@_getTargetFromSelection s for s in event.segments)
 
     return unless @confirmSelection event
 

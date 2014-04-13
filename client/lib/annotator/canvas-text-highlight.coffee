@@ -1,8 +1,4 @@
-class PDFTextHighlight extends Annotator.Highlight
-  # Is this element a text highlight physical anchor?
-  @isInstance: (element) =>
-    false
-
+class CanvasTextHighlight extends Annotator.Highlight
   constructor: (anchor, pageIndex, @normedRange) ->
     super anchor, pageIndex
 
@@ -357,21 +353,19 @@ class PDFTextHighlight extends Annotator.Highlight
     width: @_box.width
     height: @_box.height
 
-# TODO: Rename to PDFTextHighlights when TextAnchors will not depend on hard-coded TextHighlights plugin anymore
-class Annotator.Plugin.PDFTextHighlights extends Annotator.Plugin
+class Annotator.Plugin.CanvasTextHighlights extends Annotator.Plugin
   pluginInit: =>
-    # TODO: Remove after renaming to PDFTextHighlights
-    Annotator.PDFTextHighlight = PDFTextHighlight
-
     # Register this highlighting implementation
     @annotator.highlighters.unshift
-      name: 'PDF text highlighter'
+      name: 'Canvas text highlighter'
       highlight: @_createTextHighlight
+      isInstance: @_isInstance
+      getIndependentParent: @_getIndependentParent
 
   _createTextHighlight: (anchor, pageIndex) =>
     switch anchor.type
       when 'text range'
-        new PDFTextHighlight anchor, pageIndex, anchor.range
+        new CanvasTextHighlight anchor, pageIndex, anchor.range
       when 'text position'
         # TODO: We could try to still create a range from trying to anchor with a DOM anchor again, and if it fails, go back to DTM
 
@@ -391,7 +385,17 @@ class Annotator.Plugin.PDFTextHighlights extends Annotator.Plugin
         normedRange = browserRange.normalize @annotator.wrapper[0]
 
         # Create the highligh
-        new PDFTextHighlight anchor, pageIndex, normedRange
+        new CanvasTextHighlight anchor, pageIndex, normedRange
       else
         # Unsupported anchor type
         null
+
+  # Is this element a text highlight physical anchor?
+  _isInstance: (element) =>
+    # Is always false because canvas highlights are completely independent from the content
+    false
+
+  # Find the first parent outside this physical anchor
+  _getIndependentParent: (element) =>
+    # Should never happen because canvas highlights are completely independent from the content
+    assert false

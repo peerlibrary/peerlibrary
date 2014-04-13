@@ -1,7 +1,7 @@
 // Based on Interface Query (iQuery), jQuery plugin, v1.1
 // http://e-infotainment.com/projects/interface-query/
 
-// TODO: Do we really need to use this complicated full blown forwarding which shows/hides layers (a heavy operation) when we could simply traverse all highlights and use PDFTextHighlight.in method, which we are using elsewhere to predict how will events propagate anyway? In this way we would even get rid of possible discrepancies between prediction and reality.
+// TODO: Do we really need to use this complicated full blown forwarding which shows/hides layers (a heavy operation) when we could simply traverse all highlights and use CanvasTextHighlight.in method, which we are using elsewhere to predict how will events propagate anyway? In this way we would even get rid of possible discrepancies between prediction and reality.
 
 (function ($) {
     var globalId = 1;
