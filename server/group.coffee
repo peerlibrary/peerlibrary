@@ -86,13 +86,8 @@ Meteor.methods
     # TODO: Should be allowed also if user is admin
     # TODO: Should check if memberId is a valid one?
 
-    # TODO: Temporary, autocomplete would be better
     member = Person.documents.findOne
-      $or: [
-        _id: memberId
-      ,
-        'user.username': memberId
-      ]
+      _id: memberId
 
     return unless member
 
@@ -108,6 +103,38 @@ Meteor.methods
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
+        members:
+          _id: member._id
+
+  'remove-from-group': (groupId, memberId) ->
+    check groupId, String
+    check memberId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # We do not check here if group exists or if user is a member of it because we have query below with these conditions
+
+    # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
+
+    # TODO: Should be allowed also if user is admin
+    # TODO: Should check if memberId is a valid one?
+
+    member = Person.documents.findOne
+      _id: memberId
+
+    return unless member
+
+    Group.documents.update
+      _id: groupId
+      $and: [
+        'members._id': Meteor.personId()
+      ,
+        'members._id': member._id
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $pull:
         members:
           _id: member._id
 

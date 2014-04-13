@@ -4,22 +4,58 @@
     <div class="col12 groups-directory">
       <h2>Group Activity</h2>
     </div>
-    <div class="col4 push12">
+    <div class="col4 push12 group-members-panel">
       <h2 class="directory-title">Members</h2>
-      <ol class="members member-list">
-        {{#each group.members}}
-          {{> personMember}}
-        {{/each}}
-      </ol>
+      {{> groupMembersList group}}
       {{#if currentUserIsMember}}
-        <h2>Add member</h2>
-        <form class="add-member input-and-button">
-          <input type="text" class="name" placeholder="Username" />
-          <button type="submit" class="add">Add</button>
-        </form>
+        {{> groupMembersAddControl group}}
       {{/if}}
     </div>
   </div>
+</template>
+
+<template name="groupMembersList">
+  <ol class="members member-list {{#unless currentUserIsMember}}uneditable{{/unless}}">
+    {{#each members}}
+      {{>personMember}}
+    {{/each}}
+  </ol>
+</template>
+
+<template name="groupMembersAddControl">
+    <h2>Add member</h2>
+    <div class="add-control">
+      <input type="text" class="add-group-member only-input" placeholder="Search by username" />
+      {{> groupMembersAddControlNoResults}}
+      {{> groupMembersAddControlResults}}
+      {{> groupMembersAddControlLoading}}
+    </div>
+</template>
+
+<template name="groupMembersAddControlNoResults">
+  {{#if noResults}}
+    <div class="no-results add-control-results">No people or groups found</div>
+  {{/if}}
+</template>
+
+<template name="groupMembersAddControlResults">
+  {{#if results.length}}
+  <ul class="group-member-results add-control-results member-list">
+    {{#each results}}
+      {{> groupMembersAddControlResultsItem}}
+    {{/each}}
+  </ul>
+  {{/if}}
+</template>
+
+<template name="groupMembersAddControlResultsItem">
+  {{> personMemberAdd}}
+</template>
+
+<template name="groupMembersAddControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading...</div>
+  {{/if}}
 </template>
 
 <template name="personMember">
