@@ -320,7 +320,7 @@ class Page
     @highlighter.pageRemoved @
 
 class @Highlighter
-  constructor: (@_$displayWrapper) ->
+  constructor: (@_$displayWrapper, isPdf) ->
     @_pages = []
     @_numPages = null
     @mouseDown = false
@@ -336,8 +336,9 @@ class @Highlighter
     @_annotator.addPlugin 'TextRange'
     @_annotator.addPlugin 'TextPosition'
     @_annotator.addPlugin 'TextQuote'
-    @_annotator.addPlugin 'PeerLibraryPDF'
     @_annotator.addPlugin 'DOMAnchors'
+
+    @_annotator.addPlugin 'PeerLibraryPDF' if isPdf
 
     # Annotator.TextPositionAnchor does not seem to be set globally from the
     # TextPosition's pluginInit, so let's do it here again

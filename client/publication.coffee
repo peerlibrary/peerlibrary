@@ -65,7 +65,7 @@ class @Publication extends Publication
 
     @_pagesDone = 0
     @_pages = []
-    @_highlighter = new Highlighter @_$displayWrapper
+    @_highlighter = new Highlighter @_$displayWrapper, true
 
     focusAnnotationId = null
 
@@ -342,7 +342,7 @@ class @Publication extends Publication
             @_$displayWrapper.find('#tei_wrapper > * > *').each (i, element) ->
               $(element).remove() if element.tagName.toLowerCase() is 'teiheader'
 
-            @_highlighter = new Highlighter @_$displayWrapper
+            @_highlighter = new Highlighter @_$displayWrapper, false
             @_highlighter._checkHighlighting()
 
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
