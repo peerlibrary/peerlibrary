@@ -319,6 +319,16 @@ class @Publication extends Publication
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
   showTEI: =>
+    focusAnnotationId = null
+
+    # To make sure we are starting with empty slate
+    @_$displayWrapper.empty()
+    publicationDOMReady.set false
+    currentViewport.set
+      top: null
+      bottom: null
+    currentHighlights.set {}
+
     # TODO: Handle errors
     $.ajax
       url: @url()
@@ -383,6 +393,8 @@ class @Publication extends Publication
             @_highlighter = new Highlighter @_$displayWrapper, false
             @_highlighter.setNumPages 0
             @_highlighter._checkHighlighting()
+
+            publicationDOMReady.set true
 
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
