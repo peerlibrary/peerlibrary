@@ -28,7 +28,7 @@ class Migration extends Document.MajorMigration
           cachedId = Random.id()
           newFilename = getNewFilename cachedId
 
-          collection.update {_schema: currentSchema, _id: document._id, cachedId: $exists: false}, {$set: {cachedId: cachedId}}, (error, count) =>
+          collection.update {_schema: currentSchema, _id: document._id, cachedId: {$exists: false}}, {$set: {cachedId: cachedId}}, (error, count) =>
             return callback error if error
             return callback null unless count
 

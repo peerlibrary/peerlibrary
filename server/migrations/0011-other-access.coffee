@@ -4,7 +4,7 @@ class Migration extends Document.MinorMigration
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, (error, collection) =>
       return callback error if error
-      collection.update {_schema: currentSchema}, {$set: {access: ACCESS.PUBLIC, readPersons: [], readGroups: []}}, {multi: true}, (error, count) =>
+      collection.update {_schema: currentSchema, access: {$exists: false}, readPersons: {$exists: false}, readGroups: {$exists: false}}, {$set: {access: ACCESS.PUBLIC, readPersons: [], readGroups: []}}, {multi: true}, (error, count) =>
         return callback error if error
         super db, collectionName, currentSchema, newSchema, callback
 
