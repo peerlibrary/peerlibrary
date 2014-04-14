@@ -85,13 +85,30 @@ Click on the _Initialize database with sample data_ button, to initialize the da
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
-### #HackFSM publications ###
+### ArXiv publications ###
 
-To load and use [HackFSM](http://digitalhumanities.berkeley.edu/hackfsm/) publications, open _Admin dashboard_
+To load and use [arXiv](http://arxiv.org/) publications, open _Admin dashboard_
+([http://localhost:3000/admin](http://localhost:3000/admin)) and click on _Sync arXiv metadata_
+button first and after it loads all the metadata, click _Sync arXiv PDF cache_ button to load
+all the PDFs. After the caching finishes you will be able to search and open all arXiv publications
+in PeerLibrary.
+
+**arXiv is a huge repository and loading all the publications takes a lot of space (few 100 GBs) and time.
+You probably do not want to do this. It consumes arXiv resources and costs you money. Use _Initialize
+database with sample data_ to get a small sample of arXiv publications.**
+
+You will need [AWS](http://aws.amazon.com/) `accessKeyId` and `secretAccessKey` which you have to put into
+your `settings.json` file. All PDF transfer costs will be [billed against this account](http://arxiv.org/help/bulk_data_s3).
+
+### Free Speech Movement publications ###
+
+To load and use [Free Speech Movement](http://bancroft.berkeley.edu/FSM/) publications, open _Admin dashboard_
 ([http://localhost:3000/admin](http://localhost:3000/admin)) and click on _Sync FSM metadata_ button first
-and after it loads all the metadata, click _Sync FSM cache_ button to load all the TEI documents. After the
-caching finishes you will be able to search and open all FSM publications in PeerLibrary. Now you can
-highlight and annotate publications with others in real-time.
+and after it loads all the metadata, click _Sync FSM cache_ button to load all the TEI textual documents.
+After the caching finishes you will be able to search and open all FSM publications in PeerLibrary.
+
+You will need [FSM API](http://digitalhumanities.berkeley.edu/hackfsm/api) `appId` and `appKey` which you
+have to put into your `settings.json` file.
 
 ### Troubleshooting ###
 
