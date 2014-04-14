@@ -1,6 +1,59 @@
 <template name="groups">
-  <form class="add-group">
-    <input type="text" class="name" />
-    <button type="submit" class="add">Create a new group</button>
-  </form>
+  <h1>Groups</h1>
+  <div class="row">
+    <div class="col12 groups-directory">
+      <h2 class="directory-title">Directory</h2>
+      <div class="search-bar">
+        <form id="groups-search">
+          <span class="search-button">
+            <i class="icon-search"></i>
+          </span>
+          <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Search groups" autofocus="autofocus">
+        </form>
+      </div>
+      {{#if groups.count}}
+      <ul class="groups-list">
+        {{#each groups}}
+          {{> groupListing}}
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="no-groups">
+        {{#if searchQuery}}
+          The search matches no groups.
+        {{else}}
+          There are no groups yet. Create the first using the form on the right.
+        {{/if}}
+      </p>
+      {{/if}}
+    </div>
+    {{#if currentUser}}
+      {{> myGroups}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="groupListing">
+  <li class="group-listing">
+    <h2><a href="{{groupPath _id slug}}" class="group-name">{{name}}</a></h2>
+    <span class="group-count">{{countDescription}}</span>
+  </li>
+</template>
+
+<template name="myGroups">
+  <div class="col4 push12 my-groups">
+    {{#if myGroups.count}}
+      <h2>My Groups</h2>
+      <ul class="groups-list">
+        {{#each myGroups}}
+          {{> groupListing}}
+        {{/each}}
+      </ul>
+    {{/if}}
+    <h2>Create a new group</h2>
+    <form class="add-group input-and-button">
+      <input type="text" class="name" placeholder="Group name" />
+      <button type="submit" class="add">Create</button>
+    </form>
+  </div>
 </template>
