@@ -17,6 +17,20 @@ Template.accessControl.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'mouseenter .access .selection': (e, template) ->
+    accessHover = $(e.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (e, template) ->
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.accessControl.documentName = ->
   # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
   if @constructor.Meta.collection._name is null

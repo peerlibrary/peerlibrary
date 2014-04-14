@@ -131,7 +131,7 @@ class CanvasTextHighlight extends Annotator.Highlight
   _hideControl: =>
     $control = @_$highlightsControl.find('.meta-menu')
 
-    return unless $control.is(':visible')
+    return unless $control.is(':visible') and not $control.is('.displayed')
 
     $control.hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
@@ -181,6 +181,12 @@ class CanvasTextHighlight extends Annotator.Highlight
     else
       @unhover false
 
+    return # Make sure CoffeeScript does not return anything
+
+  _highlightControlBlur: (e) =>
+    # This event triggers when highlight control (its input) is not focused anymore
+    return if @_$highlightsControl.find('.meta-menu').is(':hover')
+    @_hideControl()
     return # Make sure CoffeeScript does not return anything
 
   hover: (noControl) =>
@@ -259,6 +265,7 @@ class CanvasTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
       'annotationMouseenter': @_annotationMouseenterHandler
       'annotationMouseleave': @_annotationMouseleaveHandler
+      'highlightControlBlur': @_highlightControlBlur
 
     @_$highlight.data 'highlight', @
 

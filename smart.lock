@@ -37,8 +37,8 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary"
       },
-      "cheerio": {},
-      "async": {}
+      "async": {},
+      "cheerio": {}
     },
     "packages": {
       "router": {
