@@ -366,10 +366,10 @@ Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
 inputFocusEvents =
-  'focus input': (e, template) ->
+  'focus .add-access': (e, template) ->
     $(template.findAll ".meta-menu").addClass("displayed")
 
-  'blur input': (e, template) ->
+  'blur .add-access': (e, template) ->
     $(template.findAll ".meta-menu").removeClass("displayed")
 
 Template.publicationMetaMenu.events inputFocusEvents
@@ -560,11 +560,21 @@ Template.highlightsControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown .add-access': (e, template) ->
+  'mousedown .add-access, mouseup .add-access': (e, template) ->
     # A special case to prevent defocus after click on the input box
     e.stopPropagation()
 
     return # Make sure CoffeeScript does not return anything
+
+  'focus .add-access': (e, template) ->
+    $(template.firstNode).parents(".meta-menu").addClass("displayed")
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .add-access': (e, template) ->
+    $(template.firstNode).parents(".meta-menu").removeClass("displayed")
+    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
+    return # Make sure CoffeeScript does not return anything
+
 
 Template.annotationsControl.events
   'click .add': (e, template) ->

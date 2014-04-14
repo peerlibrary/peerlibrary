@@ -202,7 +202,7 @@ small-meta-menu-icon-font-size = 13px
               span:last-child::after
                 content ""
 
-        .meta-menu:hover
+        .meta-menu:hover, .meta-menu.displayed
           width 200px
           min-height 220px
           height auto
@@ -497,9 +497,15 @@ annotations-control-height = 28px
       background white
       color black
 
+      .member:last-of-type
+        margin-bottom 0
+
       .add-button
         display block
         width 100%
+
+      .access-results
+        margin-bottom 0
 
     .add-control-results
       padding 0 10px 10px
