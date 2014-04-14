@@ -45,7 +45,7 @@ class @Annotation extends AccessDocument
     name: 'Annotation'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication, true, 'annotations'
+      publication: @ReferenceField Publication, [], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
