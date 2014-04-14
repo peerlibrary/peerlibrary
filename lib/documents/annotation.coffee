@@ -38,6 +38,8 @@ class @Annotation extends AccessDocument
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
+  #   _id: annotation id
   # license: license information, if known
   # local (client only): is this annotation just a temporary annotation on the cliend side
 
@@ -50,7 +52,8 @@ class @Annotation extends AccessDocument
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
-        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
