@@ -325,12 +325,11 @@ class @Publication extends Publication
       dataType: 'xml'
       success: (xml, textStatus, jqXHR) =>
         $.ajax
-          url: '/tei/teibp.xsl'
+          url: '/tei/tei.xsl'
           dataType: 'xml'
           success: (xsl, textStatus, jqXHR) =>
             xsltProcessor = new XSLTProcessor()
             xsltProcessor.importStylesheet xsl
-            # TODO: How to set parameters? xsltProcessor.setParameter does not seem to work
             fragment = xsltProcessor.transformToFragment xml, document
             try
               # We append the fragment to DOM so that we can process it with jQuery.
