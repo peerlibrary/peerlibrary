@@ -367,10 +367,10 @@ Template.publicationMetaMenu.publication = ->
 
 inputFocusEvents =
   'focus .add-access': (e, template) ->
-    $(template.findAll ".meta-menu").addClass("displayed")
+    $(template.findAll '.meta-menu').addClass('displayed')
 
   'blur .add-access': (e, template) ->
-    $(template.findAll ".meta-menu").removeClass("displayed")
+    $(template.findAll '.meta-menu').removeClass('displayed')
 
 Template.publicationMetaMenu.events inputFocusEvents
 
@@ -567,14 +567,13 @@ Template.highlightsControl.events
     return # Make sure CoffeeScript does not return anything
 
   'focus .add-access': (e, template) ->
-    $(template.firstNode).parents(".meta-menu").addClass("displayed")
+    $(template.firstNode).parents('.meta-menu').addClass('displayed')
     return # Make sure CoffeeScript does not return anything
 
   'blur .add-access': (e, template) ->
-    $(template.firstNode).parents(".meta-menu").removeClass("displayed")
+    $(template.firstNode).parents('.meta-menu').removeClass('displayed')
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
     return # Make sure CoffeeScript does not return anything
-
 
 Template.annotationsControl.events
   'click .add': (e, template) ->

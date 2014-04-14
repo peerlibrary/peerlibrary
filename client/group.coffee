@@ -150,6 +150,10 @@ Template.groupMembersList.currentUserIsMember = ->
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (e, template) ->
 
+    return unless @_id
+
+    return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
+
     Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 

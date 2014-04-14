@@ -149,4 +149,5 @@ Meteor.publish 'groups-by-id', (id) ->
     Group.PUBLIC_FIELDS()
 
 Meteor.publish 'groups', ->
+  #TODO: Return a subset of groups with pagination and provide extra methods for server side group searching. See https://github.com/peerlibrary/peerlibrary/issues/363
   Group.documents.find {}, Group.PUBLIC_LISTING_FIELDS()
