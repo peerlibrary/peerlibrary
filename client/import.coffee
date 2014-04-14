@@ -6,6 +6,7 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
+  # canceled: true when user hits X button in import overlay dropdown 
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -13,8 +14,13 @@ class ImportingFile extends Document
     name: 'ImportingFile'
     collection: null
 
-UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
+#UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
+
+UPLOAD_CHUNK_SIZE = 16 *1024 # bytes
+
 DRAGGING_OVER_DOM = false
+
+
 
 verifyFile = (file, fileContent, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -45,7 +51,9 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
-      if error
+      if error is 'canceled'
+        return
+      else if error
         ImportingFile.documents.update file._id,
           $set:
             errored: true
@@ -116,6 +124,7 @@ importFile = (file) ->
     status: "Preprocessing file"
     readProgress: 0
     uploadProgress: 0
+    canceled: false
     finished: false
     errored: false
   ,
@@ -146,6 +155,9 @@ hideOverlay = ->
       finished: true
     ,
       errored: true
+    ,
+      canceled: true
+    
     ]
   ).count()
 
@@ -207,6 +219,16 @@ Template.importButton.events =
     _.each e.target.files, importFile
 
     return # Make sure CoffeeScript does not return anything
+
+Template.importCancelButton.events =
+  'click .canceled': (e) ->
+    e.preventDefault()
+    e.stopPropagation()
+    ImportingFile.documents.update @_id,
+      $set:
+        canceled: true
+        status: 'canceled'
+    return
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
@@ -275,8 +297,12 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
+    # We are stopping propagation in click on cancel button but it still
+    # propagates so we cancel here.
+    # TODO: Check if this is still necessary in the new version of Meteor
+    if e.isPropagationStopped()
+      return
     hideOverlay()
-
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
