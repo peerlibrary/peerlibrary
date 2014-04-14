@@ -27,7 +27,7 @@
 	<xsl:param name="inlineCSS" select="true()"/>
 	<xsl:param name="includeToolbox" select="true()"/>
 	<xsl:param name="includeAnalytics" select="true()"/>
-	<xsl:param name="displayPageBreaks" select="true()"/>
+	<xsl:param name="displayPageBreaks" select="false()"/>
 	
 	
 	
@@ -67,15 +67,15 @@
 
 	<xsl:template match="/" name="htmlShell" priority="99">
 		<html>
-			<xsl:call-template name="htmlHead"/>
+			<!--<xsl:call-template name="htmlHead"/>-->
 			<body>
-				<xsl:if test="$includeToolbox = true()">
+				<!--<xsl:if test="$includeToolbox = true()">
 					<xsl:call-template name="teibpToolbox"/>
-				</xsl:if>
+				</xsl:if>-->
 				<div id="tei_wrapper">
 					<xsl:apply-templates/>
 				</div>
-				<xsl:copy-of select="$htmlFooter"/>
+				<!--<xsl:copy-of select="$htmlFooter"/>-->
 			</body>
 		</html>
 	</xsl:template>
