@@ -39,14 +39,35 @@
 </template>
 
 <template name="publicationAccessControl">
-  <form class="access publication-access">
-    <input type="radio" value="open" name="publication-access-{{_id}}" id="publication-access-open-{{_id}}" {{#if open}}checked="checked"{{/if}} /> <label for="publication-access-open-{{_id}}"><i class="icon-public"></i> Open Access<span class="description">Everyone has access to the publication.</span></label><br/>
-    <input type="radio" value="closed" name="publication-access-{{_id}}" id="publication-access-closed-{{_id}}" {{#if closed}}checked="checked"{{/if}} /> <label for="publication-access-closed-{{_id}}"><i class="icon-closed"></i> Closed Access<span class="description">Only those who import the PDF have access to the publication.</span></label><br/>
-    <input type="radio" value="private" name="publication-access-{{_id}}" id="publication-access-private-{{_id}}" {{#if private}}checked="checked"{{/if}} /> <label for="publication-access-private-{{_id}}"><i class="icon-private"></i> Private<span class="description">Only the users who import the PDF or are listed have access to the publication.</span></label>
-  </form>
-  {{#if private}}
-    {{> privateAccessControl}}
-  {{/if}}
+  <div class="access-panel">
+    <form class="access publication-access">
+      <div class="selections">
+
+        <label class="selection {{#if open}}selected{{/if}}">
+          <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
+          <i class="icon-public"></i> Open<br/>Access
+        </label>
+
+        <label class="selection {{#if closed}}selected{{/if}}">
+          <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
+          <i class="icon-closed"></i> Closed<br/>Access
+        </label>
+
+        <label class="selection {{#if private}}selected{{/if}}">
+          <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+          <i class="icon-private"></i> Private
+        </label>
+
+      </div>
+      <div class="description open {{#if open}}displayed{{/if}}">Everyone has access to the publication.</div>
+      <div class="description closed {{#if closed}}displayed{{/if}}">Only those who import the PDF have access to the publication.</div>
+      <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
+    </form>
+
+    {{#if private}}
+      {{> privateAccessControl}}
+    {{/if}}
+  </div>
 </template>
 
 <template name="publicationDisplay">

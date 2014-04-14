@@ -59,5 +59,43 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
     ,
       Person.PUBLIC_FIELDS()
 
+Meteor.publish 'search-persons', (query, except) ->
+  except ?= []
+
+  check query, String
+  check except, [String]
+
+  return unless query
+
+  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
+
+  findPersonQuery =
+    $and: []
+    _id:
+      $nin: except
+
+  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
+  for keyword in keywords when keyword
+    regex = new RegExp keyword, 'i'
+    findPersonQuery.$and.push
+      $or: [
+        _id: keyword
+      ,
+        'user.username': regex
+      ,
+        'user.emails.0.address': regex
+      ,
+        givenName: regex
+      ,
+        familyName: regex
+      ]
+
+  return unless findPersonQuery.$and.length
+
+  searchPublish @, 'search-persons', query,
+    cursor: Person.documents.find findPersonQuery,
+      limit: 5
+      fields: Person.PUBLIC_FIELDS().fields
+
 Person.Meta.collection._ensureIndex 'slug',
   unique: 1
