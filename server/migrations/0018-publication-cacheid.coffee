@@ -1,10 +1,10 @@
 getOldFilename = (document) ->
-    if document.source is 'arXiv'
-      'pdf' + Storage._path.sep + 'arxiv' + Storage._path.sep + document.foreignId + '.pdf'
-    else
-      # We use import also as a fallback for any unsupported document source.
-      # This allows us to go first backward in migrations and then again forward.
-      'pdf' + Storage._path.sep + 'import' + Storage._path.sep + document._id + '.pdf'
+  if document.source is 'arXiv'
+    'pdf' + Storage._path.sep + 'arxiv' + Storage._path.sep + document.foreignId + '.pdf'
+  else
+    # We use import also as a fallback for any unsupported document source.
+    # This allows us to go first backward in migrations and then again forward.
+    'pdf' + Storage._path.sep + 'import' + Storage._path.sep + document._id + '.pdf'
 
 getNewFilename = (cachedId) ->
   'pdf' + Storage._path.sep + 'cache' + Storage._path.sep + cachedId + '.pdf'
