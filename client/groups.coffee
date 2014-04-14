@@ -3,7 +3,7 @@ Deps.autorun ->
     Meteor.subscribe 'groups'
 
 groupSearchQuery = null
-groupSearchQueryDependency = new Deps.Dependency
+groupSearchQueryDependency = new Deps.Dependency()
 
 Template.groups.searchQuery = ->
   groupSearchQuery
