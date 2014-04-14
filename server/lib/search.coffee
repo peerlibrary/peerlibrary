@@ -1,7 +1,28 @@
-# It adds to published documents a field searchResult which represents the last search query the
+# This function wraps search logic. Name and query is whatever you want to be stored into the
+# SearchResults document so that it is possible to find it on the client side (by convention,
+# name is simply the publish endpoint name and query what was given by the user).
+
+# Results are objects with the following fields:
+#   cursor: a queryset cursor with result documents (including any limit)
+#   added/changed/removed: callbacks to be called by corresponding observeChanges call on
+#                          the cursor a before document is published, to allow preprocessing
+
+# More or less the whole logic is how to publish documents from provided cursors and attach
+# information which documents are connected to which search results, including the order of
+# documents inside search results (not yet implemented). Optionally, it allows preprocessing
+# documents before publishing them.
+
+# Documents from results querysets are published, together with a SearchResult document.
+# Published documents get a field searchResult which represents the last search query the
 # document is a result for, if any. It contains:
 #   _id: id of the query, an _id of the SearchResult object for the query
-#   order: order of the result in the search query, lower number means higher
+#   order: order of the result in the search query, lower number means higher (not yet implemented)
+
+# Published SearchResult document contains name and query so that it can be found on the
+# client side, and for every given result queryset a count field of how many documents are
+# in the queryset if skip and limit are ignored. This allows pagination on the client while
+# still knowing how many results there are in total. Count field name is constructed with
+# prefix "count" and cursor's collection name.
 
 # TODO: How to influence order of results? Should we have just simply a field?
 # TODO: Make sure that searchResult field cannot be stored on the server by accident

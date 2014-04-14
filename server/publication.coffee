@@ -441,9 +441,11 @@ Meteor.publish 'my-publications', ->
         inGroups: 1
         library: 1
 
+# Use use this publish endpoint so that users can see their own filename
+# of the imported file, before a publication has metadata.
 # We could try to combine my-publications and my-publications-importing,
 # but it is easier to have two and leave to Meteor to merge them together,
-# because we are using $ in fields
+# because we are using $ in fields.
 Meteor.publish 'my-publications-importing', ->
   @related (person) ->
     return unless person?._id

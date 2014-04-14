@@ -36,7 +36,8 @@
       "variable": {
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary"
-      }
+      },
+      "async": {}
     },
     "packages": {
       "router": {
@@ -76,8 +77,8 @@
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
-        "tag": "v0.2.8.4",
-        "commit": "98ba391239dd79901a7718593b48c1a7e6b0f7b2"
+        "tag": "v0.4.1-1",
+        "commit": "18aeb92fbbcdf916c66fb87a8617c4b86f376f91"
       },
       "util": {
         "git": "https://github.com/peerlibrary/meteor-util.git",
@@ -116,8 +117,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.6.2",
-        "commit": "c1550fa7ac989f00fcd1b22fd388e118cdddf0d4"
+        "tag": "v0.7.0",
+        "commit": "8ccf775c03de139e5190fe62ccbb2817c48e9c88"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -133,6 +134,11 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary",
         "commit": "ffe9875c0983bf2cb369f51da468f7d7307c5da3"
+      },
+      "async": {
+        "git": "https://github.com/peerlibrary/meteor-async.git",
+        "tag": "v0.2.9.3",
+        "commit": "e95ab2eadd39c78261db3f8ef96bcb9e0b36bd81"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

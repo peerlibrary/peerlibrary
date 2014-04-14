@@ -365,14 +365,21 @@ Template.publication.notfound = ->
 Template.publicationMetaMenu.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
-inputFocusEvents =
+addAccessEvents =
+  'mousedown .add-access, mouseup .add-access': (e, template) ->
+    # A special case to prevent defocus after click on the input box
+    e.stopPropagation()
+    return # Make sure CoffeeScript does not return anything
+
   'focus .add-access': (e, template) ->
     $(template.findAll '.meta-menu').addClass('displayed')
+    return # Make sure CoffeeScript does not return anything
 
   'blur .add-access': (e, template) ->
     $(template.findAll '.meta-menu').removeClass('displayed')
+    return # Make sure CoffeeScript does not return anything
 
-Template.publicationMetaMenu.events inputFocusEvents
+Template.publicationMetaMenu.events addAccessEvents
 
 Template.publicationAccessControl.open = ->
   @access is Publication.ACCESS.OPEN
@@ -807,7 +814,7 @@ Template.annotationMetaMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.annotationMetaMenu.events inputFocusEvents
+Template.annotationMetaMenu.events addAccessEvents
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
 

@@ -1,5 +1,5 @@
 class @Publication extends AccessDocument
-  # access: 0 (private), 1 (closed), 2 (open)
+  # access: 0 (private, Publication.ACCESS.PRIVATE), 1 (closed, Publication.ACCESS.CLOSED), 2 (open, Publication.ACCESS.OPEN)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
