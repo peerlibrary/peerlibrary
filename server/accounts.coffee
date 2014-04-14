@@ -27,9 +27,15 @@ Accounts.onCreateUser (options, user) ->
 
     throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 400, 'Username conflicts with existing slug.' if user.username in FORBIDDEN_USERNAMES
+    throw new Meteor.Error 400, "Username already exists." if user.username in FORBIDDEN_USERNAMES
 
     throw new Meteor.Error 400, "Invalid e-mail address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+
+    throw new Meteor.Error 400, "Invalid e-mail address." if user.emails?.length > 1
+
+    # A race condition, but better than nothing. Otherwise it fails later on when creating an
+    # user document, but person document has already been created and is not cleaned up.
+    throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
 
     user.person =
       _id: personId
@@ -37,6 +43,7 @@ Accounts.onCreateUser (options, user) ->
     person =
       _id: personId
       user:
+        # TODO: This sometimes throw a warning because we are creating a link before user document is really created, all this code should run after user document is created
         _id: user._id
         username: user.username
       slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
@@ -51,7 +58,7 @@ Accounts.onCreateUser (options, user) ->
       throw error
     # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
     if /E11000 duplicate key error index:.*Persons\.\$slug/.test error.err
-      throw new Meteor.Error 400, "Username conflicts with existing slug."
+      throw new Meteor.Error 400, "Username already exists."
     throw error
 
   user
