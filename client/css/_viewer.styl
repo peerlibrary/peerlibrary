@@ -1,4 +1,4 @@
-@import variables
+@import 'variables.import'
 
 section.publication
   padding-top header-height
@@ -6,6 +6,16 @@ section.publication
   .container
     margin 0
     width 100%
+
+section.publication
+  .simple
+    margin-left auto
+    margin-right auto
+    width 94%
+    margin-top simple-margin-top - header-height
+
+  .simple.loading
+    text-align center
 
 /* Meta menu
 ============ */
@@ -66,10 +76,11 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
-.meta-menu:hover
+.meta-menu:hover, .meta-menu.displayed
   background rgba(46,46,44,0.5)
   width 300px
   min-height 420px
+  height auto
 
   .meta-content
     display block
@@ -191,9 +202,10 @@ small-meta-menu-icon-font-size = 13px
               span:last-child::after
                 content ""
 
-        .meta-menu:hover
-          width 150px
+        .meta-menu:hover, .meta-menu.displayed
+          width 200px
           min-height 220px
+          height auto
 
       .loading
         position absolute
@@ -373,9 +385,14 @@ annotations-control-height = 28px
           span:last-child::after
             content ""
 
-    .meta-menu:hover
-      width 150px
+      .annotation-access
+        .selection
+          width 50%
+
+    .meta-menu:hover, .meta-menu.displayed
+      width 200px
       min-height 220px
+      height auto
 
   .annotation:hover, .annotation.selected, .annotation.hovered
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
@@ -420,10 +437,93 @@ annotations-control-height = 28px
         display table-cell
         vertical-align middle
 
+/* Access
+========= */
+
+.access-panel
+  background-color rgba(100,100,100,0.9)
+
+  .access
+
+    .selections
+      display table
+      border-collapse separate
+      border-spacing 10px
+      width 100%
+
+      input
+        display none
+
+      .selection
+        display table-cell
+        width 33%
+        padding 10px
+        background none
+        text-align center
+        cursor pointer
+        transition 0.2s
+        border-radius 2px
+
+        i
+          display block
+          margin-bottom 10px
+          cursor pointer
+
+      .selection:hover, .selection.selected
+        background-color rgba(200,200,200,0.7)
+
+    .description
+      padding 10px
+      text-align center
+      display none
+
+    .displayed.description
+      display block
+
+  .private-access-control
+    padding 10px
+
+    .access-list
+      display inline
+
+      button:hover
+        color white
+
+    .member
+      display block
+      width 100%
+
+    .add-control
+      background white
+      color black
+
+      .member:last-of-type
+        margin-bottom 0
+
+      .add-button
+        display block
+        width 100%
+
+      .access-results
+        margin-bottom 0
+
+    .add-control-results
+      padding 0 10px 10px
+      font-weight 300
+
+.meta-menu .access-panel .private-access-control
+  .member
+    display inline-block
+    width auto
+
+  .add-control .member
+    display block
+    width 100%
+
 /* Footer
 ========= */
 
-footer.publication
+footer.publication-displayed
   /* Initially we set it to display-canvas-loading width and
      then in code we update it to real width based on the PDF */
   width display-canvas-loading-width

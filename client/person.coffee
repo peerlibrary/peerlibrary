@@ -6,6 +6,11 @@ Deps.autorun ->
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
 
+    if slug is Meteor.person()?.slug
+      Meteor.subscribe 'my-publications'
+      # So that users can see their own filename of the imported file, before a publication has metadata
+      Meteor.subscribe 'my-publications-importing'
+
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -37,6 +42,12 @@ Template.profile.authoredPublications = ->
   Publication.documents.find
     _id:
       $in: _.pluck person?.publications, '_id'
+
+# Publications in logged user's library
+Template.profile.myPublications = ->
+  Publication.documents.find
+    _id:
+      $in: _.pluck Meteor.person()?.library, '_id'
 
 Handlebars.registerHelper 'currentPerson', (options) ->
   Meteor.person()

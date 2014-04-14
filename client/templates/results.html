@@ -142,7 +142,7 @@
               <a href="#" class="preview-link">Abstract</a> &middot;
             {{/if}}
           {{/if}}
-          <a href="{{publicationPath _id slug}}">Full text</a>
+          <a href="{{publicationPath _id slug}}">Full text</a>{{> accessIcon}}
         </span>
       </div>
       {{#if thumbnailUrls.length}}
@@ -162,4 +162,8 @@
       {{/if}}
     </div>
   </li>
+</template>
+
+<template name="accessIcon">
+  <i class="{{iconName}}"></i>
 </template>

@@ -1,11 +1,24 @@
 <template name="publication">
-  <div class="viewer">
-    {{> publicationMetaMenu}}
-    {{> publicationScroller}}
-    {{> publicationDisplay}}
-    {{> annotationsControl}}
-    {{> publicationAnnotations}}
-  </div>
+  {{#if loading}}
+    <div class="simple loading">
+      <h2>Loading</h2>
+    </div>
+  {{else}}
+    {{#if notfound}}
+      <div class="simple notfound">
+        <h2>404 Not found</h2>
+        <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+      </div>
+    {{else}}
+      <div class="viewer">
+        {{> publicationMetaMenu}}
+        {{> publicationScroller}}
+        {{> publicationDisplay}}
+        {{> annotationsControl}}
+        {{> publicationAnnotations}}
+      </div>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="publicationMetaMenu">
@@ -18,16 +31,60 @@
           <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
-      <p>Published in: {{publication.source}}</p>
+      <p>Source: {{publication.source}}</p>
       <p>{{publication.createdAt}}</p>
+      {{>publicationAccessControl publication}}
     </div>
   </div>
 </template>
 
+<template name="publicationAccessControl">
+  <div class="access-panel">
+    <form class="access publication-access">
+      <div class="selections">
+
+        <label class="selection {{#if open}}selected{{/if}}">
+          <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
+          <i class="icon-public"></i> Open<br/>Access
+        </label>
+
+        <label class="selection {{#if closed}}selected{{/if}}">
+          <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
+          <i class="icon-closed"></i> Closed<br/>Access
+        </label>
+
+        <label class="selection {{#if private}}selected{{/if}}">
+          <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+          <i class="icon-private"></i> Private
+        </label>
+
+      </div>
+      <div class="description open {{#if open}}displayed{{/if}}">Everyone has access to the publication.</div>
+      <div class="description closed {{#if closed}}displayed{{/if}}">Only those who import the PDF have access to the publication.</div>
+      <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
+    </form>
+
+    {{#if private}}
+      {{> privateAccessControl}}
+    {{/if}}
+  </div>
+</template>
+
 <template name="publicationDisplay">
-  {{#constant}}
-    <div class="display-wrapper"></div>
-  {{/constant}}
+  {{#if cached}}
+    {{#constant}}
+      <div class="display-wrapper"></div>
+    {{/constant}}
+  {{else}}
+    <div class="display-wrapper closed-access">
+      <h2>Publication is closed access</h2>
+      <p>Publication is not open access and cannot be automatically displayed. Import its PDF to gain access.</p>
+      {{! TODO: Should we report this to Open Access Button? }}
+      {{! TODO: We should provide suggestions where to get PDF }}
+      {{! TODO: We should probably show metadata here for users to easier copy out to search for PDF }}
+      {{! TODO: We should link to user's open URL resolvers }}
+    </div>
+  {{/if}}
 </template>
 
 <template name="publicationScroller">
@@ -118,6 +175,7 @@
       Not linked to any annotation.
     {{/each}}
   </p>
+  {{> accessControl}}
 </template>
 
 <template name="annotationsControl">
@@ -147,6 +205,7 @@
           Not linked to any highlight.
         {{/each}}
       </p>
+      {{> accessControl}}
     </div>
   </div>
 </template>

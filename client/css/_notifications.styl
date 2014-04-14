@@ -1,4 +1,4 @@
-@import variables
+@import 'variables.import'
 
 .notifications
   position fixed
@@ -15,7 +15,8 @@
   .notification
     position absolute
     display block
-    padding 0
+    padding 20px
+    box-shadow 0 2px 5px rgba(14,41,57,0.34)
     margin-bottom 10px
     left 0
     right 0
@@ -40,10 +41,10 @@
     transition top .1s ease-out
 
   .success
-    background-color green
+    background-color #d9f5d5
 
   .warn
-    background-color yellow
+    background-color #f8f8d9
 
   .error
-    background-color red
+    background-color #f4e0dc

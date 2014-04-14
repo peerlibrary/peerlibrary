@@ -1,7 +1,7 @@
 class @SearchResult extends Document
-  # query: query object or string as provided by the client
-  # countPublications: number of publications in the results for the query
-  # countPersons: number of people in the results for the query
+  # name: name of the search
+  # query: query string as provided by the client
+  # count*: number of search results for the given cursor in the query (for each cursor there will be one field)
 
   @Meta
     name: 'SearchResult'

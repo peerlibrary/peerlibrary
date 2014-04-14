@@ -5,18 +5,24 @@ class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
     # Just to be sure we reset the variable
     @mouseStartingInsideSelectedHighlight = false
 
-    if event
-      return unless @annotator.mouseIsDown
+    # checkForEndSelection is called without an event object after the enableAnnotating
+    # event, but we are not really using that (calling things manually instead, based on
+    # how/when publication is renderes) so we don't do anything. This also fixes occasional
+    # duplication of a highlight if it was in the URL and got selected on page load, calling
+    # checkForEndSelection sometimes then duplicates it and creates a new one.
+    return unless event
 
-      return unless event.which is 1 # Left mouse button
+    return unless @annotator.mouseIsDown
 
-      event.previousMousePosition = @annotator.mousePosition
-      @annotator.mousePosition = null
+    return unless event.which is 1 # Left mouse button
 
-      # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
-      # we prevent default to prevent deselection of the highlight
-      if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
-        event.preventDefault()
+    event.previousMousePosition = @annotator.mousePosition
+    @annotator.mousePosition = null
+
+    # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
+    # we prevent default to prevent deselection of the highlight
+    if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
+      event.preventDefault()
 
     super event
 
@@ -151,11 +157,11 @@ class @Annotator extends Annotator
   confirmSelection: (event) =>
     return true unless @selectedTargets.length is 1
 
-    # event.previousMousePosition might not exist if checkForEndSelection was called manually without an event object
-    # We ignore if mouse movement was to small to select really anything meaningful
+    # event.previousMousePosition might not exist if checkForEndSelection was called manually without
+    # an event object. We ignore if mouse movement was to small to select really anything meaningful.
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
-    quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
+    quote = @getQuoteForTarget? @selectedTargets[0]
     # Quote should be a non-empty string
     return false unless quote
 
@@ -236,11 +242,16 @@ class @Annotator extends Annotator
     id of @_annotations
 
   setupAnnotation: (annotation) ->
-    annotation = super
+    # We transform the Annotator's annotation into PeerLibrary highlight document.
+    # Read below for more information on how we are using Annotator's annotations
+    # as highlights.
+    annotation = new Highlight annotation
+
+    annotation = super annotation
 
     @_annotations[annotation._id] = annotation
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
@@ -252,21 +263,21 @@ class @Annotator extends Annotator
 
     delete @_annotations[annotation._id]
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
   _realizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
   _virtualizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -285,7 +296,7 @@ class @Annotator extends Annotator
 
   _highlightChanged: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
-    # TODO: Do we have to call setHighlights in updateAnnotation?
+    # TODO: Do we have to call currentHighlights.set in updateAnnotation? Currently we are ignoring values, only comparing keys when setting highlights
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
@@ -309,9 +320,7 @@ class @Annotator extends Annotator
 
     Highlight.documents.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      if error
-        Notify.meteorError error, true
-        return
+      return Notify.meteorError error, true if error
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?

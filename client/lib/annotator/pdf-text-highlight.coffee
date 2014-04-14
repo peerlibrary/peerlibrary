@@ -122,18 +122,20 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    # TODO: Make reactive content of the template?
-    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
-      @anchor.annotator._removeHighlight @annotation._id
+    # Create a reactive fragment. We fetch a reactive document
+    # based on _id (which is immutable) to rerender the fragment
+    # as document changes.
+    highlightsControl = Meteor.render =>
+      highlight = Highlight.documents.findOne @annotation?._id
+      Template.highlightsControl highlight if highlight
 
-      return # Make sure CoffeeScript does not return anything
-
+    $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
 
   _hideControl: =>
     $control = @_$highlightsControl.find('.meta-menu')
 
-    return unless $control.is(':visible')
+    return unless $control.is(':visible') and not $control.is('.displayed')
 
     $control.hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
@@ -183,6 +185,12 @@ class PDFTextHighlight extends Annotator.Highlight
     else
       @unhover false
 
+    return # Make sure CoffeeScript does not return anything
+
+  _highlightControlBlur: (e) =>
+    # This event triggers when highlight control (its input) is not focused anymore
+    return if @_$highlightsControl.find('.meta-menu').is(':hover')
+    @_hideControl()
     return # Make sure CoffeeScript does not return anything
 
   hover: (noControl) =>
@@ -261,6 +269,7 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
       'annotationMouseenter': @_annotationMouseenterHandler
       'annotationMouseleave': @_annotationMouseleaveHandler
+      'highlightControlBlur': @_highlightControlBlur
 
     @_$highlight.data 'highlight', @
 
@@ -355,6 +364,41 @@ class PDFTextHighlight extends Annotator.Highlight
     width: @_box.width
     height: @_box.height
 
+# TODO: Rename to PDFTextHighlights when TextAnchors will not depend on hard-coded TextHighlights plugin anymore
 class Annotator.Plugin.TextHighlights extends Annotator.Plugin
   pluginInit: =>
+    # TODO: Remove after renaming to PDFTextHighlights
     Annotator.TextHighlight = PDFTextHighlight
+
+    # Register this highlighting implementation
+    @annotator.highlighters.unshift
+      name: 'PDF text highlighter'
+      highlight: @_createTextHighlight
+
+  _createTextHighlight: (anchor, pageIndex) =>
+    switch anchor.type
+      when 'text range'
+        new PDFTextHighlight anchor, pageIndex, anchor.range
+      when 'text position'
+        # TODO: We could try to still create a range from trying to anchor with a DOM anchor again, and if it fails, go back to DTM
+
+        # Cannot do this without DTM
+        return unless @annotator.domMapper
+
+        # First we create the range from the stored stard and end offsets
+        mappings = @annotator.domMapper.getMappingsForCharRange anchor.start, anchor.end, [pageIndex]
+
+        # Get the wanted range out of the response of DTM
+        realRange = mappings.sections[pageIndex].realRange
+
+        # Get a BrowserRange
+        browserRange = new Annotator.Range.BrowserRange realRange
+
+        # Get a NormalizedRange
+        normedRange = browserRange.normalize @annotator.wrapper[0]
+
+        # Create the highligh
+        new PDFTextHighlight anchor, pageIndex, normedRange
+      else
+        # Unsupported anchor type
+        null

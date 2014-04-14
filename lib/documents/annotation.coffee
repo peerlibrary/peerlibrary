@@ -1,4 +1,7 @@
-class @Annotation extends Document
+class @Annotation extends AccessDocument
+  # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
+  # readPersons: if private access, list of persons who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -20,5 +23,5 @@ class @Annotation extends Document
     name: 'Annotation'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication
+      publication: @ReferenceField Publication, [], true, 'annotations'
       highlights: [@ReferenceField Highlight, [], true, 'annotations']
