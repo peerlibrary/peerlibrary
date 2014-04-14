@@ -345,7 +345,7 @@ class @Highlighter
     # TODO: Can this be fixed somehow?
     Annotator.TextPositionAnchor = @_annotator.plugins.TextPosition.Annotator.TextPositionAnchor
 
-    $(window).on 'scroll.highlighter resize.highlighter', @checkRender
+    $(window).on 'scroll.highlighter resize.highlighter', @checkRender if isPdf
 
   destroy: =>
     $(window).off '.highlighter'

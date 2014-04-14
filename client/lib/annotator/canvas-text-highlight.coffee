@@ -2,10 +2,10 @@ class CanvasTextHighlight extends Annotator.Highlight
   constructor: (anchor, pageIndex, @normedRange) ->
     super anchor, pageIndex
 
-    @_$textLayer = $(@normedRange.commonAncestor).closest('.text-layer')
-    @_$highlightsLayer = @_$textLayer.prev('.highlights-layer')
+    @_$selectionLayer = $(@normedRange.commonAncestor).closest('.selection-layer')
+    @_$highlightsLayer = @_$selectionLayer.prev('.highlights-layer')
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
-    @_$highlightsControl = @_$textLayer.next('.highlights-control')
+    @_$highlightsControl = @_$selectionLayer.next('.highlights-control')
 
     @_offset = @_$highlightsLayer.offsetParent().offset()
 
@@ -305,7 +305,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     selection = window.getSelection()
     selection.addRange @normedRange.toRange()
 
-    @_$textLayer.addClass 'highlight-selected'
+    @_$selectionLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
 
     # We also want that selected annotations display a hover effect
