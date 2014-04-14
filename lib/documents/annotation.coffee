@@ -1,4 +1,7 @@
-class @Annotation extends Document
+class @Annotation extends AccessDocument
+  # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
+  # readPersons: if private access, list of persons who have read permissions
+  # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -11,7 +14,7 @@ class @Annotation extends Document
   #     username
   # body: in HTML
   # publication:
-  #   _id
+  #   _id: publication's id
   # references: made in the body of annotation or comments
   #   highlights: list of
   #     _id
@@ -35,15 +38,14 @@ class @Annotation extends Document
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
-  # comments: reverse of Comment.annotation
-  #   body: in HTML
-  # local (client only): is this annotation just a temporary annotation on the client side
+  # license: license information, if known
+  # local (client only): is this annotation just a temporary annotation on the cliend side
 
   @Meta
     name: 'Annotation'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication
+      publication: @ReferenceField Publication, true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']

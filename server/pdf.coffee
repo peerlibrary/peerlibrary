@@ -1,3 +1,5 @@
+fs = Npm.require 'fs'
+
 DEBUG = false
 
 bindEnvironemnt = (f) ->

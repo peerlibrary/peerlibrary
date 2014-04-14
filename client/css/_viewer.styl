@@ -7,6 +7,16 @@ section.publication
     margin 0
     width 100%
 
+section.publication
+  .simple
+    margin-left auto
+    margin-right auto
+    width 94%
+    margin-top simple-margin-top - header-height
+
+  .simple.loading
+    text-align center
+
 /* Meta menu
 ============ */
 
@@ -66,10 +76,11 @@ meta-menu-icon-font-size = 20px
       margin-top 0
       font-size smaller
 
-.meta-menu:hover
+.meta-menu:hover, .meta-menu.displayed
   background rgba(46,46,44,0.5)
   width 300px
   min-height 420px
+  height auto
 
   .meta-content
     display block
@@ -115,9 +126,9 @@ small-meta-menu-icon-font-size = 13px
 
 .viewer
   .display-wrapper
-    /* Initially we set it to display-canvas-loading width and
+    /* Initially we set it to display-page-loading width and
        then in code we update it to real width based on the PDF */
-    width display-canvas-loading-width
+    width display-page-loading-width
     margin-left viewer-left
     margin-top viewer-top
     /* We disable selection so that user cannot select anything between pages (in Firefox) */
@@ -131,17 +142,20 @@ small-meta-menu-icon-font-size = 13px
       border 1px solid #e3e3e3
       margin-bottom 20px
 
-      .display-canvas
+      .content-background
         background rgba(255,255,255,1.0)
 
-      .display-canvas-loading
-        width display-canvas-loading-width
-        height display-canvas-loading-height
-
-      .highlights-canvas
+      .highlights-canvas, .content-background
         position absolute
         left 0
         top 0
+        width 100%
+        height 100%
+
+      .selection-layer
+        /* Should not have any margin or padding, because otherwise
+           highlight position calculation is wrong */
+        position relative
 
       .highlights-layer, .text-layer, .highlights-control
         color transparent
@@ -155,6 +169,8 @@ small-meta-menu-icon-font-size = 13px
           background-color transparent
 
       .text-layer
+        /* Should not have any margin or padding, because otherwise
+           highlight position calculation is wrong */
         line-height 1
         white-space pre
         cursor text
@@ -193,9 +209,10 @@ small-meta-menu-icon-font-size = 13px
               span:last-child::after
                 content ""
 
-        .meta-menu:hover
-          width 150px
+        .meta-menu:hover, .meta-menu.displayed
+          width 200px
           min-height 220px
+          height auto
 
       .loading
         position absolute
@@ -223,6 +240,10 @@ small-meta-menu-icon-font-size = 13px
            we do not set height and we set overflow to visible */
         overflow visible
 
+    .display-page-loading
+      width display-page-loading-width
+      height display-page-loading-height
+
 /* Debugging PDF parsing
 ======================== */
 
@@ -246,9 +267,9 @@ small-meta-menu-icon-font-size = 13px
 /* Annotations
 ============== */
 
-/* Initially we set it based on display-canvas-loading width and
+/* Initially we set it based on display-page-loading width and
    then in code we update it to real width based on the PDF */
-annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
+annotations-left = viewer-left + display-page-loading-width + meta-menu-left
 annotations-right = meta-menu-left
 annotations-control-height = 30px
 
@@ -571,9 +592,14 @@ annotations-control-height = 30px
           span:last-child::after
             content ""
 
-    .meta-menu:hover
-      width 150px
+      .annotation-access
+        .selection
+          width 50%
+
+    .meta-menu:hover, .meta-menu.displayed
+      width 200px
       min-height 220px
+      height auto
 
   .annotation:hover .annotation-wrapper, .annotation.selected annotation-wrapper, .annotation.hovered annotation-wrapper
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
@@ -662,11 +688,94 @@ annotations-control-height = 30px
         display table-cell
         vertical-align middle
 
+/* Access
+========= */
+
+.access-panel
+  background-color rgba(100,100,100,0.9)
+
+  .access
+
+    .selections
+      display table
+      border-collapse separate
+      border-spacing 10px
+      width 100%
+
+      input
+        display none
+
+      .selection
+        display table-cell
+        width 33%
+        padding 10px
+        background none
+        text-align center
+        cursor pointer
+        transition 0.2s
+        border-radius 2px
+
+        i
+          display block
+          margin-bottom 10px
+          cursor pointer
+
+      .selection:hover, .selection.selected
+        background-color rgba(200,200,200,0.7)
+
+    .description
+      padding 10px
+      text-align center
+      display none
+
+    .displayed.description
+      display block
+
+  .private-access-control
+    padding 10px
+
+    .access-list
+      display inline
+
+      button:hover
+        color white
+
+    .member
+      display block
+      width 100%
+
+    .add-control
+      background white
+      color black
+
+      .member:last-of-type
+        margin-bottom 0
+
+      .add-button
+        display block
+        width 100%
+
+      .access-results
+        margin-bottom 0
+
+    .add-control-results
+      padding 0 10px 10px
+      font-weight 300
+
+.meta-menu .access-panel .private-access-control
+  .member
+    display inline-block
+    width auto
+
+  .add-control .member
+    display block
+    width 100%
+
 /* Footer
 ========= */
 
-footer.publication
-  /* Initially we set it to display-canvas-loading width and
+footer.publication-displayed
+  /* Initially we set it to display-page-loading width and
      then in code we update it to real width based on the PDF */
-  width display-canvas-loading-width
+  width display-page-loading-width
   margin-left viewer-left

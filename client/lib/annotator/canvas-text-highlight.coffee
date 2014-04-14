@@ -1,15 +1,11 @@
-class PDFTextHighlight extends Annotator.Highlight
-  # Is this element a text highlight physical anchor?
-  @isInstance: (element) =>
-    false
-
+class CanvasTextHighlight extends Annotator.Highlight
   constructor: (anchor, pageIndex, @normedRange) ->
     super anchor, pageIndex
 
-    @_$textLayer = $(@normedRange.commonAncestor).closest('.text-layer')
-    @_$highlightsLayer = @_$textLayer.prev('.highlights-layer')
+    @_$selectionLayer = $(@normedRange.commonAncestor).closest('.selection-layer')
+    @_$highlightsLayer = @_$selectionLayer.prev('.highlights-layer')
     @_highlightsCanvas = @_$highlightsLayer.prev('.highlights-canvas').get(0)
-    @_$highlightsControl = @_$textLayer.next('.highlights-control')
+    @_$highlightsControl = @_$selectionLayer.next('.highlights-control')
 
     @_offset = @_$highlightsLayer.offsetParent().offset()
 
@@ -122,18 +118,20 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
-    # TODO: Make reactive content of the template?
-    $control.find('.meta-content').html(Template.highlightsControl @annotation).find('.delete').on 'click.highlight', (e) =>
-      @anchor.annotator._removeHighlight @annotation._id
+    # Create a reactive fragment. We fetch a reactive document
+    # based on _id (which is immutable) to rerender the fragment
+    # as document changes.
+    highlightsControl = Meteor.render =>
+      highlight = Highlight.documents.findOne @annotation?._id
+      Template.highlightsControl highlight if highlight
 
-      return # Make sure CoffeeScript does not return anything
-
+    $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
 
   _hideControl: =>
     $control = @_$highlightsControl.find('.meta-menu')
 
-    return unless $control.is(':visible')
+    return unless $control.is(':visible') and not $control.is('.displayed')
 
     $control.hide().off(
       'mouseover.highlight mouseout.highlight': @_hoverHandler
@@ -183,6 +181,12 @@ class PDFTextHighlight extends Annotator.Highlight
     else
       @unhover false
 
+    return # Make sure CoffeeScript does not return anything
+
+  _highlightControlBlur: (e) =>
+    # This event triggers when highlight control (its input) is not focused anymore
+    return if @_$highlightsControl.find('.meta-menu').is(':hover')
+    @_hideControl()
     return # Make sure CoffeeScript does not return anything
 
   hover: (noControl) =>
@@ -261,6 +265,7 @@ class PDFTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
       'annotationMouseenter': @_annotationMouseenterHandler
       'annotationMouseleave': @_annotationMouseleaveHandler
+      'highlightControlBlur': @_highlightControlBlur
 
     @_$highlight.data 'highlight', @
 
@@ -307,7 +312,7 @@ class PDFTextHighlight extends Annotator.Highlight
     selection = window.getSelection()
     selection.addRange @normedRange.toRange()
 
-    @_$textLayer.addClass 'highlight-selected'
+    @_$selectionLayer.addClass 'highlight-selected'
     @_$highlight.addClass 'selected'
 
     # We also want that selected annotations display a hover effect
@@ -355,6 +360,49 @@ class PDFTextHighlight extends Annotator.Highlight
     width: @_box.width
     height: @_box.height
 
-class Annotator.Plugin.TextHighlights extends Annotator.Plugin
+class Annotator.Plugin.CanvasTextHighlights extends Annotator.Plugin
   pluginInit: =>
-    Annotator.TextHighlight = PDFTextHighlight
+    # Register this highlighting implementation
+    @annotator.highlighters.unshift
+      name: 'Canvas text highlighter'
+      highlight: @_createTextHighlight
+      isInstance: @_isInstance
+      getIndependentParent: @_getIndependentParent
+
+  _createTextHighlight: (anchor, pageIndex) =>
+    switch anchor.type
+      when 'text range'
+        new CanvasTextHighlight anchor, pageIndex, anchor.range
+      when 'text position'
+        # TODO: We could try to still create a range from trying to anchor with a DOM anchor again, and if it fails, go back to DTM
+
+        # Cannot do this without DTM
+        return unless @annotator.domMapper
+
+        # First we create the range from the stored stard and end offsets
+        mappings = @annotator.domMapper.getMappingsForCharRange anchor.start, anchor.end, [pageIndex]
+
+        # Get the wanted range out of the response of DTM
+        realRange = mappings.sections[pageIndex].realRange
+
+        # Get a BrowserRange
+        browserRange = new Annotator.Range.BrowserRange realRange
+
+        # Get a NormalizedRange
+        normedRange = browserRange.normalize @annotator.wrapper[0]
+
+        # Create the highligh
+        new CanvasTextHighlight anchor, pageIndex, normedRange
+      else
+        # Unsupported anchor type
+        null
+
+  # Is this element a text highlight physical anchor?
+  _isInstance: (element) =>
+    # Is always false because canvas highlights are completely independent from the content
+    false
+
+  # Find the first parent outside this physical anchor
+  _getIndependentParent: (element) =>
+    # Should never happen because canvas highlights are completely independent from the content
+    assert false

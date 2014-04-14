@@ -20,6 +20,9 @@ setSession = (session) ->
     currentPersonSlug: null
     currentTagId: null
     currentTagSlug: null
+    currentGroupId: null
+    currentGroupSlug: null
+    groupsActive: false
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null
@@ -171,6 +174,21 @@ else
           currentTagId: tagId
           currentTagSlug: tagSlug
         'tag'
+
+    '/g/:groupId/:groupSlug?':
+      as: 'group'
+      to: (groupId, groupSlug) ->
+        setSession
+          currentGroupId: groupId
+          currentGroupSlug: groupSlug
+        'group'
+
+    '/g':
+      as: 'groups'
+      to: ->
+        setSession
+          groupsActive: true
+        'groups'
 
     '/u/:personSlug':
       as: 'profile'

@@ -8,6 +8,7 @@ Deps.autorun ->
 
     if slug is Meteor.person()?.slug
       Meteor.subscribe 'my-publications'
+      # So that users can see their own filename of the imported file, before a publication has metadata
       Meteor.subscribe 'my-publications-importing'
 
 Deps.autorun ->

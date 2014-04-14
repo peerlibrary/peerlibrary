@@ -1,0 +1,69 @@
+@import 'variables.import'
+
+section.group
+  margin-top simple-margin-top
+
+.group-members-panel
+  .uneditable.member-list .member .remove-button
+    display none
+
+  .add-control
+    background white
+    color black
+
+    .member
+      display block
+      width 100%
+
+      .add-button
+        display block
+        width 100%
+
+  .add-control-results
+    padding 0 10px 10px
+    font-weight 300
+
+.member-list
+  padding 0
+  list-style none
+
+  .member
+    display inline-block
+    height 24px
+    margin 0 10px 10px 0
+
+    .avatar
+      display inline-block
+      margin-left 0
+
+    .member-name
+      display inline-block
+      margin 0 0 0 5px
+      vertical-align middle
+      font-size 13px
+      font-weight bold
+
+    .remove-button
+      display inline-block
+      vertical-align middle
+      text-align center
+      width 24px
+      height 24px
+      border none
+      background none
+      font-size 15px
+      line-height 18px
+
+    .remove-button:hover
+      color blue-accent
+
+    .add-button
+      display inline-block
+      text-align left
+      height 24px
+      padding 0
+      border none
+      background none
+
+    .add-button:hover
+      background-color selection-color

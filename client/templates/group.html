@@ -1,0 +1,91 @@
+<template name="group">
+  <h1>{{group.name}}</h1>
+  <div class="row">
+    <div class="col12 groups-directory">
+      <h2>Group Activity</h2>
+    </div>
+    <div class="col4 push12 group-members-panel">
+      <h2 class="directory-title">Members</h2>
+      {{> groupMembersList group}}
+      {{#if currentUserIsMember}}
+        {{> groupMembersAddControl group}}
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<template name="groupMembersList">
+  <ol class="members member-list {{#unless currentUserIsMember}}uneditable{{/unless}}">
+    {{#each members}}
+      {{>personMember}}
+    {{/each}}
+  </ol>
+</template>
+
+<template name="groupMembersAddControl">
+    <h2>Add member</h2>
+    <div class="add-control">
+      <input type="text" class="add-group-member only-input" placeholder="Search by username" />
+      {{> groupMembersAddControlNoResults}}
+      {{> groupMembersAddControlResults}}
+      {{> groupMembersAddControlLoading}}
+    </div>
+</template>
+
+<template name="groupMembersAddControlNoResults">
+  {{#if noResults}}
+    <div class="no-results add-control-results">No people or groups found</div>
+  {{/if}}
+</template>
+
+<template name="groupMembersAddControlResults">
+  {{#if results.count}}
+    <ul class="group-member-results add-control-results member-list">
+      {{#each results}}
+        {{> groupMembersAddControlResultsItem}}
+      {{/each}}
+    </ul>
+  {{/if}}
+</template>
+
+<template name="groupMembersAddControlResultsItem">
+  {{> personMemberAdd}}
+</template>
+
+<template name="groupMembersAddControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading...</div>
+  {{/if}}
+</template>
+
+<template name="personMember">
+  <li class="member person">
+    <img src="{{avatar}}" class="avatar" />
+    <h4 class="member-name"><a href="{{profilePath slug}}">{{displayName}}</a></h4>
+    <button class="remove-button">&times;</button>
+  </li>
+</template>
+
+<template name="groupMember">
+  <li class="member group">
+    <h4 class="member-name"><a href="{{groupPath _id slug}}">{{name}}</a></h4>
+    <button class="remove-button">&times;</button>
+  </li>
+</template>
+
+<template name="personMemberAdd">
+  <li class="member person">
+    <button class="add-button">
+      <img src="{{avatar}}" class="avatar" />
+      <span class="member-name">{{displayName}}</span>
+    </button>
+  </li>
+</template>
+
+<template name="groupMemberAdd">
+  <li class="member group">
+    <button class="add-button">
+      <span class="member-name">{{name}}</span>
+    </button>
+  </li>
+</template>
