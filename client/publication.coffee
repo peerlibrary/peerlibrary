@@ -84,7 +84,7 @@ class @Publication extends Publication
       @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
-        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('content-background').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('content-background').data('page-number', pageNumber)
         $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
         # We enable forwarding of mouse events from selection layer to highlights layer
@@ -99,6 +99,8 @@ class @Publication extends Publication
 
         $('<div/>').addClass(
           'display-page'
+        ).addClass(
+          'display-page-loading'
         ).attr(
           id: "display-page-#{ pageNumber }"
         ).append(
@@ -120,9 +122,9 @@ class @Publication extends Publication
             viewport = @_viewport
               pdfPage: pdfPage # Dummy page object
 
-            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper).removeClass('display-page-loading')
             $canvas = $displayPage.find('canvas') # Both display and highlights canvases
-            $canvas.removeClass('display-canvas-loading').attr
+            $canvas.attr
               height: viewport.height
               width: viewport.width
             $displayPage.css

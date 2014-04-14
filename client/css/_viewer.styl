@@ -129,9 +129,9 @@ small-meta-menu-icon-font-size = 13px
 
 .viewer
   .display-wrapper
-    /* Initially we set it to display-canvas-loading width and
+    /* Initially we set it to display-page-loading width and
        then in code we update it to real width based on the PDF */
-    width display-canvas-loading-width
+    width display-page-loading-width
     margin-left viewer-left
     margin-top viewer-top
     /* We disable selection so that user cannot select anything between pages (in Firefox) */
@@ -145,10 +145,6 @@ small-meta-menu-icon-font-size = 13px
 
       .content-background
         background rgba(255,255,255,1.0)
-
-      .display-canvas-loading
-        width display-canvas-loading-width
-        height display-canvas-loading-height
 
       .highlights-canvas, .content-background
         position absolute
@@ -245,6 +241,10 @@ small-meta-menu-icon-font-size = 13px
            we do not set height and we set overflow to visible */
         overflow visible
 
+    .display-page-loading
+      width display-page-loading-width
+      height display-page-loading-height
+
 /* Debugging PDF parsing
 ======================== */
 
@@ -268,9 +268,9 @@ small-meta-menu-icon-font-size = 13px
 /* Annotations
 ============== */
 
-/* Initially we set it based on display-canvas-loading width and
+/* Initially we set it based on display-page-loading width and
    then in code we update it to real width based on the PDF */
-annotations-left = viewer-left + display-canvas-loading-width + meta-menu-left
+annotations-left = viewer-left + display-page-loading-width + meta-menu-left
 annotations-right = meta-menu-left
 annotations-control-height = 28px
 
@@ -449,7 +449,7 @@ annotations-control-height = 28px
 ========= */
 
 footer.publication-displayed
-  /* Initially we set it to display-canvas-loading width and
+  /* Initially we set it to display-page-loading width and
      then in code we update it to real width based on the PDF */
-  width display-canvas-loading-width
+  width display-page-loading-width
   margin-left viewer-left
