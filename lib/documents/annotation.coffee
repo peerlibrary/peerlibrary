@@ -29,6 +29,9 @@ class @Annotation extends AccessDocument
   #     slug
   #     givenName
   #     familyName
+  #     gravatarHash
+  #     user
+  #       username
   #   tags: list of
   #     _id
   #     name: ISO 639-1 dictionary
