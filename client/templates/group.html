@@ -39,12 +39,12 @@
 </template>
 
 <template name="groupMembersAddControlResults">
-  {{#if results.length}}
-  <ul class="group-member-results add-control-results member-list">
-    {{#each results}}
-      {{> groupMembersAddControlResultsItem}}
-    {{/each}}
-  </ul>
+  {{#if results.count}}
+    <ul class="group-member-results add-control-results member-list">
+      {{#each results}}
+        {{> groupMembersAddControlResultsItem}}
+      {{/each}}
+    </ul>
   {{/if}}
 </template>
 

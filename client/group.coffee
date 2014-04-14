@@ -122,17 +122,15 @@ Template.groupMembersAddControlResults.results = ->
 
   personsLimit = Math.min searchResult.countPersons, 5
 
-  if personsLimit
-    Person.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: personsLimit
-    ).fetch()
-  else
-    []
+  return unless personsLimit
+
+  Person.documents.find
+    'searchResult._id': searchResult._id
+  ,
+    sort: [
+      ['searchResult.order', 'asc']
+    ]
+    limit: personsLimit
 
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->
