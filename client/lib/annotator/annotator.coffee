@@ -38,6 +38,9 @@ class @Annotator extends Annotator
       noScan: true
     delete @options.noScan
 
+    # We have out own UI for adding annotations, so we remove Annotator's
+    @adder.remove()
+
     @_annotations = {}
     @selectedAnnotationId = null
 
