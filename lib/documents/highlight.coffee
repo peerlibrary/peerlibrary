@@ -1,24 +1,23 @@
-@Highlights = new Meteor.Collection 'Highlights', transform: (doc) => new @Highlight doc
-
 class @Highlight extends Document
-  # created: timestamp when document was created
-  # updated: timestamp of this version
+  # createdAt: timestamp when document was created
+  # updatedAt: timestamp of this version
   # author:
   #   _id: author's person id
   #   slug: author's person id
   #   givenName
   #   familyName
+  #   gravatarHash
+  #   user
+  #     username
   # publication:
   #   _id: publication's id
   # quote: quote made by this highlight
   # target: open annotation standard compatible target information
-  # annotations: list of
+  # annotations: list of (reverse field from Annotation.highlights)
   #   _id: annotation id
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Highlights
-    fields:
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName']
+  @Meta
+    name: 'Highlight'
+    fields: =>
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
-      annotations: [@ReferenceField Annotation]

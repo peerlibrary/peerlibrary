@@ -18,6 +18,8 @@ setSession = (session) ->
     currentHighlightId: null
     currentAnnotationId: null
     currentPersonSlug: null
+    currentTagId: null
+    currentTagSlug: null
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null
@@ -53,7 +55,7 @@ redirectHighlightId = (highlightId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      highlight = Highlights.findOne highlightId
+      highlight = Highlight.documents.findOne highlightId
 
       unless highlight
         highlightsHandle.stop()
@@ -65,7 +67,7 @@ redirectHighlightId = (highlightId) ->
           highlightsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne highlight.publication._id
+          publication = Publication.documents.findOne highlight.publication._id
 
           # We do not need subscriptions anymore
           highlightsHandle.stop()
@@ -85,7 +87,7 @@ redirectAnnotationId = (annotationId) ->
     onError: (error) ->
       notFound()
     onReady: ->
-      annotation = Annotations.findOne annotationId
+      annotation = LocalAnnotation.documents.findOne annotationId
 
       unless annotation
         annotationsHandle.stop()
@@ -97,7 +99,7 @@ redirectAnnotationId = (annotationId) ->
           annotationsHandle.stop()
           notFound()
         onReady: ->
-          publication = Publications.findOne annotation.publication._id
+          publication = Publication.documents.findOne annotation.publication._id
 
           # We do not need subscriptions anymore
           annotationsHandle.stop()
@@ -113,7 +115,7 @@ redirectAnnotationId = (annotationId) ->
 
 if INSTALL
   Meteor.Router.add
-    '*': ->
+    '/': ->
       setSession()
       'install'
 
@@ -162,6 +164,14 @@ else
           currentPublicationSlug: publicationSlug
         'publication'
 
+    '/t/:tagId/:tagSlug?':
+      as: 'tag'
+      to: (tagId, tagSlug) ->
+        setSession
+          currentTagId: tagId
+          currentTagSlug: tagSlug
+        'tag'
+
     '/u/:personSlug':
       as: 'profile'
       to: (personSlug) ->
@@ -183,29 +193,18 @@ else
         redirectAnnotationId annotationId
         'redirecting'
 
-    '/about':
-      as: 'about'
-      to: ->
-        setSession()
-        'about'
-
-    '/help':
-      as: 'help'
-      to: ->
-        setSession()
-        'help'
-
-    '/privacy':
-      as: 'privacy'
-      to: ->
-        setSession()
-        'privacy'
-
-    '/terms':
-      as: 'terms'
-      to: ->
-        setSession()
-        'terms'
+    '/s/:searchQuery?':
+      as: 'search'
+      to: (searchQuery) ->
+        # If search is already active, we don't reset other session variables, just update currentSearchQuery
+        if Session.get 'searchActive'
+          Session.set 'currentSearchQuery', searchQuery
+        else
+          setSession
+            currentSearchQuery: searchQuery
+            indexActive: true
+            searchActive: true
+        'index'
 
     '/admin':
       as: 'admin'
@@ -214,9 +213,34 @@ else
           adminActive: true
         'admin'
 
-    '*': ->
+Meteor.Router.add
+  '/about':
+    as: 'about'
+    to: ->
       setSession()
-      'notfound'
+      'about'
+
+  '/help':
+    as: 'help'
+    to: ->
+      setSession()
+      'help'
+
+  '/privacy':
+    as: 'privacy'
+    to: ->
+      setSession()
+      'privacy'
+
+  '/terms':
+    as: 'terms'
+    to: ->
+      setSession()
+      'terms'
+
+  '*': ->
+    setSession()
+    'notfound'
 
 # TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
 parseQuery = (qs) ->

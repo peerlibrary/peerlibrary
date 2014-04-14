@@ -1,5 +1,3 @@
-@Tags = new Meteor.Collection 'Tags', transform: (doc) => new @Tag doc
-
 class @Tag extends Document
   # created: timestamp when tag was created
   # name:
@@ -7,8 +5,8 @@ class @Tag extends Document
   # slug:
   #   en: slug of the tag in English (ISO 639-1)
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Tags
-    fields:
+  @Meta
+    name: 'Tag'
+    fields: =>
+      # TODO: Define generator function for slugs
       slug: @GeneratedField 'self', ['name']

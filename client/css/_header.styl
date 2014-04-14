@@ -1,4 +1,4 @@
-@import variables
+@import 'variables.import'
 
 /* Header
 ========= */
@@ -272,8 +272,8 @@ header.not-logged-in #login-dropdown-list, .newsletter-dialog, .accounts-centere
     position relative
     margin 0 auto 10px auto
     padding 0
-    background #4695C5
-    border 1px solid #2B729C
+    background bg-blue
+    border 1px solid border-blue
     border-radius 3px
     text-align center
     font-weight bold
@@ -285,7 +285,7 @@ header.not-logged-in #login-dropdown-list, .newsletter-dialog, .accounts-centere
     margin-top 20px
 
   .login-button:hover, .subscribe-form-submit:hover
-    background #327CA8
+    background hover-blue
 
   .additional-link, .accounts-close
     background transparent
@@ -344,7 +344,7 @@ header.logged-in
     left 161px
 
   .menu-item
-    padding 5px 20px
+    padding 5px 0
     background transparent
     text-align center
     font-weight bold
@@ -354,6 +354,7 @@ header.logged-in
 
     a
       color blue-accent
+      padding 0 5px
 
   .menu-item:hover
       background blue-accent
@@ -399,7 +400,7 @@ header.index-header.logged-in
 Auth form buttons
 ============ */
 
-.user-icon
+.avatar
   width 24px
   height 24px
   margin-left 12px
@@ -478,19 +479,19 @@ header.index-header
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
-      background #4695c5
-      border 1px solid #2B729C
+      background bg-blue
+      border 1px solid border-blue
       border-radius 3px
       transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
-      background #327CA8
+      background hover-blue
 
     li a.login-link-text
       margin-right 25px
       color white
 
-  .user-icon
+  .avatar
     margin-top -5px
     margin-bottom -5px
     vertical-align top
@@ -502,7 +503,7 @@ header.no-index-header
 
   .container
     .progress-bar
-      background #0E6EB9
+      background #2dc7ff
       bottom -2px
       height 2px
       position absolute

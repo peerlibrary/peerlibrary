@@ -37,9 +37,6 @@ Template.results.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-Template.results.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 
@@ -57,7 +54,7 @@ Template.results.publications = ->
   if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
     return
 
-  searchResult = SearchResults.findOne
+  searchResult = SearchResult.documents.findOne
     query: Session.get 'currentSearchQuery'
 
   if not searchResult
@@ -66,7 +63,7 @@ Template.results.publications = ->
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
   Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
-  Publications.find
+  Publication.documents.find
     'searchResult._id': searchResult._id
   ,
     sort: [
@@ -100,61 +97,108 @@ Template.resultsLoad.events =
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
-Template.publicationSearchResult.displayDay = (time) ->
-  moment(time).format 'MMMM Do YYYY'
-
 Template.publicationSearchResult.events =
   'click .preview-link': (e, template) ->
     e.preventDefault()
-    Meteor.subscribe 'publications-by-id', @_id, ->
-      Deps.afterFlush =>
-        $(template.findAll '.abstract').slideToggle(200)
+
+    if template._publicationHandle
+      # We ignore the click if handle is not yet ready
+      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
+    else
+      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
+        Deps.afterFlush =>
+          $(template.findAll '.abstract').slideToggle('fast')
 
     return # Make sure CoffeeScript does not return anything
 
+Template.publicationSearchResult.created = ->
+  @_publicationHandle = null
+
+Template.publicationSearchResult.rendered = ->
+  $(@findAll '.scrubber').iscrubber()
+
+Template.publicationSearchResult.destroyed = ->
+  @_publicationHandle.stop() if @_publicationHandle
+  @_publicationHandle = null
+
+Template.sidebarSearch.created = ->
+  @_searchQueryHandle = null
+  @_dateRangeHandle = null
+
 Template.sidebarSearch.rendered = ->
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = Deps.autorun =>
+    # Sync input field unless change happened because of this input field itself
+    $(@findAll '#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
+
+  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle = Deps.autorun =>
+    statistics = Statistics.documents.findOne {},
+      fields:
+        minPublicationDate: 1
+        maxPublicationDate: 1
+
+    $publicationDate = $(@findAll '#publication-date')
+    $slider = $(@findAll '#date-range')
+
+    unless statistics?.minPublicationDate and statistics?.maxPublicationDate
+      $publicationDate.val('')
+      $slider.slider('destroy') if $slider.data('ui-slider')
+      return
+
+    min = moment.utc(statistics.minPublicationDate).year()
+    max = moment.utc(statistics.maxPublicationDate).year()
+
+    [start, end] = $publicationDate.val().split(' - ') if $publicationDate.val()
+    start = parseInt(start) or min
+    end = parseInt(end) or max
+
+    start = min if start < min
+    end = max if end > max
+
+    $slider.slider
+      disabled: true # TODO: For now disabled
+      range: true
+      min: min
+      max: max
+      values: [start, end]
+      step: 1
+      slide: (event, ui) ->
+        $publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
+
+    $publicationDate.val($slider.slider('values', 0) + ' - ' + $slider.slider('values', 1))
+
   $(@findAll '.chzn').chosen
     no_results_text: "No tag match"
 
-  publicationDate = $(@findAll '#publication-date')
-  [start, end] = publicationDate.val().split(' - ') if publicationDate.val()
-  start = publicationDate.data('min') unless start
-  end = publicationDate.data('max') unless end
-
-  slider = $(@findAll '#date-range').slider
-    disabled: true # TODO: For now disabled
-    range: true
-    min: publicationDate.data('min')
-    max: publicationDate.data('max')
-    values: [start, end]
-    step: 1
-    slide: (event, ui) ->
-      publicationDate.val(ui.values[0] + ' - ' + ui.values[1])
-
-  publicationDate.val(slider.slider('values', 0) + ' - ' + slider.slider('values', 1))
+Template.sidebarSearch.destroyed = ->
+  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle = null
+  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle = null
 
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well
-  title: $(template.findAll '#title').val()
+  general: $(template.findAll '#general').val()
 
 Template.sidebarSearch.events =
-  'blur #title': (e, template) ->
+  'blur #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'change #title': (e, template) ->
+  'change #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'keyup #title': (e, template) ->
+  'keyup #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'paste #title': (e, template) ->
+  'paste #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'cut #title': (e, template) ->
+  'cut #general': (e, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
@@ -163,14 +207,12 @@ Template.sidebarSearch.events =
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-Template.sidebarSearch.minPublicationDate = ->
-  statistics = Statistics.findOne()
-  moment.utc(statistics.minPublicationDate).year() if statistics?.minPublicationDate
-
-Template.sidebarSearch.maxPublicationDate = ->
-  statistics = Statistics.findOne()
-  moment.utc(statistics.maxPublicationDate).year() if statistics?.maxPublicationDate
+# We do not want location to be updated for every key press, because this really makes browser history hard to navigate
+# TODO: This might make currentSearchQuery be overriden with old value if it happens that exactly after 500 ms user again presses a key, but location is changed to old value which sets currentSearchQuery and thus input field back to old value
+updateSearchLoction = _.debounce (query) ->
+  Meteor.Router.toNew Meteor.Router.searchPath query
+, 500
 
 Deps.autorun ->
-  # TODO: Set from structured query
-  $('#title').val(Session.get 'currentSearchQuery')
+  if Session.get 'searchActive'
+    updateSearchLoction Session.get 'currentSearchQuery'

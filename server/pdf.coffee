@@ -4,7 +4,7 @@ bindEnvironemnt = (f) ->
   Meteor.bindEnvironment f, (e) -> throw e
 
 PDF =
-  process: (pdfFile, initCallback, textCallback, pageImageCallback, progressCallback) ->
+  process: (pdfFile, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback) ->
     document = PDFJS.getDocumentSync
       data: pdfFile
       password: ''
@@ -25,6 +25,8 @@ PDF =
       #Log.debug "Annotations #{ util.inspect annotations, false, null }"
 
       textContent = page.getTextContentSync()
+
+      textContentCallback page.pageNumber, textContent
 
       viewport = page.getViewport 1.0
       canvasElement = new PDFJS.canvas viewport.width, viewport.height
@@ -61,7 +63,7 @@ PDF =
 
               # We reset context
               canvasContext.setTransform 1, 0, 0, 1, 0, 0
-              canvasContext.resetClip?(); # TODO: In standard, but not yet available in node-canvas: https://github.com/LearnBoost/node-canvas/issues/358
+              canvasContext.resetClip?() # TODO: In standard, but not yet available in node-canvas: https://github.com/LearnBoost/node-canvas/issues/358
               _.extend canvasContext, defaultContext
 
               # Draw a rectangle around the text segment
@@ -70,7 +72,7 @@ PDF =
 
               canvasContext.restore()
 
-            textCallback page.pageNumber, segment
+            textSegmentCallback page.pageNumber, segment
 
     progressCallback 1.0
 

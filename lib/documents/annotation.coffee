@@ -1,18 +1,18 @@
-@Annotations = new Meteor.Collection 'Annotations', transform: (doc) => new @Annotation doc
-
 class @Annotation extends Document
-  # created: timestamp when document was created
-  # updated: timestamp of this version
+  # createdAt: timestamp when document was created
+  # updatedAt: timestamp of this version
   # author:
   #   _id: person id
   #   slug
   #   givenName
   #   familyName
   #   gravatarHash
-  # body: annotation's body
+  #   user
+  #     username
+  # body: in HTML
   # publication:
   #   _id
-  # references: made in the body
+  # references: made in the body of annotation or comments
   #   highlights: list of
   #     _id
   #   annotations: list of
@@ -35,28 +35,21 @@ class @Annotation extends Document
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
-  #   upvoters: list of
-  #     _id: person id
-  #   downvoters: list of
-  #     _id: person id
-  # upvoters: list of
-  #   _id: person id
-  # downvoters: list of
-  #   _id: person id
+  # comments: reverse of Comment.annotation
+  #   body: in HTML
   # local (client only): is this annotation just a temporary annotation on the client side
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: Annotations
-    fields:
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash']
+  @Meta
+    name: 'Annotation'
+    fields: =>
+      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
       references:
-        highlights: [@ReferenceField Highlight]
-        annotations: [@ReferenceField 'self']
-        publications: [@ReferenceField Publication, ['slug', 'title']]
-        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName']]
-        tags: [@ReferenceField Tag]
+        highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
+        annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
+        publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName'], true, 'referencingAnnotations']
+        tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
       tags: [
-        tag: @ReferenceField Tag
+        tag: @ReferenceField Tag, ['name', 'slug']
       ]

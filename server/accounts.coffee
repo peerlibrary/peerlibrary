@@ -44,15 +44,15 @@ Accounts.onCreateUser (options, user) ->
 
     _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
-    Persons.insert person
+    Person.documents.insert person
 
-  catch e
-    if e.name isnt 'MongoError'
-      throw e
+  catch error
+    if error.name isnt 'MongoError'
+      throw error
     # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
-    if /E11000 duplicate key error index:.*Persons\.\$slug/.test e.err
+    if /E11000 duplicate key error index:.*Persons\.\$slug/.test error.err
       throw new Meteor.Error 400, "Username conflicts with existing slug."
-    throw e
+    throw error
 
   user
 
@@ -60,7 +60,7 @@ Accounts.onCreateUser (options, user) ->
 Meteor.publish null, ->
   return unless @userId
 
-  Persons.find
+  Person.documents.find
     'user._id': @userId
   ,
     fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()

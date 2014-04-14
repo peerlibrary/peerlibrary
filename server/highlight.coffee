@@ -1,9 +1,13 @@
-class @Highlight extends @Highlight
+class @Highlight extends Highlight
+  @Meta
+    name: 'Highlight'
+    replaceParent: true
+
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Highlights.allow
+Highlight.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
     # TODO: Check the target (try to apply it on the server)
@@ -33,14 +37,14 @@ Highlights.allow
     personId and doc.author._id is personId
 
 # Misuse insert validation to add additional fields on the server before insertion
-Highlights.deny
+Highlight.Meta.collection.deny
   # We have to disable transformation so that we have
   # access to the document object which will be inserted
   transform: null
 
   insert: (userId, doc) ->
-    doc.created = moment.utc().toDate()
-    doc.updated = doc.created
+    doc.createdAt = moment.utc().toDate()
+    doc.updatedAt = doc.createdAt
     doc.annotations = [] if not doc.annotations
 
     # We return false as we are not
@@ -48,7 +52,7 @@ Highlights.deny
     false
 
   update: (userId, doc) ->
-    doc.updated = moment.utc().toDate()
+    doc.updatedAt = moment.utc().toDate()
 
     # We return false as we are not
     # checking anything, just updating fields
@@ -59,7 +63,7 @@ Meteor.publish 'highlights-by-id', (id) ->
 
   return unless id
 
-  Highlights.find
+  Highlight.documents.find
     _id: id
   ,
     Highlight.PUBLIC_FIELDS()
@@ -69,7 +73,7 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
 
   return unless publicationId
 
-  Highlights.find
+  Highlight.documents.find
     'publication._id': publicationId
   ,
     Highlight.PUBLIC_FIELDS()

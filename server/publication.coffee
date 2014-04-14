@@ -5,14 +5,38 @@ VERIFICATION_SAMPLE_SIZE = 64
 
 SLUG_MAX_LENGTH = 80
 
-class @Publication extends @Publication
-  @MixinMeta (meta) =>
-    meta.fields.slug.generator = (fields) ->
-      if fields.title
-        [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
-      else
-        [fields._id, '']
-    meta
+class @Publication extends Publication
+  @Meta
+    name: 'Publication'
+    replaceParent: true
+    fields: (fields) =>
+      fields.slug.generator = (fields) ->
+        if fields.title
+          [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
+        else
+          [fields._id, '']
+      fields.fullText.generator = (fields) ->
+        return [null, null] unless fields.cached
+        return [null, null] if fields.processed
+        # That we exit if processError is true is important becaus it is used in admin methods to force (re)precessing
+        return [null, null] if fields.processError
+
+        try
+          return [fields._id, new Publication(fields).process()]
+        catch error
+          # TODO: What if exception is just because of the concurrent processing? Should we retry? After a delay?
+
+          Publication.documents.update fields._id,
+            $set:
+              processError:
+                error: "#{ error.toString?() or error }"
+                stack: error.stack
+
+          Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
+
+          return [null, null]
+
+      fields
 
   checkCache: =>
     return if @cached
@@ -27,28 +51,55 @@ class @Publication extends @Publication
       Storage.save @filename(), pdf.content
 
     @cached = moment.utc().toDate()
-    Publications.update @_id, $set: cached: @cached
+    Publication.documents.update @_id, $set: cached: @cached
 
-    pdf?.content
-
-  process: (pdf, initCallback, textCallback, pageImageCallback, progressCallback) =>
+  process: =>
     currentlyProcessingPublication @_id
 
     try
-      pdf ?= Storage.open @filename()
-      initCallback ?= (numberOfPages) ->
-      textCallback ?= (pageNumber, segment) ->
-      pageImageCallback ?= (pageNumber, canvasElement) ->
-      progressCallback ?= (progress) ->
+      pdf = Storage.open @filename()
+
+      textContents = []
+
+      initCallback = (numberOfPages) =>
+        @numberOfPages = numberOfPages
+
+      textContentCallback = (pageNumber, textContent) =>
+        textContents.push textContent
+
+      textSegmentCallback = (pageNumber, segment) =>
+
+      pageImageCallback = (pageNumber, canvasElement) =>
+        thumbnailCanvas = new PDFJS.canvas 95, 125
+        thumbnailContext = thumbnailCanvas.getContext '2d'
+
+        # TODO: Do better image resizing, antialias doesn't really help
+        thumbnailContext.antialias = 'subpixel'
+
+        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
+
+        Storage.save @thumbnail(pageNumber), thumbnailCanvas.toBuffer()
+
+      progressCallback = (progress) =>
 
       Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
 
-      PDF.process pdf, initCallback, textCallback, pageImageCallback, progressCallback
+      PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
-      # TODO: Set a timestamp and not just true
+      assert textContents.length, @numberOfPages
+
+      @fullText = PDFJS.pdfExtractText textContents...
+
       # TODO: We could also add some additional information (statistics, how long it took and so on)
-      @processed = true
-      Publications.update @_id, $set: processed: @processed
+      @processed = moment.utc().toDate()
+      Publication.documents.update @_id,
+        $set:
+          numberOfPages: @numberOfPages
+          processed: @processed
+          fullText: @fullText
+
+      # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
+      return @fullText
 
     finally
       currentlyProcessingPublication null
@@ -77,19 +128,19 @@ class @Publication extends @Publication
   @PUBLIC_SEARCH_RESULTS_FIELDS: ->
     [
       'slug'
-      'created'
-      'updated'
+      'createdAt'
       'authors'
       'title'
       'numberOfPages'
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
     ]
 
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields:
       slug: 1
-      created: 1
-      updated: 1
+      createdAt: 1
+      updatedAt: 1
       authors: 1
       title: 1
       numberOfPages: 1
@@ -97,7 +148,6 @@ class @Publication extends @Publication
       doi: 1
       foreignId: 1
       source: 1
-      metadata: 1
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
@@ -106,7 +156,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    existingPublication = Publications.findOne
+    existingPublication = Publication.documents.findOne
       sha256: sha256
 
     # Filter importing to contain only this person
@@ -129,7 +179,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
-      Publications.update
+      Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
           $ne: Meteor.personId()
@@ -148,9 +198,9 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
-      id = Publications.insert
-        created: moment.utc().toDate()
-        updated: moment.utc().toDate()
+      id = Publication.documents.insert
+        createdAt: moment.utc().toDate()
+        updatedAt: moment.utc().toDate()
         source: 'import'
         importing: [
           person:
@@ -160,12 +210,11 @@ Meteor.methods
         ]
         sha256: sha256
         metadata: false
-        processed: false
       verify = false
 
     samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
 
-    # return
+    # Return
     publicationId: id
     verify: verify
     already: already
@@ -178,7 +227,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    publication = Publications.findOne
+    publication = Publication.documents.findOne
       _id: options.publicationId
       'importing.person._id': Meteor.personId()
       cached:
@@ -213,7 +262,7 @@ Meteor.methods
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
         Storage.rename publication._temporaryFilename(), publication.filename()
-        Publications.update
+        Publication.documents.update
           _id: publication._id
         ,
           $set:
@@ -221,7 +270,7 @@ Meteor.methods
             size: file.size
 
       # Hash was verified, so add it to uploader's library
-      Persons.update
+      Person.documents.update
         '_id': Meteor.personId()
       ,
         $addToSet:
@@ -234,7 +283,7 @@ Meteor.methods
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    publication = Publications.findOne
+    publication = Publication.documents.findOne
       _id: publicationId
       cached:
         $exists: true
@@ -253,7 +302,7 @@ Meteor.methods
     throw new Meteor.Error 403, "Verification failed." unless verified
 
     # Samples were verified, so add it to person's library
-    Persons.update
+    Person.documents.update
       '_id': Meteor.personId()
     ,
       $addToSet:
@@ -277,7 +326,7 @@ publishUsingMyLibrary = (publish, selector, options) ->
     initializedPublications = []
 
     oldHandlePublications = handlePublications
-    handlePublications = Publications.find(selector(newIsAdmin, newLibrary), options).observeChanges
+    handlePublications = Publication.documents.find(selector(newIsAdmin, newLibrary), options).observeChanges
       added: (id, fields) =>
         initializedPublications.push id if initializing
 
@@ -312,11 +361,11 @@ publishUsingMyLibrary = (publish, selector, options) ->
   currentPersonId = null # Just for asserts
 
   if publish.personId
-    handlePersons = Persons.find(
+    handlePersons = Person.documents.find(
       _id: publish.personId
     ,
       fields:
-        # id field is implicitly added
+        # _id field is implicitly added
         isAdmin: 1
         library: 1
       transform: null # We are only interested in data
@@ -369,7 +418,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
     oldHandlePublications = handlePublications
     if authorId
-      handlePublications = Publications.find(
+      handlePublications = Publication.documents.find(
         if newIsAdmin
           'authors._id': authorId
           cached:
@@ -379,7 +428,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
           cached:
             $exists: true
           $or: [
-            processed: true
+            processed:
+              $exists: true
           ,
             _id:
               $in: newLibrary
@@ -423,11 +473,11 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
   lastLibrary = []
 
   if @personId
-    handlePersons = Persons.find(
+    handlePersons = Person.documents.find(
       _id: @personId
     ,
       fields:
-        # id field is implicitly added
+        # _id field is implicitly added
         isAdmin: 1
         library: 1
     ).observeChanges
@@ -459,7 +509,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
   currentAuthorId = null # Just for asserts
 
-  handleAuthors = Persons.find(
+  handleAuthors = Person.documents.find(
     slug: slug
   ,
     fields:
@@ -501,7 +551,8 @@ Meteor.publish 'publications-by-id', (id) ->
       cached:
         $exists: true
       $or: [
-        processed: true
+        processed:
+          $exists: true
       ,
         _id:
           $in: library
@@ -526,7 +577,8 @@ Meteor.publish 'publications-by-ids', (ids) ->
       cached:
         $exists: true
       $or: [
-        processed: true
+        processed:
+          $exists: true
       ,
         _id:
           $in: library
@@ -548,7 +600,7 @@ Meteor.publish 'my-publications', ->
 # but it is easier to have two and leave to Meteor to merge them together,
 # because we are using $ in fields
 Meteor.publish 'my-publications-importing', ->
-  Publications.find
+  Publication.documents.find
     'importing.person._id': @personId
     cached:
       $exists: true

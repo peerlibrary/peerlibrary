@@ -127,6 +127,17 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
+  _addHighlightToEditor: (id) =>
+    LocalAnnotation.documents.update
+      local: true
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        editing: true
+      $addToSet:
+        'references.highlights':
+          _id: id
+
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
@@ -307,13 +318,13 @@ class @Annotator extends Annotator
     highlight.target = _.map highlight.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlights.insert highlight, (error, id) =>
+    Highlight.documents.insert highlight, (error, id) =>
       # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
       if error
         Notify.meteorError error, true
         return
 
-      # TODO: Should we update also other fields (like full author, created timestamp)
+      # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
       # Finally select it (until now it was just drawn selected) and update location
@@ -322,7 +333,7 @@ class @Annotator extends Annotator
     annotation
 
   _removeHighlight: (id) =>
-    Highlights.remove id, (error) =>
+    Highlight.documents.remove id, (error) =>
       Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
@@ -339,15 +350,8 @@ class @Annotator extends Annotator
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
 
-      annotation = createAnnotationDocument()
-      annotation.local = true
-      annotation.references.highlights = [
-        _id: id
-      ]
-
-      LocalAnnotations.remove
-        local: true
-      LocalAnnotations.insert annotation
+      # Add reference to annotation
+      @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has
@@ -360,9 +364,6 @@ class @Annotator extends Annotator
       @selectedAnnotationId = null
 
       @_deselectAllHighlights()
-
-      LocalAnnotations.remove
-        local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()

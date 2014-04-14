@@ -1,13 +1,16 @@
-class @Annotation extends @Annotation
+class @Annotation extends Annotation
+  @Meta
+    name: 'Annotation'
+    replaceParent: true
+
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Annotations.allow
+Annotation.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
     # TODO: Check that author really has access to the publication
-
     return false unless userId
 
     personId = Meteor.personId userId
@@ -32,22 +35,23 @@ Annotations.allow
     personId and doc.author._id is personId
 
 # Misuse insert validation to add additional fields on the server before insertion
-Annotations.deny
+Annotation.Meta.collection.deny
   # We have to disable transformation so that we have
   # access to the document object which will be inserted
   transform: null
 
   insert: (userId, doc) ->
-    doc.created = moment.utc().toDate()
-    doc.updated = doc.created
+    doc.createdAt = moment.utc().toDate()
+    doc.updatedAt = doc.createdAt
     doc.references = {} if not doc.references
+    doc.tags = [] if not doc.tags
 
     # We return false as we are not
     # checking anything, just adding fields
     false
 
   update: (userId, doc) ->
-    doc.updated = moment.utc().toDate()
+    doc.updatedAt = moment.utc().toDate()
 
     # We return false as we are not
     # checking anything, just updating fields
@@ -58,7 +62,7 @@ Meteor.publish 'annotations-by-id', (id) ->
 
   return unless id
 
-  Annotations.find
+  Annotation.documents.find
     _id: id
   ,
     Annotation.PUBLIC_FIELDS()
@@ -68,7 +72,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
 
   return unless publicationId
 
-  Annotations.find
+  Annotation.documents.find
     'publication._id': publicationId
   ,
     Annotation.PUBLIC_FIELDS()

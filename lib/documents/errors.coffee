@@ -1,9 +1,8 @@
-@LoggedErrors = new Meteor.Collection 'LoggedErrors', transform: (doc) => new @LoggedError doc
-
 class @LoggedError extends Document
   # errorMsg: the error message
-  # url: url that error ocurred on
-  # lineNumber: line number in the code where error occured on
+  # url: url that error ocurred on (can be also just a string "eval" or "anonymous" or even null)
+  # lineNumber: line number in the code where error occured on (can be null as well)
+  # stack: optional stack when logging an error ourselves
   # location: document location (URL) as seen by JavaScript at the moment of the error
   # userAgent: browser information string
   # language: language set in the browser (not language from HTTP headers)
@@ -34,8 +33,8 @@ class @LoggedError extends Document
   # person: if user was logged in and has not opted-out, reference to the person for whom the error occured, otherwise null
   #   _id: person's id
 
-  @Meta =>
-    collection: LoggedErrors
-    fields:
+  @Meta
+    name: 'LoggedError'
+    fields: =>
       # Person reference is not required (user can opt-out)
       person: @ReferenceField Person, [], false

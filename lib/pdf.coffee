@@ -1,3 +1,6 @@
+WHITESPACE_REGEX = /\s+/g
+TRIM_WHITESPACE_REGEX = /^\s+|\s+$/gm
+
 if Meteor.isClient
   ctx = document.createElement('canvas').getContext '2d'
 else
@@ -71,3 +74,17 @@ PDFJS.pdfImageSegment = (geom) ->
   geom: geom
   boundingBox: _.pick geom, 'left', 'top', 'width', 'height'
   style: _.pick geom, 'left', 'top', 'width', 'height'
+
+PDFJS.pdfExtractText = (textContents...) ->
+  texts = for textContent in textContents
+    text = (t.str for t in textContent).join ' '
+
+    # Remove multiple whitespace characters and trim them away
+    text = text.replace(WHITESPACE_REGEX, ' ').replace(TRIM_WHITESPACE_REGEX, '')
+
+    # TODO: Clean-up the text: remove hypenation
+
+    text
+
+  # TODO: What if there is hypenation between pages? We should not just add space in-between then?
+  texts.join ' '
