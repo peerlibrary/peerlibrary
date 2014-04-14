@@ -111,7 +111,7 @@ class Annotator.Plugin.DOMAnchors extends Annotator.Plugin
     if savedQuote? and currentQuote isnt savedQuote
       return null
 
-    # TODO: Should we create here TextRangeAnchor instead? So that we do not convert to TextPositionAnchor and then back to the range for PDFTextHighlight in PDFTextHighlights?
+    # TODO: Should we create here TextRangeAnchor instead? So that we do not convert to TextPositionAnchor and then back to the range for CanvasTextHighlight in CanvasTextHighlights?
     # Create a TextPositionAnchor from the start and end offsets
     # of this range (to be used with dom-text-mapper)
     new @Annotator.TextPositionAnchor @annotator, annotation, target, startInfo.start, endInfo.end, (startInfo.pageIndex ? 0), (endInfo.pageIndex ? 0), currentQuote

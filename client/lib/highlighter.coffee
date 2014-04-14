@@ -320,7 +320,7 @@ class Page
     @highlighter.pageRemoved @
 
 class @Highlighter
-  constructor: (@_$displayWrapper) ->
+  constructor: (@_$displayWrapper, isPdf) ->
     @_pages = []
     @_numPages = null
     @mouseDown = false
@@ -330,24 +330,22 @@ class @Highlighter
 
     @_annotator = new Annotator @, @_$displayWrapper
 
-    # TODO: Change to PDFTextHighlights after TextHighlights is renamed to PDFTextHighlights
-    @_annotator.addPlugin 'TextHighlights'
+    @_annotator.addPlugin 'CanvasTextHighlights'
     @_annotator.addPlugin 'DomTextMapper'
     @_annotator.addPlugin 'TextAnchors'
     @_annotator.addPlugin 'TextRange'
     @_annotator.addPlugin 'TextPosition'
     @_annotator.addPlugin 'TextQuote'
-    @_annotator.addPlugin 'PeerLibraryPDF'
     @_annotator.addPlugin 'DOMAnchors'
 
-    # Because TextHighlights is loaded after TextAnchors, we have to manually
-    # set Annotator.TextHighlight value in TextAnchors plugin instance
-    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
-    # On the other hand, Annotator.TextPositionAnchor does not seem to be set
-    # globally from the TextPosition's pluginInit, so let's do it here again
+    @_annotator.addPlugin 'PeerLibraryPDF' if isPdf
+
+    # Annotator.TextPositionAnchor does not seem to be set globally from the
+    # TextPosition's pluginInit, so let's do it here again
+    # TODO: Can this be fixed somehow?
     Annotator.TextPositionAnchor = @_annotator.plugins.TextPosition.Annotator.TextPositionAnchor
 
-    $(window).on 'scroll.highlighter resize.highlighter', @checkRender
+    $(window).on 'scroll.highlighter resize.highlighter', @checkRender if isPdf
 
   destroy: =>
     $(window).off '.highlighter'

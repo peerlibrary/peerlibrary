@@ -37,7 +37,8 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary"
       },
-      "async": {}
+      "async": {},
+      "cheerio": {}
     },
     "packages": {
       "router": {
@@ -134,6 +135,11 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary",
         "commit": "ffe9875c0983bf2cb369f51da468f7d7307c5da3"
+      },
+      "cheerio": {
+        "git": "https://github.com/andreioprisan/meteor-cheerio.git",
+        "tag": "v0.3.2",
+        "commit": "f7b7b8c4ad4dbac7e9b34a4b110150cd5ec95bae"
       },
       "async": {
         "git": "https://github.com/peerlibrary/meteor-async.git",

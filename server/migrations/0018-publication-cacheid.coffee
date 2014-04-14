@@ -1,10 +1,10 @@
 getOldFilename = (document) ->
-    if document.source is 'arXiv'
-      'pdf' + Storage._path.sep + 'arxiv' + Storage._path.sep + document.foreignId + '.pdf'
-    else
-      # We use import also as a fallback for any unsupported document source.
-      # This allows us to go first backward in migrations and then again forward.
-      'pdf' + Storage._path.sep + 'import' + Storage._path.sep + document._id + '.pdf'
+  if document.source is 'arXiv'
+    'pdf' + Storage._path.sep + 'arxiv' + Storage._path.sep + document.foreignId + '.pdf'
+  else
+    # We use import also as a fallback for any unsupported document source.
+    # This allows us to go first backward in migrations and then again forward.
+    'pdf' + Storage._path.sep + 'import' + Storage._path.sep + document._id + '.pdf'
 
 getNewFilename = (cachedId) ->
   'pdf' + Storage._path.sep + 'cache' + Storage._path.sep + cachedId + '.pdf'
@@ -28,7 +28,7 @@ class Migration extends Document.MajorMigration
           cachedId = Random.id()
           newFilename = getNewFilename cachedId
 
-          collection.update {_schema: currentSchema, _id: document._id, cachedId: $exists: false}, {$set: {cachedId: cachedId}}, (error, count) =>
+          collection.update {_schema: currentSchema, _id: document._id, cachedId: {$exists: false}}, {$set: {cachedId: cachedId}}, (error, count) =>
             return callback error if error
             return callback null unless count
 

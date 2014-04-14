@@ -37,6 +37,7 @@ Template.results.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
+Template.results.rendered = ->
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
 

@@ -3,6 +3,7 @@ class @Publication extends AccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
   # authors: list of
@@ -21,6 +22,7 @@ class @Publication extends AccessDocument
   # msc2010: list of MSC 2010 classes
   # acm1998: list of ACM 1998 classes
   # foreignId: id of the publication used by the source
+  # foreignUrl: URL of a foreign content file (to cache)
   # foreignCategories: categories metadata provided by the source
   # foreignJournalReference: journal reference metadata provided by the source
   # source: a string identifying where was this publication fetched from
@@ -32,6 +34,7 @@ class @Publication extends AccessDocument
   #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
   # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
+  # mediaType: which media type a cached file is (currently supported: pdf, tei)
   # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
@@ -41,6 +44,7 @@ class @Publication extends AccessDocument
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
+  # license: license information, if known
   # searchResult (client only): the last search query this document is a result for, if any, used only in search results
   #   _id: id of the query, an _id of the SearchResult object for the query
   #   order: order of the result in the search query, lower number means higher
@@ -48,20 +52,20 @@ class @Publication extends AccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username']]
+      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username'], true, 'publications']
       importing: [
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'processed', 'processError']
+      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
 
   @_filenamePrefix: ->
-    'pdf' + Storage._path.sep
+    'publication' + Storage._path.sep
 
   cachedFilename: =>
-    throw new Error "Cached filename not available" unless @cachedId
+    throw new Error "Cached filename not available" unless @cachedId and @mediaType
 
-    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.pdf'
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.' + @mediaType
 
   url: =>
     Storage.url @cachedFilename()

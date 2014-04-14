@@ -17,6 +17,7 @@ class @Annotation extends AccessDocument
   #   _id: publication's id
   # highlights: list of
   #   _id: highlight id
+  # license: license information, if known
   # local (client only): is this annotation just a temporary annotation on the cliend side
 
   @Meta
