@@ -48,6 +48,7 @@ Annotation.Meta.collection.deny
     doc.createdAt = moment.utc().toDate()
     doc.updatedAt = doc.createdAt
     doc.highlights = [] if not doc.highlights
+    doc.license = 'CC0-1.0+'
 
     doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
 

@@ -313,7 +313,7 @@ Meteor.methods
           existingAuthor
         else
           author._id = Random.id()
-          Person.documents.insert _.extends author,
+          Person.documents.insert _.extend author,
             slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
             user: null
             publications: []
@@ -338,6 +338,7 @@ Meteor.methods
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
         source: 'arXiv'
+        license: record.license?[0] or 'arXiv'
         cachedId: Random.id()
         mediaType: 'pdf'
 
@@ -497,6 +498,7 @@ Meteor.methods
         # TODO: Put foreign categories into tags?
         foreignCategories: document.fsmTypeOfResource
         source: 'FSM'
+        license: 'https://creativecommons.org/licenses/by-nc-sa/3.0/us/'
         cachedId: Random.id()
         mediaType: 'tei'
 
