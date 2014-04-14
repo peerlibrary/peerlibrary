@@ -55,11 +55,17 @@ class @Publication extends Publication
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"
 
+    switch @mediaType
+      when 'pdf' then @showPDF()
+      when 'tei' then @showTEI()
+      else Notify.error "Unsupported media type: #{ @mediaType }", null, true
+
+  showPDF: =>
     assert.strictEqual @_pages, null
 
     @_pagesDone = 0
     @_pages = []
-    @_highlighter = new Highlighter @_$displayWrapper
+    @_highlighter = new Highlighter @_$displayWrapper, true
 
     focusAnnotationId = null
 
@@ -78,11 +84,11 @@ class @Publication extends Publication
       @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
-        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('content-background').data('page-number', pageNumber)
         $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
-        # We enable forwarding of mouse events from text layer to highlights layer
-        $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
+        # We enable forwarding of mouse events from selection layer to highlights layer
+        $selectionLayer = $('<div/>').addClass('text-layer').addClass('selection-layer').forwardMouseEvents()
         $highlightsControl = $('<div/>').addClass('highlights-control').append(
           $('<div/>').addClass('meta-menu').append(
             $('<i/>').addClass('icon-menu'),
@@ -93,13 +99,15 @@ class @Publication extends Publication
 
         $('<div/>').addClass(
           'display-page'
+        ).addClass(
+          'display-page-loading'
         ).attr(
           id: "display-page-#{ pageNumber }"
         ).append(
           $displayCanvas,
           $highlightsCanvas,
           $highlightsLayer,
-          $textLayer,
+          $selectionLayer,
           $highlightsControl,
           $loading,
         ).appendTo(@_$displayWrapper)
@@ -114,9 +122,9 @@ class @Publication extends Publication
             viewport = @_viewport
               pdfPage: pdfPage # Dummy page object
 
-            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper).removeClass('display-page-loading')
             $canvas = $displayPage.find('canvas') # Both display and highlights canvases
-            $canvas.removeClass('display-canvas-loading').attr
+            $canvas.attr
               height: viewport.height
               width: viewport.width
             $displayPage.css
@@ -312,10 +320,89 @@ class @Publication extends Publication
       # TODO: Handle errors better (call destroy?)
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
+  showTEI: =>
+    focusAnnotationId = null
+
+    # To make sure we are starting with empty slate
+    @_$displayWrapper.empty()
+    publicationDOMReady.set false
+    currentViewport.set
+      top: null
+      bottom: null
+    currentHighlights.set {}
+
+    # TODO: Handle errors
+    $.ajax
+      url: @url()
+      dataType: 'xml'
+      success: (xml, textStatus, jqXHR) =>
+        $.ajax
+          url: '/tei/tei.xsl'
+          dataType: 'xml'
+          success: (xsl, textStatus, jqXHR) =>
+            xsltProcessor = new XSLTProcessor()
+            xsltProcessor.importStylesheet xsl
+            fragment = xsltProcessor.transformToFragment xml, document
+            try
+              # We append the fragment to DOM so that we can process it with jQuery.
+              # jQuery has some issues working on the fragment otherwise. It still
+              # throws an exception when appending, so we catch it and ignore it.
+              @_$displayWrapper.append(fragment)
+            catch error
+              # We ignore a jQuery exception while appending
+            # Now we remove it from DOM, temporary, cleaned and working for further processing
+            $teiWrapper = @_$displayWrapper.find('html').remove().find('#tei_wrapper')
+
+            # We remove teiheader element. We have to traverse the tree manually because jQuery selector does not find it.
+            # TODO: We should parse this on the server side and create an annotation
+            $teiWrapper.find('* > *').each (i, element) =>
+              $(element).remove() if element.tagName.toLowerCase() is 'teiheader'
+
+            # We enable highlighting on this layer and enable forwarding of mouse
+            # events from selection layer to highlights layer
+            $teiWrapper.addClass('selection-layer').forwardMouseEvents()
+
+            $contentBackground = $('<div/>').addClass('content-background')
+            $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
+            $highlightsLayer = $('<div/>').addClass('highlights-layer')
+            $highlightsControl = $('<div/>').addClass('highlights-control').append(
+              $('<div/>').addClass('meta-menu').append(
+                $('<i/>').addClass('icon-menu'),
+                $('<div/>').addClass('meta-content'),
+              )
+            )
+
+            $displayPage = $('<div/>').addClass(
+              'display-page'
+            ).append(
+              $contentBackground,
+              $highlightsCanvas,
+              $highlightsLayer,
+              $teiWrapper,
+              $highlightsControl
+            ).appendTo(@_$displayWrapper)
+
+            $displayPage.find('canvas').attr
+              height: $teiWrapper.height()
+              width: $teiWrapper.width()
+            $displayPage.css
+              height: $teiWrapper.height()
+              width: $teiWrapper.width()
+
+            # TODO: Update sizes as display page changes size (if user changes font size, for example)
+            # TODO: Allow modifying size of display page (update then all sizes as necessary)
+
+            @_highlighter = new Highlighter @_$displayWrapper, false
+            @_highlighter.setNumPages 0
+            @_highlighter._checkHighlighting()
+
+            publicationDOMReady.set true
+
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
     fields:
       cachedId: 1
+      mediaType: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'

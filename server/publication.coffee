@@ -32,18 +32,24 @@ class @Publication extends Publication
                 error: "#{ error.toString?() or error }"
                 stack: error.stack
 
-          Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
+          Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
 
       fields
 
   @_arXivFilename: (arXivId) ->
+    # TODO: Verify that id is not insecure
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
+
+  @_FSMFilename: (fsmId) ->
+    # TODO: Verify that id is not insecure
+    'FSM' + Storage._path.sep + fsmId + '.tei'
 
   foreignFilename: =>
     filename = switch @source
       when 'arXiv' then Publication._arXivFilename @foreignId
+      when 'FSM' then Publication._FSMFilename @foreignId
       else null
 
     return unless filename
@@ -68,7 +74,7 @@ class @Publication extends Publication
         assert Storage.exists @cachedFilename()
 
       else
-        Log.info "Caching PDF for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
+        Log.info "Caching file for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
 
         pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
           timeout: 10000 # ms
@@ -92,6 +98,12 @@ class @Publication extends Publication
         sha256: @sha256
 
   process: =>
+    switch @mediaType
+      when 'pdf' then @processPDF()
+      when 'tei' then @processTEI()
+      else throw new Error "Unsupported media type: #{ @mediaType }"
+
+  processPDF: =>
     currentlyProcessingPublication @_id
 
     try
@@ -142,6 +154,21 @@ class @Publication extends Publication
     finally
       currentlyProcessingPublication null
 
+  processTEI: =>
+    tei = Storage.open @cachedFilename()
+
+    @fullText = cheerio.load(tei).root().text().replace(/\s+/g, ' ').trim()
+
+    # TODO: We could also add some additional information (statistics, how long it took and so on)
+    @processed = moment.utc().toDate()
+    Publication.documents.update @_id,
+      $set:
+        processed: @processed
+        fullText: @fullText
+
+    # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
+    @fullText
+
   _importingFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
     assert @importing?[0]?.person?._id
@@ -188,6 +215,7 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      mediaType: 1
       access: 1
       readPersons: 1
       readGroups: 1
@@ -254,6 +282,7 @@ Meteor.methods
           importingId: Random.id()
         ]
         cachedId: Random.id()
+        mediaType: 'pdf'
         sha256: sha256
         metadata: false
       verify = false
@@ -284,6 +313,7 @@ Meteor.methods
         'importing.$': 1
         sha256: 1
         cachedId: 1
+        mediaType: 1
 
     # File maybe finished by somebody else, or wrong publicationId, or something else.
     # If the file was maybe finished by somebody else, we do not want really to continue writing
