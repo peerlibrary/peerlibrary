@@ -66,25 +66,38 @@ Collection.Meta.collection.deny
     false
 
 Meteor.methods
-# TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  #TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
   'add-to-collection': (collectionId, publicationId) ->
     check collectionId, String
     check publicationId, String
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     collection = Collection.documents.findOne
       _id: collectionId
 
+    throw new Meteor.Error 400, "Invalid collection." unless collection
+
     publication = Publication.documents.findOne
       _id: publicationId
 
-    return unless collection and publication
+    throw new Meteor.Error 400, "Invalid publication." unless publication
 
+    # Add to user's library if needed
+    unless _.contains (_.pluck person.library, '_id'), publicationId
+      Person.documents.update
+        '_id': person._id
+      ,
+        $addToSet:
+          library:
+            _id: publicationId
+
+    # Add to collection
     Collection.documents.update
       _id: collectionId
       $and: [
-        'author._id': Meteor.personId()
+        'author._id': person._id
       ,
         'publications._id':
           $ne: publicationId
@@ -96,6 +109,39 @@ Meteor.methods
         publications:
           _id: publicationId
 
+  #TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'remove-from-collection': (collectionId, publicationId) ->
+    check collectionId, String
+    check publicationId, String
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    collection = Collection.documents.findOne
+      _id: collectionId
+
+    throw new Meteor.Error 400, "Invalid collection." unless collection
+
+    publication = Publication.documents.findOne
+      _id: publicationId
+
+    throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    # Remove from collection
+    Collection.documents.update
+      _id: collectionId
+      $and: [
+        'author._id': person._id
+      ,
+        'publications._id': publicationId
+      ]
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $pull:
+        publications:
+          _id: publicationId
+
   'reorder-collection': (collectionId, publicationIds) ->
     check collectionId, String
     check publicationIds, [String]
@@ -103,8 +149,7 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    collection = Collection.documents.find
-      _id: collectionId
+    collection = Collection.documents.findOne collectionId
 
     throw new Meteor.Error 401, "Collection not found." unless collection
 
@@ -122,7 +167,6 @@ Meteor.methods
       $set:
         publications: publications
 
-
 Meteor.publish 'collection-by-id', (id) ->
   check id, String
 
@@ -139,3 +183,27 @@ Meteor.publish 'my-collections', ->
     'author._id': @personId
   ,
     Collection.PUBLIC_FIELDS()
+
+Meteor.publish 'collection-publications', (id) ->
+  check id, String
+
+  @related (person, collection) ->
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      _id:
+        $in: _.pluck collection.publications, '_id'
+    ), Publication.PUBLIC_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
+        inGroups: 1
+        library: 1
+  ,
+    Collection.documents.find
+      _id: id
+    ,
+      fields:
+        publications: 1

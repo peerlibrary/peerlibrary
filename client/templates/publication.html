@@ -11,7 +11,10 @@
       </div>
     {{else}}
       <div class="viewer">
-        {{> publicationMetaMenu}}
+        {{#with publication}}
+          {{> publicationMetaMenu}}
+          {{> publicationLibraryMenu}}
+        {{/with}}
         {{> publicationScroller}}
         {{> publicationDisplay}}
         {{> annotationsControl}}
@@ -25,17 +28,72 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      <p><b>{{publication.title}}</b></p>
+      <p><b>{{title}}</b></p>
       <p class="authors">
-        {{#each publication.authors}}
+        {{#each authors}}
           <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
-      <p>Source: {{publication.source}}</p>
-      <p>{{publication.createdAt}}</p>
-      {{>publicationAccessControl publication}}
+      <p>Source: {{source}}</p>
+      <p>{{createdAt}}</p>
+      {{> publicationAccessControl}}
     </div>
   </div>
+</template>
+
+<template name="publicationLibraryMenu">
+  <div class="add-to-library-menu meta-menu">
+    {{> publicationLibraryMenuButtons}}
+    <div class="meta-content">
+      {{> addToCollections}}
+      {{> addNewCollection}}
+    </div>
+  </div>
+</template>
+
+<template name="publicationLibraryMenuButtons">
+  <i class="icon {{#if inLibrary}}icon2-bookmark{{else}}icon2-bookmark-empty{{/if}}"></i>
+  <button class="add-to-library library-button">
+    {{#if inLibrary}}
+      Remove from library
+    {{else}}
+      Add to library
+    {{/if}}
+  </button>
+  {{#if inCollection}}
+    <button class="remove-from-collection library-button">
+      Remove from collection
+    </button>
+  {{/if}}
+</template>
+
+<template name="addToCollections">
+  <h3>Add to collections</h3>
+  {{#if myCollections.length}}
+
+    {{#unless inLibrary}}
+    <p><i>Note: This will also add the publication to your library.</i></p>
+    {{/unless}}
+
+    <ol class="add-to-collections-list">
+      {{#each myCollections}}
+        {{> addToCollectionListing}}
+      {{/each}}
+    </ol>
+
+  {{else}}
+    <p>You don't have any collections. Create one below.</p>
+  {{/if}}
+</template>
+
+<template name="addToCollectionListing">
+
+  <li class="add-to-collection-listing">
+    <button class="add-to-collection {{#if inCollection}}in-collection{{/if}}">
+      <span class="collection-name">{{name}}</span>
+      <span class="publications-count">{{countDescription}}</span>
+    </button>
+  </li>
 </template>
 
 <template name="publicationAccessControl">

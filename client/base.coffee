@@ -221,7 +221,7 @@ else
       as: 'collection'
       to: (collectionId, collectionSlug) ->
         setSession
-          currentCollectonId: collectionId
+          currentCollectionId: collectionId
           currentCollectionSlug: collectionSlug
         'collection'
 

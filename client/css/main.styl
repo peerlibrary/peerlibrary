@@ -127,3 +127,15 @@ section .simple
 
 .clearfix
   *zoom 1
+
+/* Grid correction
+================== */
+
+.row
+  overflow visible
+
+.row::after
+  display block
+  content ""
+  clear both
+

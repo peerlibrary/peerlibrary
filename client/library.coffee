@@ -14,33 +14,32 @@ Template.libraryPublications.myPublications = ->
   person = Meteor.person()
   return unless person
 
-  publications = Publication.documents.find
+  Publication.documents.find
     _id:
       $in: _.pluck person.library, '_id'
-  .fetch()
-
-  # Order documents according to library
-  _.map person.library, (libraryPublication) ->
-    _.find publications, (publication) ->
-      libraryPublication._id is publication._id
 
 Template.libraryPublications.rendered = ->
-  $(@findAll '.library-publications').sortable
+  $(@findAll '.result-item').draggable
     opacity: 0.5
-    update: (event, ui) ->
-      newOrder = []
-      $(this).children("li").each () ->
-        newOrder.push $(this).attr("data-id")
-
-      Meteor.call "reorder-library", newOrder
+    revert: true
+    revertDuration: 0
+    zIndex: 1
+    start: (e) ->
+      $('.library-collections').addClass('fixed')
+    stop: (e) ->
+      $('.library-collections').removeClass('fixed')
 
 Template.collections.myCollections = ->
   return unless Meteor.person()
 
   Collection.documents.find
     'author._id': Meteor.personId()
+  ,
+    sort: [
+      ['slug', 'asc']
+    ]
 
-Template.collections.events
+Template.addNewCollection.events
 
   'submit .add-collection': (e, template) ->
     e.preventDefault()
@@ -51,6 +50,8 @@ Template.collections.events
     ,
       (error, id) =>
         return Notify.meteorError error, true if error
+
+        $(template.findAll '.name').val('')
 
         Notify.success "Collection created."
 

@@ -24,11 +24,7 @@
         {{> collectionListing}}
       {{/each}}
     </ol>
-    <h3>Create a new collection</h3>
-    <form class="add-collection input-and-button">
-      <input type="text" class="name" placeholder="Collection name" />
-      <button type="submit" class="add">Create</button>
-    </form>
+    {{> addNewCollection}}
   </div>
 </template>
 
@@ -41,4 +37,12 @@
     </h3>
     <span class="publications-count">{{countDescription}}</span>
   </li>
+</template>
+
+<template name="addNewCollection">
+  <h3>Create a new collection</h3>
+  <form class="add-collection input-and-button">
+    <input type="text" class="name" placeholder="Collection name" />
+    <button type="submit" class="add">Create</button>
+  </form>
 </template>

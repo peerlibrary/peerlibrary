@@ -107,6 +107,9 @@
 
 <template name="publicationSearchResult">
   <li class="result-item" data-id="{{_id}}">
+    {{#if currentUserId}}
+      {{> publicationLibraryMenu}}
+    {{/if}}
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">

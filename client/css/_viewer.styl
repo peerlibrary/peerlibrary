@@ -28,6 +28,9 @@ scroller-bottom = 20px
 meta-menu-width = 28px
 meta-menu-height = 22px
 meta-menu-padding = 10px
+meta-menu-margin = 20px
+meta-menu-outer-width = meta-menu-width + 2 * meta-menu-padding
+meta-menu-outer-height = meta-menu-height + 2 * meta-menu-padding
 meta-menu-top = header-height + 15px
 meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
 meta-menu-icon-font-size = 20px
@@ -77,13 +80,78 @@ meta-menu-icon-font-size = 20px
       font-size smaller
 
 .meta-menu:hover, .meta-menu.displayed
-  background rgba(46,46,44,0.5)
+  background overlay-translucent
   width 300px
   min-height 420px
   height auto
+  z-index 101
 
   .meta-content
     display block
+
+/* Add to library
+================= */
+
+.add-to-library-menu
+  top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
+
+  .icon
+    font-size 20px
+    color white
+
+  .library-button
+    display none
+    border none
+    border-radius 2px
+    background none
+    font-size 13px
+    color white
+    padding 8px
+    text-align left
+    white-space nowrap
+    transition padding 0.2s
+
+  .library-button:hover
+     background overlay-translucent
+
+.add-to-library-menu:hover
+  z-index 101
+
+  .library-button
+    display inline-block
+
+.add-to-collections-list
+  list-style none
+  padding 10px
+  background-color rgba(120,120,120,0.9)
+
+.add-to-collection-listing
+
+  .add-to-collection
+    background none
+    border none
+    border-radius 2px
+    color white
+    width 100%
+    text-align left
+    padding 10px 10px 10px 30px
+    position relative
+
+    .publications-count
+      font-weight 300
+      font-size 12px
+      margin-left 10px
+
+  .add-to-collection:hover
+    background overlay-translucent
+
+  .add-to-collection.in-collection
+    .collection-name:before
+      content "✓"
+      position absolute
+      left 0
+      width 30px
+      text-align center
 
 /* Scroller
 =========== */
@@ -91,7 +159,7 @@ meta-menu-icon-font-size = 20px
 .scroller
   position fixed
   width scroller-width
-  top meta-menu-top + meta-menu-height + 2 * meta-menu-padding + 20px
+  top meta-menu-top + 2 * (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
   left scroller-left
   bottom 20px
   z-index 50
@@ -292,7 +360,7 @@ annotations-control-height = 28px
     padding 0
 
   .add:hover
-    background rgba(46,46,44,0.5)
+    background overlay-translucent
 
   .add:active, .add:focus
     outline none
@@ -450,7 +518,8 @@ annotations-control-height = 28px
 ========= */
 
 .access-panel
-  background-color rgba(100,100,100,0.9)
+  background-color rgba(120,120,120,0.9)
+  border-radius 2px
 
   .access
 

@@ -46,23 +46,55 @@ class @Person extends Person
       library: 1
 
 Meteor.methods
-  'reorder-library': (publicationIds) ->
-    check publicationIds, [String]
+  'add-to-library': (publicationId) ->
+    check publicationId, String
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    library = _.pluck person.library, '_id'
-
-    throw new Meteor.Error 400, "Provided Ids don't match." if _.difference(library, publicationIds).length
-
-    publications = (_id: publicationId for publicationId in publicationIds)
+    publication = Publication.documents.findOne publicationId
+    throw new Meteor.Error 400, "Invalid publication id." unless publication?.hasReadAccess person
 
     Person.documents.update
-      _id: person._id
+      '_id': Meteor.personId()
+    ,
+      $addToSet:
+        library:
+          _id: publicationId
+
+  'remove-from-library': (publicationId) ->
+    check publicationId, String
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    publication = Publication.documents.findOne publicationId
+    throw new Meteor.Error 400, "Invalid publication id." unless publication?.hasReadAccess person
+
+    # Remove from collections
+    Collection.documents.update
+      $and: [
+        'author._id': person._id
+      ,
+        'publications._id': publicationId
+      ]
     ,
       $set:
-        library: publications
+        updatedAt: moment.utc().toDate()
+      $pull:
+        publications:
+          _id: publicationId
+    ,
+      multi: true
+
+    # Remove from library
+    Person.documents.update
+      '_id': Meteor.personId()
+    ,
+      $pull:
+        library:
+          _id: publicationId
+
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, String
