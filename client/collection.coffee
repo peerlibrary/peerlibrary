@@ -36,7 +36,7 @@ Template.collectionPublications.rendered = ->
   # Do not proceed if user is not collection author
   if collection?.author._id isnt Meteor.personId()
     # Remove sortable functionality in case it was previously enabled
-    $(@findAll '.collection-publications').sortable "destroy"
+    $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
     return
 
   $(@findAll '.collection-publications').sortable
