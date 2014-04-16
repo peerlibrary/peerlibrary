@@ -23,14 +23,17 @@ Template.libraryPublications.rendered = ->
     opacity: 0.5
     revert: true
     revertDuration: 0
+    cursor: 'move'
     zIndex: 1
-    start: (e) ->
-      $('.library-collections').addClass('fixed')
-    stop: (e) ->
-      $('.library-collections').removeClass('fixed')
+    start: (e, ui) ->
+      # When we start to drag a publication, we display collections fixed so they are in view, ready to be dropped onto.
+      # TODO: Make sure this works for people with lots of collections.
+      $('.library-collections-wrapper').addClass('fixed')
+    stop: (e, ui) ->
+      $('.library-collections-wrapper').removeClass('fixed')
 
 Template.collections.myCollections = ->
-  return unless Meteor.person()
+  return unless Meteor.personId()
 
   Collection.documents.find
     'author._id': Meteor.personId()
@@ -40,17 +43,18 @@ Template.collections.myCollections = ->
     ]
 
 Template.addNewCollection.events
-
   'submit .add-collection': (e, template) ->
     e.preventDefault()
     Collection.documents.insert
       name: $(template.findAll '.name').val()
-      author: Meteor.person()
+      author:
+        _id: Meteor.personId()
       publications: []
     ,
       (error, id) =>
         return Notify.meteorError error, true if error
 
+        # Clear the collection name from the form
         $(template.findAll '.name').val('')
 
         Notify.success "Collection created."
@@ -64,10 +68,13 @@ Template.collections.rendered = ->
     hoverClass: 'droppable-hover'
     tolerance: 'pointer'
     drop: (event, ui) ->
-      publicationId = ui.draggable.attr("data-id")
-      collectionId = $(this).attr("data-id")
-      Meteor.call 'add-to-collection', collectionId, publicationId
+      publicationId = ui.draggable.data('publication-id')
+      collectionId = $(event.target).data('collection-id')
+      Meteor.call 'add-to-library', publicationId, collectionId, (error, count) =>
+        # TODO: Same operation is handled in client/publication.coffee from the meta-menu. Sync both?
+        return Notify.meteorError error, true if error
+
+        Notify.success "Publication added to collection." if count
 
 Template.collectionListing.countDescription = ->
-  return "0 publications" unless @publications
-  if @publications.length is 1 then "1 publication" else "#{@publications.length} publications"
+  if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

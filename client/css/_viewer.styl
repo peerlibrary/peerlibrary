@@ -89,17 +89,17 @@ meta-menu-icon-font-size = 20px
   .meta-content
     display block
 
-/* Add to library
-================= */
+/* Library operations menu
+========================== */
 
-.add-to-library-menu
+.library-menu
   top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
 
   .icon
     font-size 20px
     color white
 
-  .library-button
+  .library-menu-button
     display none
     border none
     border-radius 2px
@@ -111,47 +111,46 @@ meta-menu-icon-font-size = 20px
     white-space nowrap
     transition padding 0.2s
 
-  .library-button:hover
+  .library-menu-button:hover
      background overlay-translucent
 
-.add-to-library-menu:hover
+.library-menu:hover
   z-index 101
 
-  .library-button
+  .library-menu-button
     display inline-block
 
-.add-to-collections-list
+.library-menu-collections
   list-style none
   padding 10px
   background-color rgba(120,120,120,0.9)
 
-.add-to-collection-listing
+  .library-menu-collection
+    button
+      background none
+      border none
+      border-radius 2px
+      color white
+      width 100%
+      text-align left
+      padding 10px 10px 10px 30px
+      position relative
 
-  .add-to-collection
-    background none
-    border none
-    border-radius 2px
-    color white
-    width 100%
-    text-align left
-    padding 10px 10px 10px 30px
-    position relative
+      .publications-count
+        font-weight 300
+        font-size 12px
+        margin-left 10px
 
-    .publications-count
-      font-weight 300
-      font-size 12px
-      margin-left 10px
+    button:hover
+      background overlay-translucent
 
-  .add-to-collection:hover
-    background overlay-translucent
-
-  .add-to-collection.in-collection
-    .collection-name:before
-      content "✓"
-      position absolute
-      left 0
-      width 30px
-      text-align center
+    .remove-from-collection
+      .collection-name:before
+        content "✓"
+        position absolute
+        left 0
+        width 30px
+        text-align center
 
 /* Scroller
 =========== */

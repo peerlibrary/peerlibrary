@@ -26,31 +26,62 @@ Template.collectionPublications.publications = ->
   Publication.documents.find
     _id:
       $in: order
-  .fetch().sort (a,b) =>
+  # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
+  .fetch().sort (a, b) =>
     return (order.indexOf a._id) - (order.indexOf b._id)
 
 Template.collectionPublications.rendered = ->
+  collection = Collection.documents.findOne Session.get('currentCollectionId')
+  return unless collection?.author._id is Meteor.personId()
+
   $(@findAll '.collection-publications').sortable
     opacity: 0.5
-    update: (event, ui) ->
+    cursor: 'ns-resize'
+    axis: 'y'
+    update: (e, ui) ->
       newOrder = []
-      $(this).children("li").each () ->
-        newOrder.push $(this).attr("data-id")
+      $(e.target).children('li').each (index, element) ->
+        newOrder.push $(element).data('publication-id')
 
-      Meteor.call "reorder-collection", Session.get('currentCollectionId'), newOrder, (error) ->
+      Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.meteorError error, true if error
 
 Template.collectionDetails.ownCollection = ->
-  return unless Meteor.personId
+  return unless Meteor.personId()
   @author._id is Meteor.personId()
 
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->
-
     Collection.documents.remove @_id, (error) =>
       Notify.meteorError error, true if error
 
       Notify.success "Collection removed."
+      # TODO: Consider redirecting back to the page where we came from (maybe /c, maybe /library)
       Meteor.Router.toNew Meteor.Router.libraryPath()
 
     return # Make sure CoffeeScript does not return anything
+
+# This provides functionality of the library menu (from publication.html) that is specific to the collection view
+Template.publicationLibraryMenuButtons.inCurrentCollection = ->
+  Collection.documents.findOne
+    _id: Session.get 'currentCollectionId'
+    'publications._id': @_id
+
+Template.publicationLibraryMenuButtons.events
+  'click .remove-from-current-collection': (e, template) ->
+    person = Meteor.person()
+    return unless person
+
+    collection = Collection.documents.findOne
+      _id: Session.get 'currentCollectionId'
+      'publications._id': @_id
+
+    return unless collection
+
+    Meteor.call 'remove-from-library', @_id, collection._id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication removed from the collection." if count
+
+    return # Make sure CoffeeScript does not return anything
+

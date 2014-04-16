@@ -25,14 +25,17 @@
     </div>
     {{#if ownCollection}}
       <h3>Tools</h3>
-      <div>
+      <p>
         <button class="only-button delete-collection">Delete collection</button>
-      </div>
-      {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
-      {{! TODO: Remove all publications from collection }}
-      <div class="back-to-library">
+        {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
+        {{! TODO: Remove all publications from collection }}
+      </p>
+      <p class="hint">
+        You can reorder publications in a collection by dragging them.
+      </p>
+      <p class="back-to-library">
         <a href="{{libraryPath}}">Back to Library</a>
-      </div>
+      </p>
     {{/if}}
   </div>
 </template>

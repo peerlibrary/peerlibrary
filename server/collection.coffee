@@ -66,42 +66,42 @@ Collection.Meta.collection.deny
     false
 
 Meteor.methods
-  #TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'add-to-collection': (collectionId, publicationId) ->
-    check collectionId, String
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'add-to-library': (publicationId, collectionId) ->
     check publicationId, String
+    check collectionId, Match.Optional String
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
+
+    publication = Publication.documents.findOne publicationId
+    throw new Meteor.Error 400, "Invalid publication." unless publication?.hasReadAccess person
+
+    # Add to user's library
+    result = Person.documents.update
+      '_id': person._id
+      'library._id':
+        $ne: publicationId
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $addToSet:
+        library:
+          _id: publicationId
+
+    # Optionally add the publication to a collection, if it was specified
+    return result unless collectionId
 
     collection = Collection.documents.findOne
       _id: collectionId
 
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
-    publication = Publication.documents.findOne
-      _id: publicationId
-
-    throw new Meteor.Error 400, "Invalid publication." unless publication
-
-    # Add to user's library if needed
-    unless _.contains (_.pluck person.library, '_id'), publicationId
-      Person.documents.update
-        '_id': person._id
-      ,
-        $addToSet:
-          library:
-            _id: publicationId
-
-    # Add to collection
     Collection.documents.update
       _id: collectionId
-      $and: [
-        'author._id': person._id
-      ,
-        'publications._id':
-          $ne: publicationId
-      ]
+      'author._id': person._id
+      'publications._id':
+        $ne: publicationId
     ,
       $set:
         updatedAt: moment.utc().toDate()
@@ -109,37 +109,53 @@ Meteor.methods
         publications:
           _id: publicationId
 
-  #TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'remove-from-collection': (collectionId, publicationId) ->
-    check collectionId, String
+  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  'remove-from-library': (publicationId, collectionId) ->
     check publicationId, String
+    check collectionId, Match.Optional String
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    collection = Collection.documents.findOne
-      _id: collectionId
+    publication = Publication.documents.findOne publicationId
+    throw new Meteor.Error 400, "Invalid publication." unless publication?.hasReadAccess person
 
-    throw new Meteor.Error 400, "Invalid collection." unless collection
+    # When we're removing from library we also want to remove the publication from all user's collections.
+    # This query will match all user's collections that include this publication.
+    collectionsQuery =
+      'author._id': person._id
+      'publications._id': publicationId
 
-    publication = Publication.documents.findOne
-      _id: publicationId
+    # If collectionId is specified we modify the query to only remove from that collection
+    if collectionId
+      collection = Collection.documents.findOne
+        _id: collectionId
 
-    throw new Meteor.Error 400, "Invalid publication." unless publication
+      throw new Meteor.Error 400, "Invalid collection." unless collection
+
+      collectionsQuery['_id'] = collectionId
 
     # Remove from collection
-    Collection.documents.update
-      _id: collectionId
-      $and: [
-        'author._id': person._id
-      ,
-        'publications._id': publicationId
-      ]
-    ,
+    result = Collection.documents.update collectionsQuery,
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         publications:
+          _id: publicationId
+    ,
+      multi: not collectionId?
+
+    # Only remove from library if collection was not specified
+    return result if collectionId
+
+    Person.documents.update
+      '_id': person._id
+      'library._id': publicationId
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+      $pull:
+        library:
           _id: publicationId
 
   'reorder-collection': (collectionId, publicationIds) ->
@@ -151,18 +167,20 @@ Meteor.methods
 
     collection = Collection.documents.findOne collectionId
 
-    throw new Meteor.Error 401, "Collection not found." unless collection
-
-    throw new Meteor.Error 403, "User not collection's author." unless collection.author._id is person._id
+    throw new Meteor.Error 400, "Invalid collection." unless collection and collection.author._id is person._id
 
     oldOrderIds = _.pluck collection.publications, '_id'
 
-    throw new Meteor.Error 400, "Provided Ids don't match." if _.difference(oldOrderIds, publicationIds).length
+    throw new Meteor.Error 400, "Invalid collection." if _.difference(oldOrderIds, publicationIds).length
 
     publications = (_id: publicationId for publicationId in publicationIds)
 
     Collection.documents.update
       _id: collectionId
+      'publications._id':
+        $all: oldOrderIds
+      publications:
+        $size: oldOrderIds.length
     ,
       $set:
         publications: publications
@@ -178,7 +196,6 @@ Meteor.publish 'collection-by-id', (id) ->
     Collection.PUBLIC_FIELDS()
 
 Meteor.publish 'my-collections', ->
-
   Collection.documents.find
     'author._id': @personId
   ,

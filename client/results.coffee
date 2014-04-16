@@ -213,9 +213,7 @@ Template.accessIcon.iconName = ->
     when Publication.ACCESS.OPEN then 'icon-public'
     when Publication.ACCESS.CLOSED then 'icon-closed'
     when Publication.ACCESS.PRIVATE then 'icon-private'
-    else
-      console.log @access
-      assert false
+    else assert false
 
 # We do not want location to be updated for every key press, because this really makes browser history hard to navigate
 # TODO: This might make currentSearchQuery be overriden with old value if it happens that exactly after 500 ms user again presses a key, but location is changed to old value which sets currentSearchQuery and thus input field back to old value

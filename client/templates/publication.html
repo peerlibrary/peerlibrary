@@ -42,10 +42,10 @@
 </template>
 
 <template name="publicationLibraryMenu">
-  <div class="add-to-library-menu meta-menu">
+  <div class="library-menu meta-menu">
     {{> publicationLibraryMenuButtons}}
     <div class="meta-content">
-      {{> addToCollections}}
+      {{> publicationLibraryMenuCollections}}
       {{> addNewCollection}}
     </div>
   </div>
@@ -53,43 +53,44 @@
 
 <template name="publicationLibraryMenuButtons">
   <i class="icon {{#if inLibrary}}icon2-bookmark{{else}}icon2-bookmark-empty{{/if}}"></i>
-  <button class="add-to-library library-button">
-    {{#if inLibrary}}
+  {{#if inLibrary}}
+    <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
       Remove from library
-    {{else}}
+    </button>
+  {{else}}
+    <button class="add-to-library library-menu-button">
       Add to library
-    {{/if}}
-  </button>
-  {{#if inCollection}}
-    <button class="remove-from-collection library-button">
-      Remove from collection
     </button>
   {{/if}}
-</template>
-
-<template name="addToCollections">
-  <h3>Add to collections</h3>
-  {{#if myCollections.length}}
-
-    {{#unless inLibrary}}
-    <p><i>Note: This will also add the publication to your library.</i></p>
-    {{/unless}}
-
-    <ol class="add-to-collections-list">
-      {{#each myCollections}}
-        {{> addToCollectionListing}}
-      {{/each}}
-    </ol>
-
-  {{else}}
-    <p>You don't have any collections. Create one below.</p>
+  {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
+  {{#if inCurrentCollection}}
+    <p>
+      <button class="remove-from-current-collection library-menu-button">
+        Remove from collection
+      </button>
+    </p>
   {{/if}}
 </template>
 
-<template name="addToCollectionListing">
+<template name="publicationLibraryMenuCollections">
+  <h3>Add to collections</h3>
+  {{#if myCollections.length}}
+    <ol class="library-menu-collections">
+      {{#each myCollections}}
+        {{> publicationLibraryMenuCollectionListing}}
+      {{/each}}
+    </ol>
+    {{#unless inLibrary}}
+      <p class="hint">This will also add the publication to your library.</p>
+    {{/unless}}
+  {{else}}
+    {{> noCollections}}
+  {{/if}}
+</template>
 
-  <li class="add-to-collection-listing">
-    <button class="add-to-collection {{#if inCollection}}in-collection{{/if}}">
+<template name="publicationLibraryMenuCollectionListing">
+  <li class="library-menu-collection">
+    <button class="{{#if inCollection}}remove-from-collection{{else}}add-to-collection{{/if}}">
       <span class="collection-name">{{name}}</span>
       <span class="publications-count">{{countDescription}}</span>
     </button>

@@ -490,6 +490,8 @@ libraryMenuSubscriptionCollectionsHandle = null
 
 Template.publicationLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++
+  # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
+  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'persons-by-id-or-slug', Meteor.personId() unless libraryMenuSubscriptionPersonHandle
 
 Template.publicationLibraryMenu.destroyed = ->
   libraryMenuSubscriptionCounter--
@@ -501,41 +503,28 @@ Template.publicationLibraryMenu.destroyed = ->
     libraryMenuSubscriptionCollectionsHandle = null
 
 Template.publicationLibraryMenu.events
-  'mouseenter .add-to-library-menu': (e, template) ->
-    libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'persons-by-id-or-slug', Meteor.personId() unless libraryMenuSubscriptionPersonHandle
+  'mouseenter .library-menu': (e, template) ->
+    # We only subscribe to person's collections on hover, because they are not immediately seen.
     libraryMenuSubscriptionCollectionsHandle = Meteor.subscribe 'my-collections' unless libraryMenuSubscriptionCollectionsHandle
 
+Template.publicationLibraryMenuButtons.events
   'click .add-to-library': (e, template) ->
-    person = Meteor.person()
-    return unless person and @_id
+    return unless Meteor.personId()
 
-    if _.contains (_.pluck person.library, '_id'), @_id
-      Meteor.call 'remove-from-library', @_id, (error, count) =>
+    Meteor.call 'add-to-library', @_id, (error, count) =>
         return Notify.meteorError error, true if error
 
-        Notify.success "Publication removed from library." if count
-
-    else
-      Meteor.call 'add-to-library', @_id, (error, count) =>
-        return Notify.meteorError error, true if error
-
-        Notify.success "Publication added to library." if count
+        Notify.success "Publication added to the library." if count
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .remove-from-collection': (e, template) ->
-    person = Meteor.person()
-    return unless person and @_id
+  'click .remove-from-library': (e, template) ->
+    return unless Meteor.personId()
 
-    collection = Collection.documents.findOne Session.get 'currentCollectionId'
-    return unless collection
-
-    return unless _.contains (_.pluck collection.publications, '_id'), @_id
-
-    Meteor.call 'remove-from-collection', collection._id, @_id,  (error, count) =>
+    Meteor.call 'remove-from-library', @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
-      Notify.success "Publication removed from collection." if count
+      Notify.success "Publication removed from the library." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -543,19 +532,12 @@ Template.publicationLibraryMenuButtons.inLibrary = ->
   person = Meteor.person()
   return false unless person and @_id
 
-  _.contains (_.pluck person.library, '_id'), @_id
+  _.contains _.pluck(person.library, '_id'), @_id
 
-Template.publicationLibraryMenuButtons.inCollection = ->
-  collection = Collection.documents.findOne Session.get 'currentCollectionId'
+Template.publicationLibraryMenuCollections.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
 
-  return false unless collection
-
-  _.contains (_.pluck collection.publications, "_id"), @_id
-
-Template.addToCollections.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
-
-Template.addToCollections.myCollections = ->
-  return unless Meteor.person()
+Template.publicationLibraryMenuCollections.myCollections = ->
+  return unless Meteor.personId()
 
   collections = Collection.documents.find
     'author._id': Meteor.personId()
@@ -571,33 +553,36 @@ Template.addToCollections.myCollections = ->
     collection._parent = @
     collection
 
-Template.addToCollectionListing.inCollection = ->
-  _.contains (_.pluck @publications, '_id'), @_parent._id
+Template.publicationLibraryMenuCollectionListing.inCollection = ->
+  _.contains _.pluck(@publications, '_id'), @_parent._id
 
-Template.addToCollectionListing.events
+Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (e, template) ->
-    person = Meteor.person()
-    return unless person and @_parent._id
+    return unless Meteor.personId()
 
     collection = template.data
 
-    if _.contains (_.pluck collection.publications, '_id'), @_parent._id
-      Meteor.call 'remove-from-collection', collection._id, @_parent._id,  (error, count) =>
-        return Notify.meteorError error, true if error
+    Meteor.call 'add-to-library', @_parent._id, collection._id, (error, count) =>
+      # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
+      return Notify.meteorError error, true if error
 
-        Notify.success "Publication removed from collection." if count
-
-    else
-      Meteor.call 'add-to-collection', collection._id, @_parent._id,  (error, count) =>
-        return Notify.meteorError error, true if error
-
-        Notify.success "Publication added to collection." if count
+      Notify.success "Publication added to the collection." if count
 
     return # Make sure CoffeeScript does not return anything
 
-Template.addToCollectionListing.countDescription = ->
-  return "0 publications" unless @publications
-  if @publications.length is 1 then "1 publication" else "#{@publications.length} publications"
+  'click .remove-from-collection': (e, template) ->
+    return unless Meteor.personId()
+
+    collection = template.data
+
+    Meteor.call 'remove-from-library', @_parent._id, collection._id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication removed from the collection." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionListing.countDescription
 
 Template.publicationDisplay.cached = ->
   publicationSubscribing() # To register dependency

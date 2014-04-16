@@ -45,57 +45,6 @@ class @Person extends Person
       publications: 1
       library: 1
 
-Meteor.methods
-  'add-to-library': (publicationId) ->
-    check publicationId, String
-
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
-
-    publication = Publication.documents.findOne publicationId
-    throw new Meteor.Error 400, "Invalid publication id." unless publication?.hasReadAccess person
-
-    Person.documents.update
-      '_id': Meteor.personId()
-    ,
-      $addToSet:
-        library:
-          _id: publicationId
-
-  'remove-from-library': (publicationId) ->
-    check publicationId, String
-
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
-
-    publication = Publication.documents.findOne publicationId
-    throw new Meteor.Error 400, "Invalid publication id." unless publication?.hasReadAccess person
-
-    # Remove from collections
-    Collection.documents.update
-      $and: [
-        'author._id': person._id
-      ,
-        'publications._id': publicationId
-      ]
-    ,
-      $set:
-        updatedAt: moment.utc().toDate()
-      $pull:
-        publications:
-          _id: publicationId
-    ,
-      multi: true
-
-    # Remove from library
-    Person.documents.update
-      '_id': Meteor.personId()
-    ,
-      $pull:
-        library:
-          _id: publicationId
-
-
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, String
 
