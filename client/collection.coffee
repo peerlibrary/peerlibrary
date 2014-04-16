@@ -32,7 +32,12 @@ Template.collectionPublications.publications = ->
 
 Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
-  return unless collection?.author._id is Meteor.personId()
+
+  # Do not proceed if user is not collection author
+  if collection?.author._id isnt Meteor.personId()
+    # Remove sortable functionality in case it was previously enabled
+    $(@findAll '.collection-publications').sortable "destroy"
+    return
 
   $(@findAll '.collection-publications').sortable
     opacity: 0.5

@@ -3,6 +3,9 @@ Deps.autorun ->
 
     currentUserId = Meteor.personId()
 
+    # Redirect to frontpage if the user is not logged in
+    Meteor.Router.toNew Meteor.Router.indexPath() unless currentUserId
+
     Meteor.subscribe 'persons-by-id-or-slug', currentUserId
 
     Meteor.subscribe 'my-publications'

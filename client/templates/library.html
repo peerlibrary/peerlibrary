@@ -1,8 +1,10 @@
 <template name="library">
+  {{#if currentUser}}
     <div class="row">
       {{> libraryPublications}}
       {{> collections}}
     </div>
+  {{/if}}
 </template>
 
 <template name="libraryPublications">
