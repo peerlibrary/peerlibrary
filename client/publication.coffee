@@ -512,9 +512,9 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'add-to-library', @_id, (error, count) =>
-        return Notify.meteorError error, true if error
+      return Notify.meteorError error, true if error
 
-        Notify.success "Publication added to the library." if count
+      Notify.success "Publication added to the library." if count
 
     return # Make sure CoffeeScript does not return anything
 
