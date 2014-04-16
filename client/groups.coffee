@@ -13,7 +13,7 @@ Template.groups.groups = ->
 
   selector = {}
 
-  #TODO: Move filtering of the groups to server, escape query
+  # TODO: Move filtering of the groups to server, escape query
   if groupSearchQuery
     selector =
       name:
@@ -53,7 +53,7 @@ Template.groups.events
     return # Make sure CoffeeScript does not return anything
 
 Template.groupListing.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{@membersCount} members"
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
 Template.myGroups.myGroups = ->
   Group.documents.find

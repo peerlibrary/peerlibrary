@@ -1,0 +1,63 @@
+<template name="library">
+  {{#if currentUser}}
+    <div class="row">
+      {{> libraryPublications}}
+      {{> collections}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="libraryPublications">
+  <div class="col12">
+    <h1>Library</h1>
+    <ol class="library-publications item-list">
+      {{#each myPublications}}
+        {{> publicationSearchResult}}
+      {{/each}}
+    </ol>
+  </div>
+</template>
+
+<template name="collections">
+  <div class="library-collections-wrapper">
+    <div class="col4 push12 library-collections">
+      <h2>Collections</h2>
+      {{#if myCollections.count}}
+        <ol class="item-list collections-list">
+          {{#each myCollections}}
+            {{> collectionListing}}
+          {{/each}}
+        </ol>
+        <p class="drag-publications-hint hint">
+          Drag and drop publications to add them to collections.
+        </p>
+      {{else}}
+        {{> noCollections}}
+      {{/if}}
+      {{> addNewCollection}}
+    </div>
+  </div>
+</template>
+
+<template name="collectionListing">
+  <li class="collection-listing" data-collection-id="{{_id}}">
+    <h3 class="collection-name">
+      <a href="{{collectionPath _id slug}}">
+        {{name}}
+      </a>
+    </h3>
+    <span class="publications-count">{{countDescription}}</span>
+  </li>
+</template>
+
+<template name="noCollections">
+  <p class="no-collections">You don't have any collections. Create one below.</p>
+</template>
+
+<template name="addNewCollection">
+  <h3>Create a new collection</h3>
+  <form class="add-collection input-and-button">
+    <input type="text" class="name" placeholder="Collection name" />
+    <button type="submit" class="add">Create</button>
+  </form>
+</template>

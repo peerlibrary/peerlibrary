@@ -6,6 +6,8 @@
     background none
     font-weight 300
 
+/* TODO: Unify form controls across the platform, https://github.com/peerlibrary/peerlibrary/issues/370 */
+
 .input-and-button
   display table
   width 100%
@@ -39,3 +41,14 @@
   box-sizing border-box
   font-weight 300
   background-color white
+
+.only-button
+  display inline-block
+  border none
+  color white
+  padding 10px
+  background-color blue
+  box-sizing border-box
+
+.only-button:hover
+  background-color blue-accent

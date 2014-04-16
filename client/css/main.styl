@@ -127,3 +127,27 @@ section .simple
 
 .clearfix
   *zoom 1
+
+/* Hints
+======== */
+.hint
+  font-style italic
+  opacity 0.7
+
+/* Grid correction
+================== */
+
+/* Current grid implementation uses the overflow:auto trick to resize the container (row) to all its floated
+   children (cols). This is a problem for overlays (popups) that need to expand beyond the content.
+
+   The overflow:auto trick was designed to overcome explorer's lack of pseudo-elements. Since this is not an issue for us,
+   we correct the grid behavior to use an ::after element that clears the floats and resizes the container. */
+
+.row
+  overflow visible
+
+.row::after
+  content ""
+  display block
+  clear both
+

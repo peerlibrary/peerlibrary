@@ -1,0 +1,41 @@
+<template name="collection">
+  <h1>{{collection.name}}</h1>
+  <div class="row">
+    {{> collectionPublications collection}}
+    {{> collectionDetails collection}}
+  </div>
+</template>
+
+<template name="collectionPublications">
+  <div class="col12">
+    <ol class="collection-publications item-list">
+      {{#each publications}}
+        {{> publicationSearchResult}}
+      {{/each}}
+    </ol>
+  </div>
+</template>
+
+<template name="collectionDetails">
+  <div class="col4 push12 collection-details">
+    <h2>Collection by</h2>
+    <div class="member person">
+      <img src="{{author.avatar}}" class="avatar" />
+      <h4 class="member-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
+    </div>
+    {{#if ownCollection}}
+      <h3>Tools</h3>
+      <p>
+        <button class="only-button delete-collection">Delete collection</button>
+        {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
+        {{! TODO: Remove all publications from collection }}
+      </p>
+      <p class="hint">
+        You can reorder publications in a collection by dragging them.
+      </p>
+      <p class="back-to-library">
+        <a href="{{libraryPath}}">Back to Library</a>
+      </p>
+    {{/if}}
+  </div>
+</template>

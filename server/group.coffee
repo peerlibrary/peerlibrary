@@ -84,7 +84,6 @@ Meteor.methods
     # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
 
     # TODO: Should be allowed also if user is admin
-    # TODO: Should check if memberId is a valid one?
 
     member = Person.documents.findOne
       _id: memberId
@@ -114,10 +113,7 @@ Meteor.methods
 
     # We do not check here if group exists or if user is a member of it because we have query below with these conditions
 
-    # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
-
     # TODO: Should be allowed also if user is admin
-    # TODO: Should check if memberId is a valid one?
 
     member = Person.documents.findOne
       _id: memberId
@@ -149,5 +145,5 @@ Meteor.publish 'groups-by-id', (id) ->
     Group.PUBLIC_FIELDS()
 
 Meteor.publish 'groups', ->
-  #TODO: Return a subset of groups with pagination and provide extra methods for server side group searching. See https://github.com/peerlibrary/peerlibrary/issues/363
+  # TODO: Return a subset of groups with pagination and provide extra methods for server side group searching. See https://github.com/peerlibrary/peerlibrary/issues/363
   Group.documents.find {}, Group.PUBLIC_LISTING_FIELDS()
