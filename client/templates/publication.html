@@ -13,7 +13,9 @@
       <div class="viewer">
         {{#with publication}}
           {{> publicationMetaMenu}}
-          {{> publicationLibraryMenu}}
+          {{#if currentUser}}
+            {{> publicationLibraryMenu}}
+          {{/if}}
         {{/with}}
         {{> publicationScroller}}
         {{> publicationDisplay}}

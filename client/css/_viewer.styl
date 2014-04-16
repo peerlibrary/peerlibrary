@@ -180,6 +180,10 @@ meta-menu-icon-font-size = 20px
     border-radius 2px
     z-index 60
 
+/* The size of the scroller depends on the presence of the library menu (which is shown only for logged in users). */
+.logged-out .scroller
+  top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
+
 /* Viewer
 ========= */
 
