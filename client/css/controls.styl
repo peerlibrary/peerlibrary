@@ -1,12 +1,88 @@
 @import 'variables.import'
 
+/* Search bar
+============= */
 .search-bar
   input
     border none
     background none
     font-weight 300
 
-/* TODO: Unify form controls across the platform, https://github.com/peerlibrary/peerlibrary/issues/370 */
+/* Sidebar
+========== */
+.sidebar
+  position relative
+  padding 10px
+  padding-bottom 30px
+  border-left 1px solid #dee7e9
+
+  h3
+    font-weight 300
+    margin-top 0
+
+  label
+    display block
+    margin-bottom 10px
+    font-size 0.9em
+    font-weight 300
+
+  select
+    width 241px
+
+  input, button
+    display block
+    width 227px
+    padding 5px
+    font-size 13px
+    border 1px solid box-shadow-border
+    transition all 0.2s
+
+  input:focus
+    border 1px solid #a1b3c2
+
+  button
+    padding 6px
+    background-color box-shadow-background
+
+  button:hover
+    background-color box-shadow-border
+
+  .input-and-button
+    input
+      border-right none
+
+.context-menu
+  input, button
+    display block
+    padding 8px 12px
+    border none
+    box-sizing border-box
+    font-weight 300
+    font-size 13px
+    transition all 0.2s
+    border-radius 2px
+
+  input
+    width 100%
+    padding 7px 12px
+    background-color white
+
+  button
+    color white
+    background-color rgba(120,120,120,0.9)
+
+  button:hover
+    background-color rgba(80,80,80,0.9)
+
+  .input-and-button
+    input
+      border-radius 2px 0 0 2px
+
+    button
+      border-radius 0 2px 2px 0
+
+/* Layouts
+========== */
 
 .input-and-button
   display table
@@ -14,41 +90,10 @@
 
   input
     display table-cell
-    width 70%
-    padding 10px
-    border none
     box-sizing border-box
-    font-weight 300
-    background-color white
+    width 70%
 
   button
     display table-cell
-    border none
-    color white
-    width 30%
-    padding 10px
-    background-color blue
     box-sizing border-box
-
-  button:hover
-    background-color blue-accent
-
-.only-input
-  display block
-  width 100%
-  padding 10px
-  border none
-  box-sizing border-box
-  font-weight 300
-  background-color white
-
-.only-button
-  display inline-block
-  border none
-  color white
-  padding 10px
-  background-color blue
-  box-sizing border-box
-
-.only-button:hover
-  background-color blue-accent
+    width 30%

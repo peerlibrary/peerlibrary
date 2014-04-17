@@ -17,7 +17,7 @@
 </template>
 
 <template name="collectionDetails">
-  <div class="col4 push12 collection-details">
+  <div class="col4 push12 sidebar collection-details">
     <h2>Collection by</h2>
     <div class="member person">
       <img src="{{author.avatar}}" class="avatar" />
@@ -26,7 +26,7 @@
     {{#if ownCollection}}
       <h3>Tools</h3>
       <p>
-        <button class="only-button delete-collection">Delete collection</button>
+        <button class="delete-collection">Delete collection</button>
         {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
         {{! TODO: Remove all publications from collection }}
       </p>
