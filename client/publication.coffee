@@ -633,6 +633,11 @@ viewportBottomPercentage = ->
   scrollBottom = $(window).scrollTop() + availableHeight
   makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
 
+debouncedSetCurrentViewport = _.debounce (viewport) ->
+  currentViewport.set viewport
+,
+  100
+
 setViewportPosition = ($viewport) ->
   top = viewportTopPercentage()
   bottom = viewportBottomPercentage()
@@ -650,7 +655,7 @@ setViewportPosition = ($viewport) ->
     height: "#{ bottom - top }%"
 
   displayHeight = $('.viewer .display-wrapper').height()
-  currentViewport.set
+  debouncedSetCurrentViewport
     top: top * displayHeight / 100
     bottom: bottom * displayHeight / 100
 
