@@ -38,7 +38,7 @@ Template.groups.events
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
-    name = $(template.findAll '.name').val()
+    name = $(template.findAll '.name').val().trim()
     return unless name
 
     Group.documents.insert

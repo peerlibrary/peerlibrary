@@ -49,7 +49,7 @@ Template.addNewCollection.events
   'submit .add-collection': (e, template) ->
     e.preventDefault()
 
-    name = $(template.findAll '.name').val()
+    name = $(template.findAll '.name').val().trim()
     return unless name
 
     Collection.documents.insert
