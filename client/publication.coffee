@@ -133,15 +133,10 @@ class @Publication extends Publication
 
             # TODO: We currently change this based on the width of the last page, but pages might not be of same width, what can we do then?
 
-            # We store current display wrapper width because we will later on
-            # reposition annotations for the ammount display wrapper width changes
-            displayWidth = @_$displayWrapper.width()
             # We remove all added CSS in publication destroy
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
-            # We reposition annotations if display wrapper width changed
-            $('.annotations-control, .annotations-list').css
-              left: "+=#{ viewport.width - displayWidth }"
+            resizeAnnotationsControl()
 
             $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
 
@@ -787,6 +782,16 @@ Template.annotationsControl.events
     Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
+
+resizeAnnotationsControl = ->
+  padding = parseInt($('.annotations-control').css('right'))
+  displayWrapper = $('.display-wrapper')
+  left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
+  $('.annotations-control, .annotations-list').css
+    left: left
+
+Template.annotationsControl.rendered = ->
+  resizeAnnotationsControl()
 
 Template.publicationAnnotations.annotations = ->
   viewport = currentViewport()
