@@ -38,8 +38,11 @@ Template.groups.events
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
+    name = $(template.findAll '.name').val()
+    return unless name
+
     Group.documents.insert
-      name: $(template.findAll '.name').val()
+      name: name
       members: [
         _id: Meteor.personId()
       ]
@@ -48,7 +51,6 @@ Template.groups.events
         return Notify.meteorError error, true if error
 
         Notify.success "Group created."
-        Meteor.Router.toNew Meteor.Router.groupPath id
 
     return # Make sure CoffeeScript does not return anything
 

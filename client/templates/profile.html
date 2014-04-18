@@ -1,15 +1,13 @@
 <template name="profile">
   {{#if person}}
-    <div id="profile">
-      <h1>{{person.displayName}}</h1>
-      {{#if authoredPublications.count}}
-        <h2>Publications</h2>
-        <ol class="item-list">
-          {{#each authoredPublications}}
-            {{> publicationSearchResult}}
-          {{/each}}
-        </ol>
-      {{/if}}
-    </div>
+    <h1>{{person.displayName}}</h1>
+    {{#if authoredPublications.count}}
+      <h2>Publications</h2>
+      <ol class="item-list">
+        {{#each authoredPublications}}
+          {{> publicationSearchResult}}
+        {{/each}}
+      </ol>
+    {{/if}}
   {{/if}}
 </template>
