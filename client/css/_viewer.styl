@@ -576,19 +576,26 @@ annotations-control-height = 28px
         width 100%
 
         .remove-button:hover
-          color blue-accent
+          color #ccc
 
     .add-control
       background white
       color black
 
-      .member:last-of-type
-        margin-bottom 0
-
       .add-button
         display block
         width 100%
         color black
+        padding 5px
+        margin-bottom 0
+        background none
+        text-align left
+
+        .member
+          margin 0
+
+      .add-button:hover
+        background-color rgba(120,120,120,0.5)
 
       .access-results
         margin-bottom 0
