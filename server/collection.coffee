@@ -20,7 +20,7 @@ Collection.Meta.collection.allow
     # TODO: Check whether inserted document conforms to schema
     # TODO: Check that author really has access to the publication
 
-    return false unless userId
+    return false unless userId and doc.name
 
     personId = Meteor.personId userId
 

@@ -41,7 +41,7 @@
 </template>
 
 <template name="myGroups">
-  <div class="col4 push12 my-groups">
+  <div class="col4 push12 sidebar my-groups">
     {{#if myGroups.count}}
       <h2>My Groups</h2>
       <ul class="groups-list">
@@ -50,7 +50,7 @@
         {{/each}}
       </ul>
     {{/if}}
-    <h2>Create a new group</h2>
+    <h3>Create a new group</h3>
     <form class="add-group input-and-button">
       <input type="text" class="name" placeholder="Group name" />
       <button type="submit" class="add">Create</button>

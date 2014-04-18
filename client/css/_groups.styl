@@ -28,11 +28,14 @@ section.groups
   margin 10px 0 10px 1px
   border-radius 2px
   box-shadow 0 0 0 1px box-shadow-border
+  transition box-shadow 0.2s
 
   h2
     margin: 0 0 0.2em 0
 
-.my-groups
+.group-listing:hover
+  box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+.my-groups.sidebar
   box-sizing border-box
   padding 0 0 30px 10px
-  border-left 1px solid #dee7e9

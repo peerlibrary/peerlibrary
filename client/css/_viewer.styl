@@ -21,7 +21,7 @@ section.publication
 ============ */
 
 /* Have to be defined here because we are using them in meta menu as well */
-scroller-width = 64px
+scroller-width = 60px
 scroller-left = 12px
 scroller-bottom = 20px
 
@@ -32,7 +32,7 @@ meta-menu-margin = 20px
 meta-menu-outer-width = meta-menu-width + 2 * meta-menu-padding
 meta-menu-outer-height = meta-menu-height + 2 * meta-menu-padding
 meta-menu-top = header-height + 15px
-meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+meta-menu-left = scroller-left + (scroller-width - meta-menu-outer-width) / 2
 meta-menu-icon-font-size = 20px
 
 .meta-menu
@@ -96,23 +96,14 @@ meta-menu-icon-font-size = 20px
   top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
 
   .icon
+    display inline-block
     font-size 20px
     color white
+    vertical-align top
 
   .library-menu-button
     display none
-    border none
-    border-radius 2px
-    background none
-    font-size 13px
-    color white
-    padding 8px
-    text-align left
-    white-space nowrap
-    transition padding 0.2s
-
-  .library-menu-button:hover
-     background overlay-translucent
+    margin-left 5px
 
 .library-menu:hover
   z-index 101
@@ -124,6 +115,7 @@ meta-menu-icon-font-size = 20px
   list-style none
   padding 10px
   background-color rgba(120,120,120,0.9)
+  border-radius 2px
 
   .library-menu-collection
     button
@@ -165,10 +157,17 @@ meta-menu-icon-font-size = 20px
 
   .section
     position absolute
-    width 48px
-    left 8px
+    width meta-menu-outer-width
+    left ((scroller-width - meta-menu-outer-width - 2) / 2)
     background #eee
     border: 1px solid light-grey
+    cursor pointer
+
+  .section:first-of-type
+    border-radius 3px 3px 0 0
+
+  .section:last-of-type
+    border-radius 0 0 3px 3px
 
   .section:hover
     background rgba(46,46,44,0.12)
@@ -176,9 +175,10 @@ meta-menu-icon-font-size = 20px
   .viewport
     position absolute
     width 100%
-    background rgba(46,46,44,0.12)
+    background rgba(0,0,0,0.15)
     border-radius 2px
     z-index 60
+    cursor ns-resize
 
 /* The size of the scroller depends on the presence of the library menu (which is shown only for logged in users). */
 .logged-out .scroller
@@ -520,7 +520,7 @@ annotations-control-height = 28px
 /* Access
 ========= */
 
-.access-panel
+.access-menu
   background-color rgba(120,120,120,0.9)
   border-radius 2px
 
@@ -564,15 +564,19 @@ annotations-control-height = 28px
   .private-access-control
     padding 10px
 
-    .access-list
-      display inline
+    .private-access-control-members
+      .access-list
+        display inline
 
-      button:hover
-        color white
+        button:hover
+          color white
 
-    .member
-      display block
-      width 100%
+      .member
+        display block
+        width 100%
+
+        .remove-button:hover
+          color blue-accent
 
     .add-control
       background white
@@ -584,6 +588,7 @@ annotations-control-height = 28px
       .add-button
         display block
         width 100%
+        color black
 
       .access-results
         margin-bottom 0
@@ -592,7 +597,7 @@ annotations-control-height = 28px
       padding 0 10px 10px
       font-weight 300
 
-.meta-menu .access-panel .private-access-control
+.meta-menu .access-menu .private-access-control
   .member
     display inline-block
     width auto

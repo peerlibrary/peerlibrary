@@ -16,7 +16,7 @@ ol.item-list
     padding 20px
     margin 10px 0
     border-radius 2px
-    box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+    box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
 
     .library-menu
@@ -30,6 +30,9 @@ ol.item-list
       border-radius 0 0 2px 2px
       min-height 0
 
+      .library-menu-button:first-of-type
+        margin-top 5px
+
       .icon
         float right
         font-size 16px
@@ -41,7 +44,7 @@ ol.item-list
       right 0
 
   li.result-item:hover
-    box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+    box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
     .library-menu
       display block

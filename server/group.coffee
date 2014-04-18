@@ -27,7 +27,7 @@ Group.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
 
-    return false unless userId
+    return false unless userId and doc.name
 
     personId = Meteor.personId userId
 

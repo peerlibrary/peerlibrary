@@ -1,5 +1,5 @@
 <template name="accessControl">
-  <div class="access-panel">
+  <div class="access-menu context-menu">
     <form class="access {{documentName}}-access">
       <div class="selections">
 
@@ -31,21 +31,23 @@
 </template>
 
 <template name="privateAccessControlList">
-  <ol class="access-list access-list-users member-list">
-    {{#each readPersonsList}}
-      {{>personMember}}
-    {{/each}}
-  </ol>
-  <ol class="access-list access-list-groups member-list">
-    {{#each readGroupsList}}
-      {{>groupMember}}
-    {{/each}}
-  </ol>
+  <div class="private-access-control-members">
+    <ol class="access-list access-list-users member-list">
+      {{#each readPersonsList}}
+        {{>personMember}}
+      {{/each}}
+    </ol>
+    <ol class="access-list access-list-groups member-list">
+      {{#each readGroupsList}}
+        {{>groupMember}}
+      {{/each}}
+    </ol>
+  </div>
 </template>
 
 <template name="privateAccessControlAdd">
   <div class="add-control">
-    <input type="text" class="add-access only-input" placeholder="Add users or groups" />
+    <input type="text" class="add-access" placeholder="Add users or groups" />
     {{> privateAccessControlNoResults}}
     {{> privateAccessControlResults}}
     {{> privateAccessControlLoading}}
