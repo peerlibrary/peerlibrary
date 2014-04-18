@@ -3,11 +3,12 @@
 <svg xmlns="http://www.w3.org/2000/svg">
 <metadata>Copyright (C) 2014 by original authors @ fontello.com</metadata>
 <defs>
-<font id="pl_bookmark" horiz-adv-x="1000" >
-<font-face font-family="pl_bookmark" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<font id="glyph2" horiz-adv-x="1000" >
+<font-face font-family="glyph2" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
 <missing-glyph horiz-adv-x="1000" />
 <glyph glyph-name="bookmark" unicode="&#xe800;" d="m650 779q12 0 24-5 19-8 29-23t11-35v-719q0-19-11-35t-29-23q-10-4-24-4-27 0-47 18l-246 236-246-236q-20-19-46-19-13 0-25 5-18 7-29 23t-11 35v719q0 19 11 35t29 23q12 5 25 5h585z" horiz-adv-x="714.3" />
 <glyph glyph-name="bookmark-empty" unicode="&#xe801;" d="m643 707h-572v-693l237 227 49 47 50-47 236-227v693z m7 72q12 0 24-5 19-8 29-23t11-35v-719q0-19-11-35t-29-23q-10-4-24-4-27 0-47 18l-246 236-246-236q-20-19-46-19-13 0-25 5-18 7-29 23t-11 35v719q0 19 11 35t29 23q12 5 25 5h585z" horiz-adv-x="714.3" />
+<glyph glyph-name="group" unicode="&#xe802;" d="m0 106l0 134q0 26 18 32l171 80q-66 39-68 131 0 56 35 103 37 41 90 43 31 0 63-19-49-125 23-237-12-11-25-19l-114-55q-48-23-52-84l0-143-114 0q-25 0-27 34z m193-59l0 168q0 27 22 37l152 70 57 28q-37 23-60 66t-22 94q0 76 46 130t110 54 109-54 45-130q0-106-78-158l61-30 146-70q24-10 24-37l0-168q-2-37-37-41l-541 0q-14 2-24 14t-10 27z m473 330q68 106 22 231 31 19 66 21 49 0 90-43 35-41 35-103 0-82-65-131l168-80q18-10 18-32l0-134q0-32-27-34l-118 0 0 143q0 57-50 84l-110 53q-15 8-29 25z" horiz-adv-x="1000" />
 </font>
 </defs>
 </svg>

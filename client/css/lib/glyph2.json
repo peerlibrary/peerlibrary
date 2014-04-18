@@ -1,6 +1,6 @@
 {
-  "name": "pl_bookmark",
-  "css_prefix_text": "icon-",
+  "name": "glyph2",
+  "css_prefix_text": "icon2-",
   "css_use_suffix": false,
   "hinting": true,
   "units_per_em": 1000,
@@ -17,6 +17,12 @@
       "css": "bookmark-empty",
       "code": 59393,
       "src": "fontawesome"
+    },
+    {
+      "uid": "e36d581e4f2844db345bddc205d15dda",
+      "css": "group",
+      "code": 59394,
+      "src": "elusive"
     }
   ]
 }
