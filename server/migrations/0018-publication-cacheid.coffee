@@ -32,15 +32,13 @@ class Migration extends Document.MajorMigration
             return callback error if error
             return callback null unless count
 
-            try
+            Meteor.bindEnvironment(=>
               if document.source is 'arXiv'
                 Storage.link oldFilename, newFilename
               else
                 Storage.rename oldFilename, newFilename
-            catch error
-              return callback error
-
-            callback null
+              callback null
+            , callback)()
       ,
         =>
           document
@@ -67,15 +65,13 @@ class Migration extends Document.MajorMigration
             return callback error if error
             return callback null unless count
 
-            try
+            Meteor.bindEnvironment(=>
               if document.source is 'arXiv'
                 Storage.remove newFilename
               else
                 Storage.rename newFilename, oldFilename
-            catch error
-              return callback error
-
-            callback null
+              callback null
+            , callback)()
       ,
         =>
           document

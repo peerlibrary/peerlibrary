@@ -39,7 +39,8 @@ class @Storage extends Storage
   @link: (existingFilename, newFilename) ->
     newPath = @_fullPath newFilename
     @_assurePath newPath
-    fs.symlinkSync @_fullPath(existingFilename), newPath
+    existingPath = @_fullPath existingFilename
+    fs.symlinkSync path.relative(path.dirname(newPath), existingPath), newPath
 
   @remove: (filename) ->
     fs.unlinkSync @_fullPath filename
