@@ -15,7 +15,7 @@ class Migration extends Document.MajorMigration
   forward: (db, collectionName, currentSchema, newSchema, callback) =>
     db.collection collectionName, Meteor.bindEnvironment (error, collection) =>
       return callback error if error
-      cursor = collection.find {_schema: currentSchema, cached: {$exists: true}, cachedId: {$exists: false}}, {source: 1, foreignId: 1}
+      cursor = collection.find {_schema: currentSchema, cachedId: {$exists: false}}, {cached: 1, source: 1, foreignId: 1}
       document = null
       async.doWhilst Meteor.bindEnvironment((callback) =>
           cursor.nextObject Meteor.bindEnvironment (error, doc) =>
@@ -33,10 +33,11 @@ class Migration extends Document.MajorMigration
               return callback null unless count
 
               Meteor.bindEnvironment(=>
-                if document.source is 'arXiv'
-                  Storage.link oldFilename, newFilename
-                else
-                  Storage.rename oldFilename, newFilename
+                if document.cached
+                  if document.source is 'arXiv'
+                    Storage.link oldFilename, newFilename
+                  else
+                    Storage.rename oldFilename, newFilename
                 callback null
               , callback)()
             , callback
@@ -55,7 +56,7 @@ class Migration extends Document.MajorMigration
   backward: (db, collectionName, currentSchema, oldSchema, callback) =>
     db.collection collectionName, Meteor.bindEnvironment (error, collection) =>
       return callback error if error
-      cursor = collection.find {_schema: currentSchema, cached: {$exists: true}, cachedId: $exists: true}, {cachedId: 1, source: 1, foreignId: 1}
+      cursor = collection.find {_schema: currentSchema, cachedId: $exists: true}, {cached: 1, cachedId: 1, source: 1, foreignId: 1}
       document = null
       async.doWhilst Meteor.bindEnvironment((callback) =>
           cursor.nextObject Meteor.bindEnvironment (error, doc) =>
@@ -71,11 +72,12 @@ class Migration extends Document.MajorMigration
               return callback null unless count
 
               Meteor.bindEnvironment(=>
-                if document.source is 'arXiv'
-                  Storage.remove newFilename
-                else
-                  Storage.rename newFilename, oldFilename
-                callback null
+                if document.cached
+                  if document.source is 'arXiv'
+                    Storage.remove newFilename
+                  else
+                    Storage.rename newFilename, oldFilename
+                  callback null
               , callback)()
             , callback
           , callback
