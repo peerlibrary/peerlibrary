@@ -82,7 +82,6 @@ meta-menu-icon-font-size = 20px
 .meta-menu:hover, .meta-menu.displayed
   background overlay-translucent
   width 300px
-  min-height 420px
   height auto
   z-index 101
 
@@ -112,37 +111,10 @@ meta-menu-icon-font-size = 20px
     display inline-block
 
 .library-menu-collections
-  list-style none
-  padding 10px
-  background-color rgba(120,120,120,0.9)
-  border-radius 2px
-
-  .library-menu-collection
-    button
-      background none
-      border none
-      border-radius 2px
-      color white
-      width 100%
-      text-align left
-      padding 10px 10px 10px 30px
-      position relative
-
-      .publications-count
-        font-weight 300
-        font-size 12px
-        margin-left 10px
-
-    button:hover
-      background overlay-translucent
-
-    .remove-from-collection
-      .collection-name:before
-        content "✓"
-        position absolute
-        left 0
-        width 30px
-        text-align center
+  .publications-count
+    font-weight 300
+    font-size 12px
+    margin-left 10px
 
 /* Scroller
 =========== */
@@ -346,26 +318,28 @@ annotations-control-height = 28px
   background #cececf
   border-radius 2px
   height annotations-control-height
-  z-index 90
+  z-index 91
   position fixed
   left annotations-left
   right annotations-right
   top meta-menu-top
 
-  .add
+  .control
     background #cececf
     border none
     border-radius 2px
-    font-size 20px
     color white
     width 28px
     height 28px
     padding 0
 
-  .add:hover
+  .add
+    font-size 20px
+
+  .control:hover
     background overlay-translucent
 
-  .add:active, .add:focus
+  .control:active, .control:focus
     outline none
     border none
 
@@ -517,101 +491,61 @@ annotations-control-height = 28px
         display table-cell
         vertical-align middle
 
-/* Access
-========= */
+/* Context menu
+=============== */
 
-.access-menu
-  background-color rgba(120,120,120,0.9)
-  border-radius 2px
+.context-menu.meta-menu
+  position absolute
+  top 0
+  left 28px
+  height annotations-control-height
+  width 70px
+  padding 3px 5px
+  box-sizing border-box
 
-  .access
+  .icons
+    white-space nowrap
+    font-size 17px
+    height annotations-control-height
 
-    .selections
-      display table
-      border-collapse separate
-      border-spacing 10px
-      width 100%
+    > *
+      display inline-block
+      vertical-align middle
 
-      input
-        display none
+    .icon-public, .icon-private
+      width 27px
 
-      .selection
-        display table-cell
-        width 33%
-        padding 10px
-        background none
-        text-align center
-        cursor pointer
-        transition 0.2s
-        border-radius 2px
+    .icon-public
+      font-size 19px
+      position relative
+      top -1px
+      left -2px
 
-        i
-          display block
-          margin-bottom 10px
-          cursor pointer
+    .group-count
+      font-size 13px
 
-      .selection:hover, .selection.selected
-        background-color rgba(200,200,200,0.7)
+  .meta-content
+    padding 10px 10px 12px
 
-    .description
-      padding 10px
-      text-align center
-      display none
+  .context-menu-groups
+    .toggle-list
+      background none
+      margin-bottom 0
 
-    .displayed.description
-      display block
-
-  .private-access-control
-    padding 10px
-
-    .private-access-control-members
-      .access-list
-        display inline
-
-        button:hover
-          color white
-
-      .member
-        display block
-        width 100%
-
-        .remove-button:hover
-          color #ccc
-
-    .add-control
-      background white
-      color black
-
-      .add-button
-        display block
-        width 100%
-        color black
-        padding 5px
-        margin-bottom 0
-        background none
-        text-align left
-
-        .member
-          margin 0
-
-      .add-button:hover
-        background-color rgba(120,120,120,0.5)
-
-      .access-results
-        margin-bottom 0
-
-    .add-control-results
-      padding 0 10px 10px
+    .members-count
       font-weight 300
+      font-size 12px
+      margin-left 10px
 
-.meta-menu .access-menu .private-access-control
-  .member
-    display inline-block
-    width auto
+  .hint
+    margin-bottom 0
 
-  .add-control .member
-    display block
-    width 100%
+.context-menu.meta-menu.no-groups
+  width 33px
+
+.context-menu.meta-menu:hover
+  width 250px
+  height auto
 
 /* Footer
 ========= */

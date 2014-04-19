@@ -77,7 +77,7 @@
 <template name="publicationLibraryMenuCollections">
   <h3>Add to collections</h3>
   {{#if myCollections.length}}
-    <ol class="library-menu-collections">
+    <ol class="library-menu-collections toggle-list">
       {{#each myCollections}}
         {{> publicationLibraryMenuCollectionListing}}
       {{/each}}
@@ -91,8 +91,8 @@
 </template>
 
 <template name="publicationLibraryMenuCollectionListing">
-  <li class="library-menu-collection">
-    <button class="{{#if inCollection}}remove-from-collection{{else}}add-to-collection{{/if}}">
+  <li class="library-menu-collection toggle-list-item">
+    <button class="{{#if inCollection}}remove-from-collection toggled{{else}}add-to-collection{{/if}}">
       <span class="collection-name">{{name}}</span>
       <span class="publications-count">{{countDescription}}</span>
     </button>
@@ -241,8 +241,8 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    <button class="icon-plus add" title="Add an annotation"></button>
-    <template name=""
+    <button class="icon-plus add control" title="Add an annotation"></button>
+    {{> contextMenu}}
   </div>
 </template>
 
@@ -270,4 +270,68 @@
       {{> accessControl}}
     </div>
   </div>
+</template>
+
+<template name="contextMenu">
+  <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
+    <div class="icons">
+      {{#if public}}<i class="icon-public"></i>{{/if}}
+      {{#if private}}<i class="icon-private"></i>{{/if}}
+      {{#if selectedGroups.length}}
+        <i class="icon2-group"></i><span class="group-count">{{selectedGroups.length}}</span>
+      {{/if}}
+    </div>
+    <div class="meta-content">
+      <p>Choose defaults for new annotations.</p>
+      <div class="context-controls access-menu">
+        <form class="access {{documentName}}-access">
+          <div class="selections">
+
+            <label class="selection {{#if public}}selected{{/if}}">
+              <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+              <i class="icon-public"></i> Public
+            </label>
+
+            <label class="selection {{#if private}}selected{{/if}}">
+              <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+              <i class="icon-private"></i> Private
+            </label>
+
+          </div>
+          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be shared publicly.</div>
+          <div class="description private {{#if private}}displayed{{/if}}">New annotations will be visible to you and members of groups selected below.</div>
+        </form>
+      </div>
+      {{> contextMenuGroups}}
+      <p class="hint">You can always change and customize permissions for each annotation individually.</p>
+    </div>
+  </div>
+</template>
+
+<template name="contextMenuGroups">
+  {{#if myGroups.count}}
+    <h3>Notify {{#if private}}and share with{{/if}} groups</h3>
+    <div class="context-menu-groups access-menu">
+      <ol class="toggle-list">
+        {{#each myGroups}}
+          {{> contextMenuGroupListing}}
+        {{/each}}
+      </ol>
+      <div class="description displayed">
+        {{#if selectedGroups.length}}
+          Annotations will appear on the activity page of {{selectedGroupsDescription}}.
+        {{else}}
+          Select groups where annotations should appear under activity.
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="contextMenuGroupListing">
+  <li class="context-menu-group toggle-list-item">
+    <button class="{{#if workingIn}}remove-from-working-in toggled{{else}}add-to-working-in{{/if}}">
+      <span class="group-name">{{name}}</span>
+    </button>
+  </li>
 </template>

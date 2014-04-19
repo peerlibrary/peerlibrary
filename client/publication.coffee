@@ -26,6 +26,11 @@ currentViewport = new Variable
 # Variable containing currently realized (added to the DOM) highlights
 @currentHighlights = new KeysEqualityVariable {}
 
+Meteor.startup ->
+  Session.setDefault 'annotationDefaults',
+    access: Annotation.ACCESS.PUBLIC
+    groups: []
+
 class @Publication extends Publication
   @Meta
     name: 'Publication'
@@ -406,6 +411,7 @@ Deps.autorun ->
     publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+    Meteor.subscribe 'my-groups'
   else
     publicationSubscribing.set false
     publicationHandle = null
@@ -787,7 +793,7 @@ resizeAnnotationsControl = ->
   padding = parseInt($('.annotations-control').css('right'))
   displayWrapper = $('.display-wrapper')
   left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
-  $('.annotations-control, .annotations-list').css
+  $('.annotations-control').css
     left: left
 
 Template.annotationsControl.rendered = ->
@@ -1022,6 +1028,85 @@ Template.annotationMetaMenu.events
 Template.annotationMetaMenu.events addAccessEvents
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+
+Template.contextMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    defaults = Session.get 'annotationDefaults'
+    return if not defaults or access is defaults?.access
+
+    defaults.access = access
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseenter .access .selection': (e, template) ->
+    accessHover = $(e.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (e, template) ->
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenu.public = ->
+  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PUBLIC
+
+Template.contextMenu.private = ->
+  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PRIVATE
+
+Template.contextMenu.selectedGroups = ->
+  Session.get('annotationDefaults')?.groups
+
+Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+
+Template.contextMenuGroups.private = Template.contextMenu.private
+
+Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
+
+Template.contextMenuGroups.selectedGroupsDescription = ->
+  defaults = Session.get('annotationDefaults')
+  return unless defaults
+  if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
+
+Template.contextMenuGroups.events
+  'click .add-to-working-in': (e, template) ->
+    defaults = Session.get 'annotationDefaults'
+    return unless defaults
+
+    return if _.contains defaults.groups, @_id
+
+    console.log defaults
+    defaults.groups.push @_id
+
+    console.log defaults
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-from-working-in': (e, template) ->
+    defaults = Session.get 'annotationDefaults'
+    return unless defaults
+
+    return unless _.contains defaults.groups, @_id
+
+    console.log defaults
+    defaults.groups.splice defaults.groups.indexOf(@_id), 1
+    console.log defaults
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenuGroupListing.workingIn = ->
+  defaults = Session.get('annotationDefaults')
+  return unless defaults
+  _.contains defaults?.groups, @_id
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
