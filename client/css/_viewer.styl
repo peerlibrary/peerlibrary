@@ -160,8 +160,7 @@ meta-menu-icon-font-size = 20px
     width meta-menu-outer-width
     left ((scroller-width - meta-menu-outer-width - 2) / 2)
     background #eee
-    border: 1px solid light-grey
-    cursor pointer
+    border 1px solid light-grey
 
   .section:first-of-type
     border-radius 3px 3px 0 0
@@ -213,6 +212,8 @@ small-meta-menu-icon-font-size = 13px
 
       .content-background
         background rgba(255,255,255,1.0)
+        border-radius 2px
+        border 1px solid #e3e3e3
 
       .highlights-canvas, .content-background
         position absolute
@@ -340,34 +341,162 @@ small-meta-menu-icon-font-size = 13px
    then in code we update it to real width based on the PDF */
 annotations-left = viewer-left + display-page-loading-width + meta-menu-left
 annotations-right = meta-menu-left
-annotations-control-height = 28px
+annotations-control-height = 30px
 
 .annotations-control
   background #cececf
   border-radius 2px
   height annotations-control-height
-  z-index 90
   position fixed
   left annotations-left
   right annotations-right
   top meta-menu-top
+  z-index 200
 
-  .add
+  input
+    color #444
+ 
+  .add-button
     background #cececf
     border none
     border-radius 2px
     font-size 20px
     color white
-    width 28px
-    height 28px
+    width annotations-control-height
+    height annotations-control-height
     padding 0
 
-  .add:hover
+  .add-button:hover
     background overlay-translucent
 
-  .add:active, .add:focus
+  .add-button:active, .add-button:focus
     outline none
     border none
+
+.annotations-editor
+  height auto
+  z-index 90
+
+.annotations-form-wrapper, .annotations-editor-form-wrapper
+  .form-header
+    height 30px
+    margin 6px 0
+
+    .form-title
+      float left
+
+    .form-status
+      float right
+      display none
+
+      .display
+        display inline
+
+  .form-content
+    border 1px solid #e3e3e3
+    border-radius 2px
+
+    .format-toolbar
+      height 30px
+      position relative
+      display block
+      border-bottom 1px solid #e3e3e3
+      clear left
+
+      ul.format-buttons
+        list-style none
+        display block
+        padding 0
+        margin 0 auto
+
+        li
+          display inline-block
+          padding 8px
+          cursor pointer
+
+          i
+            color icon-gray
+
+        li:hover
+          i
+            color icon-gray-hover
+
+        /* Using the same color for now because this does not
+           work perfectly in Scribe */
+        li.active
+          i
+            color icon-gray
+
+        li.inactive, li.inactive:hover
+          i
+            color icon-gray-inactive
+
+    .form-body
+      height auto
+      min-height 60px
+      padding 0 12px
+      font-weight normal
+      background white
+
+      .annotation-content
+        min-height 100px
+        word-wrap break-word
+        color #444
+        line-height 1.4
+        font-size 14px
+        outline 0px solid transparent
+        margin 0
+
+    .form-tags
+      border-top 1px solid #e3e3e3
+      min-height 20px
+      padding 6px 14px
+
+      i
+        position absolute
+        margin 5px 0
+        color icon-gray
+
+      ul.annotation-tags, ul.annotation-tags-editor
+        font-size smaller
+        border 0
+        margin 0 0 0 24px
+
+  .form-control
+    height 34px
+    padding 18px 0 0 0
+
+    .visibility-menu
+      float right
+      margin 0 20px
+
+    button.save
+      margin-right 0
+      float right
+
+.annotations-editor-form-wrapper
+  padding 10px
+
+.annotations-editor.collapsed
+  .form-header
+    display none
+
+  .form-content
+    .format-toolbar
+      display none
+
+    .form-body
+      min-height 0
+
+      .annotation-content-editor
+        p
+          margin 6px 0
+
+  .form-tags
+    display none
+
+  .form-control
+    display none
 
 .annotations-list
   list-style none
@@ -386,76 +515,140 @@ annotations-control-height = 28px
      edge for 10px to the right and then add 10px right margin to each
      annotation */
   right annotations-right - 10px
-  top meta-menu-top + annotations-control-height + 10px
-  bottom 15px
+  top header-height + 15px + annotations-control-height
+  bottom 0
 
   .annotation
     position relative
     display block
-    background white
-    padding 20px
     /* To not crop the shadow of annotations we move the left edge
        for 5px to the left and then add 5px (in fact 6px, so that
        it looks better with our 1px shadow border) left margin to each
        annotation. Additionally, we add right margin to provide space
        for meta menu + 10px to not have scroll bar overlapping the
        content (we moved the right edge for 10px for that). */
-    margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px
+    /* margin 10px (small-meta-menu-width + 2 * small-meta-menu-padding + 5px + 10px) 10px 6px */
+    margin 10px 10px 10px 6px
 
-    /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-    border-radius 2px
-    box-shadow 0 0 0 1px box-shadow-border
-    transition 0.2s
+    .annotation-wrapper
+      position relative
+      display block
+      background white
+      margin 0 0 0 48px
+      border-radius 2px
+      box-shadow 0 0 0 1px box-shadow-border
+      transition 0.2s
 
-    .avatar
-      width 24px
-      height 24px
-      margin 0
-      display inline-block
+      .annotation-footer
+        padding 10px
+        color #777
+        background-color #f7f7f7
+        border-top 1px solid #e3e3e3
 
-    .author-name
-      margin 0 0 12px 6px
-      display inline-block
- 
-    .body[contenteditable=true]:focus
-      outline none
+        .avatar
+          width 30px
+          height 30px
+          margin 0
+          border-radius 4px
+          display inline-block
 
-    .body:empty:not(:focus):before
-      content attr(data-placeholder)
-      color #cececf
-      font-style italic
+        .author-name
+          margin 0 10px
+          display inline-block
 
-    .saved
-      position absolute
-      right 4px
-      bottom 2px
-      color #cececf
-      transition opacity .5s ease-in-out
+        .timestamp
+          color #444
 
-      /* Initially hidden. To show "Saved" notification, change the opacity. */
-      opacity 0
+        .edit-button, .cancel-button
+          display inline-block
+          margin 5px
+          float right
 
-    .saved.display
-      opacity 1
+      .annotation-content
+        padding 5px 15px
+
+        .body[contenteditable=true]:focus
+          outline none
+
+        .tags .tagit-new
+          display none
+
+      .saved
+        position absolute
+        right 4px
+        bottom 2px
+        color #cececf
+        transition opacity .5s ease-in-out
+
+        /* Initially hidden. To show "Saved" notification, change the opacity. */
+        opacity 0
+
+      .saved.display
+        opacity 1
+
+      ul.annotation-tags-list
+        font-size smaller
+        border 0
+
+    ul.comments-list
+      list-style-type none
+      margin 0 0 20px 57px
+      padding 0
+
+      li
+        margin 5px 0
+        overflow hidden
+
+        .avatar
+          float left
+          width 30px
+          height 30px
+          margin 0 7px 0 0
+          border-radius 4px
+
+        .comment-content
+          overflow hidden
+          background-color #f7f7f7
+          border 1px solid #e3e3e3
+          border-radius 2px
+          padding 7px
+
+          .comment-content-editor
+            background white
+            border 1px solid #e3e3e3
+            padding 7px
+            overflow hidden
+
+          button.comment
+            display none
+
+      li.comment-editor
+        display none
+
+        .avatar
+          margin-top 9px
+
+      li.comment-editor.active
+        display block
+
+        .comment-content
+          button.comment
+            display inline-block
+            float right
+            margin-top 7px
 
     .meta-menu
       position absolute
       width small-meta-menu-width
       height small-meta-menu-height
       padding small-meta-menu-padding
-      /* We re-set this dynamically in Template.annotationMetaMenu.rendered */
+      /* We re-set z-index dynamically in Template.publicationAnnotations.rendered */
       z-index 200
       top 0
-      left initial
-      right 0
-      margin-right -(small-meta-menu-width + 2 * small-meta-menu-padding + 5px)
+      left 0
 
       i.icon-menu
         font-size small-meta-menu-icon-font-size
-        float right
-        /* No idea why 1px margin is needed with float right but otherwise
-           icon is not positioned correctly */
-        margin-top 1px
 
       .meta-content
         .highlights
@@ -474,9 +667,11 @@ annotations-control-height = 28px
       min-height 220px
       height auto
 
-  .annotation:hover, .annotation.selected, .annotation.hovered
+  .annotation:hover .annotation-wrapper, .annotation.selected annotation-wrapper, .annotation.hovered annotation-wrapper
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+      /*disable highlighting*/
+      /*box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow*/
+
 
   /* We use only 1px here to still have shadow border visible, but not 5px
      top margin which makes visible lower than the crop top line when
@@ -495,6 +690,48 @@ annotations-control-height = 28px
     .body
       text-align center
       color gray
+
+  .annotation.local
+    margin-top 10px
+    margin-bottom 20px
+
+    .avatar
+      position absolute
+      left 0
+      top 10px
+      width 30px
+      height 30px
+      margin 0
+      border-radius 4px
+
+    .annotation-wrapper:after
+      content ''
+      position absolute
+      border-style solid
+      border-width 7px 9px 7px 0
+      border-color transparent white
+      display block
+      width 0
+      z-index 1
+      left -9px
+      top 18px
+
+    .annotation-wrapper:before
+      content ''
+      position absolute
+      border-style solid
+      border-width 7px 9px 7px 0
+      border-color transparent #e3e3e3
+      display block
+      width 0
+      z-index 0
+      left -10px
+      top 18px
+
+  .annotation.selected
+    ul.comments-list
+      li.comment-editor
+        display block
 
   .annotation.invite
     position absolute

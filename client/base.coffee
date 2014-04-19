@@ -21,6 +21,8 @@ setSession = (session) ->
     currentHighlightId: null
     currentAnnotationId: null
     currentPersonSlug: null
+    currentTagId: null
+    currentTagSlug: null
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
@@ -167,6 +169,14 @@ else
           currentPublicationId: publicationId
           currentPublicationSlug: publicationSlug
         'publication'
+
+    '/t/:tagId/:tagSlug?':
+      as: 'tag'
+      to: (tagId, tagSlug) ->
+        setSession
+          currentTagId: tagId
+          currentTagSlug: tagSlug
+        'tag'
 
     '/g/:groupId/:groupSlug?':
       as: 'group'

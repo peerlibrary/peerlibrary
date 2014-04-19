@@ -3,20 +3,21 @@
 .notifications
   position fixed
   width 300px
-  top 75px
+  top 60px
   left 50%
-  list-style none
-  margin 0
-  padding 0
   margin-left -150px
+  list-style none
+  padding 0
   /* Higher than importing overlay */
   z-index 7000
 
   .notification
+    border-radius 2px
+    border-width 1px
+    border-style solid
     position absolute
     display block
     padding 20px
-    box-shadow 0 2px 5px rgba(14,41,57,0.34)
     margin-bottom 10px
     left 0
     right 0
@@ -24,9 +25,23 @@
 
     .button
       float right
+      cursor pointer
 
     .additional
       display none
+      margin 10px 0
+
+      .stack
+        font-family Andale Mono, monospace
+        background #fdf6e3
+        color #073642
+        border 1px solid #eee8d5
+        margin 16px 0
+        white-space pre-wrap
+        word-wrap break-word
+        word-break break-all
+        white-space normal
+        resize none
 
       .error-logged
         font-size smaller
@@ -41,10 +56,21 @@
     transition top .1s ease-out
 
   .success
-    background-color #d9f5d5
+    color #3c763d
+    border-color #d6e9c6
+    background-color #dff0d8
+
+  .debug
+    color #31708f
+    border-color #bce8f1
+    background-color #d9edf7
 
   .warn
-    background-color #f8f8d9
+    color #8a6d3b
+    border-color #faebcc
+    background-color #fcf8e3
 
   .error
-    background-color #f4e0dc
+    color #a94442
+    border-color #ebccd1
+    background-color #f2dede

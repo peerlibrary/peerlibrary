@@ -16,7 +16,7 @@ class @Highlight extends AccessDocument
   #   _id: publication's id
   # quote: quote made by this highlight
   # target: open annotation standard compatible target information
-  # annotations: list of (reverse field from Annotation.highlights)
+  # referencingAnnotations: list of (reverse field from Annotation.references.highlights)
   #   _id: annotation id
 
   @Meta

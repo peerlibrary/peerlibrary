@@ -59,7 +59,7 @@ class @Notify extends Document
     notificationAdditional = additional
 
     if stack
-      notificationAdditional += "<div class=\"stack\">#{ _.escape(stack) }</div>"
+      notificationAdditional += "<textarea class=\"stack\" name=\"stack\" rows=\"10\" cols=\"30\">#{ _.escape(stack) }</textarea>"
 
     if log
       # TODO: Should we use instead PeerDB's getCurrentLocation?

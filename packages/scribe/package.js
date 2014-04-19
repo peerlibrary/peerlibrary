@@ -9,7 +9,11 @@ Package.on_use(function (api) {
 
   api.add_files([
     'scribe/scribe.js',
-	'client.js'
+    'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',
+    'scribe-plugin-curly-quotes/scribe-plugin-curly-quotes.js',
+    'scribe-plugin-link-prompt-command/scribe-plugin-link-prompt-command.js',
+    'scribe-plugin-sanitizer/scribe-plugin-sanitizer.js',
+    'client.js'
   ], 'client');
 });
 

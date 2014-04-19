@@ -47,7 +47,8 @@ Annotation.Meta.collection.deny
   insert: (userId, doc) ->
     doc.createdAt = moment.utc().toDate()
     doc.updatedAt = doc.createdAt
-    doc.highlights = [] if not doc.highlights
+    doc.references = {} if not doc.references
+    doc.tags = [] if not doc.tags
     doc.license = 'CC0-1.0+'
 
     doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
