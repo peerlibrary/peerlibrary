@@ -13,7 +13,7 @@ Template.groups.groups = ->
 
   selector = {}
 
-  #TODO: Move filtering of the groups to server, escape query
+  # TODO: Move filtering of the groups to server, escape query
   if groupSearchQuery
     selector =
       name:
@@ -38,8 +38,11 @@ Template.groups.events
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
+    name = $(template.findAll '.name').val().trim()
+    return unless name
+
     Group.documents.insert
-      name: $(template.findAll '.name').val()
+      name: name
       members: [
         _id: Meteor.personId()
       ]
@@ -48,12 +51,11 @@ Template.groups.events
         return Notify.meteorError error, true if error
 
         Notify.success "Group created."
-        Meteor.Router.toNew Meteor.Router.groupPath id
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupListing.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{@membersCount} members"
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
 Template.myGroups.myGroups = ->
   Group.documents.find

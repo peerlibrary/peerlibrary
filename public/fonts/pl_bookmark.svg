@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<metadata>Copyright (C) 2014 by original authors @ fontello.com</metadata>
+<defs>
+<font id="pl_bookmark" horiz-adv-x="1000" >
+<font-face font-family="pl_bookmark" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="bookmark" unicode="&#xe800;" d="m650 779q12 0 24-5 19-8 29-23t11-35v-719q0-19-11-35t-29-23q-10-4-24-4-27 0-47 18l-246 236-246-236q-20-19-46-19-13 0-25 5-18 7-29 23t-11 35v719q0 19 11 35t29 23q12 5 25 5h585z" horiz-adv-x="714.3" />
+<glyph glyph-name="bookmark-empty" unicode="&#xe801;" d="m643 707h-572v-693l237 227 49 47 50-47 236-227v693z m7 72q12 0 24-5 19-8 29-23t11-35v-719q0-19-11-35t-29-23q-10-4-24-4-27 0-47 18l-246 236-246-236q-20-19-46-19-13 0-25 5-18 7-29 23t-11 35v719q0 19 11 35t29 23q12 5 25 5h585z" horiz-adv-x="714.3" />
+</font>
+</defs>
+</svg>

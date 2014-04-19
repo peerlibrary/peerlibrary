@@ -11,7 +11,12 @@
       </div>
     {{else}}
       <div class="viewer">
-        {{> publicationMetaMenu}}
+        {{#with publication}}
+          {{> publicationMetaMenu}}
+          {{#if currentUser}}
+            {{> publicationLibraryMenu}}
+          {{/if}}
+        {{/with}}
         {{> publicationScroller}}
         {{> publicationDisplay}}
         {{> annotationsControl}}
@@ -22,24 +27,80 @@
 </template>
 
 <template name="publicationMetaMenu">
-  <div class="meta-menu">
+  <div class="meta-menu context-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      <p><b>{{publication.title}}</b></p>
+      <p><b>{{title}}</b></p>
       <p class="authors">
-        {{#each publication.authors}}
+        {{#each authors}}
           <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
-      <p>Source: {{publication.source}}</p>
-      <p>{{publication.createdAt}}</p>
-      {{>publicationAccessControl publication}}
+      <p>Source: {{source}}</p>
+      <p>{{createdAt}}</p>
+      {{> publicationAccessControl}}
     </div>
   </div>
 </template>
 
+<template name="publicationLibraryMenu">
+  <div class="library-menu meta-menu context-menu">
+    {{> publicationLibraryMenuButtons}}
+    <div class="meta-content">
+      {{> publicationLibraryMenuCollections}}
+      {{> addNewCollection}}
+    </div>
+  </div>
+</template>
+
+<template name="publicationLibraryMenuButtons">
+  <i class="icon {{#if inLibrary}}icon2-bookmark{{else}}icon2-bookmark-empty{{/if}}"></i>
+  {{#if inLibrary}}
+    <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
+      Remove from library
+    </button>
+  {{else}}
+    <button class="add-to-library library-menu-button">
+      Add to library
+    </button>
+  {{/if}}
+  {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
+  {{#if inCurrentCollection}}
+    <p>
+      <button class="remove-from-current-collection library-menu-button">
+        Remove from collection
+      </button>
+    </p>
+  {{/if}}
+</template>
+
+<template name="publicationLibraryMenuCollections">
+  <h3>Add to collections</h3>
+  {{#if myCollections.length}}
+    <ol class="library-menu-collections">
+      {{#each myCollections}}
+        {{> publicationLibraryMenuCollectionListing}}
+      {{/each}}
+    </ol>
+    {{#unless inLibrary}}
+      <p class="hint">This will also add the publication to your library.</p>
+    {{/unless}}
+  {{else}}
+    {{> noCollections}}
+  {{/if}}
+</template>
+
+<template name="publicationLibraryMenuCollectionListing">
+  <li class="library-menu-collection">
+    <button class="{{#if inCollection}}remove-from-collection{{else}}add-to-collection{{/if}}">
+      <span class="collection-name">{{name}}</span>
+      <span class="publications-count">{{countDescription}}</span>
+    </button>
+  </li>
+</template>
+
 <template name="publicationAccessControl">
-  <div class="access-panel">
+  <div class="access-menu context-menu">
     <form class="access publication-access">
       <div class="selections">
 
@@ -318,7 +379,7 @@
 </template>
 
 <template name="annotationMetaMenu">
-  <div class="meta-menu">
+  <div class="meta-menu context-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
       {{#if canEdit}}	    

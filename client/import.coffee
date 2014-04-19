@@ -155,8 +155,8 @@ hideOverlay = ->
   Session.set 'signInOverlayActive', false
 
 $(document).on 'dragstart', (e) ->
-  # We want to prevent dragging of everything except the viewport
-  return if $(e.target).is('.viewport')
+  # We want to prevent dragging of everything except jQuery UI controls
+  return if $(e.target).is('.ui-draggable')
 
   e.preventDefault()
 

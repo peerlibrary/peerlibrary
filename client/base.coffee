@@ -12,6 +12,9 @@ setSession = (session) ->
     searchActive: false
     searchFocused: false
     adminActive: false
+    libraryActive: false
+    currentCollectionId: null
+    currentCollectionSlug: null
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
@@ -224,12 +227,27 @@ else
             searchActive: true
         'index'
 
+    '/c/:collectionId/:collectionSlug?':
+      as: 'collection'
+      to: (collectionId, collectionSlug) ->
+        setSession
+          currentCollectionId: collectionId
+          currentCollectionSlug: collectionSlug
+        'collection'
+
     '/admin':
       as: 'admin'
       to: ->
         setSession
           adminActive: true
         'admin'
+
+    '/library':
+      as: 'library'
+      to: ->
+        setSession
+          libraryActive: true
+        'library'
 
 Meteor.Router.add
   '/about':

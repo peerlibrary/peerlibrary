@@ -4,8 +4,6 @@ section.group
   margin-top simple-margin-top
 
 .group-members-panel
-  .uneditable.member-list .member .remove-button
-    display none
 
   .add-control
     background white
@@ -19,51 +17,94 @@ section.group
         display block
         width 100%
 
+    .member:last-of-type
+      margin-bottom 0
+
   .add-control-results
-    padding 0 10px 10px
-    font-weight 300
+    padding 10px
+    margin 0
+
+.context-menu
+  .add-control
+    border-radius 2px
+
+.sidebar
+  .add-control
+    border 1px solid box-shadow-border
+
+    input, input:focus
+      border none
+
+.member
+  display inline-block
+  position relative
+  height 24px
+  max-width 100%
+  white-space nowrap
+
+  .avatar
+    display block
+    position absolute
+    left 0
+    top 0
+    width 24px
+    margin-left 0
+
+  .member-name
+    max-width 100%
+    padding 0 24px 0 34px
+    margin 0
+    font-size 13px
+    line-height 25px
+    font-weight bold
+    overflow hidden
+    text-overflow ellipsis
+
+  .remove-button
+    display block
+    position absolute
+    right 0
+    top 0
+    vertical-align middle
+    text-align center
+    width 24px
+    height 24px
+    padding 0
+    border none
+    background none
+    font-size 15px
+    line-height 0
+
+  .remove-button:hover
+    color blue-accent
+    background none
+
+  .add-button
+    display inline-block
+    text-align left
+    height 24px
+    padding 0
+    border none
+    background none
+
+  .add-button:hover
+    background-color selection-color
+
+.member.group
+  .member-name
+    padding-left 0
 
 .member-list
   padding 0
   list-style none
 
   .member
-    display inline-block
-    height 24px
     margin 0 10px 10px 0
 
-    .avatar
-      display inline-block
-      margin-left 0
-
+.read-only.member-list
+  .member
     .member-name
-      display inline-block
-      margin 0 0 0 5px
-      vertical-align middle
-      font-size 13px
-      font-weight bold
+      padding-right 0
 
     .remove-button
-      display inline-block
-      vertical-align middle
-      text-align center
-      width 24px
-      height 24px
-      border none
-      background none
-      font-size 15px
-      line-height 18px
-
-    .remove-button:hover
-      color blue-accent
-
-    .add-button
-      display inline-block
-      text-align left
-      height 24px
-      padding 0
-      border none
-      background none
-
-    .add-button:hover
-      background-color selection-color
+      display none

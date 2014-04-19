@@ -21,15 +21,18 @@ section.publication
 ============ */
 
 /* Have to be defined here because we are using them in meta menu as well */
-scroller-width = 64px
+scroller-width = 60px
 scroller-left = 12px
 scroller-bottom = 20px
 
 meta-menu-width = 28px
 meta-menu-height = 22px
 meta-menu-padding = 10px
+meta-menu-margin = 20px
+meta-menu-outer-width = meta-menu-width + 2 * meta-menu-padding
+meta-menu-outer-height = meta-menu-height + 2 * meta-menu-padding
 meta-menu-top = header-height + 15px
-meta-menu-left = (scroller-left + (scroller-width - meta-menu-width - 2 * meta-menu-padding) / 2)
+meta-menu-left = scroller-left + (scroller-width - meta-menu-outer-width) / 2
 meta-menu-icon-font-size = 20px
 
 .meta-menu
@@ -77,13 +80,69 @@ meta-menu-icon-font-size = 20px
       font-size smaller
 
 .meta-menu:hover, .meta-menu.displayed
-  background rgba(46,46,44,0.5)
+  background overlay-translucent
   width 300px
   min-height 420px
   height auto
+  z-index 101
 
   .meta-content
     display block
+
+/* Library operations menu
+========================== */
+
+.library-menu
+  top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
+
+  .icon
+    display inline-block
+    font-size 20px
+    color white
+    vertical-align top
+
+  .library-menu-button
+    display none
+    margin-left 5px
+
+.library-menu:hover
+  z-index 101
+
+  .library-menu-button
+    display inline-block
+
+.library-menu-collections
+  list-style none
+  padding 10px
+  background-color rgba(120,120,120,0.9)
+  border-radius 2px
+
+  .library-menu-collection
+    button
+      background none
+      border none
+      border-radius 2px
+      color white
+      width 100%
+      text-align left
+      padding 10px 10px 10px 30px
+      position relative
+
+      .publications-count
+        font-weight 300
+        font-size 12px
+        margin-left 10px
+
+    button:hover
+      background overlay-translucent
+
+    .remove-from-collection
+      .collection-name:before
+        content "✓"
+        position absolute
+        left 0
+        width 30px
+        text-align center
 
 /* Scroller
 =========== */
@@ -91,17 +150,23 @@ meta-menu-icon-font-size = 20px
 .scroller
   position fixed
   width scroller-width
-  top meta-menu-top + meta-menu-height + 2 * meta-menu-padding + 20px
+  top meta-menu-top + 2 * (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
   left scroller-left
   bottom 20px
   z-index 50
 
   .section
     position absolute
-    width 48px
-    left 8px
+    width meta-menu-outer-width
+    left ((scroller-width - meta-menu-outer-width - 2) / 2)
     background #eee
     border 1px solid light-grey
+
+  .section:first-of-type
+    border-radius 3px 3px 0 0
+
+  .section:last-of-type
+    border-radius 0 0 3px 3px
 
   .section:hover
     background rgba(46,46,44,0.12)
@@ -109,9 +174,14 @@ meta-menu-icon-font-size = 20px
   .viewport
     position absolute
     width 100%
-    background rgba(46,46,44,0.12)
+    background rgba(0,0,0,0.15)
     border-radius 2px
     z-index 60
+    cursor ns-resize
+
+/* The size of the scroller depends on the presence of the library menu (which is shown only for logged in users). */
+.logged-out .scroller
+  top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
 
 /* Viewer
 ========= */
@@ -297,7 +367,7 @@ annotations-control-height = 30px
     padding 0
 
   .add-button:hover
-    background rgba(46,46,44,0.5)
+    background overlay-translucent
 
   .add-button:active, .add-button:focus
     outline none
@@ -687,8 +757,9 @@ annotations-control-height = 30px
 /* Access
 ========= */
 
-.access-panel
-  background-color rgba(100,100,100,0.9)
+.access-menu
+  background-color rgba(120,120,120,0.9)
+  border-radius 2px
 
   .access
 
@@ -730,15 +801,19 @@ annotations-control-height = 30px
   .private-access-control
     padding 10px
 
-    .access-list
-      display inline
+    .private-access-control-members
+      .access-list
+        display inline
 
-      button:hover
-        color white
+        button:hover
+          color white
 
-    .member
-      display block
-      width 100%
+      .member
+        display block
+        width 100%
+
+        .remove-button:hover
+          color blue-accent
 
     .add-control
       background white
@@ -750,6 +825,7 @@ annotations-control-height = 30px
       .add-button
         display block
         width 100%
+        color black
 
       .access-results
         margin-bottom 0
@@ -758,7 +834,7 @@ annotations-control-height = 30px
       padding 0 10px 10px
       font-weight 300
 
-.meta-menu .access-panel .private-access-control
+.meta-menu .access-menu .private-access-control
   .member
     display inline-block
     width auto
