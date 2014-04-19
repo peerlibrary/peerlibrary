@@ -17,7 +17,8 @@ class Migration extends Document.MajorMigration
       return callback error if error
       cursor = collection.find {_schema: currentSchema, cachedId: {$exists: false}}, {cached: 1, source: 1, foreignId: 1}
       document = null
-      async.doWhilst Meteor.bindEnvironment((callback) =>
+      async.doWhilst Meteor.bindEnvironment(
+        (callback) =>
           cursor.nextObject Meteor.bindEnvironment (error, doc) =>
             return callback error if error
             document = doc
@@ -58,7 +59,8 @@ class Migration extends Document.MajorMigration
       return callback error if error
       cursor = collection.find {_schema: currentSchema, cachedId: $exists: true}, {cached: 1, cachedId: 1, source: 1, foreignId: 1}
       document = null
-      async.doWhilst Meteor.bindEnvironment((callback) =>
+      async.doWhilst Meteor.bindEnvironment(
+        (callback) =>
           cursor.nextObject Meteor.bindEnvironment (error, doc) =>
             return callback error if error
             document = doc
