@@ -44,7 +44,7 @@ Template.notificationsOverlayItem.rendered = ->
       Notify.documents.remove @data._id
     @_timeout = null
   ,
-    7000 # ms
+    3000 # ms
 
   # Pause the timeout while user is hovering over the notification
   $notification.on 'mouseenter.notification', (e) =>
@@ -79,6 +79,13 @@ Template.notificationsOverlayItem.events
       Notify.documents.remove @_id unless e.isDefaultPrevented()
 
     return # Make sure CoffeeScript does not return anything
+
+  'click .stack': (e, template) ->
+    e.preventDefault()
+
+    $('.stack').select()
+
+    return
 
   'click': (e, template) ->
     Notify.documents.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')

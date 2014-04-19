@@ -136,6 +136,17 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
+  _addHighlightToEditor: (id) =>
+    LocalAnnotation.documents.update
+      local: true
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        editing: true
+      $addToSet:
+        'references.highlights':
+          _id: id
+
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
@@ -315,7 +326,7 @@ class @Annotator extends Annotator
       _id: Meteor.personId()
     annotation.publication =
       _id: Session.get 'currentPublicationId'
-    annotation.highlights = []
+    annotation.references = {}
 
     # Remove fields we do not want to store into the database
     highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
@@ -352,15 +363,8 @@ class @Annotator extends Annotator
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
 
-      annotation = createAnnotationDocument()
-      annotation.local = true
-      annotation.highlights = [
-        _id: id
-      ]
-
-      LocalAnnotation.documents.remove
-        local: true
-      LocalAnnotation.documents.insert annotation
+      # Add reference to annotation
+      @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has
@@ -373,9 +377,6 @@ class @Annotator extends Annotator
       @selectedAnnotationId = null
 
       @_deselectAllHighlights()
-
-      LocalAnnotation.documents.remove
-        local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()

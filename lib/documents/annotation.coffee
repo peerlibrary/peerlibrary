@@ -5,18 +5,44 @@ class @Annotation extends AccessDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
-  #   _id: author's person id
-  #   slug: author's person id
+  #   _id: person id
+  #   slug
   #   givenName
   #   familyName
   #   gravatarHash
   #   user
   #     username
-  # body: annotation's body
+  # body: in HTML
   # publication:
   #   _id: publication's id
-  # highlights: list of
-  #   _id: highlight id
+  # references: made in the body of annotation or comments
+  #   highlights: list of
+  #     _id
+  #   annotations: list of
+  #     _id
+  #   publications: list of
+  #     _id
+  #     slug
+  #     title
+  #   persons: list of
+  #     _id
+  #     slug
+  #     givenName
+  #     familyName
+  #     gravatarHash
+  #     user
+  #       username
+  #   tags: list of
+  #     _id
+  #     name: ISO 639-1 dictionary
+  #     slug: ISO 639-1 dictionary
+  # tags: list of
+  #   tag:
+  #     _id
+  #     name: ISO 639-1 dictionary
+  #     slug: ISO 639-1 dictionary
+  # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
+  #   _id: annotation id
   # license: license information, if known
   # local (client only): is this annotation just a temporary annotation on the cliend side
 
@@ -25,4 +51,13 @@ class @Annotation extends AccessDocument
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication, [], true, 'annotations'
-      highlights: [@ReferenceField Highlight, [], true, 'annotations']
+      references:
+        highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
+        annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
+        publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
+        tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
+      tags: [
+        tag: @ReferenceField Tag, ['name', 'slug']
+      ]

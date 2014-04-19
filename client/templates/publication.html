@@ -165,8 +165,6 @@
   <ul class="annotations-list">
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
-    {{else}}
-      {{> highlightInvite}}
     {{/each}}
   </ul>
 </template>
@@ -174,29 +172,164 @@
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
     {{#if local}}
-      {{> annotationInvite}}
+      <a href="{{profilePath currentPerson.slug}}">
+        <img src="{{currentPerson.avatar 30}}" class="avatar" />
+      </a>
     {{else}}
-      <img src="{{author.avatar}}" class="avatar" />
-      <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
-      {{#if selected}}
-        {{#if canEdit}}
-          {{> annotationEditor}}
-        {{else}}
-          <div class="body">{{body}}</div>
-        {{/if}}
-      {{else}}
-        <div class="body" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
-      {{/if}}
       {{> annotationMetaMenu}}
     {{/if}}
+    <div class="annotation-wrapper">
+      {{#if local}}
+        {{> annotationEditor}}
+      {{else}}
+        {{#if editing}}
+          {{> annotationEditor}}
+        {{else}}
+          <div class="annotation-content">
+            <div class="body">{{{body}}}</div>
+            {{> annotationTags}}
+          </div>
+        {{/if}}
+        <div class="annotation-footer">
+          <a href="{{profilePath author.slug}}">
+            <img src="{{author.avatar 30}}" class="avatar" />
+          </a>
+          <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
+          <span class="timestamp">{{updatedFromNow}}</span>
+          {{#if editing}}
+            <span class="cancel-button"><a href="">cancel</a></span>
+          {{else}}
+            {{#if canEdit}}
+              <span class="edit-button"><a href="">edit</a></span>
+            {{/if}}
+          {{/if}}
+        </div>
+      {{/if}}
+    </div>
+    {{#unless local}}
+      {{> annotationCommentsList}}
+    {{/unless}}
   </li>
 </template>
 
 <template name="annotationEditor">
-  {{#constant}}
-    <div class="body" contenteditable="true" data-placeholder="{{#if canEdit}}Write your annotation here{{/if}}">{{body}}</div>
-    <span class="saved">Saved</span>
-  {{/constant}}
+  <div class="annotations-editor {{#unless editing}}collapsed{{/unless}}">
+    <div class="annotations-editor-form-wrapper">
+      <form class="annotations-form">
+        {{!
+        <div class="form-header">
+          <span class="form-title"><h2>New Annotation</h2></span>
+          <span class="form-status">Changes saved</span>
+        </div>
+        }}
+        <div class="form-content">
+          <div class="format-toolbar">
+            <ul class="format-buttons">
+              <li data-command-name="bold"><i class="icon-bold"></i></li>
+              <li data-command-name="italic"><i class="icon-italic"></i></li>
+              <li data-command-name="insertOrderedList"><i class="icon-list-numbered"></i></li>
+              <li data-command-name="insertUnorderedList"><i class="icon-list-bullet"></i></li>
+              <li data-command-name="linkPrompt"><i class="icon-link"></i></li>
+              <li data-command-name="blockquote"><i class="icon-quote-left"></i></li>
+              <li class="inactive"><i class="icon-math"></i></li>
+              <li class="inactive"><i class="icon-code"></i></li>
+            </ul>
+          </div>
+          <div class="form-body">
+            {{#constant}}
+              <div class="annotation-content-editor" contenteditable>
+                {{{body}}}
+              </div>
+            {{/constant}}
+          </div>
+          <div class="form-tags">
+            <i class="icon-tags"></i>
+            {{#constant}}
+              <ul class="annotation-tags-editor"></ul>
+            {{/constant}}
+          </div>
+        </div>
+        <div class="form-control">
+          <button type="button" class="btn blue save">Save</button>
+          <div class="visibility-menu">
+            {{> visibilityMenu}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<template name="annotationTags">
+  {{#if tags}}
+    <div class="tags">
+      <ul class="annotation-tags-list">
+        {{#each tags}}
+          <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+</template>
+
+<template name="annotationCommentsList">
+  <ul class="comments-list">
+    {{#each comments}}
+      <li class="comment">
+        <a href="{{profilePath author.slug}}">
+          <img src="{{author.avatar 30}}" class="avatar" />
+        </a>
+        <div class="comment-content">
+          <div class="body">{{{body}}}</div>
+        </div>
+      </li>
+    {{/each}}
+    {{> annotationCommentEditor}}
+  </ul>
+</template>
+
+<template name="annotationCommentEditor">
+  <li class="comment-editor">
+    <a href="{{profilePath currentPerson.slug}}">
+      <img src="{{currentPerson.avatar 30}}" class="avatar" />
+    </a>
+    <div class="comment-content">
+      {{#constant}}
+        <div class="comment-content-editor" contenteditable></div>
+      {{/constant}}
+      <button type="button" class="btn blue comment">Comment</button>
+    </div>
+  </li>
+</template>
+
+<template name="commentMetaMenu">
+  <div class="meta-menu">
+    <i class="icon-menu"></i>
+    <div class="meta-content">
+      {{#if canEdit}}
+        <button class="delete">Delete</button>
+      {{/if}}
+      <p class="authors">
+        {{#with author}}
+          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+        {{/with}}
+      </p>
+      <p class="time">{{createdAt}}</p>
+      <p class="time">{{updatedAt}}</p>
+    </div>
+  </div>
+</template>
+
+<template name="visibilityMenu">
+  <div class="ui-dropdown">
+    <div class="ui-selection-wrapper">
+      <span class="ui-selection">
+        <i class="icon-public"></i>
+        Public
+      </span>
+      <i class="icon-down"></i>
+    </div>
+  </div>
 </template>
 
 <template name="highlightInvite">
@@ -230,7 +363,7 @@
   <p class="time">{{createdAt}}</p>
   <p class="time">{{updatedAt}}</p>
   <p class="annotations">
-    {{#each annotations}}
+    {{#each referencingAnnotations}}
       <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
     {{else}}
       Not linked to any annotation.
@@ -241,7 +374,7 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    <button class="icon-plus add control" title="Add an annotation"></button>
+    <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
     {{> contextMenu}}
   </div>
 </template>
@@ -250,7 +383,7 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canEdit}}	    
+      {{#if canEdit}}
         <button class="delete">Delete</button>
       {{/if}}
       <p class="authors">
@@ -261,7 +394,7 @@
       <p class="time">{{createdAt}}</p>
       <p class="time">{{updatedAt}}</p>
       <p class="highlights">
-        {{#each highlights}}
+        {{#each references.highlights}}
           <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
         {{else}}
           Not linked to any highlight.

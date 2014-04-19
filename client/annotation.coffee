@@ -39,15 +39,19 @@ Meteor.startup ->
       if fields.local
         localIds[id] = true
       else
+        assert not fields.editing
         delete fields.local
+        delete fields.editing
         Annotation.documents.insert _.extend {}, fields,
           _id: id
 
     changed: (id, fields) -> wrapSyncing ->
       if localIds[id]
         if 'local' of fields and not fields.local
+          assert not fields.editing
           delete localIds[id]
           delete fields.local
+          delete fields.editing
           annotation = LocalAnnotation.documents.findOne id,
             transform: null
           Annotation.documents.insert _.extend annotation, fields
@@ -56,6 +60,7 @@ Meteor.startup ->
           localIds[id] = true
           Annotation.documents.remove id
         else
+          assert not fields.editing
           Annotation.documents.update id,
             $set: fields
 
@@ -74,24 +79,30 @@ Meteor.startup ->
   timestamp = moment.utc().toDate()
 
   author = _.pick Meteor.person(), '_id', 'slug', 'givenName', 'familyName', 'gravatarHash'
-  author.user =  _.pick Meteor.person().user, 'username'
+  author.user = _.pick Meteor.person().user, 'username'
 
   createdAt: timestamp
   updatedAt: timestamp
   author: author
   publication:
     _id: Session.get 'currentPublicationId'
-  highlights: []
+  references:
+    highlights: []
+    annotations: []
+    publications: []
+    persons: []
+    tags: []
+  tags: []
 
 # If we have the annotation and the publication available on the client,
 # we can create full path directly, otherwise we have to use annotationIdPath
-Handlebars.registerHelper 'annotationPathFromId', (annotatonId, options) ->
-  annotation = LocalAnnotation.documents.findOne annotatonId
+Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
+  annotation = LocalAnnotation.documents.findOne annotationId
 
-  return Meteor.Router.annotationIdPath annotatonId unless annotation
+  return Meteor.Router.annotationIdPath annotationId unless annotation
 
   publication = Publication.documents.findOne annotation.publication._id
 
-  return Meteor.Router.annotationIdPath annotatonId unless publication
+  return Meteor.Router.annotationIdPath annotationId unless publication
 
-  Meteor.Router.annotationPath publication._id, publication.slug, annotatonId
+  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
