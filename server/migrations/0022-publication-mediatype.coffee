@@ -20,7 +20,7 @@ class Migration extends Document.MinorMigration
         return callback error if error
         Meteor.bindEnvironment(=>
           Storage.rename 'publication', 'pdf' if Storage.exists 'publication'
-          super db, collectionName, currentSchema, newSchema, callback
+          super db, collectionName, currentSchema, oldSchema, callback
         , callback)()
       , callback
     , callback
