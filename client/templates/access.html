@@ -5,12 +5,12 @@
 
         <label class="selection {{#if public}}selected{{/if}}">
           <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-          <i class="icon-public"></i> Public
+          <i class="access-icon icon-public"></i> Public
         </label>
 
         <label class="selection {{#if private}}selected{{/if}}">
           <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="icon-private"></i> Private
+          <i class="access-icon icon-private"></i> Private
         </label>
 
       </div>

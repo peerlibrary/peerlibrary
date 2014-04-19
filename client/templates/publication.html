@@ -106,17 +106,17 @@
 
         <label class="selection {{#if open}}selected{{/if}}">
           <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
-          <i class="icon-public"></i> Open<br/>Access
+          <i class="access-icon icon-public"></i> Open<br/>Access
         </label>
 
         <label class="selection {{#if closed}}selected{{/if}}">
           <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
-          <i class="icon-closed"></i> Closed<br/>Access
+          <i class="access-icon icon-closed"></i> Closed<br/>Access
         </label>
 
         <label class="selection {{#if private}}selected{{/if}}">
           <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="icon-private"></i> Private
+          <i class="access-icon icon-private"></i> Private
         </label>
 
       </div>
@@ -275,10 +275,10 @@
 <template name="contextMenu">
   <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
     <div class="icons">
-      {{#if public}}<i class="icon-public"></i>{{/if}}
-      {{#if private}}<i class="icon-private"></i>{{/if}}
+      {{#if public}}<i class="context-icon icon-public"></i>{{/if}}
+      {{#if private}}<i class="context-icon icon-private"></i>{{/if}}
       {{#if selectedGroups.length}}
-        <i class="icon2-group"></i><span class="group-count">{{selectedGroups.length}}</span>
+        <i class="context-icon icon2-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
       {{/if}}
     </div>
     <div class="meta-content">
@@ -289,12 +289,12 @@
 
             <label class="selection {{#if public}}selected{{/if}}">
               <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-              <i class="icon-public"></i> Public
+              <i class="access-icon icon-public"></i> Public
             </label>
 
             <label class="selection {{#if private}}selected{{/if}}">
               <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-              <i class="icon-private"></i> Private
+              <i class="access-icon icon-private"></i> Private
             </label>
 
           </div>
