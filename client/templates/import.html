@@ -3,19 +3,18 @@
     <div class="drop-overlay">
       <div class="content">
         <h1>Imports</h1>
-        <table>
+        <table class="imports-table">
           <tr>
-            <th class="name-cell">Name:</th>
-            <th class="progress-cell">Progress:</th>
-            <th class="status-cell">Status:</th>
+            <th class="imports-header name-cell">Name</th>
+            <th class="imports-header progress-cell">Progress</th>
+            <th class="imports-header status-cell">Status</th>
           </tr>
           {{#each importingFiles}}
             <tr>
-              <!-- <td>{{> importingFilesItem}}</td> -->
-              <td class="name-cell">{{> importingFilesName}}</td>
-              <td class="progress-cell">{{> importingFilesProgress}}</td>
-              <td class="status-cell">{{> importingFilesStatus}}</td>
-              <td class="cancel-cell">{{> importCancelButton}}</td>
+              <td class="imports-cell name-cell">{{> importingFilesName}}</td>
+              <td class="imports-cell progress-cell">{{> importingFilesProgress}}</td>
+              <td class="imports-cell status-cell">{{> importingFilesStatus}}</td>
+              <td class="imports-cell cancel-cell">{{> importCancelButton}}</td>
             </tr>
           {{/each}}
         <table>
@@ -25,7 +24,20 @@
 </template>
 
 <template name="importCancelButton">
-  <a href="" class="canceled {{#if canceled}}invisible{{/if}}">X</a>
+  <a href="" class="canceled 
+                            {{#if canceled}}
+                              invisible 
+                            {{else}}
+                              {{#if finished}} 
+                                invisible
+                              {{else}}
+                                {{#if errored}} 
+                                  invisible
+                                {{/if}}
+                              {{/if}}
+                            {{/if}}">
+    <i class="icon-cancel"></i>
+  </a>
 </template>
 
 <template name="signInOverlay">
@@ -37,11 +49,6 @@
     </div>
   {{/if}}
 </template>
-
-<template name="importingFilesItem">
-  <div>{{name}} </br> {{#if canceled}}Canceled{{else}}{{status}}{{/if}}</div>
-  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
-</template> 
 
 <template name="importingFilesName">
   <div>{{name}}</div>

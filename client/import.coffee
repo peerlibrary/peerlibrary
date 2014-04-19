@@ -14,13 +14,9 @@ class ImportingFile extends Document
     name: 'ImportingFile'
     collection: null
 
-#UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
-
-UPLOAD_CHUNK_SIZE = 16 *1024 # bytes
+UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 
 DRAGGING_OVER_DOM = false
-
-
 
 verifyFile = (file, fileContent, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -303,6 +299,7 @@ Template.importOverlay.events =
     if e.isPropagationStopped()
       return
     hideOverlay()
+
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
