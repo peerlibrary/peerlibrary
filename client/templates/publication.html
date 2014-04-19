@@ -121,7 +121,7 @@
 
       </div>
       <div class="description open {{#if open}}displayed{{/if}}">Everyone has access to the publication.</div>
-      <div class="description closed {{#if closed}}displayed{{/if}}">Only those who import the PDF have access to the publication.</div>
+      <div class="description closed {{#if closed}}displayed{{/if}}">The publication is public, but only those who import the PDF have access to its content.</div>
       <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
     </form>
 
@@ -431,7 +431,7 @@
             </label>
 
           </div>
-          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be shared publicly.</div>
+          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be visible to everyone.</div>
           <div class="description private {{#if private}}displayed{{/if}}">
             {{#if myGroups.count}}
               New annotations will be visible to you and members of groups selected below.
@@ -449,7 +449,7 @@
 
 <template name="contextMenuGroups">
   {{#if myGroups.count}}
-    <h3>Notify {{#if private}}and share with{{/if}} groups</h3>
+    <h3>Work inside groups</h3>
     <div class="context-menu-groups access-menu">
       <ol class="toggle-list">
         {{#each myGroups}}
@@ -458,9 +458,9 @@
       </ol>
       <div class="description displayed">
         {{#if selectedGroups.length}}
-          Annotations will appear on the activity page of {{selectedGroupsDescription}}.
+          Annotations will be shared with {{selectedGroupsDescription}}.
         {{else}}
-          Select groups where annotations should appear under activity.
+          Select groups you want to share annotations with.
         {{/if}}
       </div>
     </div>
