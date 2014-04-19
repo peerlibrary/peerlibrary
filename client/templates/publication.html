@@ -27,7 +27,7 @@
 </template>
 
 <template name="publicationMetaMenu">
-  <div class="meta-menu context-menu">
+  <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
       <p><b>{{title}}</b></p>
@@ -44,7 +44,7 @@
 </template>
 
 <template name="publicationLibraryMenu">
-  <div class="library-menu meta-menu context-menu">
+  <div class="library-menu meta-menu">
     {{> publicationLibraryMenuButtons}}
     <div class="meta-content">
       {{> publicationLibraryMenuCollections}}
@@ -100,7 +100,7 @@
 </template>
 
 <template name="publicationAccessControl">
-  <div class="access-menu context-menu">
+  <div class="access-menu">
     <form class="access publication-access">
       <div class="selections">
 
@@ -242,11 +242,12 @@
 <template name="annotationsControl">
   <div class="annotations-control">
     <button class="icon-plus add" title="Add an annotation"></button>
+    <template name=""
   </div>
 </template>
 
 <template name="annotationMetaMenu">
-  <div class="meta-menu context-menu">
+  <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
       {{#if canEdit}}	    
