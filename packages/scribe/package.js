@@ -7,7 +7,6 @@ Package.on_use(function (api) {
 
   api.export('Scribe');
 
-  // toolbar, sanitizer and smart-lists do not work.
   api.add_files([
     'scribe/scribe.js',
     'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',

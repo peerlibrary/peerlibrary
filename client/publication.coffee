@@ -777,7 +777,6 @@ Template.highlightsControl.events
   'mousedown .add-access, mouseup .add-access': (e, template) ->
     # A special case to prevent defocus after click on the input box
     e.stopPropagation()
-
     return # Make sure CoffeeScript does not return anything
 
   'focus .add-access': (e, template) ->
@@ -914,14 +913,14 @@ Template.publicationAnnotationsItem.events
     e.preventDefault()
 
     LocalAnnotation.documents.update template.data._id,
-      $set:
-        editing: false
+      $unset:
+        editing: ''
 
     return # Make sure CoffeeScript does not return anything
 
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
-  'mousedown': (e, template) =>
+  'mousedown': (e, template) ->
     # TODO: Get rid of this. Annotation invites are being replaced.
     return # unless @local
 
@@ -1008,9 +1007,7 @@ Template.annotationEditor.rendered = ->
       p: {}
       br: {}
       b: {}
-      strong: {}
       i: {}
-      s: {}
       blockquote: {}
       ol: {}
       ul: {}
@@ -1041,6 +1038,7 @@ Template.annotationEditor.events
 
     $tags = $(template.findAll '.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
+      # TODO: Currently we have a race condition, use upsert
       existingTag = Tag.documents.findOne
         'name.en': name
 
@@ -1058,12 +1056,13 @@ Template.annotationEditor.events
     # TODO: Set privacy settings
     LocalAnnotation.documents.update @_id,
       $set:
-        editing: false
         local: false
         body: body
         tags: tags
+      $unset:
+        editing: ''
     ,
-      (error) ->
+      (error) =>
         return Notify.meteorError error, true if error
 
         focusAnnotationId = @_id
@@ -1096,14 +1095,13 @@ Template.annotationEditor.events
       if template.data.editing
         # Collapse
         LocalAnnotation.documents.update template.data._id,
-          $set:
-            editing: false
+          $unset:
+            editing: ''
 
     return # Make sure CoffeeScript does not return anything
 
   'mousedown .format-buttons li': (e, template) ->
     e.preventDefault()
-    e.stopPropagation()
 
     # Port of scribe-plugin-toolbar
     # https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
@@ -1178,16 +1176,9 @@ Template.annotationCommentEditor.rendered = ->
   @_scribe.use Scribe.plugins['curly-quotes']()
   @_scribe.use Scribe.plugins['sanitizer']
     tags:
-      p: {}
       br: {}
       b: {}
-      strong: {}
       i: {}
-      s: {}
-      blockquote: {}
-      ol: {}
-      ul: {}
-      li: {}
       a:
         href: true
 

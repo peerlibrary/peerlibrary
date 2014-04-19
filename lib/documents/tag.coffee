@@ -10,5 +10,4 @@ class @Tag extends Document
   @Meta
     name: 'Tag'
     fields: =>
-      # TODO: Define generator function for slugs
       slug: @GeneratedField 'self', ['name']

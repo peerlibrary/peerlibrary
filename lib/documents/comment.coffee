@@ -13,7 +13,8 @@ class @Comment extends Document
   #   _id
   # publication
   #   _id
-  # body: HTML (inline, no block elements)
+  # body: in HTML (inline, no block elements)
+  # license: license information, if known
 
   @Meta
     name: 'Comment'

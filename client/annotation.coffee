@@ -36,20 +36,22 @@ Meteor.startup ->
 
   LocalAnnotation.documents.find({}).observeChanges
     added: (id, fields) -> wrapSyncing ->
-      delete fields.editing
       if fields.local
         localIds[id] = true
       else
+        assert not fields.editing
         delete fields.local
+        delete fields.editing
         Annotation.documents.insert _.extend {}, fields,
           _id: id
 
     changed: (id, fields) -> wrapSyncing ->
-      delete fields.editing
       if localIds[id]
         if 'local' of fields and not fields.local
+          assert not fields.editing
           delete localIds[id]
           delete fields.local
+          delete fields.editing
           annotation = LocalAnnotation.documents.findOne id,
             transform: null
           Annotation.documents.insert _.extend annotation, fields
@@ -58,6 +60,7 @@ Meteor.startup ->
           localIds[id] = true
           Annotation.documents.remove id
         else
+          assert not fields.editing
           Annotation.documents.update id,
             $set: fields
 

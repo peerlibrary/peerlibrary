@@ -10,8 +10,7 @@ class @Comment extends Comment
 Comment.Meta.collection.allow
   insert: (userId, doc) ->
     # TODO: Check whether inserted document conforms to schema
-    # TODO: Check the target (try to apply it on the server)
-    # TODO: Check that author really has access to the publication
+    # TODO: Check that author really has access to the annotation (and publication)
 
     return false unless userId
 
@@ -21,6 +20,9 @@ Comment.Meta.collection.allow
     personId and doc.author._id is personId
 
   update: (userId, doc) ->
+    # TODO: Check whether updated document conforms to schema
+    # TODO: Check that author really has access to the annotation (and publication)
+
     return false unless userId
 
     personId = Meteor.personId userId
@@ -45,6 +47,7 @@ Comment.Meta.collection.deny
   insert: (userId, doc) ->
     doc.createdAt = moment.utc().toDate()
     doc.updatedAt = doc.createdAt
+    doc.license = 'CC0-1.0+'
 
     # We return false as we are not
     # checking anything, just adding fields
