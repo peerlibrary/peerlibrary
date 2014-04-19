@@ -46,6 +46,7 @@ setSession = (session) ->
   # Care has to be taken that they are set and unset manually.
   # - importOverlayActive
   # - signInOverlayActive
+  # - annotationDefaults
 
   # Close sign in buttons dialog box when moving between pages
   Accounts._loginButtonsSession.closeDropdown()

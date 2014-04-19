@@ -50,7 +50,7 @@
     input
       border-right none
 
-.context-menu
+.meta-menu
   input, button
     display block
     padding 8px 12px
@@ -63,7 +63,7 @@
 
   input
     width 100%
-    padding 7px 12px
+    padding 7px
     background-color white
 
   button
@@ -79,6 +79,33 @@
 
     button
       border-radius 0 2px 2px 0
+
+  .toggle-list
+    list-style none
+    padding 10px
+    background-color rgba(120,120,120,0.9)
+    border-radius 2px
+
+  .toggle-list-item
+    button
+      background none
+      border none
+      border-radius 2px
+      color white
+      width 100%
+      text-align left
+      padding 10px 10px 10px 30px
+      position relative
+
+    button:hover
+      background overlay-translucent
+
+    .toggled:before
+      content "✓"
+      position absolute
+      left 0
+      width 30px
+      text-align center
 
 /* Layouts
 ========== */

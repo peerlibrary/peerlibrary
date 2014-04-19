@@ -26,6 +26,14 @@ currentViewport = new Variable
 # Variable containing currently realized (added to the DOM) highlights
 @currentHighlights = new KeysEqualityVariable {}
 
+ANNOTATION_DEFAULTS =
+  access: Annotation.ACCESS.PUBLIC
+  groups: []
+
+Meteor.startup ->
+  Session.setDefault 'annotationDefaults',
+    ANNOTATION_DEFAULTS
+
 class @Publication extends Publication
   @Meta
     name: 'Publication'
@@ -133,15 +141,10 @@ class @Publication extends Publication
 
             # TODO: We currently change this based on the width of the last page, but pages might not be of same width, what can we do then?
 
-            # We store current display wrapper width because we will later on
-            # reposition annotations for the ammount display wrapper width changes
-            displayWidth = @_$displayWrapper.width()
             # We remove all added CSS in publication destroy
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
-            # We reposition annotations if display wrapper width changed
-            $('.annotations-control, .annotations-list').css
-              left: "+=#{ viewport.width - displayWidth }"
+            resizeAnnotationsControl()
 
             $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
 
@@ -412,6 +415,7 @@ Deps.autorun ->
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
+    Meteor.subscribe 'my-groups'
   else
     publicationSubscribing.set false
     publicationHandle = null
@@ -653,6 +657,11 @@ viewportBottomPercentage = ->
   scrollBottom = $(window).scrollTop() + availableHeight
   makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
 
+debouncedSetCurrentViewport = _.debounce (viewport) ->
+  currentViewport.set viewport
+,
+  100
+
 setViewportPosition = ($viewport) ->
   top = viewportTopPercentage()
   bottom = viewportBottomPercentage()
@@ -670,7 +679,7 @@ setViewportPosition = ($viewport) ->
     height: "#{ bottom - top }%"
 
   displayHeight = $('.viewer .display-wrapper').height()
-  currentViewport.set
+  debouncedSetCurrentViewport
     top: top * displayHeight / 100
     bottom: bottom * displayHeight / 100
 
@@ -787,6 +796,30 @@ Template.highlightsControl.events
     $(template.firstNode).parents('.meta-menu').removeClass('displayed')
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
     return # Make sure CoffeeScript does not return anything
+
+Template.annotationsControl.events
+  'click .add': (e, template) ->
+    annotation = createAnnotationDocument()
+
+    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
+      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+      Notify.meteorError error, true if error
+
+    focusAnnotationId = annotationId
+
+    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
+resizeAnnotationsControl = ->
+  padding = parseInt($('.annotations-control').css('right'))
+  displayWrapper = $('.display-wrapper')
+  left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
+  $('.annotations-control').css
+    left: left
+
+Template.annotationsControl.rendered = ->
+  resizeAnnotationsControl()
 
 Template.publicationAnnotations.annotations = ->
   viewport = currentViewport()
@@ -1255,6 +1288,71 @@ Template.annotationMetaMenu.events
 Template.annotationMetaMenu.events addAccessEvents
 
 Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+
+Template.contextMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults.access = access
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseenter .access .selection': (e, template) ->
+    accessHover = $(e.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (e, template) ->
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenu.public = ->
+  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PUBLIC
+
+Template.contextMenu.private = ->
+  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PRIVATE
+
+Template.contextMenu.selectedGroups = ->
+  Session.get('annotationDefaults')?.groups
+
+Template.contextMenu.myGroups = Template.myGroups.myGroups
+
+Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+
+Template.contextMenuGroups.private = Template.contextMenu.private
+
+Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
+
+Template.contextMenuGroups.selectedGroupsDescription = ->
+  defaults = Session.get('annotationDefaults')
+  return unless defaults
+  if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
+
+Template.contextMenuGroups.events
+  'click .add-to-working-in': (e, template) ->
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults.groups = _.union defaults.groups, [@_id]
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-from-working-in': (e, template) ->
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults.groups = _.without defaults.groups, @_id
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenuGroupListing.workingIn = ->
+  defaults = Session.get('annotationDefaults')
+  _.contains defaults?.groups, @_id
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()

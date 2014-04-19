@@ -27,7 +27,7 @@
 </template>
 
 <template name="publicationMetaMenu">
-  <div class="meta-menu context-menu">
+  <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
       <p><b>{{title}}</b></p>
@@ -44,7 +44,7 @@
 </template>
 
 <template name="publicationLibraryMenu">
-  <div class="library-menu meta-menu context-menu">
+  <div class="library-menu meta-menu">
     {{> publicationLibraryMenuButtons}}
     <div class="meta-content">
       {{> publicationLibraryMenuCollections}}
@@ -77,7 +77,7 @@
 <template name="publicationLibraryMenuCollections">
   <h3>Add to collections</h3>
   {{#if myCollections.length}}
-    <ol class="library-menu-collections">
+    <ol class="library-menu-collections toggle-list">
       {{#each myCollections}}
         {{> publicationLibraryMenuCollectionListing}}
       {{/each}}
@@ -91,8 +91,8 @@
 </template>
 
 <template name="publicationLibraryMenuCollectionListing">
-  <li class="library-menu-collection">
-    <button class="{{#if inCollection}}remove-from-collection{{else}}add-to-collection{{/if}}">
+  <li class="library-menu-collection toggle-list-item">
+    <button class="{{#if inCollection}}remove-from-collection toggled{{else}}add-to-collection{{/if}}">
       <span class="collection-name">{{name}}</span>
       <span class="publications-count">{{countDescription}}</span>
     </button>
@@ -100,23 +100,23 @@
 </template>
 
 <template name="publicationAccessControl">
-  <div class="access-menu context-menu">
+  <div class="access-menu">
     <form class="access publication-access">
       <div class="selections">
 
         <label class="selection {{#if open}}selected{{/if}}">
           <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
-          <i class="icon-public"></i> Open<br/>Access
+          <i class="access-icon icon-public"></i> Open<br/>Access
         </label>
 
         <label class="selection {{#if closed}}selected{{/if}}">
           <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
-          <i class="icon-closed"></i> Closed<br/>Access
+          <i class="access-icon icon-closed"></i> Closed<br/>Access
         </label>
 
         <label class="selection {{#if private}}selected{{/if}}">
           <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="icon-private"></i> Private
+          <i class="access-icon icon-private"></i> Private
         </label>
 
       </div>
@@ -374,15 +374,16 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    <button class="add-button" title="Add an annotation"><i class="icon-plus"></i></button>
+    <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+    {{> contextMenu}}
   </div>
 </template>
 
 <template name="annotationMetaMenu">
-  <div class="meta-menu context-menu">
+  <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canEdit}}	    
+      {{#if canEdit}}
         <button class="delete">Delete</button>
       {{/if}}
       <p class="authors">
@@ -402,4 +403,74 @@
       {{> accessControl}}
     </div>
   </div>
+</template>
+
+<template name="contextMenu">
+  <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
+    <div class="icons">
+      {{#if public}}<i class="context-icon icon-public"></i>{{/if}}
+      {{#if private}}<i class="context-icon icon-private"></i>{{/if}}
+      {{#if selectedGroups.length}}
+        <i class="context-icon icon2-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
+      {{/if}}
+    </div>
+    <div class="meta-content">
+      <p>Choose defaults for new annotations.</p>
+      <div class="context-controls access-menu">
+        <form class="access {{documentName}}-access">
+          <div class="selections">
+
+            <label class="selection {{#if public}}selected{{/if}}">
+              <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+              <i class="access-icon icon-public"></i> Public
+            </label>
+
+            <label class="selection {{#if private}}selected{{/if}}">
+              <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+              <i class="access-icon icon-private"></i> Private
+            </label>
+
+          </div>
+          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be shared publicly.</div>
+          <div class="description private {{#if private}}displayed{{/if}}">
+            {{#if myGroups.count}}
+              New annotations will be visible to you and members of groups selected below.
+            {{else}}
+              New annotations will be visible only to you.
+            {{/if}}
+          </div>
+        </form>
+      </div>
+      {{> contextMenuGroups}}
+      <p class="hint">You can always change and customize permissions for each annotation individually.</p>
+    </div>
+  </div>
+</template>
+
+<template name="contextMenuGroups">
+  {{#if myGroups.count}}
+    <h3>Notify {{#if private}}and share with{{/if}} groups</h3>
+    <div class="context-menu-groups access-menu">
+      <ol class="toggle-list">
+        {{#each myGroups}}
+          {{> contextMenuGroupListing}}
+        {{/each}}
+      </ol>
+      <div class="description displayed">
+        {{#if selectedGroups.length}}
+          Annotations will appear on the activity page of {{selectedGroupsDescription}}.
+        {{else}}
+          Select groups where annotations should appear under activity.
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="contextMenuGroupListing">
+  <li class="context-menu-group toggle-list-item">
+    <button class="{{#if workingIn}}remove-from-working-in toggled{{else}}add-to-working-in{{/if}}">
+      <span class="group-name">{{name}}</span>
+    </button>
+  </li>
 </template>
