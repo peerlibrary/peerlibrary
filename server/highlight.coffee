@@ -62,6 +62,22 @@ Highlight.Meta.collection.deny
 
 registerForAccess Highlight
 
+Meteor.methods
+  'highlights-path': (highlightId) ->
+    check highlightId, String
+
+    highlight = Highlight.documents.findOne Highlight.requireReadAccessSelector(Meteor.person(),
+      _id: highlightId
+    )
+    return unless highlight
+
+    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(Meteor.person(),
+      _id: highlight.publication._id
+    )
+    return unless publication
+
+    [publication._id, publication.slug, highlightId]
+
 Meteor.publish 'highlights-by-id', (id) ->
   check id, String
 

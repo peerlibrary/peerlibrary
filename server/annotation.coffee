@@ -66,6 +66,22 @@ Annotation.Meta.collection.deny
 
 registerForAccess Annotation
 
+Meteor.methods
+  'annotations-path': (annotationId) ->
+    check annotationId, String
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
+      _id: annotationId
+    )
+    return unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(Meteor.person(),
+      _id: annotation.publication._id
+    )
+    return unless publication
+
+    [publication._id, publication.slug, annotationId]
+
 Meteor.publish 'annotations-by-id', (id) ->
   check id, String
 

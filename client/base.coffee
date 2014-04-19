@@ -56,68 +56,16 @@ notFound = ->
   Meteor.Router._page = 'notfound'
   Meteor.Router._pageDeps.changed()
 
-# TODO: We could just use a method here?
 redirectHighlightId = (highlightId) ->
-  highlightsHandle = Meteor.subscribe 'highlights-by-id', highlightId,
-    onError: (error) ->
-      notFound()
-    onReady: ->
-      highlight = Highlight.documents.findOne highlightId
-
-      unless highlight
-        highlightsHandle.stop()
-        notFound()
-        return
-
-      publicationsHandle = Meteor.subscribe 'publications-by-id', highlight.publication._id,
-        onError: (error) ->
-          highlightsHandle.stop()
-          notFound()
-        onReady: ->
-          publication = Publication.documents.findOne highlight.publication._id
-
-          # We do not need subscriptions anymore
-          highlightsHandle.stop()
-          publicationsHandle.stop()
-
-          unless publication
-            notFound()
-            return
-
-          Meteor.Router.to  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
-
+  Meteor.call 'highlights-path', highlightId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.highlightPath path...
   return # Return nothing
 
-# TODO: We could just use a method here?
 redirectAnnotationId = (annotationId) ->
-  annotationsHandle = Meteor.subscribe 'annotations-by-id', annotationId,
-    onError: (error) ->
-      notFound()
-    onReady: ->
-      annotation = LocalAnnotation.documents.findOne annotationId
-
-      unless annotation
-        annotationsHandle.stop()
-        notFound()
-        return
-
-      publicationsHandle = Meteor.subscribe 'publications-by-id', annotation.publication._id,
-        onError: (error) ->
-          annotationsHandle.stop()
-          notFound()
-        onReady: ->
-          publication = Publication.documents.findOne annotation.publication._id
-
-          # We do not need subscriptions anymore
-          annotationsHandle.stop()
-          publicationsHandle.stop()
-
-          unless publication
-            notFound()
-            return
-
-          Meteor.Router.to  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
-
+  Meteor.call 'annotations-path', annotationId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.annotationPath path...
   return # Return nothing
 
 if INSTALL
