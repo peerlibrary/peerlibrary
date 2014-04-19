@@ -864,7 +864,7 @@ Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
     if Session.get 'currentHighlightId'
       # Highlight is currently selected, so we do not update location and
-      # leave to Annotator.updateLocation to handel this. This allows making
+      # leave to Annotator.updateLocation to handle this. This allows making
       # one highlight immediatelly after another, without having to go through
       # a publication-only location after new highlight is created, befure
       # location is updated to this new highlight location.
