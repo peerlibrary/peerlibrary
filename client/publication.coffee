@@ -26,10 +26,13 @@ currentViewport = new Variable
 # Variable containing currently realized (added to the DOM) highlights
 @currentHighlights = new KeysEqualityVariable {}
 
+ANNOTATION_DEFAULTS =
+  access: Annotation.ACCESS.PUBLIC
+  groups: []
+
 Meteor.startup ->
   Session.setDefault 'annotationDefaults',
-    access: Annotation.ACCESS.PUBLIC
-    groups: []
+    ANNOTATION_DEFAULTS
 
 class @Publication extends Publication
   @Meta
@@ -1290,9 +1293,7 @@ Template.contextMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    defaults = Session.get 'annotationDefaults'
-    return if not defaults or access is defaults?.access
-
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
     defaults.access = access
     Session.set 'annotationDefaults', defaults
 
@@ -1321,6 +1322,8 @@ Template.contextMenu.private = ->
 Template.contextMenu.selectedGroups = ->
   Session.get('annotationDefaults')?.groups
 
+Template.contextMenu.myGroups = Template.myGroups.myGroups
+
 Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
 
 Template.contextMenuGroups.private = Template.contextMenu.private
@@ -1334,35 +1337,21 @@ Template.contextMenuGroups.selectedGroupsDescription = ->
 
 Template.contextMenuGroups.events
   'click .add-to-working-in': (e, template) ->
-    defaults = Session.get 'annotationDefaults'
-    return unless defaults
-
-    return if _.contains defaults.groups, @_id
-
-    console.log defaults
-    defaults.groups.push @_id
-
-    console.log defaults
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults.groups = _.union defaults.groups, [@_id]
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-from-working-in': (e, template) ->
-    defaults = Session.get 'annotationDefaults'
-    return unless defaults
-
-    return unless _.contains defaults.groups, @_id
-
-    console.log defaults
-    defaults.groups.splice defaults.groups.indexOf(@_id), 1
-    console.log defaults
+    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults.groups = _.without defaults.groups, @_id
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
 Template.contextMenuGroupListing.workingIn = ->
   defaults = Session.get('annotationDefaults')
-  return unless defaults
   _.contains defaults?.groups, @_id
 
 Template.footer.publicationDisplayed = ->

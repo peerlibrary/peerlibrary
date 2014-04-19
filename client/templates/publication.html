@@ -432,7 +432,13 @@
 
           </div>
           <div class="description public {{#if public}}displayed{{/if}}">New annotations will be shared publicly.</div>
-          <div class="description private {{#if private}}displayed{{/if}}">New annotations will be visible to you and members of groups selected below.</div>
+          <div class="description private {{#if private}}displayed{{/if}}">
+            {{#if myGroups.count}}
+              New annotations will be visible to you and members of groups selected below.
+            {{else}}
+              New annotations will be visible only to you.
+            {{/if}}
+          </div>
         </form>
       </div>
       {{> contextMenuGroups}}
