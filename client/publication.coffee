@@ -33,6 +33,17 @@ ANNOTATION_DEFAULTS =
 Meteor.startup ->
   Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
+getAnnoationDefaults = ->
+  _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+
+Deps.autorun ->
+  # We have to keep list of default groups updated if user is removed from a group
+  Group.documents.find(_id: $in: _.pluck Meteor.person()?.inGroups, '_id').observeChanges
+    removed: (id) ->
+      defaults = getAnnoationDefaults()
+      defaults.groups = _.without defaults.groups, id
+      Session.set 'annotationDefaults', defaults
+
 class @Publication extends Publication
   @Meta
     name: 'Publication'
@@ -1292,7 +1303,7 @@ Template.contextMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults = getAnnoationDefaults()
     defaults.access = access
     Session.set 'annotationDefaults', defaults
 
@@ -1336,14 +1347,14 @@ Template.contextMenuGroups.selectedGroupsDescription = ->
 
 Template.contextMenuGroups.events
   'click .add-to-working-in': (e, template) ->
-    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults = getAnnoationDefaults()
     defaults.groups = _.union defaults.groups, [@_id]
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-from-working-in': (e, template) ->
-    defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+    defaults = getAnnoationDefaults()
     defaults.groups = _.without defaults.groups, @_id
     Session.set 'annotationDefaults', defaults
 
