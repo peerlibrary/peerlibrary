@@ -54,7 +54,7 @@
 </template>
 
 <template name="publicationLibraryMenuButtons">
-  <i class="icon {{#if inLibrary}}icon2-bookmark{{else}}icon2-bookmark-empty{{/if}}"></i>
+  <i class="icon {{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
   {{#if inLibrary}}
     <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
       Remove from library
@@ -411,7 +411,7 @@
       {{#if public}}<i class="context-icon icon-public"></i>{{/if}}
       {{#if private}}<i class="context-icon icon-private"></i>{{/if}}
       {{#if selectedGroups.length}}
-        <i class="context-icon icon2-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
+        <i class="context-icon icon-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
       {{/if}}
     </div>
     <div class="meta-content">

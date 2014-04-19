@@ -31,8 +31,7 @@ ANNOTATION_DEFAULTS =
   groups: []
 
 Meteor.startup ->
-  Session.setDefault 'annotationDefaults',
-    ANNOTATION_DEFAULTS
+  Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
 class @Publication extends Publication
   @Meta
