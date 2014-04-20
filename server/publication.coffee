@@ -188,19 +188,6 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A subset of public fields used for search results to optimize transmission to a client
-  # This list is applied to PUBLIC_FIELDS to get a subset
-  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
-    [
-      'slug'
-      'createdAt'
-      'authors'
-      'title'
-      'numberOfPages'
-      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-      'access'
-    ]
-
   # A set of fields which are public and can be published to the client
   # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
   @PUBLIC_FIELDS: ->
@@ -219,6 +206,18 @@ class @Publication extends Publication
       access: 1
       readPersons: 1
       readGroups: 1
+
+  # A subset of public fields used for search results to optimize transmission to a client
+  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
+    fields: _.pick @PUBLIC_FIELDS().fields, [
+      'slug'
+      'createdAt'
+      'authors'
+      'title'
+      'numberOfPages'
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
+      'access'
+    ]
 
 registerForAccess Publication
 

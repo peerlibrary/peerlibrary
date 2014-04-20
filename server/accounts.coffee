@@ -73,7 +73,7 @@ Meteor.publish null, ->
   Person.documents.find
     'user._id': @userId
   ,
-    fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
+    Person.PUBLIC_AUTO_FIELDS()
 
 MAX_LINE_LENGTH = 68
 

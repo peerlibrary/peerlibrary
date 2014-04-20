@@ -17,6 +17,7 @@ class @Group extends Group
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
+  # A subset of public fields used when listing documents
   @PUBLIC_LISTING_FIELDS: ->
     fields:
       slug: 1

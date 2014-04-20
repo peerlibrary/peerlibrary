@@ -17,19 +17,6 @@ class @Person extends Person
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
       fields
 
-  # A subset of public fields used for automatic publishing
-  # This list is applied to PUBLIC_FIELDS to get a subset
-  @PUBLIC_AUTO_FIELDS: ->
-    [
-      'user'
-      'slug'
-      'gravatarHash'
-      'givenName'
-      'familyName'
-      'isAdmin'
-      'inGroups'
-    ]
-
   # A set of fields which are public and can be published to the client
   @PUBLIC_FIELDS: ->
     fields:
@@ -44,6 +31,18 @@ class @Person extends Person
       education: 1
       publications: 1
       library: 1
+
+  # A subset of public fields used for automatic publishing
+  @PUBLIC_AUTO_FIELDS: ->
+    fields: _.pick @PUBLIC_FIELDS().fields, [
+      'user'
+      'slug'
+      'gravatarHash'
+      'givenName'
+      'familyName'
+      'isAdmin'
+      'inGroups'
+    ]
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, NonEmptyString

@@ -21,7 +21,7 @@ Meteor.publish 'search-results', (query, limit) ->
     searchPublish @, 'search-results', query,
       cursor: Publication.documents.find(restrictedFindQuery,
         limit: limit
-        fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
+        fields: Publication.PUBLIC_SEARCH_RESULTS_FIELDS().fields
       )
       added: (id, fields) =>
         fields.hasAbstract = !!fields.abstract
