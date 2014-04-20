@@ -51,6 +51,8 @@ Accounts.onCreateUser (options, user) ->
 
     _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
+    person = Person.applyDefaultAccess null, person
+
     Person.documents.insert person
 
   catch error

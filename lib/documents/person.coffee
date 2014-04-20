@@ -48,6 +48,103 @@ class @Person extends Document
     # TODO: gravatarHash does not appear
     "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }"
 
+  hasReadAccess: (person) =>
+    true
+
+  @requireReadAccessSelector: (person, selector) ->
+    selector
+
+  hasMaintainerAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return true if person.isAdmin
+
+    # TODO: Implement karma points for public documents
+
+    return true if @_id is person._id
+
+    return true if person._id in _.pluck @maintainerPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireMaintainerAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    return selector if person.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+
+    accessConditions = [
+      _id: person._id
+    ,
+      'maintainerPersons._id': person._id
+    ,
+      'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      $or: accessConditions
+    selector
+
+  hasAdminAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return true if person.isAdmin
+
+    # TODO: Implement karma points for public publications
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @adminGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireAdminAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    return selector if person.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+
+    accessConditions = [
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      $or: accessConditions
+    selector
+
+  @applyDefaultAccess: (personId, document) ->
+    document
+
 Meteor.person = (userId) ->
   # Meteor.userId is reactive
   userId ?= Meteor.userId()

@@ -18,6 +18,9 @@ class @Tag extends Tag
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
+###
+TODO: Temporary disabled, not yet finalized code
+
 Meteor.publish 'tag-by-id', (tagId) ->
   check tagId, DocumentId
 
@@ -25,3 +28,4 @@ Meteor.publish 'tag-by-id', (tagId) ->
     _id: tagId
   ,
     Tag.PUBLIC_FIELDS()
+###

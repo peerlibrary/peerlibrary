@@ -7,8 +7,6 @@ class @Highlight extends Highlight
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-registerForAccess Highlight
-
 Meteor.methods
   'highlights-path': (highlightId) ->
     check highlightId, DocumentId

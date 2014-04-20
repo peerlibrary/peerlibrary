@@ -34,7 +34,7 @@ Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
 
   # Do not proceed if user is not collection author
-  if collection?.author._id isnt Meteor.personId()
+  if collection?.authorPerson?._id isnt Meteor.personId()
     # Remove sortable functionality in case it was previously enabled
     $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
     return
@@ -53,7 +53,7 @@ Template.collectionPublications.rendered = ->
 
 Template.collectionDetails.ownCollection = ->
   return unless Meteor.personId()
-  @author._id is Meteor.personId()
+  @authorPerson?._id is Meteor.personId()
 
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->

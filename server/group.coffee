@@ -33,13 +33,17 @@ Meteor.methods
     throw new Meteor.Error 400, "Name required." unless name
 
     createdAt = moment.utc().toDate()
-    Group.documents.insert
+    group =
       createdAt: createdAt
       updatedAt: createdAt
       name: name
       members: [
         _id: Meteor.personId()
       ]
+
+    group = Group.applyDefaultAccess Meteor.personId(), group
+
+    Group.documents.insert group
 
   'add-to-group': (groupId, memberId) ->
     check groupId, DocumentId

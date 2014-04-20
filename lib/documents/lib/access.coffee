@@ -2,47 +2,6 @@
   PRIVATE: 0
   PUBLIC: 1
 
-@hasReadAccess = (document, person) ->
-  return true if person?.isAdmin
-
-  return true if document.access is ACCESS.PUBLIC
-
-  # Access should be private here, if it is not, we prevent access to the document
-  # TODO: Should we log this?
-  return false unless document.access is ACCESS.PRIVATE
-
-  return false unless person?._id
-
-  return true if person._id in _.pluck document.readPersons, '_id'
-
-  personGroups = _.pluck person?.inGroups, '_id'
-  annotationGroups = _.pluck document.readGroups, '_id'
-
-  return true if _.intersection(personGroups, annotationGroups).length
-
-  return false
-
-@requireReadAccessSelector = (person, selector) ->
-  return selector if person?.isAdmin
-
-  # To not modify input
-  selector = EJSON.clone selector
-
-  # We use $and to not override any existing selector field
-  selector.$and = [] unless selector.$and
-  selector.$and.push
-    $or: [
-      access: ACCESS.PUBLIC
-    ,
-      access: ACCESS.PRIVATE
-      'readPersons._id': person?._id
-    ,
-      access: ACCESS.PRIVATE
-      'readGroups._id':
-        $in: _.pluck person?.inGroups, '_id'
-    ]
-  selector
-
 class @AccessDocument extends Document
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
@@ -59,13 +18,60 @@ class @AccessDocument extends Document
     PUBLIC: ACCESS.PUBLIC
 
   hasReadAccess: (person) =>
-    hasReadAccess @, person
+    return true if person?.isAdmin
+
+    return true if @access is ACCESS.PUBLIC
+
+    # Access should be private here, if it is not, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access is ACCESS.PRIVATE
+
+    return false unless person?._id
+
+    return true if person._id in _.pluck @readPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    annotationGroups = _.pluck @readGroups, '_id'
+
+    return true if _.intersection(personGroups, annotationGroups).length
+
+    return false
 
   @requireReadAccessSelector: (person, selector) ->
-    requireReadAccessSelector person, selector
+    return selector if person?.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+    selector.$and.push
+      $or: [
+        access: ACCESS.PUBLIC
+      ,
+        access: ACCESS.PRIVATE
+        'readPersons._id': person?._id
+      ,
+        access: ACCESS.PRIVATE
+        'readGroups._id':
+          $in: _.pluck person?.inGroups, '_id'
+      ]
+    selector
+
+  hasMaintainerAccess: (person) =>
+    throw new Error "Not implemented"
+
+  @requireMaintainerAccessSelector: (person, selector) ->
+    throw new Error "Not implemented"
+
+  hasAdminAccess: (person) =>
+    throw new Error "Not implemented"
+
+  @requireAdminAccessSelector: (person, selector) ->
+    throw new Error "Not implemented"
 
   @defaultAccess: ->
-    @ACCESS.PRIVATE
+    @ACCESS.PUBLIC
 
   @applyDefaultAccess: (personId, document) ->
     document.access = @defaultAccess() if not document.access?

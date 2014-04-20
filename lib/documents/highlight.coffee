@@ -1,7 +1,4 @@
-class @Highlight extends AccessDocument
-  # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
-  # readPersons: if private access, list of persons who have read permissions
-  # readGroups: if private access, list of groups who have read permissions
+class @Highlight extends Document
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -24,3 +21,48 @@ class @Highlight extends AccessDocument
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
+
+  hasReadAccess: (person) =>
+    true
+
+  @requireReadAccessSelector: (person, selector) ->
+    selector
+
+  hasMaintainerAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return true if person.isAdmin
+
+    # TODO: Implement karma points for public documents
+
+    return true if @author._id is person._id
+
+    return false
+
+  @requireMaintainerAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    return selector if person.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+
+    selector.$and.push
+      'author._id': person._id
+    selector
+
+  hasAdminAccess: (person) =>
+    throw new Error "Not implemented"
+
+  @requireAdminAccessSelector: (person, selector) ->
+    throw new Error "Not implemented"
+
+  @applyDefaultAccess: (personId, document) ->
+    document

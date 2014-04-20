@@ -39,7 +39,7 @@ Template.collections.myCollections = ->
   return unless Meteor.personId()
 
   Collection.documents.find
-    'author._id': Meteor.personId()
+    'authorPerson._id': Meteor.personId()
   ,
     sort: [
       ['slug', 'asc']

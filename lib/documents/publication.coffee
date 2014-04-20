@@ -115,10 +115,10 @@ class @Publication extends AccessDocument
 
     return true if person._id in _.pluck @readPersons, '_id'
 
-    personGroups = _.pluck person?.inGroups, '_id'
-    publicationGroups = _.pluck @readGroups, '_id'
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @readGroups, '_id'
 
-    return true if _.intersection(personGroups, publicationGroups).length
+    return true if _.intersection(personGroups, documentGroups).length
 
     return false
 
@@ -167,6 +167,116 @@ class @Publication extends AccessDocument
 
   @requireCacheAccessSelector: (person, selector) ->
     @requireReadAccessSelector person, selector, true
+
+  hasMaintainerAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return false unless @cached
+
+    return true if person.isAdmin
+
+    # Unknown access, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access in [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
+
+    # TODO: Implement karma points for public publications
+
+    return true if person._id in _.pluck @authors, '_id'
+
+    return true if person._id in _.pluck @maintainerPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireMaintainerAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+    selector.$and.push
+      cached:
+        $exists: true
+
+    return selector if person.isAdmin
+
+    accessConditions = [
+      'authors._id': person._id
+    ,
+      'maintainerPersons._id': person._id
+    ,
+      'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      access:
+        $in: [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
+      $or: accessConditions
+    selector
+
+  hasAdminAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return false unless @cached
+
+    return true if person.isAdmin
+
+    # Unknown access, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access in [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
+
+    # TODO: Implement karma points for public publications
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @adminGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireAdminAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+    selector.$and.push
+      cached:
+        $exists: true
+
+    return selector if person.isAdmin
+
+    accessConditions = [
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      access:
+        $in: [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
+      $or: accessConditions
+    selector
 
   @defaultAccess: ->
     @ACCESS.OPEN

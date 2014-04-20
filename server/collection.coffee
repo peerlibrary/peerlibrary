@@ -23,13 +23,17 @@ Meteor.methods
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     createdAt = moment.utc().toDate()
-    Collection.documents.insert
+    collection =
       createdAt: createdAt
       updatedAt: createdAt
       name: name
-      author:
+      authorPerson:
         _id: Meteor.personId()
       publications: []
+
+    collection = Collection.applyDefaultAccess Meteor.personId(), collection
+
+    Collection.documents.insert collection
 
   'remove-collection': (collectionId) ->
     check collectionId, DocumentId
@@ -72,7 +76,7 @@ Meteor.methods
 
     Collection.documents.update
       _id: collectionId
-      'author._id': person._id
+      'authorPerson._id': person._id
       'publications._id':
         $ne: publicationId
     ,
@@ -95,7 +99,7 @@ Meteor.methods
     # When we're removing from library we also want to remove the publication from all user's collections.
     # This query will match all user's collections that include this publication.
     collectionsQuery =
-      'author._id': person._id
+      'authorPerson._id': person._id
       'publications._id': publicationId
 
     # If collectionId is specified we modify the query to only remove from that collection
@@ -139,7 +143,7 @@ Meteor.methods
 
     collection = Collection.documents.findOne collectionId
 
-    throw new Meteor.Error 400, "Invalid collection." unless collection and collection.author._id is person._id
+    throw new Meteor.Error 400, "Invalid collection." unless collection and collection.authorPerson?._id is person._id
 
     oldOrderIds = _.pluck collection.publications, '_id'
 
@@ -167,7 +171,7 @@ Meteor.publish 'collection-by-id', (id) ->
 
 Meteor.publish 'my-collections', ->
   Collection.documents.find
-    'author._id': @personId
+    'authorPerson._id': @personId
   ,
     Collection.PUBLIC_FIELDS()
 

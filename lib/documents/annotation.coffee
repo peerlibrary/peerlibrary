@@ -62,3 +62,106 @@ class @Annotation extends AccessDocument
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
+
+  hasMaintainerAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return true if person.isAdmin
+
+    # Unknown access, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access in [Annotation.ACCESS.PUBLIC, Annotation.ACCESS.PRIVATE]
+
+    # TODO: Implement karma points for public documents
+
+    return true if @author._id is person._id
+
+    return true if person._id in _.pluck @maintainerPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireMaintainerAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    return selector if person.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+
+    accessConditions = [
+      'author._id': person._id
+    ,
+      'maintainerPersons._id': person._id
+    ,
+      'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      access:
+        $in: [Annotation.ACCESS.PUBLIC, Annotation.ACCESS.PRIVATE]
+      $or: accessConditions
+    selector
+
+  hasAdminAccess: (person) =>
+    # User has to be logged in
+    return false unless person?._id
+
+    return true if person.isAdmin
+
+    # Unknown access, we prevent access to the document
+    # TODO: Should we log this?
+    return false unless @access in [Annotation.ACCESS.PUBLIC, Annotation.ACCESS.PRIVATE]
+
+    # TODO: Implement karma points for public publications
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @adminGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    return false
+
+  @requireAdminAccessSelector: (person, selector) ->
+    unless person?._id
+      # Returns a selector which does not match anything
+      return _id:
+        $in: []
+
+    return selector if person.isAdmin
+
+    # To not modify input
+    selector = EJSON.clone selector
+
+    # We use $and to not override any existing selector field
+    selector.$and = [] unless selector.$and
+
+    accessConditions = [
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+    selector.$and.push
+      access:
+        $in: [Annotation.ACCESS.PUBLIC, Annotation.ACCESS.PRIVATE]
+      $or: accessConditions
+    selector
+
+  @defaultAccess: ->
+    @ACCESS.PRIVATE

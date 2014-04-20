@@ -35,8 +35,7 @@ Meteor.methods
       body: body
       license: 'CC0-1.0+'
 
-    # TODO: Should we have this?
-    #comment = Comment.applyDefaultAccess Meteor.personId(), comment
+    comment = Comment.applyDefaultAccess Meteor.personId(), comment
 
     Comment.documents.insert comment
 
