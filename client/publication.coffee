@@ -1114,7 +1114,6 @@ Template.annotationEditor.events
     if @local
       # TODO: Set privacy settings
       Meteor.call 'create-annotation', @publication._id, body, (error, annotationId) =>
-        console.log "back"
         return Notify.meteorError error, true if error
 
         LocalAnnotation.documents.remove @_id
