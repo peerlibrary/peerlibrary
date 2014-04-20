@@ -326,11 +326,11 @@ class @Annotator extends Annotator
       _.pick t, 'source', 'selector'
 
     # Highlights are a special case and we provide _id from the client
-    Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, id) =>
+    Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, highlightId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       return Notify.meteorError error, true if error
 
-      assert.equal annotation._id, id
+      assert.equal annotation._id, highlightId
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?

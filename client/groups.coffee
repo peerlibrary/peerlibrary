@@ -41,7 +41,7 @@ Template.groups.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Meteor.call 'create-group', name, (error, id) =>
+    Meteor.call 'create-group', name, (error, groupId) =>
       return Notify.meteorError error, true if error
 
       Notify.success "Group created."

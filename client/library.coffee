@@ -52,7 +52,7 @@ Template.addNewCollection.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Meteor.call 'create-collection', name, (error, id) =>
+    Meteor.call 'create-collection', name, (error, collectionId) =>
         return Notify.meteorError error, true if error
 
         # Clear the collection name from the form
