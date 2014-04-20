@@ -35,7 +35,6 @@ class @Publication extends AccessDocument
   # cached: timestamp when the publication was cached
   # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
   # mediaType: which media type a cached file is (currently supported: pdf, tei)
-  # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
   #   error: description of the publication processing error
