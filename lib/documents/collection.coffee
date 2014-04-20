@@ -2,6 +2,10 @@ class @Collection extends AccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
+  # maintainerPersons: list of persons who have maintainer permissions
+  # maintainerGroups: ilist of groups who have maintainer permissions
+  # adminPersons: list of persons who have admin permissions
+  # adminGroups: ilist of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # authorPerson:
@@ -24,9 +28,13 @@ class @Collection extends AccessDocument
   @Meta
     name: 'Collection'
     fields: =>
-      slug: @GeneratedField 'self', ['name']
+      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
+      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminGroups: [@ReferenceField Group, ['slug', 'name']]
       authorPerson: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
+      slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
 
   hasMaintainerAccess: (person) =>
@@ -140,3 +148,21 @@ class @Collection extends AccessDocument
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireMaintainerAccessSelector person, selector
+
+  @applyDefaultAccess: (personId, document) ->
+    document = super
+
+    if personId and personId not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: personId
+    if document.authorPerson?._id and document.authorPerson._id not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: document.authorPerson._id
+    if document.authorGroup?._id and document.authorGroup._id not in _.pluck document.adminGroups, '_id'
+      document.adminGroups ?= []
+      document.adminGroups.push
+        _id: document.authorGroup._id
+
+    document

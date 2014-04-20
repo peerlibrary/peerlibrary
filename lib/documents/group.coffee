@@ -2,6 +2,10 @@ class @Group extends AccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
+  # maintainerPersons: list of persons who have maintainer permissions
+  # maintainerGroups: ilist of groups who have maintainer permissions
+  # adminPersons: list of persons who have admin permissions
+  # adminGroups: ilist of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # slug: slug for URL
@@ -15,6 +19,10 @@ class @Group extends AccessDocument
   @Meta
     name: 'Group'
     fields: =>
+      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerGroups: [@ReferenceField 'self', ['slug', 'name']]
+      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
@@ -118,3 +126,13 @@ class @Group extends AccessDocument
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @applyDefaultAccess: (personId, document) ->
+    document = super
+
+    if personId and personId not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: personId
+
+    document

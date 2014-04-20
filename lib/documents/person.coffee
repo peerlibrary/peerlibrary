@@ -1,4 +1,8 @@
 class @Person extends Document
+  # maintainerPersons: list of persons who have maintainer permissions
+  # maintainerGroups: ilist of groups who have maintainer permissions
+  # adminPersons: list of persons who have admin permissions
+  # adminGroups: ilist of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # user: (null if without user account)
@@ -25,10 +29,14 @@ class @Person extends Document
   @Meta
     name: 'Person'
     fields: =>
+      maintainerPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
+      adminPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
+      slug: @GeneratedField 'self', ['user.username']
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
-      slug: @GeneratedField 'self', ['user.username']
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
 
   displayName: =>
@@ -153,6 +161,21 @@ class @Person extends Document
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @applyDefaultAccess: (personId, document) ->
+    # We need to know _id to be able to add it to adminPersons
+    assert document._id
+
+    if personId and personId not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: personId
+    if document._id not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: document._id
+
+    document
 
   @applyDefaultAccess: (personId, document) ->
     document
