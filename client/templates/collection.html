@@ -1,9 +1,22 @@
 <template name="collection">
-  <h1>{{collection.name}}</h1>
-  <div class="row">
-    {{> collectionPublications collection}}
-    {{> collectionDetails collection}}
-  </div>
+  {{#if loading}}
+    <div class="simple loading">
+      <h2>Loading</h2>
+    </div>
+  {{else}}
+    {{#if notfound}}
+      <div class="simple notfound">
+        <h2>404 Not found</h2>
+        <p>Collection not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+      </div>
+    {{else}}
+      <h1>{{collection.name}}</h1>
+      <div class="row">
+        {{> collectionPublications collection}}
+        {{> collectionDetails collection}}
+      </div>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="collectionPublications">
@@ -23,7 +36,7 @@
       <img src="{{authorPerson.avatar}}" class="avatar" />
       <h4 class="member-name"><a href="{{profilePath authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
     </div>
-    {{#if ownCollection}}
+    {{#if canModify}}
       <h3>Tools</h3>
       <p>
         <button class="delete-collection">Delete collection</button>
@@ -33,8 +46,8 @@
       <p class="hint">
         You can reorder publications in a collection by dragging them.
       </p>
-      <p class="back-to-library">
-        <a href="{{libraryPath}}">Back to Library</a>
+      <p class="to-my-library">
+        <a href="{{libraryPath}}">To My Library</a>
       </p>
     {{/if}}
   </div>

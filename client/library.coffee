@@ -4,9 +4,10 @@ Deps.autorun ->
     currentUserId = Meteor.personId()
 
     # Redirect to frontpage if the user is not logged in
+    # TODO: This is a really bad user experience because first time user is always not yet logged in by Meteor so we always redirect. This should be solved in router that libraryActive is not set if user is not logged in.
     Meteor.Router.toNew Meteor.Router.indexPath() unless currentUserId
 
-    Meteor.subscribe 'persons-by-id-or-slug', currentUserId
+    Meteor.subscribe 'my-person-library'
 
     Meteor.subscribe 'my-publications'
     Meteor.subscribe 'my-publications-importing'

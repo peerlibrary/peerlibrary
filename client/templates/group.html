@@ -1,31 +1,44 @@
 <template name="group">
-  <h1>{{group.name}}</h1>
-  <div class="row">
-    <div class="col12 groups-directory">
-      <h2>Group Activity</h2>
+  {{#if loading}}
+    <div class="simple loading">
+      <h2>Loading</h2>
     </div>
-    <div class="col4 push12 sidebar group-members-panel">
-      <h2 class="directory-title">Members</h2>
-      {{> groupMembersList group}}
-      {{#if currentUserIsMember}}
-        {{> groupMembersAddControl group}}
-      {{/if}}
-    </div>
-  </div>
+  {{else}}
+    {{#if notfound}}
+      <div class="simple notfound">
+        <h2>404 Not found</h2>
+        <p>Group not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+      </div>
+    {{else}}
+      <h1>{{group.name}}</h1>
+      <div class="row">
+        <div class="col12 groups-directory">
+          <h2>Group Activity</h2>
+        </div>
+        <div class="col4 push12 sidebar group-members-panel">
+          <h2 class="directory-title">Members</h2>
+          {{> groupMembersList group}}
+          {{#if canModifyMembership}}
+            {{> groupMembersAddControl group}}
+          {{/if}}
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="groupMembersList">
-  <ol class="members member-list {{#unless currentUserIsMember}}read-only{{/unless}}">
+  <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
     {{#each members}}
-      {{>personMember}}
+      {{> personMember}}
     {{/each}}
   </ol>
 </template>
 
 <template name="groupMembersAddControl">
-    <h3>Add member</h3>
+    <h3>Add a member</h3>
     <div class="add-control">
-      <input type="text" class="add-group-member" placeholder="Search by username" />
+      <input type="text" class="add-group-member" placeholder="Search by username, name, or e-mail" />
       {{> groupMembersAddControlNoResults}}
       {{> groupMembersAddControlResults}}
       {{> groupMembersAddControlLoading}}

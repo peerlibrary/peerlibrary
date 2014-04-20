@@ -178,8 +178,8 @@ class @Publication extends AccessDocument
   @readAccessPersonFields: ->
     # _id field is implicitly added
     isAdmin: 1
-    library: 1
     inGroups: 1
+    library: 1
 
   @readAccessSelfFields: ->
     # _id field is implicitly added

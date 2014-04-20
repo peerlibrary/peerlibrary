@@ -57,6 +57,16 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
     ,
       Person.PUBLIC_FIELDS()
 
+Meteor.publish 'my-person-library', ->
+  return unless @personId
+
+  # No need for requireReadAccessSelector because persons are public
+  Person.documents.find
+    _id: @personId
+  ,
+    fields:
+      library: 1
+
 Meteor.publish 'search-persons', (query, except) ->
   except ?= []
 

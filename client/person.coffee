@@ -32,6 +32,7 @@ Template.profile.person = ->
     slug: Session.get 'currentPersonSlug'
 
 Template.profile.isMine = ->
+  # TODO: This is not a permission check, should check if you have permissions if this is what is wanted
   Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
 # Publications authored by this person

@@ -67,11 +67,11 @@ Accounts.onCreateUser (options, user) ->
 
 # With null name, the record set is automatically sent to all connected clients
 Meteor.publish null, ->
-  return unless @userId
+  return unless @personId
 
   # No need for requireReadAccessSelector because persons are public
   Person.documents.find
-    'user._id': @userId
+    _id: @personId
   ,
     Person.PUBLIC_AUTO_FIELDS()
 

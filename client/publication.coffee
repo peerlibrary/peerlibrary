@@ -525,7 +525,7 @@ libraryMenuSubscriptionCollectionsHandle = null
 Template.publicationLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++
   # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
-  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'persons-by-id-or-slug', Meteor.personId() unless libraryMenuSubscriptionPersonHandle
+  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'my-person-library' unless libraryMenuSubscriptionPersonHandle
 
 Template.publicationLibraryMenu.destroyed = ->
   libraryMenuSubscriptionCounter--
