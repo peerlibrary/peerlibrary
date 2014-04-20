@@ -1028,8 +1028,12 @@ Template.publicationAnnotationsItem.updatedFromNow = ->
 
 Template.annotationTags.rendered = ->
   # TODO: Make links work
+  ###
+  TODO: Temporary disabled, not yet finalized code
+
   $(@findAll '.annotation-tags-list').tagit
     readOnly: true
+  ###
 
 Template.annotationEditor.created = ->
   @_rendered = false
@@ -1058,12 +1062,16 @@ Template.annotationEditor.rendered = ->
       a:
         href: true
 
+  ###
+  TODO: Temporary disabled, not yet finalized code
+
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
 
   # Create tags
   _.each @data.tags, (item) =>
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+  ###
 
   return # Make sure CoffeeScript does not return anything
 
@@ -1078,6 +1086,9 @@ Template.annotationEditor.events
     return unless $editor.text()
 
     body = $editor.html()
+
+    ###
+    TODO: Temporary disabled, not yet finalized code
 
     $tags = $(template.findAll '.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
@@ -1095,13 +1106,13 @@ Template.annotationEditor.events
       # return
       tag:
         _id: tagId
+    ###
 
     # TODO: Set privacy settings
     LocalAnnotation.documents.update @_id,
       $set:
         local: false
         body: body
-        tags: tags
       $unset:
         editing: ''
     ,

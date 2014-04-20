@@ -187,7 +187,9 @@
         {{else}}
           <div class="annotation-content">
             <div class="body">{{{body}}}</div>
-            {{> annotationTags}}
+            {{! TODO: Temporary disabled, not yet finalized code
+              {> annotationTags}
+            }}
           </div>
         {{/if}}
         <div class="annotation-footer">
@@ -242,12 +244,14 @@
               </div>
             {{/constant}}
           </div>
-          <div class="form-tags">
-            <i class="icon-tags"></i>
-            {{#constant}}
-              <ul class="annotation-tags-editor"></ul>
-            {{/constant}}
-          </div>
+          {{! TODO: Temporary disabled, not yet finalized code
+            <div class="form-tags">
+              <i class="icon-tags"></i>
+              {#constant}
+                <ul class="annotation-tags-editor"></ul>
+              {/constant}
+            </div>
+          }}
         </div>
         <div class="form-control">
           <button type="button" class="btn blue save">Save</button>
