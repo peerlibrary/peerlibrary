@@ -8,26 +8,31 @@ class @Comment extends Comment
     fields: {} # All
 
 Meteor.methods
-  # TODO: Use this code on the client side as well
   'create-comment': (annotationId, body) ->
     check annotationId, DocumentId
     check body, NonEmptyString
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
-    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
       _id: annotationId
     )
     throw new Meteor.Error 400, "Invalid annotation." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
 
     createdAt = moment.utc().toDate()
     comment =
       createdAt: createdAt
       updatedAt: createdAt
       author:
-        _id: Meteor.personId()
+        _id: person._id
       annotation:
         _id: annotationId
       publication:
@@ -35,14 +40,29 @@ Meteor.methods
       body: body
       license: 'CC0-1.0+'
 
-    comment = Comment.applyDefaultAccess Meteor.personId(), comment
+    comment = Comment.applyDefaultAccess person._id, comment
 
     Comment.documents.insert comment
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
   check publicationId, DocumentId
 
-  Comment.documents.find
-    'publication._id': publicationId
+  @related (person, publication) ->
+    return unless publication?.hasReadAccess person
+    # TODO: We have also to limit only to comments on annotations user has access to
+
+    # No need for requireReadAccessSelector because comments are public
+    Comment.documents.find
+      'publication._id': publicationId
+    ,
+      Comment.PUBLIC_FIELDS()
   ,
-    Comment.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
+  ,
+    Publication.documents.find
+      _id: publicationId
+    ,
+      fields: Publication.readAccessSelfFields()

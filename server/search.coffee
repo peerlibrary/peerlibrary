@@ -36,8 +36,4 @@ Meteor.publish 'search-results', (query, limit) ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()

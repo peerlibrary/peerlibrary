@@ -1,7 +1,7 @@
 Deps.autorun ->
   if Session.get 'currentCollectionId'
     Meteor.subscribe 'collection-by-id', Session.get 'currentCollectionId'
-    Meteor.subscribe 'collection-publications', Session.get 'currentCollectionId'
+    Meteor.subscribe 'publications-by-collection', Session.get 'currentCollectionId'
 
 Deps.autorun ->
   collection = Collection.documents.findOne Session.get('currentCollectionId'),

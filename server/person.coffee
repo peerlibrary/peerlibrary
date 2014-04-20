@@ -48,6 +48,7 @@ class @Person extends Person
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, NonEmptyString
 
+  # No need for requireReadAccessSelector because persons are public
   Person.documents.find
     $or: [
         slug: slug
@@ -89,6 +90,7 @@ Meteor.publish 'search-persons', (query, except) ->
   return unless findPersonQuery.$and.length
 
   searchPublish @, 'search-persons', query,
+    # No need for requireReadAccessSelector because persons are public
     cursor: Person.documents.find findPersonQuery,
       limit: 5
       fields: Person.PUBLIC_FIELDS().fields

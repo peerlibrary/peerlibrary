@@ -13,30 +13,32 @@ Meteor.methods
   'annotations-path': (annotationId) ->
     check annotationId, DocumentId
 
-    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
+    person = Meteor.person()
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
       _id: annotationId
     )
     return unless annotation
 
-    publication = Publication.documents.findOne Publication.requireReadAccessSelector(Meteor.person(),
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
       _id: annotation.publication._id
     )
     return unless publication
 
     [publication._id, publication.slug, annotationId]
 
-  # TODO: Use this code on the client side as well
   'create-annotation': (publicationId, body) ->
     check publicationId, DocumentId
     check body, Match.Optional NonEmptyString
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
     body = '' unless body
 
-    publication = Publication.documents.findOne Publication.requireReadAccessSelector(Meteor.person(),
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
       _id: publicationId
     )
     throw new Meteor.Error 400, "Invalid publication." unless publication
@@ -47,7 +49,7 @@ Meteor.methods
       createdAt: createdAt
       updatedAt: createdAt
       author:
-        _id: Meteor.personId()
+        _id: person._id
       publication:
         _id: publicationId
       references:
@@ -60,7 +62,7 @@ Meteor.methods
       body: body
       license: 'CC0-1.0+'
 
-    annotation = Annotation.applyDefaultAccess Meteor.personId(), annotation
+    annotation = Annotation.applyDefaultAccess person._id, annotation
 
     Annotation.documents.insert annotation
 
@@ -69,57 +71,68 @@ Meteor.methods
     check annotationId, DocumentId
     check body, NonEmptyString
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
-    # TODO: Check permissions (or simply limit query to them)
-
-    Annotation.documents.update
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
       _id: annotationId
-    ,
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
+
+    Annotation.documents.update Annotation.requireMaintainerAccessSelector(person,
+      _id: annotationId
+    ),
       $set:
         updatedAt: moment.utc().toDate()
         body: body
 
+  # TODO: Use this code on the client side as well
   'remove-annotation': (annotationId) ->
     check annotationId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Check permissions (or simply limit query to them)
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: annotationId
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
 
-    Annotation.documents.remove annotationId
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
 
-Meteor.publish 'annotations-by-id', (id) ->
-  check id, DocumentId
+    Annotation.documents.remove Annotation.requireRemoveAccessSelector(person,
+      _id: annotationId
+    )
+
+Meteor.publish 'annotations-by-id', (annotationId) ->
+  check annotationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
-      _id: id
+      _id: annotationId
     ), Annotation.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
+      fields: _.extend Annotation.readAccessPersonFields(), Publication.readAccessPersonFields()
   ,
     Publication.documents.find
-      'annotations._id': id
+      'annotations._id': annotationId
     ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+      fields: Publication.readAccessSelfFields()
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
   check publicationId, DocumentId
@@ -134,19 +147,9 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
+      fields: _.extend Annotation.readAccessPersonFields(), Publication.readAccessPersonFields()
   ,
     Publication.documents.find
       _id: publicationId
     ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+      fields: Publication.readAccessSelfFields()

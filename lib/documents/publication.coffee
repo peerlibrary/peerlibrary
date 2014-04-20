@@ -168,6 +168,20 @@ class @Publication extends AccessDocument
   @requireCacheAccessSelector: (person, selector) ->
     @requireReadAccessSelector person, selector, true
 
+  @readAccessPersonFields: ->
+    # _id field is implicitly added
+    isAdmin: 1
+    library: 1
+    inGroups: 1
+
+  @readAccessSelfFields: ->
+    # _id field is implicitly added
+    cached: 1
+    processed: 1
+    access: 1
+    readPersons: 1
+    readGroups: 1
+
   hasMaintainerAccess: (person) =>
     # User has to be logged in
     return false unless person?._id

@@ -24,10 +24,16 @@ class @Comment extends Document
       publication: @ReferenceField Publication
 
   hasReadAccess: (person) =>
-    true
+    throw new Error "Not needed, documents are public"
 
   @requireReadAccessSelector: (person, selector) ->
-    selector
+    throw new Error "Not needed, documents are public"
+
+  @readAccessPersonFields: ->
+    throw new Error "Not needed, documents are public"
+
+  @readAccessSelfFields: ->
+    throw new Error "Not needed, documents are public"
 
   hasMaintainerAccess: (person) =>
     # User has to be logged in

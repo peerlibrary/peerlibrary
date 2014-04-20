@@ -58,6 +58,17 @@ class @AccessDocument extends Document
       ]
     selector
 
+  @readAccessPersonFields: ->
+    # _id field is implicitly added
+    isAdmin: 1
+    inGroups: 1
+
+  @readAccessSelfFields: ->
+    # _id field is implicitly added
+    access: 1
+    readPersons: 1
+    readGroups: 1
+
   hasMaintainerAccess: (person) =>
     throw new Error "Not implemented"
 

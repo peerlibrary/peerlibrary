@@ -49,10 +49,16 @@ class @Person extends Document
     "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }"
 
   hasReadAccess: (person) =>
-    true
+    throw new Error "Not needed, documents are public"
 
   @requireReadAccessSelector: (person, selector) ->
-    selector
+    throw new Error "Not needed, documents are public"
+
+  @readAccessPersonFields: ->
+    throw new Error "Not needed, documents are public"
+
+  @readAccessSelfFields: ->
+    throw new Error "Not needed, documents are public"
 
   hasMaintainerAccess: (person) =>
     # User has to be logged in

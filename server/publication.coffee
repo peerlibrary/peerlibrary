@@ -227,7 +227,8 @@ Meteor.methods
     check filename, String
     check sha256, String
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     existingPublication = Publication.documents.findOne
       sha256: sha256
@@ -235,10 +236,10 @@ Meteor.methods
     # Filter importing to contain only this person
     if existingPublication?.importing
       existingPublication.importing = _.filter existingPublication.importing, (importingBy) ->
-        return importingBy.person._id is Meteor.personId()
+        return importingBy.person._id is person._id
 
     already = false
-    if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
+    if existingPublication?._id in _.pluck person.library, '_id'
       # This person already has the publication in library
       id = existingPublication._id
       verify = false
@@ -255,12 +256,12 @@ Meteor.methods
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
-          $ne: Meteor.personId()
+          $ne: person._id
       ,
         $addToSet:
           importing:
             person:
-              _id: Meteor.personId()
+              _id: person._id
             filename: filename
             importingId: Random.id()
       # TODO: We could check here if we updated anything, if we did not, then it seems user was just added to importing in parallel, so we could go to the case above (and reorder code a bit)
@@ -271,13 +272,13 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
-      id = Publication.documents.insert Publication.applyDefaultAccess Meteor.personId(),
+      id = Publication.documents.insert Publication.applyDefaultAccess person._id,
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
         source: 'import'
         importing: [
           person:
-            _id: Meteor.personId()
+            _id: person._id
           filename: filename
           importingId: Random.id()
         ]
@@ -287,7 +288,7 @@ Meteor.methods
         metadata: false
       verify = false
 
-    samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
+    samples = if verify then existingPublication._verificationSamples person._id else null
 
     # Return
     publicationId: id
@@ -300,11 +301,12 @@ Meteor.methods
     check options, Match.ObjectIncluding
       publicationId: String
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     publication = Publication.documents.findOne
       _id: options.publicationId
-      'importing.person._id': Meteor.personId()
+      'importing.person._id': person._id
       cached:
         $exists: false
     ,
@@ -333,7 +335,7 @@ Meteor.methods
       sha256 = hash.finalize()
 
       unless sha256 == publication.sha256
-        throw new Meteor.Error 403, "Hash of uploaded file does not match hash provided initially."
+        throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
@@ -347,7 +349,9 @@ Meteor.methods
 
       # Hash was verified, so add it to uploader's library
       Person.documents.update
-        '_id': Meteor.personId()
+        _id: person._id
+        'library._id':
+          $ne: publication._id
       ,
         $addToSet:
           library:
@@ -357,7 +361,8 @@ Meteor.methods
     check publicationId, DocumentId
     check samplesData, [Uint8Array]
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     publication = Publication.documents.findOne
       _id: publicationId
@@ -368,18 +373,20 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid number of samples." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
     publicationFile = Storage.open publication.cachedFilename()
-    serverSamples = publication._verificationSamples Meteor.personId()
+    serverSamples = publication._verificationSamples person._id
 
     verified = _.every _.map serverSamples, (serverSample, index) ->
       clientSampleData = samplesData[index]
       serverSampleData = new Uint8Array publicationFile.slice serverSample.offset, serverSample.offset + serverSample.size
       _.isEqual clientSampleData, serverSampleData
 
-    throw new Meteor.Error 403, "Verification failed." unless verified
+    throw new Meteor.Error 400, "Verification failed." unless verified
 
     # Samples were verified, so add it to person's library
     Person.documents.update
-      '_id': Meteor.personId()
+      '_id': person._id
+      'library._id':
+        $ne: publication._id
     ,
       $addToSet:
         library:
@@ -393,7 +400,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'authors._id': author._id
-    ), Publication.PUBLIC_FIELDS()
+    ),
+      Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       slug: slug
@@ -404,28 +412,21 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-id', (id) ->
-  check id, DocumentId
+Meteor.publish 'publications-by-id', (publicationId) ->
+  check publicationId, DocumentId
 
   @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
-      _id: id
-    ), Publication.PUBLIC_FIELDS()
+      _id: publicationId
+    ),
+      Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()
 
 # We could try to combine publications-by-id and publications-cached-by-id,
 # but it is easier to have two and leave to Meteor to merge them together
@@ -443,26 +444,22 @@ Meteor.publish 'publications-cached-by-id', (id) ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'my-publications', ->
   @related (person) ->
+    return unless person?.library
+
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
-        $in: _.pluck person?.library, '_id'
-    ), Publication.PUBLIC_FIELDS()
+        $in: _.pluck person.library, '_id'
+    ),
+      Publication.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
+      fields: _.extend Publication.readAccessPersonFields(),
         library: 1
 
 # Use use this publish endpoint so that users can see their own filename
@@ -485,8 +482,4 @@ Meteor.publish 'my-publications-importing', ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()

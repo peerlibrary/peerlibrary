@@ -23,14 +23,12 @@ class @Group extends Group
       name: 1
       membersCount: 1
 
-# TODO: Use this code on the client side as well
 Meteor.methods
   'create-group': (name) ->
-    check name, String
+    check name, NonEmptyString
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
-
-    throw new Meteor.Error 400, "Name required." unless name
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     createdAt = moment.utc().toDate()
     group =
@@ -38,88 +36,107 @@ Meteor.methods
       updatedAt: createdAt
       name: name
       members: [
-        _id: Meteor.personId()
+        _id: person._id
       ]
 
-    group = Group.applyDefaultAccess Meteor.personId(), group
+    group = Group.applyDefaultAccess person._id, group
 
     Group.documents.insert group
 
+  # TODO: Use this code on the client side as well
   'add-to-group': (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    # We do not check here if group exists or if user is a member of it because we have query below with these conditions
-
-    # TODO: Check that memberId has an user associated with it? Or should we allow adding persons even if they are not users? So that you can create a group of lab mates, without having for all of them to be registered?
-
-    # TODO: Should be allowed also if user is admin
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
 
     member = Person.documents.findOne
       _id: memberId
+    return 0 unless member
 
-    return unless member
+    # We do not check here if user is already a member of the group because query checks
 
-    Group.documents.update
+    Group.documents.update Group.requireAdminAccessSelector(person,
       _id: groupId
-      $and: [
-        'members._id': Meteor.personId()
-      ,
-        'members._id':
-          $ne: member._id
-      ]
-    ,
+      'members._id':
+        $ne: memberId
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         members:
-          _id: member._id
+          _id: memberId
 
+  # TODO: Use this code on the client side as well
   'remove-from-group': (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    # We do not check here if group exists or if user is a member of it because we have query below with these conditions
-
-    # TODO: Should be allowed also if user is admin
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
 
     member = Person.documents.findOne
       _id: memberId
+    return 0 unless member
 
-    return unless member
+    # We do not check here if user is really a member of the group because query checks
 
-    Group.documents.update
+    Group.documents.update Group.requireAdminAccessSelector(person,
       _id: groupId
-      $and: [
-        'members._id': Meteor.personId()
-      ,
-        'members._id': member._id
-      ]
-    ,
+      'members._id': memberId
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         members:
-          _id: member._id
+          _id: memberId
 
-Meteor.publish 'groups-by-id', (id) ->
-  check id, DocumentId
+Meteor.publish 'groups-by-id', (groupId) ->
+  check groupId, DocumentId
 
-  Group.documents.find
-    _id: id
+  @related (person) ->
+    Group.documents.find Group.requireReadAccessSelector(person,
+      _id: groupId
+    ),
+      Group.PUBLIC_FIELDS()
   ,
-    Group.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Group.readAccessPersonFields()
 
 Meteor.publish 'my-groups', ->
-  Group.documents.find
-    'members._id': @personId
+  @related (person) ->
+    Group.documents.find Group.requireReadAccessSelector(person,
+      'members._id': person._id
+    ),
+      Group.PUBLIC_LISTING_FIELDS()
   ,
-    Group.PUBLIC_LISTING_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Group.readAccessPersonFields()
 
 Meteor.publish 'groups', ->
   # TODO: Return a subset of groups with pagination and provide extra methods for server side group searching. See https://github.com/peerlibrary/peerlibrary/issues/363
-  Group.documents.find {}, Group.PUBLIC_LISTING_FIELDS()
+  @related (person) ->
+    Group.documents.find Group.requireReadAccessSelector(person,
+      {}
+    ),
+      Group.PUBLIC_LISTING_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Group.readAccessPersonFields()

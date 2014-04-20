@@ -23,7 +23,6 @@ Meteor.methods
 
     [publication._id, publication.slug, highlightId]
 
-  # TODO: Use this code on the client side as well
   # By specifying various highlightIds user could check which highlights exist
   # even if otherwise they would not have access to a highlight. This does not
   # seem an issue as highlights are generally seen as public and limited only
@@ -34,12 +33,13 @@ Meteor.methods
     check quote, NonEmptyString
     check target, [Object]
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Check whether target conforms to schema
     # TODO: Check the target (try to apply it on the server)
 
-    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(Meteor.person(),
+    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(person,
       _id: publicationId
     )
     throw new Meteor.Error 400, "Invalid publication." unless publication
@@ -57,48 +57,52 @@ Meteor.methods
       quote: quote
       target: target
 
-    highlight = Highlight.applyDefaultAccess Meteor.personId(), highlight
+    highlight = Highlight.applyDefaultAccess person._id, highlight
 
     Highlight.documents.insert highlight
 
+  # TODO: Use this code on the client side as well
   'remove-highlight': (highlightId) ->
     check highlightId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Check permissions (or simply limit query to them)
+    # No need for requireReadAccessSelector because highlights are public
+    highlight = Highlight.documents.findOne
+      _id: highlightId
+    throw new Meteor.Error 400, "Invalid highlight." unless highlight
 
-    Highlight.documents.remove highlightId
+    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(person,
+      _id: highlight.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid highlight." unless publication
 
-Meteor.publish 'highlights-by-id', (id) ->
-  check id, DocumentId
+    Highlight.documents.remove Highlight.requireMaintainerAccessSelector(person,
+      _id: highlightId
+    )
+
+Meteor.publish 'highlights-by-id', (highlightId) ->
+  check highlightId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person
 
-    Highlight.documents.find Highlight.requireReadAccessSelector(person,
-      _id: id
-    ), Highlight.PUBLIC_FIELDS()
+    # No need for requireReadAccessSelector because highlights are public
+    Highlight.documents.find
+      _id: highlightId
+    ,
+      Highlight.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
+      fields: Publication.readAccessPersonFields()
   ,
     Publication.documents.find
-      'annotations._id': id
+      'annotations._id': highlightId
     ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+      fields: Publication.readAccessSelfFields()
 
 Meteor.publish 'highlights-by-publication', (publicationId) ->
   check publicationId, DocumentId
@@ -106,26 +110,18 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person
 
-    Highlight.documents.find Highlight.requireReadAccessSelector(person,
+    # No need for requireReadAccessSelector because highlights are public
+    Highlight.documents.find
       'publication._id': publicationId
-    ), Highlight.PUBLIC_FIELDS()
+    ,
+      Highlight.PUBLIC_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
+      fields: Publication.readAccessPersonFields()
   ,
     Publication.documents.find
       _id: publicationId
     ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+      fields: Publication.readAccessSelfFields()
