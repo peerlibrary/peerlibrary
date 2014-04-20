@@ -61,6 +61,8 @@ class @Collection extends AccessDocument
 
     return true if _.intersection(personGroups, documentGroups).length
 
+    # Admins are maintainers automatically
+
     # TODO: Implement admin karma points for public documents
 
     return true if person._id in _.pluck @adminPersons, '_id'
@@ -95,7 +97,7 @@ class @Collection extends AccessDocument
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
-    ,
+    , # Admins are maintainers automatically
       'adminPersons._id': person._id
     ,
       'adminGroups._id':

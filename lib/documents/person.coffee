@@ -85,6 +85,8 @@ class @Person extends Document
 
     return true if _.intersection(personGroups, documentGroups).length
 
+    # Admins are maintainers automatically
+
     # TODO: Implement admin karma points
 
     return true if person._id in _.pluck @adminPersons, '_id'
@@ -116,7 +118,7 @@ class @Person extends Document
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
-    ,
+    , # Admins are maintainers automatically
       'adminPersons._id': person._id
     ,
       'adminGroups._id':
