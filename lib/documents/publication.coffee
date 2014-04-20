@@ -201,7 +201,7 @@ class @Publication extends AccessDocument
     # TODO: Should we log this?
     return false unless @access in [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
 
-    # TODO: Implement karma points for public publications
+    # TODO: Implement maintainer karma points for public publications
 
     return true if person._id in _.pluck @authors, '_id'
 
@@ -209,6 +209,14 @@ class @Publication extends AccessDocument
 
     personGroups = _.pluck person.inGroups, '_id'
     documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    # TODO: Implement admin karma points for public publications
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    documentGroups = _.pluck @adminGroups, '_id'
 
     return true if _.intersection(personGroups, documentGroups).length
 
@@ -237,6 +245,11 @@ class @Publication extends AccessDocument
       'maintainerPersons._id': person._id
     ,
       'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ,
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
 

@@ -74,7 +74,7 @@ class @Person extends Document
 
     return true if person.isAdmin
 
-    # TODO: Implement karma points for public documents
+    # TODO: Implement maintainer karma points
 
     return true if @_id is person._id
 
@@ -82,6 +82,14 @@ class @Person extends Document
 
     personGroups = _.pluck person.inGroups, '_id'
     documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    # TODO: Implement admin karma points
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    documentGroups = _.pluck @adminGroups, '_id'
 
     return true if _.intersection(personGroups, documentGroups).length
 
@@ -108,6 +116,11 @@ class @Person extends Document
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
+    ,
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
+        $in: _.pluck person.inGroups, '_id'
     ]
 
     selector.$and.push
@@ -120,7 +133,7 @@ class @Person extends Document
 
     return true if person.isAdmin
 
-    # TODO: Implement karma points for public publications
+    # TODO: Implement karma points
 
     return true if person._id in _.pluck @adminPersons, '_id'
 

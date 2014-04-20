@@ -47,7 +47,7 @@ class @Collection extends AccessDocument
     # TODO: Should we log this?
     return false unless @access in [Collection.ACCESS.PUBLIC, Collection.ACCESS.PRIVATE]
 
-    # TODO: Implement karma points for public documents
+    # TODO: Implement maintainer karma points for public documents
 
     return true if @authorPerson?._id is person._id
 
@@ -58,6 +58,14 @@ class @Collection extends AccessDocument
     return true if person._id in _.pluck @maintainerPersons, '_id'
 
     documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+    # TODO: Implement admin karma points for public documents
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    documentGroups = _.pluck @adminGroups, '_id'
 
     return true if _.intersection(personGroups, documentGroups).length
 
@@ -86,6 +94,11 @@ class @Collection extends AccessDocument
       'maintainerPersons._id': person._id
     ,
       'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ,
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
 
