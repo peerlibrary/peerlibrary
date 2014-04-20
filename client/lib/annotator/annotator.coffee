@@ -249,6 +249,7 @@ class @Annotator extends Annotator
   createAnnotation: ->
     annotation = super
 
+    # Highlights are a special case and we make _id on the client
     annotation._id = Random.id()
 
     annotation
@@ -321,21 +322,15 @@ class @Annotator extends Annotator
     @deleteAnnotation annotation if annotation
 
   _insertHighlight: (annotation) =>
-    # Populate with some of our fields
-    annotation.author =
-      _id: Meteor.personId()
-    annotation.publication =
-      _id: Session.get 'currentPublicationId'
-    annotation.references = {}
-
-    # Remove fields we do not want to store into the database
-    highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
-    highlight.target = _.map highlight.target, (t) =>
+    target = _.map annotation.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlight.documents.insert highlight, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+    # Highlights are a special case and we provide _id from the client
+    Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, id) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       return Notify.meteorError error, true if error
+
+      assert.equal annotation._id, id
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
@@ -344,10 +339,6 @@ class @Annotator extends Annotator
       @_selectHighlight id
 
     annotation
-
-  _removeHighlight: (id) =>
-    Highlight.documents.remove id, (error) =>
-      Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]

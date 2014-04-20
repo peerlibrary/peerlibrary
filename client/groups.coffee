@@ -41,16 +41,10 @@ Template.groups.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Group.documents.insert
-      name: name
-      members: [
-        _id: Meteor.personId()
-      ]
-    ,
-      (error, id) =>
-        return Notify.meteorError error, true if error
+    Meteor.call 'create-group', name, (error, id) =>
+      return Notify.meteorError error, true if error
 
-        Notify.success "Group created."
+      Notify.success "Group created."
 
     return # Make sure CoffeeScript does not return anything
 

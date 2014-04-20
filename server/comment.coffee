@@ -7,58 +7,40 @@ class @Comment extends Comment
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Comment.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
+Meteor.methods
+  # TODO: Use this code on the client side as well
+  'create-comment': (annotationId, body) ->
+    check annotationId, String
+    check body, String
 
-    return false unless userId
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
-    personId = Meteor.personId userId
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
+    throw new Meteor.Error 400, "Invalid body." unless body
 
-  update: (userId, doc) ->
-    # TODO: Check whether updated document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
+      _id: annotationId
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
 
-    return false unless userId
+    createdAt = moment.utc().toDate()
+    comment =
+      createdAt: createdAt
+      updatedAt: createdAt
+      author:
+        _id: Meteor.personId()
+      annotation:
+        _id: annotationId
+      publication:
+        _id: annotation.publication._id
+      body: body
+      license: 'CC0-1.0+'
 
-    personId = Meteor.personId userId
+    # TODO: Should we have this?
+    #comment = Comment.applyDefaultAccess Meteor.personId(), comment
 
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
-
-  remove: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Comment.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
-
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.license = 'CC0-1.0+'
-
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
+    Comment.documents.insert comment
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
   check publicationId, String

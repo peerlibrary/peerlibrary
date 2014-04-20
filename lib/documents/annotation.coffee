@@ -44,7 +44,8 @@ class @Annotation extends AccessDocument
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
-  # local (client only): is this annotation just a temporary annotation on the cliend side
+  # local (client only): is this annotation just a temporary annotation on the client side
+  # editing (client only): is this annotation being edited
 
   @Meta
     name: 'Annotation'

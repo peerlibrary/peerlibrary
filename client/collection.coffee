@@ -57,8 +57,10 @@ Template.collectionDetails.ownCollection = ->
 
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->
-    Collection.documents.remove @_id, (error) =>
+    Meteor.call 'remove-collection', @_id, (error, count) =>
       Notify.meteorError error, true if error
+
+      return unless count
 
       Notify.success "Collection removed."
       # TODO: Consider redirecting back to the page where we came from (maybe /c, maybe /library)

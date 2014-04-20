@@ -7,59 +7,6 @@ class @Highlight extends Highlight
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Highlight.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check the target (try to apply it on the server)
-    # TODO: Check that author really has access to the highlight (and publication)
-
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
-
-  update: (userId, doc, fieldNames, modifier) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
-
-  remove: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Highlight.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
-
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.annotations = [] if not doc.annotations
-
-    doc = Highlight.applyDefaultAccess Meteor.personId(userId), doc
-
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
-
 registerForAccess Highlight
 
 Meteor.methods
@@ -77,6 +24,51 @@ Meteor.methods
     return unless publication
 
     [publication._id, publication.slug, highlightId]
+
+  # TODO: Use this code on the client side as well
+  # By specifying various highlightIds user could check which highlights exist
+  # even if otherwise they would not have access to a highlight. This does not
+  # seem an issue as highlights are generally seen as public and limited only
+  # to not leak private publication content in a quote.
+  'create-highlight': (publicationId, highlightId, quote, target) ->
+    check publicationId, String
+    check highlightId, String
+    check quote, String
+    check target, [Object]
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Check whether target conforms to schema
+    # TODO: Check the target (try to apply it on the server)
+
+    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(Meteor.person(),
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    createdAt = moment.utc().toDate()
+    highlight =
+      _id: highlightId
+      createdAt: createdAt
+      updatedAt: createdAt
+      author:
+        _id: Meteor.personId()
+      publication:
+        _id: publicationId
+      referencingAnnotations: []
+
+    highlight = Highlight.applyDefaultAccess Meteor.personId(), highlight
+
+    Highlight.documents.insert highlight
+
+  'remove-highlight': (highlightId) ->
+    check highlightId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Check permissions (or simply limit query to them)
+
+    Highlight.documents.remove highlightId
 
 Meteor.publish 'highlights-by-id', (id) ->
   check id, String

@@ -788,7 +788,7 @@ Template.highlightsControl.canEdit = ->
 
 Template.highlightsControl.events
   'click .delete': (e, template) ->
-    Highlight.documents.remove @_id, (error) =>
+    Meteor.call 'remove-highlight', @_id, (error, count) =>
       Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
@@ -809,15 +809,13 @@ Template.highlightsControl.events
 
 Template.annotationsControl.events
   'click .add': (e, template) ->
-    annotation = createAnnotationDocument()
+    Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      return Notify.meteorError error, true if error
 
-    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      Notify.meteorError error, true if error
+      focusAnnotationId = annotationId
 
-    focusAnnotationId = annotationId
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
 
@@ -964,8 +962,12 @@ Template.publicationAnnotationsItem.events
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) ->
-    # TODO: Get rid of this. Annotation invites are being replaced.
-    return # unless @local
+    return
+
+    ###
+    TODO: Get rid of this. Annotation invites are being replaced.
+
+    return unless @local
 
     LocalAnnotation.documents.update @_id,
       $unset:
@@ -978,6 +980,7 @@ Template.publicationAnnotationsItem.events
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
 
     return # Make sure CoffeeScript does not return anything
+    ###
 
   'click': (e, template) ->
     # We do not select or even deselect an annotation on clicks inside a meta menu.
@@ -1083,9 +1086,9 @@ Template.annotationEditor.events
     $editor = $(template.findAll '.annotation-content-editor')
 
     # Prevent empty annotations
-    return unless $editor.text()
+    return unless $editor.text().trim()
 
-    body = $editor.html()
+    body = $editor.html().trim()
 
     ###
     TODO: Temporary disabled, not yet finalized code
@@ -1108,16 +1111,26 @@ Template.annotationEditor.events
         _id: tagId
     ###
 
-    # TODO: Set privacy settings
-    LocalAnnotation.documents.update @_id,
-      $set:
-        local: false
-        body: body
-      $unset:
-        editing: ''
-    ,
-      (error) =>
+    if @local
+      # TODO: Set privacy settings
+      Meteor.call 'create-annotation', @publication._id, body, (error, annotationId) =>
+        console.log "back"
         return Notify.meteorError error, true if error
+
+        LocalAnnotation.documents.remove @_id
+
+        focusAnnotationId = annotationId
+
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else
+      Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
+        return Notify.meteorError error, true if error
+
+        return unless count
+
+        LocalAnnotation.documents.update @_id,
+          $unset:
+            editing: ''
 
         focusAnnotationId = @_id
 
@@ -1259,21 +1272,15 @@ Template.annotationCommentEditor.events
     $editor = $(template.findAll '.comment-content-editor')
 
     # Prevent empty comments
-    return unless $editor.text()
+    return unless $editor.text().trim()
 
-    body = $editor.html()
+    body = $editor.html().trim()
 
-    Comment.documents.insert
-      author:
-        _id: Meteor.personId()
-      annotation:
-        _id: template.data._id
-      publication:
-        _id: Session.get 'currentPublicationId'
-      body: body
+    Meteor.call 'create-comment', template.data._id, body, (error, commentId) =>
+      return Notify.meteorError error, true if error
 
-    # Reset editor
-    $editor.empty()
+      # Reset editor
+      $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1298,11 +1305,13 @@ Template.annotationsControl.events
 
 Template.annotationMetaMenu.events
   'click .delete': (e, template) ->
-    LocalAnnotation.documents.remove @_id, (error) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+    Meteor.call 'remove-annotation', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       Notify.meteorError error, true if error
 
-    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
 

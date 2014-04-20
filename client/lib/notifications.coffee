@@ -91,7 +91,7 @@ class @Notify extends Document
       # Values are EJSON encoded, let's decode them
       session[key] = EJSON.parse(value)
 
-    LoggedError.documents.insert
+    Meteor.call 'log-error',
       errorMsg: errorMsg
       url: url
       lineNumber: lineNumber

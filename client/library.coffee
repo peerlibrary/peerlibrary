@@ -52,13 +52,7 @@ Template.addNewCollection.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Collection.documents.insert
-      name: name
-      author:
-        _id: Meteor.personId()
-      publications: []
-    ,
-      (error, id) =>
+    Meteor.call 'create-collection', name, (error, id) =>
         return Notify.meteorError error, true if error
 
         # Clear the collection name from the form

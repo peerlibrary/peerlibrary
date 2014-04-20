@@ -18,19 +18,6 @@ class @Tag extends Tag
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Tag.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-
-    # For now, allow only if logged in
-    userId
-
-  update: (userId, doc) ->
-    false
-
-  remove: (userId, doc) ->
-    false
-
 Meteor.publish 'tag-by-id', (tagId) ->
   check tagId, String
 

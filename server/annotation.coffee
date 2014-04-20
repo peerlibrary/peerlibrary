@@ -7,63 +7,6 @@ class @Annotation extends Annotation
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
-Annotation.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
-
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
-
-  update: (userId, doc, fieldNames, modifier) ->
-    # TODO: Check whether updated document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
-
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
-
-  remove: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Annotation.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
-
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.references = {} if not doc.references
-    doc.tags = [] if not doc.tags
-    doc.license = 'CC0-1.0+'
-
-    doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
-
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
-
 registerForAccess Annotation
 
 Meteor.methods
@@ -81,6 +24,77 @@ Meteor.methods
     return unless publication
 
     [publication._id, publication.slug, annotationId]
+
+  # TODO: Use this code on the client side as well
+  'create-annotation': (publicationId, body) ->
+    check publicationId, String
+    check body, Match.Optional String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+
+    body = '' unless body
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(Meteor.person(),
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    # TODO: Should we sync this somehow with createAnnotationDocument? Maybe move createAnnotationDocument to Annotation object?
+    createdAt = moment.utc().toDate()
+    annotation =
+      createdAt: createdAt
+      updatedAt: createdAt
+      author:
+        _id: Meteor.personId()
+      publication:
+        _id: publicationId
+      references:
+        highlights: []
+        annotations: []
+        publications: []
+        persons: []
+        tags: []
+      tags: []
+      body: body
+      license: 'CC0-1.0+'
+
+    annotation = Annotation.applyDefaultAccess Meteor.personId(), annotation
+
+    console.log "before"
+    id = Annotation.documents.insert annotation
+    console.log "after"
+    id
+
+  # TODO: Use this code on the client side as well
+  'update-annotation-body': (annotationId, body) ->
+    check annotationId, String
+    check body, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+
+    throw new Meteor.Error 400, "Invalid body." unless body
+
+    # TODO: Check permissions (or simply limit query to them)
+
+    Annotation.documents.update
+      _id: annotationId
+    ,
+      $set:
+        updatedAt: moment.utc().toDate()
+        body: body
+
+  'remove-annotation': (annotationId) ->
+    check annotationId, String
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+
+    # TODO: Check permissions (or simply limit query to them)
+
+    Annotation.documents.remove annotationId
 
 Meteor.publish 'annotations-by-id', (id) ->
   check id, String

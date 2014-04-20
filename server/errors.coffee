@@ -7,35 +7,27 @@ class @LoggedError extends LoggedError
   @PUBLIC_FIELDS: ->
     fields: {} # All, only admins have access
 
-LoggedError.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    true
+Meteor.methods
+  'log-error': (errorDocument) ->
+    check errorDocument, Object
 
-# Misuse insert validation to add additional fields on the server before insertion
-LoggedError.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
+    # TODO: Check whether document conforms to schema
 
-  insert: (userId, doc) ->
-    doc.serverTime = moment.utc().toDate()
+    errorDocument.serverTime = moment.utc().toDate()
 
     # userAgent will not be changing, so we do not have to
     # define it as a generated field, but can just parse it here
-    doc.parsedUserAgent = parseUseragent doc.userAgent
+    errorDocument.parsedUserAgent = parseUseragent errorDocument.userAgent
 
     personId = Meteor.personId()
     # TODO: Allow opt-out through account preferences as well
-    if doc.doNotTrack or not personId
-      doc.person = null
+    if errorDocument.doNotTrack or not personId
+      errorDocument.person = null
     else
-      doc.person =
+      errorDocument.person =
         _id: personId
 
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
+    LoggedError.documents.insert errorDocument
 
 Meteor.publish 'logged-errors', ->
   currentLoggedErrors = {}

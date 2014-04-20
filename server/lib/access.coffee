@@ -1,5 +1,6 @@
 accessDocuments = {}
 
+# Registers documents for which we want to support generic grant and revoke methods
 @registerForAccess = (document) ->
   assert document.prototype instanceof AccessDocument
 
