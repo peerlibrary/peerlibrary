@@ -53,12 +53,12 @@ Template.addNewCollection.events
     return unless name
 
     Meteor.call 'create-collection', name, (error, collectionId) =>
-        return Notify.meteorError error, true if error
+      return Notify.meteorError error, true if error
 
-        # Clear the collection name from the form
-        $(template.findAll '.name').val('')
+      # Clear the collection name from the form
+      $(template.findAll '.name').val('')
 
-        Notify.success "Collection created."
+      Notify.success "Collection created."
 
     return # Make sure CoffeeScript does not return anything
 
