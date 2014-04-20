@@ -62,10 +62,7 @@ Meteor.methods
 
     annotation = Annotation.applyDefaultAccess Meteor.personId(), annotation
 
-    console.log "before"
-    id = Annotation.documents.insert annotation
-    console.log "after"
-    id
+    Annotation.documents.insert annotation
 
   # TODO: Use this code on the client side as well
   'update-annotation-body': (annotationId, body) ->
