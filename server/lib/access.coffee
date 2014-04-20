@@ -20,8 +20,8 @@ MatchAccess = (access) ->
 Meteor.methods
   'grant-read-access-to-person': (documentName, documentId, personId) ->
     check documentName, RegisteredForAccess
-    check documentId, String
-    check personId, String
+    check documentId, DocumentId
+    check personId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -51,8 +51,8 @@ Meteor.methods
 
   'grant-read-access-to-group': (documentName, documentId, groupId) ->
     check documentName, RegisteredForAccess
-    check documentId, String
-    check groupId, String
+    check documentId, DocumentId
+    check groupId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -84,8 +84,8 @@ Meteor.methods
 
   'revoke-read-access-for-person': (documentName, documentId, personId) ->
     check documentName, RegisteredForAccess
-    check documentId, String
-    check personId, String
+    check documentId, DocumentId
+    check personId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -108,8 +108,8 @@ Meteor.methods
 
   'revoke-read-access-for-group': (documentName, documentId, groupId) ->
     check documentName, RegisteredForAccess
-    check documentId, String
-    check groupId, String
+    check documentId, DocumentId
+    check groupId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -134,7 +134,7 @@ Meteor.methods
 
   'set-access': (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
-    check documentId, String
+    check documentId, DocumentId
     check access, MatchAccess accessDocuments[documentName].ACCESS
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
@@ -167,10 +167,8 @@ Meteor.methods
 Meteor.publish 'search-persons-groups', (query, except) ->
   except ?= []
 
-  check query, String
-  check except, [String]
-
-  return unless query
+  check query, NonEmptyString
+  check except, [DocumentId]
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 

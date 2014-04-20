@@ -18,11 +18,9 @@ class @Collection extends Collection
 # TODO: Use this code on the client side as well
 Meteor.methods
   'create-collection': (name) ->
-    check name, String
+    check name, NonEmptyString
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
-
-    throw new Meteor.Error 400, "Name required." unless name
 
     createdAt = moment.utc().toDate()
     Collection.documents.insert
@@ -34,7 +32,7 @@ Meteor.methods
       publications: []
 
   'remove-collection': (collectionId) ->
-    check collectionId, String
+    check collectionId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -43,8 +41,8 @@ Meteor.methods
     Collection.documents.remove collectionId
 
   'add-to-library': (publicationId, collectionId) ->
-    check publicationId, String
-    check collectionId, Match.Optional String
+    check publicationId, DocumentId
+    check collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -85,8 +83,8 @@ Meteor.methods
           _id: publicationId
 
   'remove-from-library': (publicationId, collectionId) ->
-    check publicationId, String
-    check collectionId, Match.Optional String
+    check publicationId, DocumentId
+    check collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -133,8 +131,8 @@ Meteor.methods
           _id: publicationId
 
   'reorder-collection': (collectionId, publicationIds) ->
-    check collectionId, String
-    check publicationIds, [String]
+    check collectionId, DocumentId
+    check publicationIds, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -160,9 +158,7 @@ Meteor.methods
         publications: publications
 
 Meteor.publish 'collection-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   Collection.documents.find
     _id: id
@@ -175,8 +171,8 @@ Meteor.publish 'my-collections', ->
   ,
     Collection.PUBLIC_FIELDS()
 
-Meteor.publish 'collection-publications', (id) ->
-  check id, String
+Meteor.publish 'collection-publications', (collectionId) ->
+  check collectionId, DocumentId
 
   @related (person, collection) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
@@ -194,7 +190,7 @@ Meteor.publish 'collection-publications', (id) ->
         library: 1
   ,
     Collection.documents.find
-      _id: id
+      _id: collectionId
     ,
       fields:
         publications: 1

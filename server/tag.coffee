@@ -19,9 +19,7 @@ class @Tag extends Tag
     fields: {} # All
 
 Meteor.publish 'tag-by-id', (tagId) ->
-  check tagId, String
-
-  return unless tagId
+  check tagId, DocumentId
 
   Tag.documents.find
     _id: tagId

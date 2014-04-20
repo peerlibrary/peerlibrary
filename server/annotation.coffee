@@ -11,7 +11,7 @@ registerForAccess Annotation
 
 Meteor.methods
   'annotations-path': (annotationId) ->
-    check annotationId, String
+    check annotationId, DocumentId
 
     annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
       _id: annotationId
@@ -27,8 +27,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'create-annotation': (publicationId, body) ->
-    check publicationId, String
-    check body, Match.Optional String
+    check publicationId, DocumentId
+    check body, Match.Optional NonEmptyString
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -69,14 +69,12 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'update-annotation-body': (annotationId, body) ->
-    check annotationId, String
-    check body, String
+    check annotationId, DocumentId
+    check body, NonEmptyString
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
-
-    throw new Meteor.Error 400, "Invalid body." unless body
 
     # TODO: Check permissions (or simply limit query to them)
 
@@ -88,7 +86,7 @@ Meteor.methods
         body: body
 
   'remove-annotation': (annotationId) ->
-    check annotationId, String
+    check annotationId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -97,9 +95,7 @@ Meteor.methods
     Annotation.documents.remove annotationId
 
 Meteor.publish 'annotations-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
@@ -129,9 +125,7 @@ Meteor.publish 'annotations-by-id', (id) ->
         readGroups: 1
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
-  check publicationId, String
-
-  return unless publicationId
+  check publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person

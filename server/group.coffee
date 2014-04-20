@@ -42,8 +42,8 @@ Meteor.methods
       ]
 
   'add-to-group': (groupId, memberId) ->
-    check groupId, String
-    check memberId, String
+    check groupId, DocumentId
+    check memberId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -74,8 +74,8 @@ Meteor.methods
           _id: member._id
 
   'remove-from-group': (groupId, memberId) ->
-    check groupId, String
-    check memberId, String
+    check groupId, DocumentId
+    check memberId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -103,9 +103,7 @@ Meteor.methods
           _id: member._id
 
 Meteor.publish 'groups-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   Group.documents.find
     _id: id

@@ -354,7 +354,7 @@ Meteor.methods
             _id: publication._id
 
   'verify-publication': (publicationId, samplesData) ->
-    check publicationId, String
+    check publicationId, DocumentId
     check samplesData, [Uint8Array]
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
@@ -386,9 +386,7 @@ Meteor.methods
           _id: publication._id
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, String
-
-  return unless slug
+  check slug, NonEmptyString
 
   @related (author, person) ->
     return unless author?._id
@@ -413,9 +411,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
         library: 1
 
 Meteor.publish 'publications-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
@@ -434,9 +430,7 @@ Meteor.publish 'publications-by-id', (id) ->
 # We could try to combine publications-by-id and publications-cached-by-id,
 # but it is easier to have two and leave to Meteor to merge them together
 Meteor.publish 'publications-cached-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   @related (person) ->
     Publication.documents.find Publication.requireCacheAccessSelector(person,

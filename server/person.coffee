@@ -46,9 +46,7 @@ class @Person extends Person
       library: 1
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
-  check slug, String
-
-  return unless slug
+  check slug, NonEmptyString
 
   Person.documents.find
     $or: [
@@ -62,10 +60,8 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
 Meteor.publish 'search-persons', (query, except) ->
   except ?= []
 
-  check query, String
-  check except, [String]
-
-  return unless query
+  check query, NonEmptyString
+  check except, [DocumentId]
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 

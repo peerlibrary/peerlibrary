@@ -11,7 +11,7 @@ registerForAccess Highlight
 
 Meteor.methods
   'highlights-path': (highlightId) ->
-    check highlightId, String
+    check highlightId, DocumentId
 
     highlight = Highlight.documents.findOne Highlight.requireReadAccessSelector(Meteor.person(),
       _id: highlightId
@@ -31,9 +31,9 @@ Meteor.methods
   # seem an issue as highlights are generally seen as public and limited only
   # to not leak private publication content in a quote.
   'create-highlight': (publicationId, highlightId, quote, target) ->
-    check publicationId, String
-    check highlightId, String
-    check quote, String
+    check publicationId, DocumentId
+    check highlightId, DocumentId
+    check quote, NonEmptyString
     check target, [Object]
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
@@ -62,7 +62,7 @@ Meteor.methods
     Highlight.documents.insert highlight
 
   'remove-highlight': (highlightId) ->
-    check highlightId, String
+    check highlightId, DocumentId
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
@@ -71,9 +71,7 @@ Meteor.methods
     Highlight.documents.remove highlightId
 
 Meteor.publish 'highlights-by-id', (id) ->
-  check id, String
-
-  return unless id
+  check id, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person
@@ -103,9 +101,7 @@ Meteor.publish 'highlights-by-id', (id) ->
         readGroups: 1
 
 Meteor.publish 'highlights-by-publication', (publicationId) ->
-  check publicationId, String
-
-  return unless publicationId
+  check publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person

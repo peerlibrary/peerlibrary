@@ -10,14 +10,12 @@ class @Comment extends Comment
 Meteor.methods
   # TODO: Use this code on the client side as well
   'create-comment': (annotationId, body) ->
-    check annotationId, String
-    check body, String
+    check annotationId, DocumentId
+    check body, NonEmptyString
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
-
-    throw new Meteor.Error 400, "Invalid body." unless body
 
     annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(Meteor.person(),
       _id: annotationId
@@ -43,9 +41,7 @@ Meteor.methods
     Comment.documents.insert comment
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
-  check publicationId, String
-
-  return unless publicationId
+  check publicationId, DocumentId
 
   Comment.documents.find
     'publication._id': publicationId

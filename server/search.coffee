@@ -1,9 +1,7 @@
 # TODO: Search for persons as well
 Meteor.publish 'search-results', (query, limit) ->
-  check query, String
+  check query, NonEmptyString
   check limit, PositiveNumber
-
-  return unless query
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
