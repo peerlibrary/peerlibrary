@@ -142,6 +142,12 @@ class @Person extends Document
       $or: accessConditions
     selector
 
+  hasRemoveAccess: (person) =>
+    @hasAdminAccess person
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    @requireAdminAccessSelector person, selector
+
   @applyDefaultAccess: (personId, document) ->
     document
 

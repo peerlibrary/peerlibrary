@@ -112,3 +112,9 @@ class @Group extends AccessDocument
         $in: [Group.ACCESS.PUBLIC, Group.ACCESS.PRIVATE]
       $or: accessConditions
     selector
+
+  hasRemoveAccess: (person) =>
+    @hasAdminAccess person
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    @requireAdminAccessSelector person, selector

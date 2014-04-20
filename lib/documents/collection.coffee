@@ -134,3 +134,9 @@ class @Collection extends AccessDocument
         $in: [Collection.ACCESS.PUBLIC, Collection.ACCESS.PRIVATE]
       $or: accessConditions
     selector
+
+  hasRemoveAccess: (person) =>
+    @hasMaintainerAccess person
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    @requireMaintainerAccessSelector person, selector

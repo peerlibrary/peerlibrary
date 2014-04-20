@@ -70,6 +70,12 @@ class @AccessDocument extends Document
   @requireAdminAccessSelector: (person, selector) ->
     throw new Error "Not implemented"
 
+  hasRemoveAccess: (person) =>
+    throw new Error "Not implemented"
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    throw new Error "Not implemented"
+
   @defaultAccess: ->
     @ACCESS.PUBLIC
 

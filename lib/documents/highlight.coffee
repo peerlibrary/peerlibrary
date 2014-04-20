@@ -64,5 +64,11 @@ class @Highlight extends Document
   @requireAdminAccessSelector: (person, selector) ->
     throw new Error "Not implemented"
 
+  hasRemoveAccess: (person) =>
+    @hasMaintainerAccess person
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    @requireMaintainerAccessSelector person, selector
+
   @applyDefaultAccess: (personId, document) ->
     document

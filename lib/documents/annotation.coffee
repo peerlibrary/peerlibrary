@@ -163,5 +163,11 @@ class @Annotation extends AccessDocument
       $or: accessConditions
     selector
 
+  hasRemoveAccess: (person) =>
+    @hasMaintainerAccess person
+
+  @requireRemoveAccessSelector: (person, selector) ->
+    @requireMaintainerAccessSelector person, selector
+
   @defaultAccess: ->
     @ACCESS.PRIVATE
