@@ -566,74 +566,18 @@ Meteor.methods
     Log.info "Done (#{ count })"
 
 Meteor.publish 'arxiv-pdfs', ->
-  currentArXivPDFs = {}
-  currentPersonId = null # Just for asserts
-  handleArXivPDFs = null
-
-  removeArXivPDFs = =>
-    for id of currentArXivPDFs
-      delete currentArXivPDFs[id]
-      @removed 'ArXivPDFs', id
-
-  publishArXivPDFs = =>
-    oldHandleArXivPDFs = handleArXivPDFs
-    handleArXivPDFs = ArXivPDF.documents.find(
-      {}
-    ,
+  @related (person) ->
+    return unless person?.isAdmin
+    ArXivPDF.documents.find {},
       fields: ArXivPDF.PUBLIC_FIELDS().fields
       sort: [
         ['processingStart', 'desc']
       ]
       limit: 5
-    ).observeChanges
-      added: (id, fields) =>
-        return if currentArXivPDFs[id]
-        currentArXivPDFs[id] = true
-
-        @added 'ArXivPDFs', id, fields
-
-      changed: (id, fields) =>
-        return if not currentArXivPDFs[id]
-
-        @changed 'ArXivPDFs', id, fields
-
-      removed: (id) =>
-        return if not currentArXivPDFs[id]
-        delete currentArXivPDFs[id]
-
-        @removed 'ArXivPDFs', id
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandleArXivPDFs.stop() if oldHandleArXivPDFs
-
-  handlePersons = Person.documents.find(
-    _id: @personId
-    isAdmin: true
   ,
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
-
-      currentPersonId = id
-      publishArXivPDFs()
-
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.notEqual currentPersonId, null
-
-      handleArXivPDFs.stop() if handleArXivPDFs
-      handleArXivPDFs = null
-
-      currentPersonId = null
-      removeArXivPDFs()
-
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handleArXivPDFs.stop() if handleArXivPDFs
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1

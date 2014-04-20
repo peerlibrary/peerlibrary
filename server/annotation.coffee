@@ -114,26 +114,6 @@ Meteor.methods
       _id: annotationId
     )
 
-Meteor.publish 'annotations-by-id', (annotationId) ->
-  check annotationId, DocumentId
-
-  @related (person, publication) ->
-    return unless publication?.hasReadAccess person
-
-    Annotation.documents.find Annotation.requireReadAccessSelector(person,
-      _id: annotationId
-    ), Annotation.PUBLIC_FIELDS()
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: _.extend Annotation.readAccessPersonFields(), Publication.readAccessPersonFields()
-  ,
-    Publication.documents.find
-      'annotations._id': annotationId
-    ,
-      fields: Publication.readAccessSelfFields()
-
 Meteor.publish 'annotations-by-publication', (publicationId) ->
   check publicationId, DocumentId
 

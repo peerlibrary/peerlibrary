@@ -69,6 +69,7 @@ Accounts.onCreateUser (options, user) ->
 Meteor.publish null, ->
   return unless @userId
 
+  # No need for requireReadAccessSelector because persons are public
   Person.documents.find
     'user._id': @userId
   ,

@@ -82,28 +82,6 @@ Meteor.methods
       _id: highlightId
     )
 
-Meteor.publish 'highlights-by-id', (highlightId) ->
-  check highlightId, DocumentId
-
-  @related (person, publication) ->
-    return unless publication?.hasCacheAccess person
-
-    # No need for requireReadAccessSelector because highlights are public
-    Highlight.documents.find
-      _id: highlightId
-    ,
-      Highlight.PUBLIC_FIELDS()
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()
-  ,
-    Publication.documents.find
-      'annotations._id': highlightId
-    ,
-      fields: Publication.readAccessSelfFields()
-
 Meteor.publish 'highlights-by-publication', (publicationId) ->
   check publicationId, DocumentId
 
