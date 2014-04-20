@@ -336,7 +336,7 @@ class @Annotator extends Annotator
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
       # Finally select it (until now it was just drawn selected) and update location
-      @_selectHighlight id
+      @_selectHighlight highlightId
 
     annotation
 

@@ -56,6 +56,8 @@ Meteor.methods
       publication:
         _id: publicationId
       referencingAnnotations: []
+      quote: quote
+      target: target
 
     highlight = Highlight.applyDefaultAccess Meteor.personId(), highlight
 
