@@ -23,7 +23,7 @@
           The filter matches no groups.
         {{else}}
           There are no groups yet.
-            {{#if currentUser}}
+            {{#if currentPerson}}
               Create the first using the form on the right.
             {{else}}
               Sing in and create the first.
@@ -32,7 +32,7 @@
       </p>
       {{/if}}
     </div>
-    {{#if currentUser}}
+    {{#if currentPerson}}
       {{> myGroups}}
     {{/if}}
   </div>

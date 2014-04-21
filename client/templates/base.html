@@ -7,7 +7,7 @@
   {{#unless INSTALL}}
     {{> header}}
   {{/unless}}
-  <section class="{{currentPage}} {{#if currentUser}}logged-in{{else}}logged-out{{/if}}">
+  <section class="{{currentPage}} {{#if currentPerson}}logged-in{{else}}logged-out{{/if}}">
     <div class="container">
       {{renderPage}}
     </div>

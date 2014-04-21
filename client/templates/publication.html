@@ -7,13 +7,13 @@
     {{#if notfound}}
       <div class="simple notfound">
         <h2>404 Not found</h2>
-        <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+        <p>Publication not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
       <div class="viewer">
         {{#with publication}}
           {{> publicationMetaMenu}}
-          {{#if currentUser}}
+          {{#if currentPerson}}
             {{> publicationLibraryMenu}}
           {{/if}}
         {{/with}}
@@ -296,7 +296,9 @@
         </div>
       </li>
     {{/each}}
-    {{> annotationCommentEditor}}
+    {{#if currentPerson}}
+      {{> annotationCommentEditor}}
+    {{/if}}
   </ul>
 </template>
 
@@ -350,7 +352,7 @@
       <div class="vertical-align-inner">
         <p class="no-annotations hint balance-text">
           There are no annotations yet.
-          {{#if currentUser}}
+          {{#if currentPerson}}
             Create the first above.
           {{else}}
             Sing in to create the first.
@@ -359,13 +361,13 @@
         <p class="hint balance-text">
           {{#unless highlights}}
             There are no highlights yet.
-            {{#if currentUser}}
+            {{#if currentPerson}}
               Select text in the publication to create one.
             {{else}}
               Sing in to create one.
             {{/if}}
           {{else}}
-            {{#if currentUser}}
+            {{#if currentPerson}}
               Select text in the publication to create a highlight, or click on an existing highlight to select it.
             {{else}}
               To create a highlight sign in.
@@ -378,7 +380,7 @@
 </template>
 
 <template name="annotationSignInInvite">
-  {{#unless currentUser}}
+  {{#unless currentPerson}}
     <li class="annotation">
       <p class="hint balance-text">
         Sign in to create an annotation or a highlight.
@@ -409,7 +411,7 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    {{#if currentPersonId}}
+    {{#if currentPerson}}
       <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
       {{> contextMenu}}
     {{/if}}
