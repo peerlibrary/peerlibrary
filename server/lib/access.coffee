@@ -214,10 +214,12 @@ Meteor.publish 'search-persons-groups', (query, except) ->
       # No need for requireReadAccessSelector because persons are public
       cursor: Person.documents.find findPersonQuery,
         limit: 5
+        # TODO: Optimize fields, we do not need all
         fields: Person.PUBLISH_FIELDS().fields
     ,
       cursor: Group.documents.find restrictedFindGroupQuery,
         limit: 5
+        # TODO: Optimize fields, we do not need all
         fields: Group.PUBLISH_FIELDS().fields
   ,
     Person.documents.find

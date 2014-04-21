@@ -102,6 +102,7 @@ Meteor.publish 'search-persons', (query, except) ->
     # No need for requireReadAccessSelector because persons are public
     cursor: Person.documents.find findPersonQuery,
       limit: 5
+      # TODO: Optimize fields, we do not need all
       fields: Person.PUBLISH_FIELDS().fields
 
 Person.Meta.collection._ensureIndex 'slug',
