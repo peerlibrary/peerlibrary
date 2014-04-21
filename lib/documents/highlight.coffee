@@ -1,4 +1,4 @@
-class @Highlight extends Document
+class @Highlight extends AccessDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -34,47 +34,23 @@ class @Highlight extends Document
   @readAccessSelfFields: ->
     throw new Error "Not needed, documents are public"
 
-  hasMaintainerAccess: (person) =>
+  _hasMaintainerAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
+    return unless person?._id
 
-    return true if person.isAdmin
-
-    # TODO: Implement karma points for public documents
+    # TODO: Implement karma points
 
     return true if @author._id is person._id
 
-    return false
+  @_requireMaintainerAccessConditions: (person) ->
+    return [] unless person?._id
 
-  @requireMaintainerAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    selector.$and.push
+    [
       'author._id': person._id
-    selector
+    ]
 
   hasAdminAccess: (person) =>
     throw new Error "Not implemented"
 
   @requireAdminAccessSelector: (person, selector) ->
     throw new Error "Not implemented"
-
-  hasRemoveAccess: (person) =>
-    @hasMaintainerAccess person
-
-  @requireRemoveAccessSelector: (person, selector) ->
-    @requireMaintainerAccessSelector person, selector
-
-  @applyDefaultAccess: (personId, document) ->
-    document

@@ -1,4 +1,4 @@
-class @Person extends Document
+class @Person extends AccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
   # maintainerGroups: ilist of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
@@ -68,13 +68,11 @@ class @Person extends Document
   @readAccessSelfFields: ->
     throw new Error "Not needed, documents are public"
 
-  hasMaintainerAccess: (person) =>
+  _hasMaintainerAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
+    return unless person?._id
 
-    return true if person.isAdmin
-
-    # TODO: Implement maintainer karma points
+    # TODO: Implement karma points
 
     return true if @_id is person._id
 
@@ -85,55 +83,21 @@ class @Person extends Document
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    # Admins are maintainers automatically
+  @_requireMaintainerAccessConditions: (person) ->
+    return [] unless person?._id
 
-    # TODO: Implement admin karma points
-
-    return true if person._id in _.pluck @adminPersons, '_id'
-
-    documentGroups = _.pluck @adminGroups, '_id'
-
-    return true if _.intersection(personGroups, documentGroups).length
-
-    return false
-
-  @requireMaintainerAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       _id: person._id
     ,
       'maintainerPersons._id': person._id
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
-    , # Admins are maintainers automatically
-      'adminPersons._id': person._id
-    ,
-      'adminGroups._id':
-        $in: _.pluck person.inGroups, '_id'
     ]
 
-    selector.$and.push
-      $or: accessConditions
-    selector
-
-  hasAdminAccess: (person) =>
+  _hasAdminAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
-
-    return true if person.isAdmin
+    return unless person?._id
 
     # TODO: Implement karma points
 
@@ -144,32 +108,15 @@ class @Person extends Document
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    return false
+  @_requireAdminAccessConditions: (person) ->
+    return [] unless person?._id
 
-  @requireAdminAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       'adminPersons._id': person._id
     ,
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
-
-    selector.$and.push
-      $or: accessConditions
-    selector
 
   hasRemoveAccess: (person) =>
     @hasAdminAccess person

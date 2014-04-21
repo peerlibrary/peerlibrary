@@ -2,7 +2,7 @@ accessDocuments = {}
 
 # Registers documents for which we want to support generic grant and revoke methods
 @registerForAccess = (document) ->
-  assert document.prototype instanceof AccessDocument
+  assert document.prototype instanceof ReadAccessDocument
 
   accessDocuments[document.Meta._name] = document
 
@@ -152,7 +152,7 @@ Meteor.methods
         access:
           $ne: access
       ),
-        $set: _.extend accessDocuments[documentName].defaultPrivateAccessSettings(person._id, documentId),
+        $set:
           access: access
 
     else
@@ -163,8 +163,6 @@ Meteor.methods
       ),
         $set:
           access: access
-          readPersons: []
-          readGroups: []
 
 Meteor.publish 'search-persons-groups', (query, except) ->
   except ?= []

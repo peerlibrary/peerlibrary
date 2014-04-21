@@ -1,4 +1,4 @@
-class @Publication extends AccessDocument
+class @Publication extends ReadAccessDocument
   # access: 0 (private, Publication.ACCESS.PRIVATE), 1 (closed, Publication.ACCESS.CLOSED), 2 (open, Publication.ACCESS.OPEN)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -110,15 +110,29 @@ class @Publication extends AccessDocument
 
     return false unless @processed
 
-    return true if @access is Publication.ACCESS.OPEN
+    implementation = @_hasReadAccess person, cache
+    return implementation if implementation is true or implementation is false
+    implementation = @_hasMaintainerAccess person
+    return implementation if implementation is true or implementation is false
+    implementation = @_hasAdminAccess person
+    return implementation if implementation is true or implementation is false
 
-    return not cache if @access is Publication.ACCESS.CLOSED
+    return false
+
+  _hasReadAccess: (person, cache=false) =>
+    return true if @access is @constructor.ACCESS.OPEN
+
+    if @access is @constructor.ACCESS.CLOSED
+      if not cache
+        return true
+      else
+        return
+
+    return unless person?._id
 
     # Access should be private here, if it is not, we prevent access to the document
     # TODO: Should we log this?
-    return false unless @access is Publication.ACCESS.PRIVATE
-
-    return false unless person?._id
+    return false unless @access is @constructor.ACCESS.PRIVATE
 
     return true if person._id in _.pluck @readPersons, '_id'
 
@@ -126,8 +140,6 @@ class @Publication extends AccessDocument
     documentGroups = _.pluck @readGroups, '_id'
 
     return true if _.intersection(personGroups, documentGroups).length
-
-    return false
 
   hasCacheAccess: (person) =>
     @hasReadAccess person, true
@@ -144,13 +156,57 @@ class @Publication extends AccessDocument
 
     return selector if person?.isAdmin
 
-    accessConditions = [
-      access: Publication.ACCESS.OPEN
+    deny = false
+    conditions = []
+
+    implementation = @_requireReadAccessConditions person, cache
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    implementation = @_requireMaintainerAccessConditions person
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    implementation = @_requireAdminAccessConditions person
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    deny = true unless conditions.length
+
+    if deny
+      selector.$and.push
+        _id:
+          $in: _.pluck person?.library, '_id'
+    else
+      selector.$and.push
+        $or: [
+          processed:
+            $exists: true
+          $or: conditions
+        ,
+          _id:
+            $in: _.pluck person?.library, '_id'
+        ]
+
+    selector
+
+  @requireCacheAccessSelector: (person, selector) ->
+    @requireReadAccessSelector person, selector, true
+
+  @_requireReadAccessConditions: (person, cache=false) ->
+    conditions = [
+      access: @ACCESS.OPEN
     ,
-      access: Publication.ACCESS.PRIVATE
+      access: @ACCESS.PRIVATE
       'readPersons._id': person?._id
     ,
-      access: Publication.ACCESS.PRIVATE
+      access: @ACCESS.PRIVATE
       'readGroups._id':
         $in: _.pluck person?.inGroups, '_id'
     ]
@@ -158,22 +214,10 @@ class @Publication extends AccessDocument
     unless cache
       # Access to publication metadata is allowed for closed access
       # publications, only access to cache information is not
-      accessConditions.push
-        access: Publication.ACCESS.CLOSED
+      conditions.push
+        access: @ACCESS.CLOSED
 
-    selector.$and.push
-      $or: [
-        processed:
-          $exists: true
-        $or: accessConditions
-      ,
-        _id:
-          $in: _.pluck person?.library, '_id'
-      ]
-    selector
-
-  @requireCacheAccessSelector: (person, selector) ->
-    @requireReadAccessSelector person, selector, true
+    conditions
 
   @readAccessPersonFields: ->
     # _id field is implicitly added
@@ -189,17 +233,11 @@ class @Publication extends AccessDocument
     readPersons: 1
     readGroups: 1
 
-  hasMaintainerAccess: (person) =>
+  _hasMaintainerAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
+    return unless person?._id
 
-    return true if person.isAdmin
-
-    # Unknown access, we prevent access to the document
-    # TODO: Should we log this?
-    return false unless @access in [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
-
-    # TODO: Implement maintainer karma points for public publications
+    # TODO: Implement karma points for public documents
 
     return true if person._id in _.pluck @authors, '_id'
 
@@ -210,63 +248,23 @@ class @Publication extends AccessDocument
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    # Admins are maintainers automatically
+  @_requireMaintainerAccessConditions: (person) ->
+    return [] unless person?._id
 
-    # TODO: Implement admin karma points for public publications
-
-    return true if person._id in _.pluck @adminPersons, '_id'
-
-    documentGroups = _.pluck @adminGroups, '_id'
-
-    return true if _.intersection(personGroups, documentGroups).length
-
-    return false
-
-  @requireMaintainerAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       'authors._id': person._id
     ,
       'maintainerPersons._id': person._id
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
-    , # Admins are maintainers automatically
-      'adminPersons._id': person._id
-    ,
-      'adminGroups._id':
-        $in: _.pluck person.inGroups, '_id'
     ]
 
-    selector.$and.push
-      access:
-        $in: [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
-      $or: accessConditions
-    selector
-
-  hasAdminAccess: (person) =>
+  _hasAdminAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
+    return unless person?._id
 
-    return true if person.isAdmin
-
-    # Unknown access, we prevent access to the document
-    # TODO: Should we log this?
-    return false unless @access in [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
-
-    # TODO: Implement karma points for public publications
+    # TODO: Implement karma points for public documents
 
     return true if person._id in _.pluck @adminPersons, '_id'
 
@@ -275,34 +273,15 @@ class @Publication extends AccessDocument
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    return false
+  @_requireAdminAccessConditions: (person) ->
+    return [] unless person?._id
 
-  @requireAdminAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       'adminPersons._id': person._id
     ,
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
-
-    selector.$and.push
-      access:
-        $in: [Publication.ACCESS.OPEN, Publication.ACCESS.CLOSED, Publication.ACCESS.PRIVATE]
-      $or: accessConditions
-    selector
 
   @defaultAccess: ->
     @ACCESS.OPEN

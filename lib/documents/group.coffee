@@ -1,4 +1,4 @@
-class @Group extends AccessDocument
+class @Group extends ReadAccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -27,17 +27,11 @@ class @Group extends AccessDocument
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
 
-  hasMaintainerAccess: (person) =>
+  _hasMaintainerAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
+    return unless person?._id
 
-    return true if person.isAdmin
-
-    # Unknown access, we prevent access to the document
-    # TODO: Should we log this?
-    return false unless @access in [Group.ACCESS.PUBLIC, Group.ACCESS.PRIVATE]
-
-    # TODO: Implement maintainer karma points for public documents
+    # TODO: Implement karma points for public documents
 
     return true if person._id in _.pluck @maintainerPersons, '_id'
 
@@ -46,59 +40,19 @@ class @Group extends AccessDocument
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    # Admins are maintainers automatically
+  @_requireMaintainerAccessConditions: (person) ->
+    return [] unless person?._id
 
-    # TODO: Implement admin karma points for public documents
-
-    return true if person._id in _.pluck @adminPersons, '_id'
-
-    documentGroups = _.pluck @adminGroups, '_id'
-
-    return true if _.intersection(personGroups, documentGroups).length
-
-    return false
-
-  @requireMaintainerAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       'maintainerPersons._id': person._id
     ,
       'maintainerGroups._id':
         $in: _.pluck person.inGroups, '_id'
-    , # Admins are maintainers automatically
-      'adminPersons._id': person._id
-    ,
-      'adminGroups._id':
-        $in: _.pluck person.inGroups, '_id'
     ]
 
-    selector.$and.push
-      access:
-        $in: [Group.ACCESS.PUBLIC, Group.ACCESS.PRIVATE]
-      $or: accessConditions
-    selector
-
-  hasAdminAccess: (person) =>
+  _hasAdminAccess: (person) =>
     # User has to be logged in
-    return false unless person?._id
-
-    return true if person.isAdmin
-
-    # Unknown access, we prevent access to the document
-    # TODO: Should we log this?
-    return false unless @access in [Group.ACCESS.PUBLIC, Group.ACCESS.PRIVATE]
+    return unless person?._id
 
     return true if person._id in _.pluck @adminPersons, '_id'
 
@@ -107,34 +61,15 @@ class @Group extends AccessDocument
 
     return true if _.intersection(personGroups, documentGroups).length
 
-    return false
+  @_requireAdminAccessConditions: (person) ->
+    return [] unless person?._id
 
-  @requireAdminAccessSelector: (person, selector) ->
-    unless person?._id
-      # Returns a selector which does not match anything
-      return _id:
-        $in: []
-
-    return selector if person.isAdmin
-
-    # To not modify input
-    selector = EJSON.clone selector
-
-    # We use $and to not override any existing selector field
-    selector.$and = [] unless selector.$and
-
-    accessConditions = [
+    [
       'adminPersons._id': person._id
     ,
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
-
-    selector.$and.push
-      access:
-        $in: [Group.ACCESS.PUBLIC, Group.ACCESS.PRIVATE]
-      $or: accessConditions
-    selector
 
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
