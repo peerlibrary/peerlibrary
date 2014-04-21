@@ -15,7 +15,7 @@ class Migration extends Document.MinorMigration
             document = doc
             return callback null unless document
 
-            firstImporterId = document.importing[0]?.person._id
+            firstImporterId = document.importing?[0]?.person._id
 
             if firstImporterId
               collection.update {_schema: currentSchema, _id: document._id, adminPersons: {$exists: false}}, {$set: {adminPersons: [_id: firstImporterId]}}, (error, count) =>
