@@ -192,9 +192,6 @@ class @Person extends Document
 
     document
 
-  @applyDefaultAccess: (personId, document) ->
-    document
-
 Meteor.person = (userId) ->
   # Meteor.userId is reactive
   userId ?= Meteor.userId()
