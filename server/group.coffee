@@ -24,6 +24,8 @@ class @Group extends Group
       name: 1
       membersCount: 1
 
+registerForAccess Group
+
 Meteor.methods
   'create-group': (name) ->
     check name, NonEmptyString

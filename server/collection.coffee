@@ -15,6 +15,8 @@ class @Collection extends Collection
   @PUBLIC_FIELDS: ->
     fields: {} # All
 
+registerForAccess Collection
+
 Meteor.methods
   'create-collection': (name) ->
     check name, NonEmptyString
