@@ -1,7 +1,20 @@
+collectionHandle = null
+
+# Mostly used just to force reevaluation of collectionHandle
+collectionSubscribing = new Variable false
+
 Deps.autorun ->
   if Session.get 'currentCollectionId'
-    Meteor.subscribe 'collection-by-id', Session.get 'currentCollectionId'
-    Meteor.subscribe 'collection-publications', Session.get 'currentCollectionId'
+    collectionSubscribing.set true
+    collectionHandle = Meteor.subscribe 'collection-by-id', Session.get 'currentCollectionId'
+    Meteor.subscribe 'publications-by-collection', Session.get 'currentCollectionId'
+  else
+    collectionSubscribing.set false
+    collectionHandle = null
+
+Deps.autorun ->
+  if collectionSubscribing() and collectionHandle?.ready()
+    collectionSubscribing.set false
 
 Deps.autorun ->
   collection = Collection.documents.findOne Session.get('currentCollectionId'),
@@ -16,6 +29,14 @@ Deps.autorun ->
   return if Session.equals 'currentCollectionSlug', (collection.slug or null)
 
   Meteor.Router.toNew Meteor.Router.collectionPath collection._id, collection.slug
+
+Template.collection.loading = ->
+  collectionSubscribing() # To register dependency
+  not collectionHandle?.ready()
+
+Template.collection.notfound = ->
+  collectionSubscribing() # To register dependency
+  collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
 Template.collection.collection = ->
   Collection.documents.findOne Session.get('currentCollectionId')
@@ -33,8 +54,9 @@ Template.collectionPublications.publications = ->
 Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
 
-  # Do not proceed if user is not collection author
-  if collection?.author._id isnt Meteor.personId()
+  # Do not proceed if user cannot modify a collection
+  # TODO: Can we make this reactive? So that if permissions change this is enabled or disabled?
+  unless collection?.hasMaintainerAccess Meteor.person()
     # Remove sortable functionality in case it was previously enabled
     $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
     return
@@ -51,14 +73,18 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.meteorError error, true if error
 
-Template.collectionDetails.ownCollection = ->
-  return unless Meteor.personId()
-  @author._id is Meteor.personId()
+Template.collectionDetails.canModify = ->
+  @hasMaintainerAccess Meteor.person()
+
+Template.collectionDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person()
 
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->
-    Collection.documents.remove @_id, (error) =>
+    Meteor.call 'remove-collection', @_id, (error, count) =>
       Notify.meteorError error, true if error
+
+      return unless count
 
       Notify.success "Collection removed."
       # TODO: Consider redirecting back to the page where we came from (maybe /c, maybe /library)

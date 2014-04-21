@@ -15,28 +15,17 @@ class @Tag extends Tag
       fields
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
-Tag.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-
-    # For now, allow only if logged in
-    userId
-
-  update: (userId, doc) ->
-    false
-
-  remove: (userId, doc) ->
-    false
+###
+TODO: Temporary disabled, not yet finalized code
 
 Meteor.publish 'tag-by-id', (tagId) ->
-  check tagId, String
-
-  return unless tagId
+  check tagId, DocumentId
 
   Tag.documents.find
     _id: tagId
   ,
-    Tag.PUBLIC_FIELDS()
+    Tag.PUBLISH_FIELDS()
+###

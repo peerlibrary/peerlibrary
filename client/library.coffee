@@ -4,9 +4,10 @@ Deps.autorun ->
     currentUserId = Meteor.personId()
 
     # Redirect to frontpage if the user is not logged in
+    # TODO: This is a really bad user experience because first time user is always not yet logged in by Meteor so we always redirect. This should be solved in router that libraryActive is not set if user is not logged in.
     Meteor.Router.toNew Meteor.Router.indexPath() unless currentUserId
 
-    Meteor.subscribe 'persons-by-id-or-slug', currentUserId
+    Meteor.subscribe 'my-person-library'
 
     Meteor.subscribe 'my-publications'
     Meteor.subscribe 'my-publications-importing'
@@ -39,7 +40,7 @@ Template.collections.myCollections = ->
   return unless Meteor.personId()
 
   Collection.documents.find
-    'author._id': Meteor.personId()
+    'authorPerson._id': Meteor.personId()
   ,
     sort: [
       ['slug', 'asc']
@@ -52,19 +53,13 @@ Template.addNewCollection.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Collection.documents.insert
-      name: name
-      author:
-        _id: Meteor.personId()
-      publications: []
-    ,
-      (error, id) =>
-        return Notify.meteorError error, true if error
+    Meteor.call 'create-collection', name, (error, collectionId) =>
+      return Notify.meteorError error, true if error
 
-        # Clear the collection name from the form
-        $(template.findAll '.name').val('')
+      # Clear the collection name from the form
+      $(template.findAll '.name').val('')
 
-        Notify.success "Collection created."
+      Notify.success "Collection created."
 
     return # Make sure CoffeeScript does not return anything
 

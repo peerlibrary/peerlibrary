@@ -51,6 +51,8 @@ Accounts.onCreateUser (options, user) ->
 
     _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
+    person = Person.applyDefaultAccess null, person
+
     Person.documents.insert person
 
   catch error
@@ -65,12 +67,13 @@ Accounts.onCreateUser (options, user) ->
 
 # With null name, the record set is automatically sent to all connected clients
 Meteor.publish null, ->
-  return unless @userId
+  return unless @personId
 
+  # No need for requireReadAccessSelector because persons are public
   Person.documents.find
-    'user._id': @userId
+    _id: @personId
   ,
-    fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
+    Person.PUBLISH_AUTO_FIELDS()
 
 MAX_LINE_LENGTH = 68
 

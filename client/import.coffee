@@ -150,7 +150,7 @@ hideOverlay = ->
   # We prevent hiding if user is uploading files
   if allCount == finishedAndErroredCount
     Session.set 'importOverlayActive', false
-    ImportingFile.documents.remove({})
+    ImportingFile.documents.remove {}
 
   Session.set 'signInOverlayActive', false
 
@@ -317,4 +317,4 @@ Deps.autorun ->
 
   Session.set 'importOverlayActive', false
 
-  ImportingFile.documents.remove({})
+  ImportingFile.documents.remove {}

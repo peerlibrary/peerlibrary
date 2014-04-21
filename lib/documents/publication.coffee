@@ -1,7 +1,11 @@
-class @Publication extends AccessDocument
+class @Publication extends ReadAccessDocument
   # access: 0 (private, Publication.ACCESS.PRIVATE), 1 (closed, Publication.ACCESS.CLOSED), 2 (open, Publication.ACCESS.OPEN)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
+  # maintainerPersons: list of persons who have maintainer permissions
+  # maintainerGroups: ilist of groups who have maintainer permissions
+  # adminPersons: list of persons who have admin permissions
+  # adminGroups: ilist of groups who have admin permissions
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
   # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
@@ -35,7 +39,6 @@ class @Publication extends AccessDocument
   # cached: timestamp when the publication was cached
   # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
   # mediaType: which media type a cached file is (currently supported: pdf, tei)
-  # metadata: do we have metadata?
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
   #   error: description of the publication processing error
@@ -54,6 +57,10 @@ class @Publication extends AccessDocument
   @Meta
     name: 'Publication'
     fields: =>
+      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
+      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminGroups: [@ReferenceField Group, ['slug', 'name']]
       authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username'], true, 'publications']
       importing: [
         person: @ReferenceField Person
@@ -103,24 +110,36 @@ class @Publication extends AccessDocument
 
     return false unless @processed
 
-    return true if @access is Publication.ACCESS.OPEN
+    implementation = @_hasReadAccess person, cache
+    return implementation if implementation is true or implementation is false
+    implementation = @_hasMaintainerAccess person
+    return implementation if implementation is true or implementation is false
+    implementation = @_hasAdminAccess person
+    return implementation if implementation is true or implementation is false
 
-    return not cache if @access is Publication.ACCESS.CLOSED
+    return false
+
+  _hasReadAccess: (person, cache=false) =>
+    return true if @access is @constructor.ACCESS.OPEN
+
+    if @access is @constructor.ACCESS.CLOSED
+      if not cache
+        return true
+      else
+        return
+
+    return unless person?._id
 
     # Access should be private here, if it is not, we prevent access to the document
     # TODO: Should we log this?
-    return false unless @access is Publication.ACCESS.PRIVATE
-
-    return false unless person?._id
+    return false unless @access is @constructor.ACCESS.PRIVATE
 
     return true if person._id in _.pluck @readPersons, '_id'
 
-    personGroups = _.pluck person?.inGroups, '_id'
-    publicationGroups = _.pluck @readGroups, '_id'
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @readGroups, '_id'
 
-    return true if _.intersection(personGroups, publicationGroups).length
-
-    return false
+    return true if _.intersection(personGroups, documentGroups).length
 
   hasCacheAccess: (person) =>
     @hasReadAccess person, true
@@ -137,13 +156,57 @@ class @Publication extends AccessDocument
 
     return selector if person?.isAdmin
 
-    accessConditions = [
-      access: Publication.ACCESS.OPEN
+    deny = false
+    conditions = []
+
+    implementation = @_requireReadAccessConditions person, cache
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    implementation = @_requireMaintainerAccessConditions person
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    implementation = @_requireAdminAccessConditions person
+    if _.isArray implementation
+      conditions = conditions.concat implementation
+    else
+      deny = true
+
+    deny = true unless conditions.length
+
+    if deny
+      selector.$and.push
+        _id:
+          $in: _.pluck person?.library, '_id'
+    else
+      selector.$and.push
+        $or: [
+          processed:
+            $exists: true
+          $or: conditions
+        ,
+          _id:
+            $in: _.pluck person?.library, '_id'
+        ]
+
+    selector
+
+  @requireCacheAccessSelector: (person, selector) ->
+    @requireReadAccessSelector person, selector, true
+
+  @_requireReadAccessConditions: (person, cache=false) ->
+    conditions = [
+      access: @ACCESS.OPEN
     ,
-      access: Publication.ACCESS.PRIVATE
+      access: @ACCESS.PRIVATE
       'readPersons._id': person?._id
     ,
-      access: Publication.ACCESS.PRIVATE
+      access: @ACCESS.PRIVATE
       'readGroups._id':
         $in: _.pluck person?.inGroups, '_id'
     ]
@@ -151,22 +214,84 @@ class @Publication extends AccessDocument
     unless cache
       # Access to publication metadata is allowed for closed access
       # publications, only access to cache information is not
-      accessConditions.push
-        access: Publication.ACCESS.CLOSED
+      conditions.push
+        access: @ACCESS.CLOSED
 
-    selector.$and.push
-      $or: [
-        processed:
-          $exists: true
-        $or: accessConditions
-      ,
-        _id:
-          $in: _.pluck person?.library, '_id'
-      ]
-    selector
+    conditions
 
-  @requireCacheAccessSelector: (person, selector) ->
-    @requireReadAccessSelector person, selector, true
+  @readAccessPersonFields: ->
+    # _id field is implicitly added
+    isAdmin: 1
+    inGroups: 1
+    library: 1
+
+  @readAccessSelfFields: ->
+    # _id field is implicitly added
+    cached: 1
+    processed: 1
+    access: 1
+    readPersons: 1
+    readGroups: 1
+
+  _hasMaintainerAccess: (person) =>
+    # User has to be logged in
+    return unless person?._id
+
+    # TODO: Implement karma points for public documents
+
+    return true if person._id in _.pluck @authors, '_id'
+
+    return true if person._id in _.pluck @maintainerPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @maintainerGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+  @_requireMaintainerAccessConditions: (person) ->
+    return [] unless person?._id
+
+    [
+      'authors._id': person._id
+    ,
+      'maintainerPersons._id': person._id
+    ,
+      'maintainerGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
+
+  _hasAdminAccess: (person) =>
+    # User has to be logged in
+    return unless person?._id
+
+    # TODO: Implement karma points for public documents
+
+    return true if person._id in _.pluck @adminPersons, '_id'
+
+    personGroups = _.pluck person.inGroups, '_id'
+    documentGroups = _.pluck @adminGroups, '_id'
+
+    return true if _.intersection(personGroups, documentGroups).length
+
+  @_requireAdminAccessConditions: (person) ->
+    return [] unless person?._id
+
+    [
+      'adminPersons._id': person._id
+    ,
+      'adminGroups._id':
+        $in: _.pluck person.inGroups, '_id'
+    ]
 
   @defaultAccess: ->
     @ACCESS.OPEN
+
+  @applyDefaultAccess: (personId, document) ->
+    document = super
+
+    if personId and personId not in _.pluck document.adminPersons, '_id'
+      document.adminPersons ?= []
+      document.adminPersons.push
+        _id: personId
+
+    document

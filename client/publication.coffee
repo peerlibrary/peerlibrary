@@ -27,20 +27,20 @@ currentViewport = new Variable
 @currentHighlights = new KeysEqualityVariable {}
 
 ANNOTATION_DEFAULTS =
-  access: Annotation.ACCESS.PUBLIC
+  access: Annotation.ACCESS.PRIVATE
   groups: []
 
 Meteor.startup ->
   Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
-getAnnoationDefaults = ->
+getAnnotationDefaults = ->
   _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
 
 Deps.autorun ->
   # We have to keep list of default groups updated if user is removed from a group
   Group.documents.find(_id: $in: _.pluck Meteor.person()?.inGroups, '_id').observeChanges
     removed: (id) ->
-      defaults = getAnnoationDefaults()
+      defaults = getAnnotationDefaults()
       defaults.groups = _.without defaults.groups, id
       Session.set 'annotationDefaults', defaults
 
@@ -154,9 +154,9 @@ class @Publication extends Publication
             # We remove all added CSS in publication destroy
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
-            resizeAnnotationsControl()
+            resizeAnnotationsWidth()
 
-            $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
+            $('.annotations-list .invite .balance-text').balanceText()
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
@@ -449,10 +449,13 @@ Deps.autorun ->
 
   highlightId = Session.get 'currentHighlightId'
   annotationId = Session.get 'currentAnnotationId'
+  commentId = Session.get 'currentCommentId'
   if highlightId
     Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
   else if annotationId
     Meteor.Router.toNew Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+  else if commentId
+    Meteor.Router.toNew Meteor.Router.commentPath publication._id, publication.slug, commentId
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
@@ -502,6 +505,9 @@ addAccessEvents =
 
 Template.publicationMetaMenu.events addAccessEvents
 
+Template.publicationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
+
 Template.publicationAccessControl.open = ->
   @access is Publication.ACCESS.OPEN
 
@@ -525,7 +531,7 @@ libraryMenuSubscriptionCollectionsHandle = null
 Template.publicationLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++
   # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
-  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'persons-by-id-or-slug', Meteor.personId() unless libraryMenuSubscriptionPersonHandle
+  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'my-person-library' unless libraryMenuSubscriptionPersonHandle
 
 Template.publicationLibraryMenu.destroyed = ->
   libraryMenuSubscriptionCounter--
@@ -574,7 +580,7 @@ Template.publicationLibraryMenuCollections.myCollections = ->
   return unless Meteor.personId()
 
   collections = Collection.documents.find
-    'author._id': Meteor.personId()
+    'authorPerson._id': Meteor.personId()
   ,
     sort: [
       ['slug', 'asc']
@@ -667,10 +673,10 @@ viewportBottomPercentage = ->
   scrollBottom = $(window).scrollTop() + availableHeight
   makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
 
-debouncedSetCurrentViewport = _.debounce (viewport) ->
+debouncedSetCurrentViewport = _.throttle (viewport) ->
   currentViewport.set viewport
 ,
-  100
+  500
 
 setViewportPosition = ($viewport) ->
   top = viewportTopPercentage()
@@ -782,13 +788,12 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.highlightsControl.canEdit = ->
-  # Only the author can edit for now
-  return @author?._id is Meteor.personId()
+Template.highlightsControl.canRemove = ->
+  @hasRemoveAccess Meteor.person()
 
 Template.highlightsControl.events
-  'click .delete': (e, template) ->
-    Highlight.documents.remove @_id, (error) =>
+  'click .remove-button': (e, template) ->
+    Meteor.call 'remove-highlight', @_id, (error, count) =>
       Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
@@ -807,64 +812,94 @@ Template.highlightsControl.events
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
     return # Make sure CoffeeScript does not return anything
 
+###
+TODO: Temporary disabled, not yet finalized code
+
 Template.annotationsControl.events
+  # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
   'click .add': (e, template) ->
-    annotation = createAnnotationDocument()
+    Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      return Notify.meteorError error, true if error
 
-    annotationId = LocalAnnotation.documents.insert annotation, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      Notify.meteorError error, true if error
+      focusAnnotationId = annotationId
 
-    focusAnnotationId = annotationId
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
+###
 
-resizeAnnotationsControl = ->
+resizeAnnotationsWidth = ($annotationsList) ->
   padding = parseInt($('.annotations-control').css('right'))
   displayWrapper = $('.display-wrapper')
   left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
   $('.annotations-control').css
     left: left
 
+  # To not crop the shadow of annotations we move the left edge
+  # for 5px to the left and then add 5px (in fact 6px, so that
+  # it looks better with our 1px shadow border) left margin to each
+  # annotation. Same value is used in the _viewer.styl as well.
+  $('.annotations-list').add($annotationsList).css
+    left: left - 5
+
 Template.annotationsControl.rendered = ->
-  resizeAnnotationsControl()
+  resizeAnnotationsWidth()
 
-Template.publicationAnnotations.annotations = ->
-  viewport = currentViewport()
-  highlights = currentHighlights()
+Template.annotationInvite.highlights = ->
+  isolateValue ->
+    !!_.size(currentHighlights())
 
-  insideViewport = (area) ->
-    viewport.top <= area.top + area.height and viewport.bottom >= area.top
+viewportAnnotations = (local) ->
+  visibleHighlights = isolateValue ->
+    viewport = currentViewport()
+    highlights = currentHighlights()
 
-  visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
+    insideViewport = (area) ->
+      viewport.top <= area.top + area.height and viewport.bottom >= area.top
 
-  LocalAnnotation.documents.find
-    $or: [
-      # We display all annotations which are not linked to any highlight
-      'references.highlights':
-        $in: [null, []]
-    ,
-      # We display those which have a corresponding highlight visible
-      'references.highlights._id':
-        $in: visibleHighlights
-    ,
+    _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
+
+  conditions = [
+    # We display all annotations which are not linked to any highlight
+    local:
+      $exists: false
+    'references.highlights':
+      $in: [null, []]
+  ,
+    # We display those which have a corresponding highlight visible
+    local:
+      $exists: false
+    'references.highlights._id':
+      $in: visibleHighlights
+  ]
+
+  if local
+    conditions.push
       # We display the annotation editor
       local: true
       'author._id': Meteor.personId()
-    ]
+
+  LocalAnnotation.documents.find
+    $or: conditions
     'publication._id': Session.get 'currentPublicationId'
   ,
     sort:
       local: -1
       createdAt: 1
 
+Template.publicationAnnotations.annotations = ->
+  viewportAnnotations true
+
+Template.publicationAnnotations.realAnnotations = ->
+  isolateValue ->
+    !!viewportAnnotations(false).count()
+
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
     if Session.get 'currentHighlightId'
       # Highlight is currently selected, so we do not update location and
-      # leave to Annotator.updateLocation to handel this. This allows making
+      # leave to Annotator.updateLocation to handle this. This allows making
       # one highlight immediatelly after another, without having to go through
       # a publication-only location after new highlight is created, befure
       # location is updated to this new highlight location.
@@ -891,19 +926,14 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $annotations = $(@findAll '.annotations-list')
+  $annotationsList = $(@findAll '.annotations-list')
 
-  $annotations.scrollLock()
+  $annotationsList.scrollLock()
 
   # We have to reset current left edge when re-rendering
-  $annotations.css
-    # To not crop the shadow of annotations we move the left edge
-    # for 5px to the left and then add 5px (in fact 6px, so that
-    # it looks better with our 1px shadow border) left margin to each
-    # annotation. Same value is used in the _viewer.styl as well.
-    left: $('.annotations-control').position().left - 5
+  resizeAnnotationsWidth $annotationsList
 
-  $annotations.find('.invite .body, .local .body').balanceText()
+  $annotationsList.find('.balance-text').balanceText()
 
   # If we leave z-index constant for all meta menu items
   # then because of the DOM order those later in the DOM
@@ -915,7 +945,7 @@ Template.publicationAnnotations.rendered = ->
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   # We have to search for meta menus globally to have
   # access to other meta menus of other annotations
-  $metaMenus = $annotations.find('.meta-menu')
+  $metaMenus = $annotationsList.find('.meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: $metaMenus.length - i
@@ -964,8 +994,12 @@ Template.publicationAnnotationsItem.events
   # We do conversion of local annotation already in mousedown so that
   # we are before mousedown on document which deselects highlights
   'mousedown': (e, template) ->
-    # TODO: Get rid of this. Annotation invites are being replaced.
-    return # unless @local
+    return
+
+    ###
+    TODO: Get rid of this. Annotation invites are being replaced.
+
+    return unless @local
 
     LocalAnnotation.documents.update @_id,
       $unset:
@@ -978,14 +1012,17 @@ Template.publicationAnnotationsItem.events
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
 
     return # Make sure CoffeeScript does not return anything
+    ###
 
   'click': (e, template) ->
-    # We do not select or even deselect an annotation on clicks inside a meta menu.
+    # We do not select and even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    else if $(e.target).closest('.annotations-list .annotation li.comment').length
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1018,18 +1055,23 @@ Template.publicationAnnotationsItem.rendered = ->
 
     focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
 
-Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
+Template.publicationAnnotationsItem.canModify = ->
+  @hasMaintainerAccess Meteor.person()
 
 Template.publicationAnnotationsItem.selected = ->
-  'selected' if @_id is Session.get 'currentAnnotationId'
+  'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
 
 Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
 
 Template.annotationTags.rendered = ->
   # TODO: Make links work
+  ###
+  TODO: Temporary disabled, not yet finalized code
+
   $(@findAll '.annotation-tags-list').tagit
     readOnly: true
+  ###
 
 Template.annotationEditor.created = ->
   @_rendered = false
@@ -1058,12 +1100,16 @@ Template.annotationEditor.rendered = ->
       a:
         href: true
 
+  ###
+  TODO: Temporary disabled, not yet finalized code
+
   # Load tag-it
   $(@findAll '.annotation-tags-editor').tagit()
 
   # Create tags
   _.each @data.tags, (item) =>
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+  ###
 
   return # Make sure CoffeeScript does not return anything
 
@@ -1075,9 +1121,12 @@ Template.annotationEditor.events
     $editor = $(template.findAll '.annotation-content-editor')
 
     # Prevent empty annotations
-    return unless $editor.text()
+    return unless $editor.text().trim()
 
-    body = $editor.html()
+    body = $editor.html().trim()
+
+    ###
+    TODO: Temporary disabled, not yet finalized code
 
     $tags = $(template.findAll '.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
@@ -1095,18 +1144,27 @@ Template.annotationEditor.events
       # return
       tag:
         _id: tagId
+    ###
 
-    # TODO: Set privacy settings
-    LocalAnnotation.documents.update @_id,
-      $set:
-        local: false
-        body: body
-        tags: tags
-      $unset:
-        editing: ''
-    ,
-      (error) =>
+    if @local
+      # TODO: Set privacy settings
+      Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
         return Notify.meteorError error, true if error
+
+        LocalAnnotation.documents.remove @_id
+
+        focusAnnotationId = annotationId
+
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else
+      Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
+        return Notify.meteorError error, true if error
+
+        return unless count
+
+        LocalAnnotation.documents.update @_id,
+          $unset:
+            editing: ''
 
         focusAnnotationId = @_id
 
@@ -1189,12 +1247,34 @@ updateScribeUI = (e, template) ->
 
   return # Make sure CoffeeScript does not return anything
 
+Template.visibilityMenu.public = ->
+  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
     'annotation._id': @_id
   ,
     sort:
       createdAt: 1
+
+Template.annotationCommentsListItem.selected = ->
+  'selected' if @_id is Session.get 'currentCommentId'
+
+Template.annotationCommentsListItem.canRemove = ->
+  @hasRemoveAccess Meteor.person()
+
+Template.annotationCommentsListItem.events
+  'click .remove-button': (e, template) ->
+    annotationId = @annotation._id
+    Meteor.call 'remove-comment', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentEditor.created = ->
   @_rendered = false
@@ -1219,7 +1299,6 @@ Template.annotationCommentEditor.rendered = ->
   @_scribe.use Scribe.plugins['curly-quotes']()
   @_scribe.use Scribe.plugins['sanitizer']
     tags:
-      br: {}
       b: {}
       i: {}
       a:
@@ -1248,21 +1327,15 @@ Template.annotationCommentEditor.events
     $editor = $(template.findAll '.comment-content-editor')
 
     # Prevent empty comments
-    return unless $editor.text()
+    return unless $editor.text().trim()
 
-    body = $editor.html()
+    body = $editor.html().trim()
 
-    Comment.documents.insert
-      author:
-        _id: Meteor.personId()
-      annotation:
-        _id: template.data._id
-      publication:
-        _id: Session.get 'currentPublicationId'
-      body: body
+    Meteor.call 'create-comment', template.data._id, body, (error, commentId) =>
+      return Notify.meteorError error, true if error
 
-    # Reset editor
-    $editor.empty()
+      # Reset editor
+      $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1286,24 +1359,30 @@ Template.annotationsControl.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.events
-  'click .delete': (e, template) ->
-    LocalAnnotation.documents.remove @_id, (error) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+  'click .remove-button': (e, template) ->
+    Meteor.call 'remove-annotation', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       Notify.meteorError error, true if error
 
-    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.events addAccessEvents
 
-Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+Template.annotationMetaMenu.canRemove = ->
+  @hasRemoveAccess Meteor.person()
+
+Template.annotationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
 
 Template.contextMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    defaults = getAnnoationDefaults()
+    defaults = getAnnotationDefaults()
     defaults.access = access
     Session.set 'annotationDefaults', defaults
 
@@ -1312,25 +1391,25 @@ Template.contextMenu.events
   'mouseenter .access .selection': (e, template) ->
     accessHover = $(e.currentTarget).find('input').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (e, template) ->
     accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
 Template.contextMenu.public = ->
-  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PUBLIC
+  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
 
 Template.contextMenu.private = ->
-  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PRIVATE
+  getAnnotationDefaults().access is Annotation.ACCESS.PRIVATE
 
 Template.contextMenu.selectedGroups = ->
-  Session.get('annotationDefaults')?.groups
+  getAnnotationDefaults().groups
 
 Template.contextMenu.myGroups = Template.myGroups.myGroups
 
@@ -1341,28 +1420,27 @@ Template.contextMenuGroups.private = Template.contextMenu.private
 Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
 
 Template.contextMenuGroups.selectedGroupsDescription = ->
-  defaults = Session.get('annotationDefaults')
+  defaults = getAnnotationDefaults()
   return unless defaults
   if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
 
 Template.contextMenuGroups.events
-  'click .add-to-working-in': (e, template) ->
-    defaults = getAnnoationDefaults()
+  'click .add-to-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
     defaults.groups = _.union defaults.groups, [@_id]
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .remove-from-working-in': (e, template) ->
-    defaults = getAnnoationDefaults()
+  'click .remove-from-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
     defaults.groups = _.without defaults.groups, @_id
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
-Template.contextMenuGroupListing.workingIn = ->
-  defaults = Session.get('annotationDefaults')
-  _.contains defaults?.groups, @_id
+Template.contextMenuGroupListing.workingInside = ->
+  _.contains getAnnotationDefaults().groups, @_id
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()

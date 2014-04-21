@@ -14,9 +14,6 @@ section.publication
     width 94%
     margin-top simple-margin-top - header-height
 
-  .simple.loading
-    text-align center
-
 /* Meta menu
 ============ */
 
@@ -376,6 +373,7 @@ annotations-control-height = 30px
       display block
       border-bottom 1px solid #e3e3e3
       clear left
+      overflow-x hidden
 
       ul.format-buttons
         list-style none
@@ -443,6 +441,9 @@ annotations-control-height = 30px
     .visibility-menu
       float right
       margin 0 20px
+
+      .hint
+        margin-top 8px
 
     button.save
       margin-right 0
@@ -593,6 +594,9 @@ annotations-control-height = 30px
             padding 7px
             overflow hidden
 
+          .remove-button
+            float right
+
           button.comment
             display none
 
@@ -625,7 +629,7 @@ annotations-control-height = 30px
         font-size small-meta-menu-icon-font-size
 
       .meta-content
-        .highlights
+        .highlights, .inside
           span::after
             content ","
 
@@ -660,10 +664,6 @@ annotations-control-height = 30px
     /* 11px instead of 10px for the same reason we are using 6px for left margin
        instead of 5px - so that it looks better with our 1px shadow border. */
     margin-right 11px
-
-    .body
-      text-align center
-      color gray
 
   .annotation.local
     margin-top 10px
@@ -718,6 +718,8 @@ annotations-control-height = 30px
     padding 0
     background-color transparent
     box-shadow none
+    text-align center
+    z-index -1
 
     .vertical-align-outer
       display table
@@ -734,7 +736,10 @@ annotations-control-height = 30px
 .context-menu.meta-menu
   position absolute
   top 0
+  /* TODO: Temporary disabled, not yet finalized code
   left 28px
+  */
+  left 0
   height annotations-control-height
   width 70px
   padding 3px 5px

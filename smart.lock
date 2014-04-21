@@ -38,7 +38,8 @@
         "branch": "peerlibrary"
       },
       "async": {},
-      "cheerio": {}
+      "cheerio": {},
+      "isolate-value": {}
     },
     "packages": {
       "router": {
@@ -145,6 +146,11 @@
         "git": "https://github.com/andreioprisan/meteor-cheerio.git",
         "tag": "v0.3.2",
         "commit": "f7b7b8c4ad4dbac7e9b34a4b110150cd5ec95bae"
+      },
+      "isolate-value": {
+        "git": "https://github.com/awwx/meteor-isolate-value.git",
+        "tag": "v2.0.2",
+        "commit": "6b8600b29190073fa3785b48b028f113edfdffc2"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
