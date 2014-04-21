@@ -449,10 +449,13 @@ Deps.autorun ->
 
   highlightId = Session.get 'currentHighlightId'
   annotationId = Session.get 'currentAnnotationId'
+  commentId = Session.get 'currentCommentId'
   if highlightId
     Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
   else if annotationId
     Meteor.Router.toNew Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+  else if commentId
+    Meteor.Router.toNew Meteor.Router.commentPath publication._id, publication.slug, commentId
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
@@ -810,6 +813,7 @@ Template.highlightsControl.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationsControl.events
+  # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
   'click .add': (e, template) ->
     Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
@@ -1002,12 +1006,14 @@ Template.publicationAnnotationsItem.events
     ###
 
   'click': (e, template) ->
-    # We do not select or even deselect an annotation on clicks inside a meta menu.
+    # We do not select and even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    else if $(e.target).closest('.annotations-list .annotation .comment').length
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1044,7 +1050,7 @@ Template.publicationAnnotationsItem.canModify = ->
   @hasMaintainerAccess Meteor.person()
 
 Template.publicationAnnotationsItem.selected = ->
-  'selected' if @_id is Session.get 'currentAnnotationId'
+  'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
 
 Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
@@ -1238,6 +1244,9 @@ Template.annotationCommentsList.comments = ->
   ,
     sort:
       createdAt: 1
+
+Template.annotationCommentsListItem.selected = ->
+  'selected' if @_id is Session.get 'currentCommentId'
 
 Template.annotationCommentEditor.created = ->
   @_rendered = false

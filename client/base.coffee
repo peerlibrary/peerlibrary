@@ -20,6 +20,7 @@ setSession = (session) ->
     currentPublicationProgress: null
     currentHighlightId: null
     currentAnnotationId: null
+    currentCommentId: null
     currentPersonSlug: null
     currentTagId: null
     currentTagSlug: null
@@ -109,6 +110,15 @@ else
           currentPublicationId: publicationId
           currentPublicationSlug: publicationSlug
           currentAnnotationId: annotationId
+        'publication'
+
+    '/p/:publicationId/:publicationSlug?/c/:commentId':
+      as: 'comment'
+      to: (publicationId, publicationSlug, commentId) ->
+        setSession
+          currentPublicationId: publicationId
+          currentPublicationSlug: publicationSlug
+          currentCommentId: commentId
         'publication'
 
     '/p/:publicationId/:publicationSlug?':

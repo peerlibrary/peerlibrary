@@ -287,19 +287,23 @@
 <template name="annotationCommentsList">
   <ul class="comments-list">
     {{#each comments}}
-      <li class="comment">
-        <a href="{{profilePath author.slug}}">
-          <img src="{{author.avatar 30}}" class="avatar" />
-        </a>
-        <div class="comment-content">
-          <div class="body">{{{body}}}</div>
-        </div>
-      </li>
+      {{> annotationCommentsListItem}}
     {{/each}}
     {{#if currentPerson}}
       {{> annotationCommentEditor}}
     {{/if}}
   </ul>
+</template>
+
+<template name="annotationCommentsListItem">
+  <li class="comment {{selected}}">
+    <a href="{{profilePath author.slug}}">
+      <img src="{{author.avatar 30}}" class="avatar" />
+    </a>
+    <div class="comment-content">
+      <div class="body">{{{body}}}</div>
+    </div>
+  </li>
 </template>
 
 <template name="annotationCommentEditor">

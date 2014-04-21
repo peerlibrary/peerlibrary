@@ -150,11 +150,14 @@ class @Annotator extends Annotator
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
+    commentId = Session.get 'currentCommentId'
     # @selectedAnnotationId is Annotator's annotation, so our highlights
     if @selectedAnnotationId
       Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
     else if annotationId
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else if commentId
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), commentId
     else
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
