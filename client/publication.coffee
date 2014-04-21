@@ -1289,7 +1289,6 @@ Template.annotationCommentEditor.rendered = ->
   @_scribe.use Scribe.plugins['curly-quotes']()
   @_scribe.use Scribe.plugins['sanitizer']
     tags:
-      br: {}
       b: {}
       i: {}
       a:
