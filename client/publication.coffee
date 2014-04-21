@@ -1014,7 +1014,7 @@ Template.publicationAnnotationsItem.events
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
-    else if $(e.target).closest('.annotations-list .annotation .comment').length
+    else if $(e.target).closest('.annotations-list .annotation li.comment').length
       Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
