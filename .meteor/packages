@@ -41,3 +41,4 @@ scribe
 variable
 async
 cheerio
+isolate-value

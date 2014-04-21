@@ -673,10 +673,10 @@ viewportBottomPercentage = ->
   scrollBottom = $(window).scrollTop() + availableHeight
   makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
 
-debouncedSetCurrentViewport = _.debounce (viewport) ->
+debouncedSetCurrentViewport = _.throttle (viewport) ->
   currentViewport.set viewport
 ,
-  100
+  500
 
 setViewportPosition = ($viewport) ->
   top = viewportTopPercentage()
@@ -847,16 +847,18 @@ Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
 Template.annotationInvite.highlights = ->
-  _.size currentHighlights()
+  isolateValue ->
+    !!_.size(currentHighlights())
 
 viewportAnnotations = (local) ->
-  viewport = currentViewport()
-  highlights = currentHighlights()
+  visibleHighlights = isolateValue ->
+    viewport = currentViewport()
+    highlights = currentHighlights()
 
-  insideViewport = (area) ->
-    viewport.top <= area.top + area.height and viewport.bottom >= area.top
+    insideViewport = (area) ->
+      viewport.top <= area.top + area.height and viewport.bottom >= area.top
 
-  visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
+    _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
 
   conditions = [
     # We display all annotations which are not linked to any highlight
@@ -890,7 +892,8 @@ Template.publicationAnnotations.annotations = ->
   viewportAnnotations true
 
 Template.publicationAnnotations.realAnnotations = ->
-  viewportAnnotations(false).count()
+  isolateValue ->
+    !!viewportAnnotations(false).count()
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
