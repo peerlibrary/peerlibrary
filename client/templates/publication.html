@@ -301,6 +301,9 @@
       <img src="{{author.avatar 30}}" class="avatar" />
     </a>
     <div class="comment-content">
+      {{#if canRemove}}
+        <span class="remove-button"><a href="" title="Delete">&times;</a></span>
+      {{/if}}
       <div class="body">{{{body}}}</div>
     </div>
   </li>
@@ -324,8 +327,8 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canModify}}
-        <button class="delete">Delete</button>
+      {{#if canRemove}}
+        <button class="remove-button">Delete</button>
       {{/if}}
       <p class="authors">
         {{#with author}}
@@ -394,8 +397,8 @@
 </template>
 
 <template name="highlightsControl">
-  {{#if canModify}}
-    <button class="delete">Delete</button>
+  {{#if canRemove}}
+    <button class="remove-button">Delete</button>
   {{/if}}
   <p class="authors">
     {{#with author}}
@@ -426,8 +429,8 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canModify}}
-        <button class="delete">Delete</button>
+      {{#if canRemove}}
+        <button class="remove-button">Delete</button>
       {{/if}}
       <p class="authors">
         {{#with author}}

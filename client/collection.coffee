@@ -76,6 +76,9 @@ Template.collectionPublications.rendered = ->
 Template.collectionDetails.canModify = ->
   @hasMaintainerAccess Meteor.person()
 
+Template.collectionDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person()
+
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>

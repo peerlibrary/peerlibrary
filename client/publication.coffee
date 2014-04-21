@@ -788,11 +788,11 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.highlightsControl.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+Template.highlightsControl.canRemove = ->
+  @hasRemoveAccess Meteor.person()
 
 Template.highlightsControl.events
-  'click .delete': (e, template) ->
+  'click .remove-button': (e, template) ->
     Meteor.call 'remove-highlight', @_id, (error, count) =>
       Notify.meteorError error, true if error
 
@@ -1248,6 +1248,22 @@ Template.annotationCommentsList.comments = ->
 Template.annotationCommentsListItem.selected = ->
   'selected' if @_id is Session.get 'currentCommentId'
 
+Template.annotationCommentsListItem.canRemove = ->
+  @hasRemoveAccess Meteor.person()
+
+Template.annotationCommentsListItem.events
+  'click .remove-button': (e, template) ->
+    annotationId = @annotation._id
+    Meteor.call 'remove-comment', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.annotationCommentEditor.created = ->
   @_rendered = false
 
@@ -1332,7 +1348,7 @@ Template.annotationsControl.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationMetaMenu.events
-  'click .delete': (e, template) ->
+  'click .remove-button': (e, template) ->
     Meteor.call 'remove-annotation', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       Notify.meteorError error, true if error
@@ -1345,8 +1361,8 @@ Template.annotationMetaMenu.events
 
 Template.annotationMetaMenu.events addAccessEvents
 
-Template.annotationMetaMenu.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+Template.annotationMetaMenu.canRemove = ->
+  @hasRemoveAccess Meteor.person()
 
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person()

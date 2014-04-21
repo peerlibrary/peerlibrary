@@ -38,11 +38,13 @@
     </div>
     {{#if canModify}}
       <h3>Tools</h3>
-      <p>
-        <button class="delete-collection">Delete collection</button>
-        {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
-        {{! TODO: Remove all publications from collection }}
-      </p>
+      {{#if canRemove}}
+        <p>
+          <button class="delete-collection">Delete collection</button>
+          {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
+          {{! TODO: Remove all publications from collection }}
+        </p>
+      {{/if}}
       <p class="hint">
         You can reorder publications in a collection by dragging them.
       </p>

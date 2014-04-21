@@ -44,6 +44,31 @@ Meteor.methods
 
     Comment.documents.insert comment
 
+  # TODO: Use this code on the client side as well
+  'remove-comment': (commentId) ->
+    check commentId, DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    comment = Comment.documents.findOne
+      _id: commentId
+    throw new Meteor.Error 400, "Invalid comment." unless comment
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: comment.annotation._id
+    )
+    throw new Meteor.Error 400, "Invalid comment." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid comment." unless publication
+
+    Comment.documents.remove Comment.requireRemoveAccessSelector(person,
+      _id: commentId
+    )
+
 Meteor.publish 'comments-by-publication', (publicationId) ->
   check publicationId, DocumentId
 
