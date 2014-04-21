@@ -263,9 +263,7 @@
         </div>
         <div class="form-control">
           <button type="button" class="btn blue save">Save</button>
-          <div class="visibility-menu">
-            {{> visibilityMenu}}
-          </div>
+          {{> visibilityMenu}}
         </div>
       </form>
     </div>
@@ -342,13 +340,26 @@
 </template>
 
 <template name="visibilityMenu">
-  <div class="ui-dropdown">
-    <div class="ui-selection-wrapper">
-      <span class="ui-selection">
+  <div class="visibility-menu">
+    {{! TODO: Temporary disabled, not yet finalized code
+      <div class="ui-dropdown">
+        <div class="ui-selection-wrapper">
+          <span class="ui-selection">
+            <i class="icon-public"></i>
+            Public
+          </span>
+          <i class="icon-down"></i>
+        </div>
+      </div>
+    }}
+    <div class="hint">
+      {{#if public}}
         <i class="icon-public"></i>
         Public
-      </span>
-      <i class="icon-down"></i>
+      {{else}}
+        <i class="icon-private"></i>
+        Private
+      {{/if}}
     </div>
   </div>
 </template>
@@ -441,6 +452,14 @@
       </p>
       <p class="time">{{createdAt}}</p>
       <p class="time">{{updatedAt}}</p>
+      {{#if inside.length}}
+        <p class="inside">
+          Inside groups:
+          {{#each inside}}
+            <span><a href="{{groupPath slug}}">{{name}}</a></span>
+          {{/each}}
+        </p>
+      {{/if}}
       <p class="highlights">
         {{#each references.highlights}}
           <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
@@ -519,7 +538,7 @@
 
 <template name="contextMenuGroupListing">
   <li class="context-menu-group toggle-list-item">
-    <button class="{{#if workingIn}}remove-from-working-in toggled{{else}}add-to-working-in{{/if}}">
+    <button class="{{#if workingInside}}remove-from-working-inside toggled{{else}}add-to-working-inside{{/if}}">
       <span class="group-name">{{name}}</span>
     </button>
   </li>

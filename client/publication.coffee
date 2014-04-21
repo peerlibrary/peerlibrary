@@ -33,14 +33,14 @@ ANNOTATION_DEFAULTS =
 Meteor.startup ->
   Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
-getAnnoationDefaults = ->
+getAnnotationDefaults = ->
   _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
 
 Deps.autorun ->
   # We have to keep list of default groups updated if user is removed from a group
   Group.documents.find(_id: $in: _.pluck Meteor.person()?.inGroups, '_id').observeChanges
     removed: (id) ->
-      defaults = getAnnoationDefaults()
+      defaults = getAnnotationDefaults()
       defaults.groups = _.without defaults.groups, id
       Session.set 'annotationDefaults', defaults
 
@@ -1148,7 +1148,7 @@ Template.annotationEditor.events
 
     if @local
       # TODO: Set privacy settings
-      Meteor.call 'create-annotation', @publication._id, body, (error, annotationId) =>
+      Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
         return Notify.meteorError error, true if error
 
         LocalAnnotation.documents.remove @_id
@@ -1246,6 +1246,9 @@ updateScribeUI = (e, template) ->
     $button.attr 'disabled', 'disabled'
 
   return # Make sure CoffeeScript does not return anything
+
+Template.visibilityMenu.public = ->
+  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
 
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
@@ -1379,7 +1382,7 @@ Template.contextMenu.events
   'change .access input:radio': (e, template) ->
     access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
-    defaults = getAnnoationDefaults()
+    defaults = getAnnotationDefaults()
     defaults.access = access
     Session.set 'annotationDefaults', defaults
 
@@ -1400,13 +1403,13 @@ Template.contextMenu.events
     return # Make sure CoffeeScript does not return anything
 
 Template.contextMenu.public = ->
-  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PUBLIC
+  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
 
 Template.contextMenu.private = ->
-  Session.get('annotationDefaults')?.access is Annotation.ACCESS.PRIVATE
+  getAnnotationDefaults().access is Annotation.ACCESS.PRIVATE
 
 Template.contextMenu.selectedGroups = ->
-  Session.get('annotationDefaults')?.groups
+  getAnnotationDefaults().groups
 
 Template.contextMenu.myGroups = Template.myGroups.myGroups
 
@@ -1417,28 +1420,27 @@ Template.contextMenuGroups.private = Template.contextMenu.private
 Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
 
 Template.contextMenuGroups.selectedGroupsDescription = ->
-  defaults = Session.get('annotationDefaults')
+  defaults = getAnnotationDefaults()
   return unless defaults
   if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
 
 Template.contextMenuGroups.events
-  'click .add-to-working-in': (e, template) ->
-    defaults = getAnnoationDefaults()
+  'click .add-to-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
     defaults.groups = _.union defaults.groups, [@_id]
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .remove-from-working-in': (e, template) ->
-    defaults = getAnnoationDefaults()
+  'click .remove-from-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
     defaults.groups = _.without defaults.groups, @_id
     Session.set 'annotationDefaults', defaults
 
     return # Make sure CoffeeScript does not return anything
 
-Template.contextMenuGroupListing.workingIn = ->
-  defaults = Session.get('annotationDefaults')
-  _.contains defaults?.groups, @_id
+Template.contextMenuGroupListing.workingInside = ->
+  _.contains getAnnotationDefaults().groups, @_id
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()

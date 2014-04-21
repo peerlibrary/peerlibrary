@@ -27,9 +27,11 @@ Meteor.methods
 
     [publication._id, publication.slug, annotationId]
 
-  'create-annotation': (publicationId, body) ->
+  'create-annotation': (publicationId, body, access, groups) ->
     check publicationId, DocumentId
     check body, Match.Optional NonEmptyString
+    check access, MatchAccess Annotation.ACCESS
+    check groups, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -42,6 +44,16 @@ Meteor.methods
       _id: publicationId
     )
     throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    personGroups = _.pluck person.inGroups, '_id'
+    throw new Meteor.Error 400, "Invalid groups." if _.difference(groups, personGroups).length
+
+    throw new Meteor.Error 400, "Invalid groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+      _id:
+        $in: groups
+    )).count() isnt groups.length
+
+    groups = (_id: groupId for groupId in groups)
 
     # TODO: Should we sync this somehow with createAnnotationDocument? Maybe move createAnnotationDocument to Annotation object?
     createdAt = moment.utc().toDate()
@@ -60,6 +72,9 @@ Meteor.methods
         tags: []
       tags: []
       body: body
+      access: access
+      inside: groups
+      readGroups: groups
       license: 'CC0-1.0+'
 
     annotation = Annotation.applyDefaultAccess person._id, annotation

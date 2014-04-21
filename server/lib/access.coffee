@@ -10,12 +10,6 @@ RegisteredForAccess = Match.Where (documentName) ->
   check documentName, String
   accessDocuments.hasOwnProperty documentName
 
-MatchAccess = (access) ->
-  values = _.values access
-  Match.Where (a) ->
-    check a, Number
-    a in values
-
 # TODO: Use this code on the client side as well
 Meteor.methods
   'grant-read-access-to-person': (documentName, documentId, personId) ->

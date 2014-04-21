@@ -27,6 +27,24 @@ class @Group extends ReadAccessDocument
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
 
+  _hasReadAccess: (person) =>
+    access = super
+    return access if access is true or access is false
+
+    personGroups = _.pluck person.inGroups, '_id'
+
+    return true if @_id in personGroups
+
+  @_requireReadAccessConditions: (person) ->
+    conditions = super
+    return conditions unless _.isArray conditions
+
+    conditions.push
+      _id:
+        $in: _.pluck person.inGroups, '_id'
+
+    conditions
+
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
     return unless person?._id

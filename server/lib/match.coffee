@@ -14,3 +14,9 @@ INVALID_ID_CHARS_REGEX = new RegExp "[^#{ UNMISTAKABLE_CHARS }]"
   check x, String
   check x, Match.Where (y) -> y.length is 17
   not INVALID_ID_CHARS_REGEX.test x
+
+@MatchAccess = (access) ->
+  values = _.values access
+  Match.Where (a) ->
+    check a, Number
+    a in values
