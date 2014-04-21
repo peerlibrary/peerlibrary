@@ -154,7 +154,7 @@ class @Publication extends Publication
             # We remove all added CSS in publication destroy
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
-            resizeAnnotationsControl()
+            resizeAnnotationsWidth()
 
             $('.annotations-list .invite .balance-text').balanceText()
 
@@ -825,15 +825,22 @@ Template.annotationsControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-resizeAnnotationsControl = ->
+resizeAnnotationsWidth = ($annotationsList) ->
   padding = parseInt($('.annotations-control').css('right'))
   displayWrapper = $('.display-wrapper')
   left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
   $('.annotations-control').css
     left: left
 
+  # To not crop the shadow of annotations we move the left edge
+  # for 5px to the left and then add 5px (in fact 6px, so that
+  # it looks better with our 1px shadow border) left margin to each
+  # annotation. Same value is used in the _viewer.styl as well.
+  $('.annotations-list').add($annotationsList).css
+    left: left - 5
+
 Template.annotationsControl.rendered = ->
-  resizeAnnotationsControl()
+  resizeAnnotationsWidth()
 
 Template.annotationInvite.highlights = ->
   _.size currentHighlights()
@@ -912,19 +919,14 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $annotations = $(@findAll '.annotations-list')
+  $annotationsList = $(@findAll '.annotations-list')
 
-  $annotations.scrollLock()
+  $annotationsList.scrollLock()
 
   # We have to reset current left edge when re-rendering
-  $annotations.css
-    # To not crop the shadow of annotations we move the left edge
-    # for 5px to the left and then add 5px (in fact 6px, so that
-    # it looks better with our 1px shadow border) left margin to each
-    # annotation. Same value is used in the _viewer.styl as well.
-    left: $('.annotations-control').position().left - 5
+  resizeAnnotationsWidth $annotationsList
 
-  $annotations.find('.invite .balance-text').balanceText()
+  $annotationsList.find('.balance-text').balanceText()
 
   # If we leave z-index constant for all meta menu items
   # then because of the DOM order those later in the DOM
@@ -936,7 +938,7 @@ Template.publicationAnnotations.rendered = ->
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   # We have to search for meta menus globally to have
   # access to other meta menus of other annotations
-  $metaMenus = $annotations.find('.meta-menu')
+  $metaMenus = $annotationsList.find('.meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: $metaMenus.length - i
