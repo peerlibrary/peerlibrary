@@ -831,7 +831,7 @@ Template.annotationsControl.rendered = ->
 
 Template.annotationsControl.inside = ->
   Group.documents.find
-   _id:
+    _id:
       $in: getAnnotationDefaults().groups
   ,
     sort: [
