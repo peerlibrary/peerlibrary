@@ -68,9 +68,9 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # No need for requireReadAccessSelector because highlights are public
     highlight = Highlight.documents.findOne
       _id: highlightId
+    # No need for hasReadAccess because highlights are public
     throw new Meteor.Error 400, "Invalid highlight." unless highlight
 
     publication = Publication.documents.findOne Publication.requireCacheAccessSelector(person,

@@ -16,33 +16,32 @@ MatchAccess = (access) ->
     check a, Number
     a in values
 
-# TODO: Use this code on the client side as well for latency compensation, see https://github.com/meteor/meteor/issues/1921
+# TODO: Use this code on the client side as well
 Meteor.methods
   'grant-read-access-to-person': (documentName, documentId, personId) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check personId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Optimize, not all fields are necessary
     document = accessDocuments[documentName].documents.findOne documentId
+    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
-    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+    person2 = Person.documents.findOne
+      _id: personId
+    # No need for hasReadAccess because persons are public
+    throw new Meteor.Error 400, "Invalid person." unless person2
 
     return 0 unless document.access is ACCESS.PRIVATE
 
-    # TODO: Optimize check for existence
-    person = Person.documents.findOne
-      _id: personId
-
-    return 0 unless person
-
-    accessDocuments[documentName].documents.update
+    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
       _id: documentId
       'readPersons._id':
         $ne: personId
-    ,
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
@@ -54,28 +53,24 @@ Meteor.methods
     check documentId, DocumentId
     check groupId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Optimize, not all fields are necessary
     document = accessDocuments[documentName].documents.findOne documentId
+    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
-    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+    group = Group.documents.findOne
+      _id: groupId
+    throw new Meteor.Error 400, "Invalid group." unless group?.hasReadAccess person
 
     return 0 unless document.access is ACCESS.PRIVATE
 
-    # TODO: Optimize check for existence
-    group = Group.documents.findOne
-      _id: groupId
-
-    # TODO: If we will allow private groups, then we have to call hasReadAccess on the group as well
-
-    return 0 unless group
-
-    accessDocuments[documentName].documents.update
+    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
       _id: documentId
       'readGroups._id':
         $ne: groupId
-    ,
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
@@ -87,19 +82,24 @@ Meteor.methods
     check documentId, DocumentId
     check personId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Optimize, not all fields are necessary
     document = accessDocuments[documentName].documents.findOne documentId
+    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
-    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+    person2 = Person.documents.findOne
+      _id: personId
+    # No need for hasReadAccess because persons are public
+    throw new Meteor.Error 400, "Invalid person." unless person2
 
     return 0 unless document.access is ACCESS.PRIVATE
 
-    accessDocuments[documentName].documents.update
+    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
       _id: documentId
       'readPersons._id': personId
-    ,
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
@@ -111,21 +111,23 @@ Meteor.methods
     check documentId, DocumentId
     check groupId, DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Optimize, not all fields are necessary
     document = accessDocuments[documentName].documents.findOne documentId
+    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
-    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+    group = Group.documents.findOne
+      _id: groupId
+    throw new Meteor.Error 400, "Invalid group." unless group?.hasReadAccess person
 
     return 0 unless document.access is ACCESS.PRIVATE
 
-    # TODO: If we will allow private groups, then we have to call hasReadAccess on the group as well
-
-    accessDocuments[documentName].documents.update
+    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
       _id: documentId
       'readGroups._id': groupId
-    ,
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
@@ -137,28 +139,28 @@ Meteor.methods
     check documentId, DocumentId
     check access, MatchAccess accessDocuments[documentName].ACCESS
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Optimize, not all fields are necessary
     document = accessDocuments[documentName].documents.findOne documentId
-
-    throw new Meteor.Error 403, "Permission denied." unless document?.hasReadAccess Meteor.person()
+    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
     if access is ACCESS.PRIVATE
-      accessDocuments[documentName].documents.update
+      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access
-      ,
-        $set: _.extend accessDocuments[documentName].defaultPrivateAccessSettings(Meteor.personId(), documentId),
+      ),
+        $set: _.extend accessDocuments[documentName].defaultPrivateAccessSettings(person._id, documentId),
           access: access
 
     else
-      accessDocuments[documentName].documents.update
+      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access
-      ,
+      ),
         $set:
           access: access
           readPersons: []
@@ -205,13 +207,20 @@ Meteor.publish 'search-persons-groups', (query, except) ->
 
   return unless findPersonQuery.$and.length + findGroupQuery.$and.length
 
-  # TODO: If we will allow private groups, then we will have to filter here
+  @related (person) ->
+    restrictedFindGroupQuery = Group.requireReadAccessSelector person, findGroupQuery
 
-  searchPublish @, 'search-persons-groups', query,
-    cursor: Person.documents.find findPersonQuery,
-      limit: 5
-      fields: Person.PUBLISH_FIELDS().fields
+    searchPublish @, 'search-persons-groups', query,
+      # No need for requireReadAccessSelector because persons are public
+      cursor: Person.documents.find findPersonQuery,
+        limit: 5
+        fields: Person.PUBLISH_FIELDS().fields
+    ,
+      cursor: Group.documents.find restrictedFindGroupQuery,
+        limit: 5
+        fields: Group.PUBLISH_FIELDS().fields
   ,
-    cursor: Group.documents.find findGroupQuery,
-      limit: 5
-      fields: Group.PUBLISH_FIELDS().fields
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
