@@ -27,7 +27,7 @@ currentViewport = new Variable
 @currentHighlights = new KeysEqualityVariable {}
 
 ANNOTATION_DEFAULTS =
-  access: Annotation.ACCESS.PRIVATE
+  access: Annotation.defaultAccess()
   groups: []
 
 Meteor.startup ->
