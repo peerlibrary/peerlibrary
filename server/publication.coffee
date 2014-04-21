@@ -206,6 +206,10 @@ class @Publication extends Publication
       access: 1
       readPersons: 1
       readGroups: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+      adminPersons: 1
+      adminGroups: 1
 
   # A subset of public fields used for search results to optimize transmission to a client
   @PUBLIC_SEARCH_RESULTS_FIELDS: ->

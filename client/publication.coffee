@@ -156,7 +156,7 @@ class @Publication extends Publication
               width: viewport.width
             resizeAnnotationsControl()
 
-            $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
+            $('.annotations-list .invite .balance-text').balanceText()
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
@@ -502,6 +502,9 @@ addAccessEvents =
 
 Template.publicationMetaMenu.events addAccessEvents
 
+Template.publicationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
+
 Template.publicationAccessControl.open = ->
   @access is Publication.ACCESS.OPEN
 
@@ -782,9 +785,8 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.highlightsControl.canEdit = ->
-  # Only the author can edit for now
-  return @author?._id is Meteor.personId()
+Template.highlightsControl.canModify = ->
+  @hasMaintainerAccess Meteor.person()
 
 Template.highlightsControl.events
   'click .delete': (e, template) ->
@@ -829,7 +831,10 @@ resizeAnnotationsControl = ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsControl()
 
-Template.publicationAnnotations.annotations = ->
+Template.annotationInvite.highlights = ->
+  _.size currentHighlights()
+
+viewportAnnotations = (local) ->
   viewport = currentViewport()
   highlights = currentHighlights()
 
@@ -838,25 +843,39 @@ Template.publicationAnnotations.annotations = ->
 
   visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
 
-  LocalAnnotation.documents.find
-    $or: [
-      # We display all annotations which are not linked to any highlight
-      'references.highlights':
-        $in: [null, []]
-    ,
-      # We display those which have a corresponding highlight visible
-      'references.highlights._id':
-        $in: visibleHighlights
-    ,
+  conditions = [
+    # We display all annotations which are not linked to any highlight
+    local:
+      $exists: false
+    'references.highlights':
+      $in: [null, []]
+  ,
+    # We display those which have a corresponding highlight visible
+    local:
+      $exists: false
+    'references.highlights._id':
+      $in: visibleHighlights
+  ]
+
+  if local
+    conditions.push
       # We display the annotation editor
       local: true
       'author._id': Meteor.personId()
-    ]
+
+  LocalAnnotation.documents.find
+    $or: conditions
     'publication._id': Session.get 'currentPublicationId'
   ,
     sort:
       local: -1
       createdAt: 1
+
+Template.publicationAnnotations.annotations = ->
+  viewportAnnotations true
+
+Template.publicationAnnotations.realAnnotations = ->
+  viewportAnnotations(false).count()
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
@@ -901,7 +920,7 @@ Template.publicationAnnotations.rendered = ->
     # annotation. Same value is used in the _viewer.styl as well.
     left: $('.annotations-control').position().left - 5
 
-  $annotations.find('.invite .body, .local .body').balanceText()
+  $annotations.find('.invite .balance-text').balanceText()
 
   # If we leave z-index constant for all meta menu items
   # then because of the DOM order those later in the DOM
@@ -1021,7 +1040,8 @@ Template.publicationAnnotationsItem.rendered = ->
 
     focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
 
-Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
+Template.publicationAnnotationsItem.canModify = ->
+  @hasMaintainerAccess Meteor.person()
 
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get 'currentAnnotationId'
@@ -1316,7 +1336,11 @@ Template.annotationMetaMenu.events
 
 Template.annotationMetaMenu.events addAccessEvents
 
-Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+Template.annotationMetaMenu.canModify = ->
+  @hasMaintainerAccess Meteor.person()
+
+Template.annotationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
 
 Template.contextMenu.events
   'change .access input:radio': (e, template) ->

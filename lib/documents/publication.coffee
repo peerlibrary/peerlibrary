@@ -193,8 +193,6 @@ class @Publication extends AccessDocument
     # User has to be logged in
     return false unless person?._id
 
-    return false unless @cached
-
     return true if person.isAdmin
 
     # Unknown access, we prevent access to the document
@@ -230,16 +228,13 @@ class @Publication extends AccessDocument
       return _id:
         $in: []
 
+    return selector if person.isAdmin
+
     # To not modify input
     selector = EJSON.clone selector
 
     # We use $and to not override any existing selector field
     selector.$and = [] unless selector.$and
-    selector.$and.push
-      cached:
-        $exists: true
-
-    return selector if person.isAdmin
 
     accessConditions = [
       'authors._id': person._id
@@ -265,8 +260,6 @@ class @Publication extends AccessDocument
     # User has to be logged in
     return false unless person?._id
 
-    return false unless @cached
-
     return true if person.isAdmin
 
     # Unknown access, we prevent access to the document
@@ -290,16 +283,13 @@ class @Publication extends AccessDocument
       return _id:
         $in: []
 
+    return selector if person.isAdmin
+
     # To not modify input
     selector = EJSON.clone selector
 
     # We use $and to not override any existing selector field
     selector.$and = [] unless selector.$and
-    selector.$and.push
-      cached:
-        $exists: true
-
-    return selector if person.isAdmin
 
     accessConditions = [
       'adminPersons._id': person._id

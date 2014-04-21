@@ -38,7 +38,9 @@
       </p>
       <p>Source: {{source}}</p>
       <p>{{createdAt}}</p>
-      {{> publicationAccessControl}}
+      {{#if canModifyAccess}}
+        {{> publicationAccessControl}}
+      {{/if}}
     </div>
   </div>
 </template>
@@ -163,9 +165,15 @@
 
 <template name="publicationAnnotations">
   <ul class="annotations-list">
+    {{#if realAnnotations}}
+      {{> annotationSignInInvite}}
+    {{/if}}
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
     {{/each}}
+    {{#unless realAnnotations}}
+      {{> annotationInvite}}
+    {{/unless}}
   </ul>
 </template>
 
@@ -201,7 +209,7 @@
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
           {{else}}
-            {{#if canEdit}}
+            {{#if canModify}}
               <span class="edit-button"><a href="">edit</a></span>
             {{/if}}
           {{/if}}
@@ -310,7 +318,7 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canEdit}}
+      {{#if canModify}}
         <button class="delete">Delete</button>
       {{/if}}
       <p class="authors">
@@ -336,27 +344,51 @@
   </div>
 </template>
 
-<template name="highlightInvite">
+<template name="annotationInvite">
   <li class="annotation invite">
     <div class="vertical-align-outer">
       <div class="vertical-align-inner">
-        <div class="body balance-text">
-          Select text in the publication to make a highlight, or click on an existing highlight to select it.
-        </div>
+        <p class="no-annotations hint balance-text">
+          There are no annotations yet.
+          {{#if currentUser}}
+            Create the first above.
+          {{else}}
+            Sing in to create the first.
+          {{/if}}
+        </p>
+        <p class="hint balance-text">
+          {{#unless highlights}}
+            There are no highlights yet.
+            {{#if currentUser}}
+              Select text in the publication to create one.
+            {{else}}
+              Sing in to create one.
+            {{/if}}
+          {{else}}
+            {{#if currentUser}}
+              Select text in the publication to create a highlight, or click on an existing highlight to select it.
+            {{else}}
+              To create a highlight sign in.
+            {{/if}}
+          {{/unless}}
+        </p>
       </div>
     </div>
   </li>
 </template>
 
-<template name="annotationInvite">
-  <div class="body balance-text">
-    {{! TODO: Change to "Click here or start typing to link an annotation to the selected highlight." }}
-    Click here to link an annotation to the selected highlight.
-  </div>
+<template name="annotationSignInInvite">
+  {{#unless currentUser}}
+    <li class="annotation">
+      <p class="hint balance-text">
+        Sign in to create an annotation or a highlight.
+      </p>
+    </li>
+  {{/unless}}
 </template>
 
 <template name="highlightsControl">
-  {{#if canEdit}}
+  {{#if canModify}}
     <button class="delete">Delete</button>
   {{/if}}
   <p class="authors">
@@ -377,8 +409,10 @@
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
-    {{> contextMenu}}
+    {{#if currentPersonId}}
+      <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+      {{> contextMenu}}
+    {{/if}}
   </div>
 </template>
 
@@ -386,7 +420,7 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      {{#if canEdit}}
+      {{#if canModify}}
         <button class="delete">Delete</button>
       {{/if}}
       <p class="authors">
@@ -403,7 +437,9 @@
           Not linked to any highlight.
         {{/each}}
       </p>
-      {{> accessControl}}
+      {{#if canModifyAccess}}
+        {{> accessControl}}
+      {{/if}}
     </div>
   </div>
 </template>
