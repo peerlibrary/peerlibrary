@@ -4,7 +4,7 @@ class @Annotation extends Annotation
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
 registerForAccess Annotation
@@ -122,7 +122,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
       'publication._id': publicationId
-    ), Annotation.PUBLIC_FIELDS()
+    ), Annotation.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId

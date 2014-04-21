@@ -14,11 +14,11 @@ class @Group extends Group
         [fields._id, fields.members.length]
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
   # A subset of public fields used when listing documents
-  @PUBLIC_LISTING_FIELDS: ->
+  @PUBLISH_LISTING_FIELDS: ->
     fields:
       slug: 1
       name: 1
@@ -112,7 +112,7 @@ Meteor.publish 'groups-by-id', (groupId) ->
     Group.documents.find Group.requireReadAccessSelector(person,
       _id: groupId
     ),
-      Group.PUBLIC_FIELDS()
+      Group.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -124,7 +124,7 @@ Meteor.publish 'my-groups', ->
     Group.documents.find Group.requireReadAccessSelector(person,
       'members._id': person._id
     ),
-      Group.PUBLIC_LISTING_FIELDS()
+      Group.PUBLISH_LISTING_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -137,7 +137,7 @@ Meteor.publish 'groups', ->
     Group.documents.find Group.requireReadAccessSelector(person,
       {}
     ),
-      Group.PUBLIC_LISTING_FIELDS()
+      Group.PUBLISH_LISTING_FIELDS()
   ,
     Person.documents.find
       _id: @personId

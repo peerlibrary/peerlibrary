@@ -4,7 +4,7 @@ class @Highlight extends Highlight
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
 Meteor.methods
@@ -92,7 +92,7 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
     Highlight.documents.find
       'publication._id': publicationId
     ,
-      Highlight.PUBLIC_FIELDS()
+      Highlight.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId

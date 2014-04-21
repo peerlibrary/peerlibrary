@@ -210,8 +210,8 @@ Meteor.publish 'search-persons-groups', (query, except) ->
   searchPublish @, 'search-persons-groups', query,
     cursor: Person.documents.find findPersonQuery,
       limit: 5
-      fields: Person.PUBLIC_FIELDS().fields
+      fields: Person.PUBLISH_FIELDS().fields
   ,
     cursor: Group.documents.find findGroupQuery,
       limit: 5
-      fields: Group.PUBLIC_FIELDS().fields
+      fields: Group.PUBLISH_FIELDS().fields

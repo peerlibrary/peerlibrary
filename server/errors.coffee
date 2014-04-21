@@ -4,7 +4,7 @@ class @LoggedError extends LoggedError
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All, only admins have access
 
 Meteor.methods
@@ -32,7 +32,7 @@ Meteor.methods
 Meteor.publish 'logged-errors', ->
   @related (person) ->
     return unless person?.isAdmin
-    LoggedError.documents.find {}, LoggedError.PUBLIC_FIELDS()
+    LoggedError.documents.find {}, LoggedError.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId

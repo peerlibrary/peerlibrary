@@ -18,7 +18,7 @@ class @Person extends Person
       fields
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields:
       user: 1
       slug: 1
@@ -33,8 +33,8 @@ class @Person extends Person
       library: 1
 
   # A subset of public fields used for automatic publishing
-  @PUBLIC_AUTO_FIELDS: ->
-    fields: _.pick @PUBLIC_FIELDS().fields, [
+  @PUBLISH_AUTO_FIELDS: ->
+    fields: _.pick @PUBLISH_FIELDS().fields, [
       'user'
       'slug'
       'gravatarHash'
@@ -55,7 +55,7 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
         _id: slug
       ]
     ,
-      Person.PUBLIC_FIELDS()
+      Person.PUBLISH_FIELDS()
 
 Meteor.publish 'my-person-library', ->
   return unless @personId
@@ -102,7 +102,7 @@ Meteor.publish 'search-persons', (query, except) ->
     # No need for requireReadAccessSelector because persons are public
     cursor: Person.documents.find findPersonQuery,
       limit: 5
-      fields: Person.PUBLIC_FIELDS().fields
+      fields: Person.PUBLISH_FIELDS().fields
 
 Person.Meta.collection._ensureIndex 'slug',
   unique: 1

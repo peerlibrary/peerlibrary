@@ -12,7 +12,7 @@ class @Collection extends Collection
           [fields._id, '']
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
 registerForAccess Collection
@@ -189,7 +189,7 @@ Meteor.publish 'collection-by-id', (collectionId) ->
     Collection.documents.find Collection.requireReadAccessSelector(person,
       _id: collectionId
     ),
-      Collection.PUBLIC_FIELDS()
+      Collection.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -201,7 +201,7 @@ Meteor.publish 'my-collections', ->
     Collection.documents.find Collection.requireReadAccessSelector(person,
       'authorPerson._id': person._id
     ),
-      Collection.PUBLIC_FIELDS()
+      Collection.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -218,7 +218,7 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
       _id:
         $in: _.pluck collection.publications, '_id'
     ),
-      Publication.PUBLIC_FIELDS()
+      Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId

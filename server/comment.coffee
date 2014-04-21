@@ -4,7 +4,7 @@ class @Comment extends Comment
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
 Meteor.methods
@@ -80,7 +80,7 @@ Meteor.publish 'comments-by-publication', (publicationId) ->
     Comment.documents.find
       'publication._id': publicationId
     ,
-      Comment.PUBLIC_FIELDS()
+      Comment.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId

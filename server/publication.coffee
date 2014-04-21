@@ -190,7 +190,7 @@ class @Publication extends Publication
 
   # A set of fields which are public and can be published to the client
   # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields:
       slug: 1
       createdAt: 1
@@ -212,8 +212,8 @@ class @Publication extends Publication
       adminGroups: 1
 
   # A subset of public fields used for search results to optimize transmission to a client
-  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
-    fields: _.pick @PUBLIC_FIELDS().fields, [
+  @PUBLISH_SEARCH_RESULTS_FIELDS: ->
+    fields: _.pick @PUBLISH_FIELDS().fields, [
       'slug'
       'createdAt'
       'authors'
@@ -403,7 +403,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'authors._id': author._id
     ),
-      Publication.PUBLIC_FIELDS()
+      Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
       slug: slug
@@ -423,7 +423,7 @@ Meteor.publish 'publications-by-id', (publicationId) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id: publicationId
     ),
-      Publication.PUBLIC_FIELDS()
+      Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -439,7 +439,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
     Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
     ),
-      fields: _.extend Publication.PUBLIC_FIELDS().fields,
+      fields: _.extend Publication.PUBLISH_FIELDS().fields,
         # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
         'cachedId': 1
   ,
@@ -456,7 +456,7 @@ Meteor.publish 'my-publications', ->
       _id:
         $in: _.pluck person.library, '_id'
     ),
-      Publication.PUBLIC_FIELDS()
+      Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
@@ -476,7 +476,7 @@ Meteor.publish 'my-publications-importing', ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'importing.person._id': person._id
     ),
-      fields: _.extend Publication.PUBLIC_FIELDS().fields,
+      fields: _.extend Publication.PUBLISH_FIELDS().fields,
         # TODO: We should not push temporaryFile to the client
         # Ensure that importing contains only this person
         'importing.$': 1

@@ -36,7 +36,7 @@ class @ArXivPDF extends ArXivPDF
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All, only admins have access
 
 randomTimestamp = ->
@@ -569,7 +569,7 @@ Meteor.publish 'arxiv-pdfs', ->
   @related (person) ->
     return unless person?.isAdmin
     ArXivPDF.documents.find {},
-      fields: ArXivPDF.PUBLIC_FIELDS().fields
+      fields: ArXivPDF.PUBLISH_FIELDS().fields
       sort: [
         ['processingStart', 'desc']
       ]
