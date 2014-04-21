@@ -812,6 +812,9 @@ Template.highlightsControl.events
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
     return # Make sure CoffeeScript does not return anything
 
+###
+TODO: Temporary disabled, not yet finalized code
+
 Template.annotationsControl.events
   # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
   'click .add': (e, template) ->
@@ -824,6 +827,7 @@ Template.annotationsControl.events
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
+###
 
 resizeAnnotationsWidth = ($annotationsList) ->
   padding = parseInt($('.annotations-control').css('right'))
