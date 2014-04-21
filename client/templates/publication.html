@@ -434,6 +434,14 @@
         <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
       }}
       {{> contextMenu}}
+      {{#if inside.count}}
+        <div class="filter">
+          Groups filter:
+          {{#each inside}}
+            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
+          {{/each}}
+        </div>
+      {{/if}}
     {{/if}}
   </div>
 </template>
@@ -456,7 +464,7 @@
         <p class="inside">
           Inside groups:
           {{#each inside}}
-            <span><a href="{{groupPath slug}}">{{name}}</a></span>
+            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
           {{/each}}
         </p>
       {{/if}}

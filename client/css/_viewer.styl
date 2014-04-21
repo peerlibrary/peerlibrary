@@ -344,6 +344,17 @@ annotations-control-height = 30px
     outline none
     border none
 
+  .filter
+    color white
+    line-height annotations-control-height
+    margin-left 75px
+
+    span::after
+      content ","
+
+    span:last-child::after
+      content ""
+
 .annotations-editor
   height auto
   z-index 90

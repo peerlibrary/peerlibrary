@@ -56,5 +56,6 @@ Template.myGroups.myGroups = ->
     _id:
       $in: _.pluck Meteor.person()?.inGroups, '_id'
   ,
-    sort:
-      name: 1
+    sort: [
+      ['name', 'asc']
+    ]

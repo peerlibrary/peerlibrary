@@ -812,23 +812,6 @@ Template.highlightsControl.events
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
     return # Make sure CoffeeScript does not return anything
 
-###
-TODO: Temporary disabled, not yet finalized code
-
-Template.annotationsControl.events
-  # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
-  'click .add': (e, template) ->
-    Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
-      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.meteorError error, true if error
-
-      focusAnnotationId = annotationId
-
-      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
-
-    return # Make sure CoffeeScript does not return anything
-###
-
 resizeAnnotationsWidth = ($annotationsList) ->
   padding = parseInt($('.annotations-control').css('right'))
   displayWrapper = $('.display-wrapper')
@@ -846,6 +829,51 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
+Template.annotationsControl.inside = ->
+  Group.documents.find
+   _id:
+      $in: getAnnotationDefaults().groups
+  ,
+    sort: [
+      ['slug', 'asc']
+    ]
+
+###
+TODO: Temporary disabled, not yet finalized code
+
+Template.annotationsControl.events
+  # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
+  'click .add': (e, template) ->
+    Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      return Notify.meteorError error, true if error
+
+      focusAnnotationId = annotationId
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationsControl.events
+  'click .add-button': (e, template) ->
+    e.preventDefault()
+
+    LocalAnnotation.documents.update
+      local: true
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        editing: true
+
+    focusEditor $('.annotation.local .annotation-content-editor')
+
+    # Scroll to new annotation editor and focus
+    # TODO: Set cursor to the end
+    $('.annotations-list').scrollTop 0
+
+    return # Make sure CoffeeScript does not return anything
+###
+
 Template.annotationInvite.highlights = ->
   isolateValue ->
     !!_.size(currentHighlights())
@@ -859,6 +887,9 @@ viewportAnnotations = (local) ->
       viewport.top <= area.top + area.height and viewport.bottom >= area.top
 
     _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
+
+  insideGroups = isolateValue ->
+    getAnnotationDefaults().groups
 
   conditions = [
     # We display all annotations which are not linked to any highlight
@@ -880,13 +911,20 @@ viewportAnnotations = (local) ->
       local: true
       'author._id': Meteor.personId()
 
+  if insideGroups.length
+    conditions[0]['inside._id'] =
+      $in: insideGroups
+    conditions[1]['inside._id'] =
+      $in: insideGroups
+
   LocalAnnotation.documents.find
     $or: conditions
     'publication._id': Session.get 'currentPublicationId'
   ,
-    sort:
-      local: -1
-      createdAt: 1
+    sort: [
+      ['local', 'desc']
+      ['createdAt', 'asc']
+    ]
 
 Template.publicationAnnotations.annotations = ->
   viewportAnnotations true
@@ -1254,8 +1292,9 @@ Template.annotationCommentsList.comments = ->
   Comment.documents.find
     'annotation._id': @_id
   ,
-    sort:
-      createdAt: 1
+    sort: [
+      ['createdAt', 'asc']
+    ]
 
 Template.annotationCommentsListItem.selected = ->
   'selected' if @_id is Session.get 'currentCommentId'
@@ -1336,25 +1375,6 @@ Template.annotationCommentEditor.events
 
       # Reset editor
       $editor.empty()
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.annotationsControl.events
-  'click .add-button': (e, template) ->
-    e.preventDefault()
-
-    LocalAnnotation.documents.update
-      local: true
-      'publication._id': Session.get 'currentPublicationId'
-    ,
-      $set:
-        editing: true
-
-    focusEditor $('.annotation.local .annotation-content-editor')
-
-    # Scroll to new annotation editor and focus
-    # TODO: Set cursor to the end
-    $('.annotations-list').scrollTop 0
 
     return # Make sure CoffeeScript does not return anything
 
