@@ -49,6 +49,10 @@ class @Person extends AccessDocument
     else
       @slug
 
+  email: =>
+    # TODO: Return e-mail address only if verified, when we will support e-mail verification
+    @user?.emails?[0]?.address
+
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
     size = 24 unless _.isNumber size
