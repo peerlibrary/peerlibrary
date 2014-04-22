@@ -157,7 +157,8 @@ class @Publication extends Publication
   processTEI: =>
     tei = Storage.open @cachedFilename()
 
-    @fullText = cheerio.load(tei).root().text().replace(/\s+/g, ' ').trim()
+    $ = cheerio.load tei
+    @fullText = $.root().text().replace(/\s+/g, ' ').trim()
 
     # TODO: We could also add some additional information (statistics, how long it took and so on)
     @processed = moment.utc().toDate()

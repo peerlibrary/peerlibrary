@@ -16,6 +16,7 @@ Meteor.methods
     throw new Meteor.Error 401, "User not signed in." unless person
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+    # TODO: Parse and store references in comment's body
 
     annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
       _id: annotationId

@@ -36,10 +36,19 @@ class @Annotation extends ReadAccessDocument
   #     gravatarHash
   #     user
   #       username
+  #   groups: list of
+  #     _id
+  #     slug
+  #     name
   #   tags: list of
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  #   comments: list of
+  #     _id
+  #   urls: list of
+  #     _id
+  #     url
   # tags: list of
   #   tag:
   #     _id
@@ -66,8 +75,12 @@ class @Annotation extends ReadAccessDocument
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
         persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
+        # TODO: Are we sure that we want a reverse field for urls? This could become a huge list for popular urls.
+        comments: [@ReferenceField Comment, [], true, 'referencingAnnotations']
+        urls: [@ReferenceField Url, ['url'], true, 'referencingAnnotations']
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
       ]

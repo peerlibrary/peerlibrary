@@ -24,19 +24,19 @@ Deps.autorun ->
   return unless person
 
   # Assure URL is canonical
-  Meteor.Router.toNew Meteor.Router.profilePath person.slug unless slug is person.slug
+  Meteor.Router.toNew Meteor.Router.personPath person.slug unless slug is person.slug
 
-Template.profile.person = ->
+Template.person.person = ->
   Person.documents.findOne
     # We can search by slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
-Template.profile.isMine = ->
+Template.person.isMine = ->
   # TODO: This is not a permission check, should check if you have permissions if this is what is wanted
   Session.equals 'currentPersonSlug', Meteor.person()?.slug
 
 # Publications authored by this person
-Template.profile.authoredPublications = ->
+Template.person.authoredPublications = ->
   person = Person.documents.findOne
     slug: Session.get 'currentPersonSlug'
 
@@ -45,7 +45,7 @@ Template.profile.authoredPublications = ->
       $in: _.pluck person?.publications, '_id'
 
 # Publications in logged user's library
-Template.profile.myPublications = ->
+Template.person.myPublications = ->
   Publication.documents.find
     _id:
       $in: _.pluck Meteor.person()?.library, '_id'

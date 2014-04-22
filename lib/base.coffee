@@ -76,6 +76,11 @@ if INSTALL
       'install'
 
 else
+  # documentId can be a field or a function which maps from params. We
+  # are using it in parsing HTML to extract all references. We extract
+  # only those references for routes which have documentId set (and
+  # have a place to store them in schema, eg. Annotation.references).
+
   Meteor.Router.add
     '/':
       as: 'index'
@@ -96,6 +101,7 @@ else
 
     '/p/:publicationId/:publicationSlug?/h/:highlightId':
       as: 'highlight'
+      documentId: 'highlightId'
       to: (publicationId, publicationSlug, highlightId) ->
         setSession
           currentPublicationId: publicationId
@@ -105,6 +111,7 @@ else
 
     '/p/:publicationId/:publicationSlug?/a/:annotationId':
       as: 'annotation'
+      documentId: 'annotationId'
       to: (publicationId, publicationSlug, annotationId) ->
         setSession
           currentPublicationId: publicationId
@@ -114,6 +121,7 @@ else
 
     '/p/:publicationId/:publicationSlug?/c/:commentId':
       as: 'comment'
+      documentId: 'commentId'
       to: (publicationId, publicationSlug, commentId) ->
         setSession
           currentPublicationId: publicationId
@@ -123,6 +131,7 @@ else
 
     '/p/:publicationId/:publicationSlug?':
       as: 'publication'
+      documentId: 'publicationId'
       to: (publicationId, publicationSlug) ->
         setSession
           currentPublicationId: publicationId
@@ -131,6 +140,7 @@ else
 
     '/t/:tagId/:tagSlug?':
       as: 'tag'
+      documentId: 'tagId'
       to: (tagId, tagSlug) ->
         setSession
           currentTagId: tagId
@@ -139,6 +149,7 @@ else
 
     '/g/:groupId/:groupSlug?':
       as: 'group'
+      documentId: 'groupId'
       to: (groupId, groupSlug) ->
         setSession
           currentGroupId: groupId
@@ -153,11 +164,16 @@ else
         'groups'
 
     '/u/:personSlug':
-      as: 'profile'
+      as: 'person'
+      documentId: (params) ->
+        return unless params.personSlug
+
+        # No need for requireReadAccessSelector because persons are public
+        Person.documents.findOne({slug: params.personSlug}, {fields: _id: 1})?._id
       to: (personSlug) ->
         setSession
           currentPersonSlug: personSlug
-        'profile'
+        'person'
 
     '/h/:highlightId':
       as: 'highlightId'
