@@ -313,7 +313,7 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
     Notify.success "Imported #{ finishedImportingFiles.length } publications."
-    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
+    Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false
 
