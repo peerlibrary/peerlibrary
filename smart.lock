@@ -155,8 +155,8 @@
       },
       "apm": {
         "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.0.1",
-        "commit": "36cbe0b0e7352c8bc4487e46bd5490b03bc8fd0e"
+        "tag": "v1.0.2",
+        "commit": "361c82dfe2a0b8ea00c63fac6ce446abb13db6f8"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
