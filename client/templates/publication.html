@@ -94,7 +94,7 @@
 
 <template name="publicationLibraryMenuCollectionListing">
   <li class="library-menu-collection toggle-list-item">
-    <button class="{{#if inCollection}}remove-from-collection toggled{{else}}add-to-collection{{/if}}">
+    <button class="{{#if inCollection}}remove-from-collection icon-check{{else}}add-to-collection{{/if}}">
       <span class="collection-name">{{name}}</span>
       <span class="publications-count">{{countDescription}}</span>
     </button>
@@ -546,7 +546,7 @@
 
 <template name="contextMenuGroupListing">
   <li class="context-menu-group toggle-list-item">
-    <button class="{{#if workingInside}}remove-from-working-inside toggled{{else}}add-to-working-inside{{/if}}">
+    <button class="{{#if workingInside}}remove-from-working-inside icon-check{{else}}add-to-working-inside{{/if}}">
       <span class="group-name">{{name}}</span>
     </button>
   </li>
