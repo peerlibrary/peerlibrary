@@ -316,6 +316,13 @@ Template.importOverlay.importOverlayActive = ->
 Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
 
+Handlebars.registerHelper 'checkImportDone', (v1, v2, v3, ret) ->
+  if v1 or v2 or v3
+    console.log v1, v2, v3
+    console.log 'canceled', ret
+    return ret
+  return
+
 Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
 

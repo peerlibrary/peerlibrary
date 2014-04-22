@@ -24,18 +24,7 @@
 </template>
 
 <template name="importCancelButton">
-  <a href="" class="canceled 
-                            {{#if canceled}}
-                              invisible 
-                            {{else}}
-                              {{#if finished}} 
-                                invisible
-                              {{else}}
-                                {{#if errored}} 
-                                  invisible
-                                {{/if}}
-                              {{/if}}
-                            {{/if}}">
+  <a href="" class="canceled {{checkImportComplete finished errored canceled 'invisible'}}">
     <i class="icon-cancel"></i>
   </a>
 </template>
