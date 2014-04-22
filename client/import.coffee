@@ -153,7 +153,6 @@ hideOverlay = ->
       errored: true
     ,
       canceled: true
-    
     ]
   ).count()
 
