@@ -78,7 +78,7 @@ Meteor.publish 'comments-by-publication', (publicationId) ->
 
     # No need for requireReadAccessSelector because comments are public
     Comment.documents.find
-      'publication._id': publicationId
+      'publication._id': publication._id
     ,
       Comment.PUBLISH_FIELDS()
   ,

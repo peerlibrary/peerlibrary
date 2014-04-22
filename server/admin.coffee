@@ -568,6 +568,7 @@ Meteor.methods
 Meteor.publish 'arxiv-pdfs', ->
   @related (person) ->
     return unless person?.isAdmin
+
     ArXivPDF.documents.find {},
       fields: ArXivPDF.PUBLISH_FIELDS().fields
       sort: [

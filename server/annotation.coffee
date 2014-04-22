@@ -136,7 +136,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
     return unless publication?.hasReadAccess person
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
-      'publication._id': publicationId
+      'publication._id': publication._id
     ), Annotation.PUBLISH_FIELDS()
   ,
     Person.documents.find
