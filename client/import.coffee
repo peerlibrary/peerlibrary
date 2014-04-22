@@ -6,7 +6,7 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
-  # canceled: true when user hits X button in import overlay dropdown 
+  # canceled: true when user hits X button in import overlay dropdown
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
