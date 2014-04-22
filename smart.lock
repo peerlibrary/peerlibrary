@@ -39,7 +39,8 @@
       },
       "async": {},
       "cheerio": {},
-      "isolate-value": {}
+      "isolate-value": {},
+      "apm": {}
     },
     "packages": {
       "router": {
@@ -151,6 +152,11 @@
         "git": "https://github.com/awwx/meteor-isolate-value.git",
         "tag": "v2.0.2",
         "commit": "6b8600b29190073fa3785b48b028f113edfdffc2"
+      },
+      "apm": {
+        "git": "https://github.com/arunoda/meteor-apm-client.git",
+        "tag": "v1.0.1",
+        "commit": "36cbe0b0e7352c8bc4487e46bd5490b03bc8fd0e"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

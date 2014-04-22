@@ -198,6 +198,8 @@ Meteor.publish 'collection-by-id', (collectionId) ->
 
 Meteor.publish 'my-collections', ->
   @related (person) ->
+    return unless person?._id
+
     Collection.documents.find Collection.requireReadAccessSelector(person,
       'authorPerson._id': person._id
     ),
@@ -213,6 +215,7 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
 
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
+    return unless collection?.publications
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:

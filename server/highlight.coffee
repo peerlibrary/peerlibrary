@@ -90,7 +90,7 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
 
     # No need for requireReadAccessSelector because highlights are public
     Highlight.documents.find
-      'publication._id': publicationId
+      'publication._id': publication._id
     ,
       Highlight.PUBLISH_FIELDS()
   ,

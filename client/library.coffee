@@ -30,9 +30,12 @@ Template.libraryPublications.rendered = ->
     cursor: 'move'
     zIndex: 1
     start: (e, ui) ->
+      collections = $('.library-collections-wrapper')
       # When we start to drag a publication, we display collections fixed so they are in view, ready to be dropped onto.
       # TODO: Make sure this works for people with lots of collections.
-      $('.library-collections-wrapper').addClass('fixed')
+      collections.addClass('fixed')
+      # To prevent footer from moving up, force the containing row to be at least as high as the collections.
+      collections.parent('.row').css('min-height', collections.outerHeight())
     stop: (e, ui) ->
       $('.library-collections-wrapper').removeClass('fixed')
 

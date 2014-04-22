@@ -32,6 +32,7 @@ Meteor.methods
 Meteor.publish 'logged-errors', ->
   @related (person) ->
     return unless person?.isAdmin
+
     LoggedError.documents.find {}, LoggedError.PUBLISH_FIELDS()
   ,
     Person.documents.find

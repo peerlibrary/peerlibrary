@@ -121,6 +121,8 @@ Meteor.publish 'groups-by-id', (groupId) ->
 
 Meteor.publish 'my-groups', ->
   @related (person) ->
+    return unless person?._id
+
     Group.documents.find Group.requireReadAccessSelector(person,
       'members._id': person._id
     ),
