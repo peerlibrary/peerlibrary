@@ -37,6 +37,7 @@
     },
     "async": {},
     "cheerio": {},
-    "isolate-value": {}
+    "isolate-value": {},
+    "apm": {}
   }
 }
