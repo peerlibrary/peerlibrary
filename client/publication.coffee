@@ -489,6 +489,9 @@ Template.publication.notfound = ->
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
+Template.publicationMetaMenu.created = ->
+  $(@findAll '.title')
+
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->
     # A special case to prevent defocus after click on the input box
