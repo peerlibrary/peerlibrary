@@ -798,20 +798,6 @@ Template.highlightsControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown .add-access, mouseup .add-access': (e, template) ->
-    # A special case to prevent defocus after click on the input box
-    e.stopPropagation()
-    return # Make sure CoffeeScript does not return anything
-
-  'focus .add-access': (e, template) ->
-    $(template.firstNode).parents('.meta-menu').addClass('displayed')
-    return # Make sure CoffeeScript does not return anything
-
-  'blur .add-access': (e, template) ->
-    $(template.firstNode).parents('.meta-menu').removeClass('displayed')
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'highlightControlBlur', [@_id]
-    return # Make sure CoffeeScript does not return anything
-
 resizeAnnotationsWidth = ($annotationsList) ->
   padding = parseInt($('.annotations-control').css('right'))
   displayWrapper = $('.display-wrapper')
