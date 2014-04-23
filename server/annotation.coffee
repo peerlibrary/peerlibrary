@@ -14,11 +14,6 @@ registerForAccess Annotation
 startsWith = (string, start) ->
   string.lastIndexOf(start, 0) is 0
 
-normalizeUrl = (href) ->
-  parsed = url.parse href
-  delete parsed.hash
-  url.format parsed
-
 # TODO: This parsing could be done through PeerDB instead, on any body field change
 parseReferences = (body) ->
   references =
@@ -57,7 +52,7 @@ parseReferences = (body) ->
     rootUrl = Meteor.absoluteUrl replaceLocalhost: true
     return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
 
-    href = normalizeUrl href
+    href = UrlUtils.normalize href
     try
       urlId = Url.documents.insert
         url: href
