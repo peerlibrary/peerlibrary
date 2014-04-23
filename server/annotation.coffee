@@ -45,6 +45,8 @@ parseReferences = (body) ->
 
     return localPath href if href[0] is '/'
 
+    href = UrlUtils.normalize href
+
     rootUrl = Meteor.absoluteUrl()
     return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
 
@@ -52,7 +54,6 @@ parseReferences = (body) ->
     rootUrl = Meteor.absoluteUrl replaceLocalhost: true
     return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
 
-    href = UrlUtils.normalize href
     try
       urlId = Url.documents.insert
         url: href
