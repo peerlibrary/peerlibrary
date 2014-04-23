@@ -75,7 +75,15 @@ importFile = (file) ->
       hash = new Crypto.SHA256()
       hash.update fileContent
       sha256 = hash.finalize()
+      console.log sha256
 
+      SHA256Worker.run
+        file: file
+        onProgress: (progress) ->
+          console.log progress
+        onDone: (sha256) ->
+          console.log sha256
+          
       alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
       if alreadyImporting
         ImportingFile.documents.update file._id,
