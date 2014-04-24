@@ -120,8 +120,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.8.1",
-        "commit": "1b5b08ce78aaf9820b543a10bb26b95a4a93bb42"
+        "tag": "v0.8.2",
+        "commit": "d73c3b3a4030e739de4f8d086153ecdd170c9eb9"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -167,6 +167,11 @@
         "git": "https://github.com/tmeasday/meteor-HTML5-History-API.git",
         "tag": "v4.0.0",
         "commit": "dc4965f1424cfca625ec3fbea17eace03f8e32c5"
+      },
+      "stacktrace": {
+        "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
+        "tag": "v0.1.0",
+        "commit": "87f3a769160d3362276516cf6cc67f1adf473266"
       }
     }
   }
