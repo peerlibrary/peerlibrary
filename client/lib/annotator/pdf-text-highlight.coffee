@@ -52,116 +52,269 @@ class PDFTextHighlight extends Annotator.Highlight
   _precomputeHover: (segments) =>
     # TODO: Improve polygon drawing, split segment array by chunks
 
-    # collect the vertices of the convex hull of the selected region.
-    # part1: vertices in the upperright, i.e., all vertices to the right of it has larger top value;  right = lefth+width;
-    # part2: upperleft; part3: lowerleft; part4: lowerright.    
-
-    L = segments.length
-
-    part1 = []
-    part2 = []
-    part3 = []
-    part4 = []
-
-    # sort by increasing right index and top down for same right index
-    sortByRight = segments
-    sortByRight.sort (a,b) ->
-      return if (((a.left+a.width) < (b.left+b.width)) or (((a.left+a.width) == (b.left+b.width)) and (a.top < b.top))) then -1 else 1 
-    i=0
-    while i<L
-      witness1 = true 
-      witness4 = true
-      j=i+1
-      while j>i and j<L
-        witness1 = false  if sortByRight[j].top<sortByRight[i].top 
-	  # i should have smaller top value for part1
-        witness4 = false  if (sortByRight[j].top+sortByRight[j].height)> (sortByRight[i].top+sortByRight[i].height)
-	  # i should have larger bottom value for part4  
-        j++
-      witness1 = false  if i>1 and (sortByRight[i].left+sortByRight[i].width) == (sortByRight[i-1].left+sortByRight[i-1].width) and sortByRight[i].top > sortByRight[i-1].top 
-	# same right value, i should have smaller top
-      part1.push(sortByRight[i])  if witness1
-      part4.push(sortByRight[i])  if witness4
-    i++
-
-    # sort by increasing left index and bottom up for same left index
-    sortByLeft = segments
-    sortByLeft.sort (a,b) ->
-      return if ((a.left < b.left) or ((a.left == b.left) and (a.top > b.top))) then -1 else 1 
-    i=0
-    while i<L
-      witness2 = true 
-      witness3 = true
-      j=0
-      while j<i
-        witness2 = false  if sortByLeft[j].top<sortByLeft[i].top 
-	  # i should have smaller top value for part2
-        witness3 = false  if (sortByLeft[j].top+sortByLeft[j].height) > (sortByLeft[i].top+sortByLeft[i].height)
-	  # i should have larger bottom value for part3
-        j++
-      witness2 = false  if i<L-1 and sortByLeft[i].left == sortByLeft[i+1].left and sortByLeft[i].top > sortByLeft[i+1].top 
-	# same left value, i should have smaller top
-      part2.push(sortByLeft[i])  if witness2
-      part3.push(sortByLeft[i])  if witness3
-    i++
-
-
-
     ## _hover is an array of vertices coordinates
     #@_hover = []
     #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
     #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
 
-    @_hover = []
-    @_hover.push(Math.round(part2[0].left),Math.round(part2[0].top))
-    for block in part2[1..]
-      @_hover.push(Math.round(block.left),Math.round(block.top+block.height))
-      @_hover.push(Math.round(block.left),Math.round(block.top))
-
-    i = part1.length-1
-    j = 0
-    while j < i
-      @_hover.push(Math.round(part1[j].left+part1[j].width), Math.round(part1[j].top))
-      @_hover.push(Math.round(part1[j].left+part1[j].width), Math.round(part1[j].top+part1[j].height))
-      j++
-    @_hover.push(Math.round(part1[i].left+part1[i].width), Math.round(part1[i].top))
-
-    @_hover.push(Math.round(part4[part4.length-1].left+part4[part4.length-1].width), Math.round(part4[part4.length-1].top+part4[part4.length-1].height))
-    i = part4.length-2
-    while i >= 0
-      @_hover.push(Math.round(part4[i].left+part4[i].width), Math.round(part4[i].top))
-      @_hover.push(Math.round(part4[i].left+part4[i].width), Math.round(part4[i].top+part4[i].height))
+    #before 4-9-14
+    #merge the row
+    l = segments.length
+    temp = []
+    for segment in segments
+      temp.push([_.clone(segment),true])
+    i = l-1
+    while i>=0
+      current = temp[i][0]
+      currentleft = current.left
+      currentright = current.left+current.width
+      currenttop = current.top
+      currentbottom = current.top+current.height
+      j = i-1
+      while j>=0 and temp[i][1]
+        compare = temp[j][0]
+        compareleft = compare.left
+        compareright = compare.left+compare.width
+        comparetop = compare.top
+        comparebottom = compare.top+compare.height
+        if ((currentleft-compareright<=15) and (currentleft-compareright>-1)) or ((compareleft <= currentleft) and (currentleft <=compareright) and (compareright <=currentright)) #need to try some numbers
+          if currenttop <= comparetop and comparetop <= currentbottom
+            temp[j][0].top = currenttop
+            temp[j][0].width = currentright-temp[j][0].left
+            if comparebottom <= currentbottom
+              temp[j][0].height = currentbottom-temp[j][0].top
+            else 
+              temp[j][0].height = comparebottom-temp[j][0].top
+            temp[i][1] = false
+          else if comparetop <= currenttop and currenttop <= comparebottom
+            temp[j][0].width = currentright-temp[j][0].left
+            if comparebottom <= currentbottom
+              temp[j][0].height = currentbottom-temp[j][0].top
+            temp[i][1] = false
+        j--
       i--
+    #finish merging the row
+    #define temp2 to be the the merged row of the form (segment,true).
+    temp2 = []
+    for segment in temp
+      temp2.push(segment) if segment[1]
 
-    i = part3.length-1
-    while i >0
-      @_hover.push(Math.round(part3[i].left), Math.round(part3[i].top+part3[i].height))
-      @_hover.push(Math.round(part3[i].left), Math.round(part3[i].top))
-      i--
-    @_hover.push(Math.round(part3[0].left),Math.round(part3[0].top+part3[0].height))
+    #4-9-14
+    #check if any box is contained in any other box
+    i = 0
+    while i < temp2.length and temp2[i][1]
+      current = temp2[i][0]
+      currentleft = current.left
+      currentright = current.left+current.width
+      currenttop = current.top
+      currentbottom = current.top+current.height      
+      j = 0
+      while j < temp2.length and temp2[i][1] and temp2[j][1]
+        if j isnt i
+          compare = temp2[j][0]
+          compareleft = compare.left
+          compareright = compare.left+compare.width
+          comparetop = compare.top
+          comparebottom = compare.top+compare.height
+          if (currentleft+1 >= compareleft) and (currentright<= compareright+1) and (currenttop+1>= comparetop) and (currentbottom <= comparebottom+1)
+            temp2[i][1] = false
+          if (currentleft <= compareleft+1) and (currentright+1>= compareright) and (currenttop<= comparetop+1) and (currentbottom+1 >= comparebottom)
+            temp2[j][1] = false
+        j++
+      i++
 
-    #curr = segments[0]
-    #i = 1
-    #while i < segments.length
-      # check to see if next segment is on a different line
-    #  if (segments[i].top > curr.top) and ((segments[i].top + segments[i].height) > (curr.top + curr.height))
-    #    @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top)])
-    #    @_hover.push([Math.round(segments[i-1].left + segments[i-1].width), Math.round(segments[i-1].top + segments[i-1].height)])
-    #    curr = segments[i]
+    #4-16-14
+    #define temp3 to be the merged row in the form (segment0,segment1,segment2, true, number), number: 1=rectangle, 2=topRow+middle, 3=middle+bottomRow, 4=topRow+middle+bottomRow, 5=topRow+bottomRow, fill three segments from the left to the right, according to the number. e.g., number = 1, then segment0 = segment1 = segment2.
+    #merge from the top row to the bottom row, merged row in the top.
+    #temp3 = []
+    #for segment in temp2
+    #  temp3.push([segment[0],segment[0],segment[0],segment[1],1]) if segment[1]
+    #l = temp3.length
+    #i = 0
+    #while i < l and temp3[i][3]
+    #  currenttype = temp3[i][4]
+    #  j = i+1
+    #  while j < l and temp3[j][3]
+    #    comparetype = temp3[j][4]
+    #    if (currenttype is 1) and (comparetype is 1)
+    #      current = temp3[i][0]
+    #      currentleft = current.left
+    #      currentright = current.left+current.width
+    #      currenttop = current.top
+    #      currentbottom = current.top+current.height
+    #      compare = temp3[j][0]
+    #      compareleft = compare.left
+    #      compareright = compare.left+compare.width
+    #      comparetop = compare.top
+    #      comparebottom = compare.top+compare.height
+    #      if (comparebottom-currentbottom<5) and (comparebottom - currentbottom > -1) #ready to merge
+    #        if (currentleft-compareleft >1) and (currentright-compareright<1) and (currentright-compareright>-1)
+    #          temp3[i][1]= temp3[j][0]
+    #          temp3[i][4]= 2
+    #          temp3[j][3]= false
+    #        if (currentleft
+    #    j++
     #  i++
 
-    ## compute bottom right vertices
-    #@_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top)])
-    #@_hover.push([Math.round(segments[segments.length-1].left + segments[segments.length-1].width), Math.round(segments[segments.length-1].top + segments[segments.length-1].height)])
+    ##4-9-14
+    #@_hover = []
+    #k = 0
+    #while k < temp2.length
+    #  @_hover.push(temp2[k][0]) if temp2[k][1]
+    #  k++
+    
+    #4-23-14 merge blocks
+    temp2.sort (a,b) ->
+      return if (((a[0].left+a[0].width)<=b[0].left) or (((a[0].left+a[0].width)>b[0].left) and (a[0].top<=b[0].top))) then -1 else 1 
+    
+    #temp3 is going to group neighbour rows together
+    temp3 = []
+    i = 0
+    while i < temp2.length 
+      temp3.push([_.clone(temp2[i][0]),i]) #(segment, group number)
+      i++
+    L = temp3.length
+    swap = 1 #count the number of swaps
+    while swap > 0
+      swap = 0
+      j = 0 #run over temp3
+      while j < L
+        k = j
+        while k < L
+          current = temp3[j][0]
+          currentleft = current.left
+          currentright = current.left+current.width
+          currenttop = current.top
+          currentbottom = current.top+current.height        
+          compare = temp3[k][0]
+          compareleft = compare.left
+          compareright = compare.left+compare.width
+          comparetop = compare.top
+          comparebottom = compare.top+compare.height
+          if (((comparetop-currentbottom <=5) and (comparetop-currentbottom >=-1)) or ((currenttop<=comparetop+2) and (comparetop<=currentbottom+2) and (currentbottom<=comparebottom+2)) or ((currentbottom-comparetop<=5) and (currentbottom-comparetop>=-1)) or ((comparetop<=currenttop+2) and (currenttop<=comparebottom+2) and (comparebottom<=currentbottom+2))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) #conditions for two rows to merge
+            t = _.clone(temp3[k][1])
+            temp3[k][1] = temp3[j][1]
+            m = 0
+            while m < L
+              temp3[m][1] = temp3[j][1] if (temp3[m][1] is t)
+              m++
+            swap++
+          k++
+        j++
 
-    #curr = segments[segments.length-1]
-    #i = segments.length-2
-    #while i > 0
-    #  if (segments[i].top < curr.top) and ((segments[i].top + segments[i].height) < (curr.top + curr.height))
-    #    @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top + segments[i+1].height)])
-    #    @_hover.push([Math.round(segments[i+1].left),Math.round(segments[i+1].top)])
-    #    curr = segments[i]
-    #  i--
+    #define temp4 to be grouped rows [[row1,row3,row6],[row2,row4],[row5]]
+    temp4 = []
+    i = 0
+    while i < L #i is group number
+      temp5 = []
+      j = 0
+      while j < L
+        if temp3[j][1] is i
+          temp5.push(_.clone(temp3[j][0]))
+        j++
+      temp4.push(_.clone(temp5)) if temp5.length>0
+      i++
+
+    #for each group, find the convex hull
+    @_hover = []
+    L = temp4.length
+    i = 0
+    while i < L #i is the group number, for each i, generate an element for drawing in hover
+      hoverelt = []
+      upperleft = []
+      upperright = []
+      lowerleft = []
+      lowerright = []
+      l = temp4[i].length
+      j = 0
+      while j < l #j is the number of element in the group
+        upperleft.push([temp4[i][j].left,temp4[i][j].top])
+        upperright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top])
+        lowerleft.push([temp4[i][j].left,temp4[i][j].top+temp4[i][j].height])
+        lowerright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top+temp4[i][j].height])
+        j++
+
+      upperright.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
+      hoverelt_ur = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (upperright[j][0]<= upperright[k][0])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (upperright[j][1] is upperright[k][1])
+          k++
+        hoverelt_ur.push(upperright[j]) if not witness
+        j++
+      hoverelt.push(hoverelt_ur) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],[h_ur]...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+
+      lowerright.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]>b[0])) then -1 else 1
+      hoverelt_lr = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (lowerright[j][1] is lowerright[k][1])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (lowerright[j][0] <= lowerright[k][0])
+          k++
+        hoverelt_lr.push(lowerright[j]) if not witness
+        j++
+      hoverelt.push(hoverelt_lr) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+
+      lowerleft.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
+      hoverelt_ll = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (lowerleft[j][1] is lowerleft[k][1])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (lowerleft[j][0] >= lowerleft[k][0])
+          k++
+        hoverelt_ll.push(lowerleft[j]) if not witness
+        j++
+      hoverelt.push(hoverelt_ll) 
+
+      upperleft.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]>b[0])) then -1 else 1
+      hoverelt_ul = [] #it will have points [[ul1],[ul2],...], [ul1] = [left,top]
+      #begin fill in hoverelt_ul, need upper left most points
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (upperleft[j][0]>= upperleft[k][0])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (upperleft[j][1] is upperleft[k][1])
+          k++
+        hoverelt_ul.push(upperleft[j]) if not witness
+        j++
+      hoverelt.push(hoverelt_ul) 
+
+      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+      i++
+
+
+    #4-16-14
+    #@_hover = temp2
+
+
 
     return  # Don't return the result of the for loop
 
@@ -176,18 +329,92 @@ class PDFTextHighlight extends Annotator.Highlight
     context.lineWidth = 1
     # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
     context.strokeStyle = 'rgba(180,170,0,9)'
-    #context.shadowColor = 'rgba(14,41,57,1.0)'
-    #context.shadowBlur = 5
-    #context.shadowOffsetX = 0
-    #context.shadowOffsetY = 2
 
+    #4-16-14 elements in hover has the form (square, combined), where separated is boolean, combined=false means beginning a new part, need improvement, two lines are not separated, closed terms are not merged
+    #@_hover[0][1] = false
+    #l = @_hover.length
+    #context.beginPath()
+    #i = 0
+    #while i < l 
+    #  if not @_hover[i][1] # i is the beginning element of a part
+    #    context.moveTo(@_hover[i][0].left,@_hover[i][0].top)
+    #    context.lineTo(@_hover[i][0].left+@_hover[i][0].width,@_hover[i][0].top)
+    #    j = i                                            #j iterate through the whole part
+    #    while j < l and ((@_hover[j][1] and j isnt i) or (j is i))                #draw right half
+    #      if j isnt l-1
+    #        current = @_hover[j][0]
+    #        currentleft = current.left
+    #        currentright = current.left+current.width
+    #        currenttop = current.top
+    #        currentbottom = current.top+current.height        
+    #        compare = @_hover[j+1][0]
+    #        compareleft = compare.left
+    #        compareright = compare.left+compare.width
+    #        comparetop = compare.top
+    #        comparebottom = compare.top+compare.height
+    #        if (((comparetop-currentbottom <=5) and (comparetop-currentbottom >=-1)) or ((currenttop<=comparetop+2) and (comparetop<=currentbottom+2) and (currentbottom<=comparebottom+2))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15))) #ready to merge
+    #          context.lineTo(currentright,comparetop)
+    #          context.lineTo(compareright,comparetop)
+    #        else 
+    #          context.lineTo(currentright,currenttop)
+    #          context.lineTo(currentright,currentbottom)
+    #          @_hover[j+1][1] = false
+    #      else 
+    #        context.lineTo(@_hover[j][0].left+@_hover[j][0].width,@_hover[j][0].top+@_hover[j][0].height)
+    #      j++
+    #    j--
+    #    while j>=i                                                        #draw left half
+    #      current = @_hover[j][0]
+    #      currentleft = current.left
+    #      currentright = current.left+current.width
+    #      currenttop = current.top
+    #      currentbottom = current.top+current.height        
+    #      context.lineTo(currentleft, currentbottom)  #can improve
+    #      context.lineTo(currentleft, currenttop)
+    #      j--
+    #  i++
+    #context.closePath()
+
+    #4-23-14
+    L = @_hover.length
     context.beginPath()
-    #context.strokeRect @_hover.start_x, @_hover.start_y, @_hover.width + 2, @_hover.height+2
-    #context.strokeRect @_hover.left - 1, @_hover.top - 1, @_hover.width + 2, @_hover.height + 2
-    context.moveTo(@_hover[0][0], @_hover[0][1])
-    for vertex in @_hover[1..]
-      context.lineTo(vertex[0],vertex[1])
+    i = 0
+    while i< L
+      hoverelt = _.clone(@_hover[i])
+      upperright = hoverelt[0]
+      console.log hoverelt
+      lowerright = hoverelt[1]
+      lowerleft = hoverelt[2]
+      upperleft = hoverelt[3]
+      context.moveTo(upperright[0][0],upperright[0][1])
+      j = 0
+      while j < (upperright.length-1)
+        context.lineTo(upperright[j][0],upperright[j+1][1])
+        context.lineTo(upperright[j+1][0],upperright[j+1][1])
+        j++
+      j = 0
+      while j < (lowerright.length-1)
+        context.lineTo(lowerright[j][0],lowerright[j][1])
+        context.lineTo(lowerright[j+1][0],lowerright[j][1])
+        j++
+      context.lineTo(lowerright[j][0],lowerright[j][1])
+      j = (lowerleft.length-1)
+      while j >0
+        context.lineTo(lowerleft[j][0],lowerleft[j][1])
+        context.lineTo(lowerleft[j][0],lowerleft[j-1][1])
+        j--
+      context.lineTo(lowerleft[j][0],lowerleft[j][1])
+      j = (upperleft.length-1)
+      while j > 0
+        context.lineTo(upperleft[j][0],upperleft[j][1])
+        context.lineTo(upperleft[j-1][0],upperleft[j][1])
+        j--
+      context.lineTo(upperleft[j][0],upperleft[j][1])
+      context.lineTo(upperright[0][0],upperright[0][1])
+      i++
     context.closePath()
+
+
 
     context.stroke()
 
@@ -355,7 +582,8 @@ class PDFTextHighlight extends Annotator.Highlight
     @_computeArea segments
     @_boundingBox segments
     @_precomputeHover segments
-
+    for segment in segments
+      console.log segment
     @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(
       $('<div/>').addClass('highlights-layer-segment').css(segment) for segment in segments
     ).on
