@@ -50,7 +50,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
     Collection.documents.remove Collection.requireRemoveAccessSelector(person,
-      _id: collectionId
+      _id: collection._id
     )
 
   # TODO: Use this code on the client side as well
@@ -70,13 +70,13 @@ Meteor.methods
     result = Person.documents.update Person.requireMaintainerAccessSelector(person,
       _id: person._id
       'library._id':
-        $ne: publicationId
+        $ne: publication._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         library:
-          _id: publicationId
+          _id: publication._id
 
     # Optionally add the publication to a collection, if it was specified
     return result unless collectionId
@@ -87,15 +87,15 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
     Collection.documents.update Collection.requireMaintainerAccessSelector(person,
-      _id: collectionId
+      _id: collection._id
       'publications._id':
-        $ne: publicationId
+        $ne: publication._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         publications:
-          _id: publicationId
+          _id: publication._id
 
   # TODO: Use this code on the client side as well
   'remove-from-library': (publicationId, collectionId) ->
@@ -118,14 +118,14 @@ Meteor.methods
 
       # If collectionId is specified we only remove from that collection
       collectionsQuery =
-        _id: collectionId
-        'publications._id': publicationId
+        _id: collection._id
+        'publications._id': publication._id
     else
       # When we're removing from library we also want to remove the publication from all user's
       # collections. This query will match all user's collections that include this publication.
       collectionsQuery =
         'authorPerson._id': person._id
-        'publications._id': publicationId
+        'publications._id': publication._id
 
     # Remove from collection
     result = Collection.documents.update Collection.requireMaintainerAccessSelector(person,
@@ -135,7 +135,7 @@ Meteor.methods
         updatedAt: moment.utc().toDate()
       $pull:
         publications:
-          _id: publicationId
+          _id: publication._id
     ,
       multi: not collectionId?
 
@@ -144,13 +144,13 @@ Meteor.methods
 
     Person.documents.update Person.requireMaintainerAccessSelector(person,
       '_id': person._id
-      'library._id': publicationId
+      'library._id': publication._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         library:
-          _id: publicationId
+          _id: publication._id
 
   # TODO: Use this code on the client side as well
   'reorder-collection': (collectionId, publicationIds) ->
@@ -172,7 +172,7 @@ Meteor.methods
     publications = (_id: publicationId for publicationId in publicationIds)
 
     Collection.documents.update Collection.requireMaintainerAccessSelector(person,
-      _id: collectionId
+      _id: collection._id
       'publications._id':
         $all: oldOrderIds
       publications:

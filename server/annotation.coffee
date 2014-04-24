@@ -102,7 +102,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid annotation." unless publication
 
     Annotation.documents.update Annotation.requireMaintainerAccessSelector(person,
-      _id: annotationId
+      _id: annotation._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
@@ -126,7 +126,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid annotation." unless publication
 
     Annotation.documents.remove Annotation.requireRemoveAccessSelector(person,
-      _id: annotationId
+      _id: annotation._id
     )
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
