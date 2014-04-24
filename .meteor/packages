@@ -43,3 +43,4 @@ async
 cheerio
 isolate-value
 apm
+stacktrace

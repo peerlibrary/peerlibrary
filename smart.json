@@ -38,6 +38,7 @@
     "async": {},
     "cheerio": {},
     "isolate-value": {},
-    "apm": {}
+    "apm": {},
+    "stacktrace": {}
   }
 }

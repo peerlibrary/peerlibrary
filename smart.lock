@@ -40,7 +40,8 @@
       "async": {},
       "cheerio": {},
       "isolate-value": {},
-      "apm": {}
+      "apm": {},
+      "stacktrace": {}
     },
     "packages": {
       "router": {
@@ -120,8 +121,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.8.2",
-        "commit": "d73c3b3a4030e739de4f8d086153ecdd170c9eb9"
+        "tag": "v0.8.3",
+        "commit": "1700fb316e99756e85f7b21137975353c6c95a1e"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -158,6 +159,11 @@
         "tag": "v1.2.0",
         "commit": "f46e132a6214d660f7de8d4b7b061e0039368d64"
       },
+      "stacktrace": {
+        "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
+        "tag": "v0.1.1",
+        "commit": "9eaacd4755852a3d40940c17d7a32facb9931b33"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -167,11 +173,6 @@
         "git": "https://github.com/tmeasday/meteor-HTML5-History-API.git",
         "tag": "v4.0.0",
         "commit": "dc4965f1424cfca625ec3fbea17eace03f8e32c5"
-      },
-      "stacktrace": {
-        "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
-        "tag": "v0.1.0",
-        "commit": "87f3a769160d3362276516cf6cc67f1adf473266"
       }
     }
   }
