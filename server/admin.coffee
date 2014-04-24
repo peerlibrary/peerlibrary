@@ -566,6 +566,8 @@ Meteor.methods
     Log.info "Done (#{ count })"
 
 Meteor.publish 'arxiv-pdfs', ->
+  return unless @personId
+
   @related (person) ->
     return unless person?.isAdmin
 

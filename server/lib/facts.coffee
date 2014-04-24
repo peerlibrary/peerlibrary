@@ -1,4 +1,6 @@
 Facts.setUserIdFilter (userId) ->
+  return false unless userId
+
   person = Person.documents.findOne
     'user._id': userId
   ,
