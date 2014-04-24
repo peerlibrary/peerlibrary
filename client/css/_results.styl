@@ -19,11 +19,17 @@ ol.item-list
     box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
 
-    .editable > div:first-child
-      width 90%
+    .edit, .library-menu
+      visibility hidden
+      opacity 0
+
+    .editable-control
+      width 100%
+
+      > div:first-child
+        width 90%
 
     .library-menu
-      display none
       position absolute
       right 10px
       top 0
@@ -32,6 +38,7 @@ ol.item-list
       padding 10px 0
       border-radius 0 0 2px 2px
       min-height 0
+      transition all 0.2s
 
       .library-menu-button:first-of-type
         margin-top 5px
@@ -49,8 +56,9 @@ ol.item-list
   li.result-item:hover
     box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
-    .library-menu
-      display block
+    .edit, .library-menu
+      visibility visible
+      opacity 1
 
 .abstract
   display none

@@ -497,8 +497,9 @@ Template.publicationMetaMenuTitle.rendered = ->
   @_editable = $(@findAll '.title').editable =>
     @data.hasMaintainerAccess Meteor.person()
   ,
-    (value) =>
-      # TODO: Update publication title
+    (title) =>
+      Meteor.call 'publication-set-title', @data._id, title, (error, count) =>
+        return Notify.meteorError error, true if error
   ,
     "Enter publication title"
 

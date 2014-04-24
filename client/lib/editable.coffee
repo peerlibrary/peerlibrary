@@ -8,7 +8,7 @@
 
     hideView = ->
       # Restore the content with initial elements
-      $editView.after $element
+      $element.show()
       $editView.remove()
       $editView = null
 
@@ -43,13 +43,13 @@
 
         # Replace the content with the edit form
         $element.after($editView)
-        $element.detach()
+        $element.hide()
 
         # Focus on the input
         $editInput.focus()
 
       # Add the editable button
-      $element.append($editableButton)
+      $element.append($editableButton).addClass('editable')
 
       # Clean after self
       Deps.onInvalidate ->
