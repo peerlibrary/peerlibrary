@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "3146cdbd8357f1a8028be8a4ea50c3c778c5f069"
+    "commit": "e8aaa2d51dcf5ef131c1383bc04f723b31d036b0"
   },
   "dependencies": {
     "basePackages": {
@@ -40,7 +40,8 @@
       "async": {},
       "cheerio": {},
       "isolate-value": {},
-      "apm": {}
+      "apm": {},
+      "stacktrace": {}
     },
     "packages": {
       "router": {
@@ -120,8 +121,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.8.0",
-        "commit": "e1e64ced5d341e08d6b90e9f94ff7ca625258a42"
+        "tag": "v0.8.3",
+        "commit": "1700fb316e99756e85f7b21137975353c6c95a1e"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -155,8 +156,13 @@
       },
       "apm": {
         "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.0.3",
-        "commit": "8f64a496ba11201e7ac9cb1ffa13e8c9f3995e62"
+        "tag": "v1.2.0",
+        "commit": "f46e132a6214d660f7de8d4b7b061e0039368d64"
+      },
+      "stacktrace": {
+        "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
+        "tag": "v0.1.1",
+        "commit": "9eaacd4755852a3d40940c17d7a32facb9931b33"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
