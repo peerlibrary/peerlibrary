@@ -1110,7 +1110,6 @@ Template.annotationEditor.rendered = ->
 
   @_scribe.use Scribe.plugins['blockquote-command']()
   @_scribe.use Scribe.plugins['link-prompt-command']()
-  @_scribe.use Scribe.plugins['curly-quotes']()
   @_scribe.use Scribe.plugins['sanitizer']
     tags:
       p: {}
@@ -1171,7 +1170,6 @@ Template.annotationEditor.events
     ###
 
     if @local
-      # TODO: Set privacy settings
       Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
         return Notify.meteorError error, true if error
 
@@ -1318,10 +1316,9 @@ Template.annotationCommentEditor.rendered = ->
   @_rendered = true
 
   @_scribe = new Scribe @find('.comment-content-editor'),
-    # No block elements, they would take up too much space
+    # We want comments to be oneline, so no block elements and no <br/>
     allowBlockElements: false
 
-  @_scribe.use Scribe.plugins['curly-quotes']()
   @_scribe.use Scribe.plugins['sanitizer']
     tags:
       b: {}
