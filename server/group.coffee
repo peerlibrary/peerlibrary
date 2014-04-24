@@ -66,15 +66,15 @@ Meteor.methods
     # We do not check here if user is already a member of the group because query checks
 
     Group.documents.update Group.requireAdminAccessSelector(person,
-      _id: groupId
+      _id: group._id
       'members._id':
-        $ne: memberId
+        $ne: member._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         members:
-          _id: memberId
+          _id: member._id
 
   # TODO: Use this code on the client side as well
   'remove-from-group': (groupId, memberId) ->
@@ -96,14 +96,14 @@ Meteor.methods
     # We do not check here if user is really a member of the group because query checks
 
     Group.documents.update Group.requireAdminAccessSelector(person,
-      _id: groupId
-      'members._id': memberId
+      _id: group._id
+      'members._id': member._id
     ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         members:
-          _id: memberId
+          _id: member._id
 
 Meteor.publish 'groups-by-id', (groupId) ->
   check groupId, DocumentId

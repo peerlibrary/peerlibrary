@@ -67,7 +67,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid comment." unless publication
 
     Comment.documents.remove Comment.requireRemoveAccessSelector(person,
-      _id: commentId
+      _id: comment._id
     )
 
 Meteor.publish 'comments-by-publication', (publicationId) ->

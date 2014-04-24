@@ -1,6 +1,7 @@
 # From Meteor's random/random.js
 UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
 INVALID_ID_CHARS_REGEX = new RegExp "[^#{ UNMISTAKABLE_CHARS }]"
+INVALID_SHA256_CHARS_REGEX = new RegExp '[^a-f0-9]'
 
 @PositiveNumber = Match.Where (x) ->
   check x, Number
@@ -20,3 +21,8 @@ INVALID_ID_CHARS_REGEX = new RegExp "[^#{ UNMISTAKABLE_CHARS }]"
   Match.Where (a) ->
     check a, Number
     a in values
+
+@SHA256String = Match.Where (x) ->
+  check x, String
+  check x, Match.Where (y) -> y.length is 64
+  not INVALID_SHA256_CHARS_REGEX.test x

@@ -79,7 +79,7 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid highlight." unless publication
 
     Highlight.documents.remove Highlight.requireMaintainerAccessSelector(person,
-      _id: highlightId
+      _id: highlight._id
     )
 
 Meteor.publish 'highlights-by-publication', (publicationId) ->

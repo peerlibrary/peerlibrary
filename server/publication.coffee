@@ -229,7 +229,7 @@ registerForAccess Publication
 Meteor.methods
   'create-publication': (filename, sha256) ->
     check filename, String
-    check sha256, String
+    check sha256, SHA256String
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -302,7 +302,7 @@ Meteor.methods
   'upload-publication': (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
-      publicationId: String
+      publicationId: DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
