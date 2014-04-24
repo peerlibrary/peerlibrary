@@ -105,6 +105,26 @@ Meteor.methods
         members:
           _id: memberId
 
+  # TODO: Use this code on the client side as well
+  'group-set-name': (groupId, name) ->
+    check groupId, DocumentId
+    check name, NonEmptyString
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
+
+    Group.documents.update Group.requireMaintainerAccessSelector(person,
+        _id: group._id
+      ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        name: name
+
 Meteor.publish 'groups-by-id', (groupId) ->
   check groupId, DocumentId
 

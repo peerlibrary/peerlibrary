@@ -58,3 +58,24 @@
         $editableButton = null
 
 )(jQuery)
+
+# Helper that enables template to be editable
+class @Editable
+  @template: (template, isEditableFunction, updateFunction, placeholderText) ->
+    # Make sure we don't override template callbacks
+    assert not template.created
+    assert not template.rendered
+    assert not template.destroyed
+
+    template.created = ->
+      @_editable = null
+      console.log "CREATED"
+      console.log @
+
+    template.rendered = ->
+      @_editable.stop() if @_editable
+      @_editable = $(@firstNode).editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText)
+
+    template.destroyed = ->
+      @_editable.stop() if @_editable
+      @_editable = null
