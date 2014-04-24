@@ -4,7 +4,7 @@
     $editableButton = null
     $editView = null
     $element = @
-    editableText = $element.text()
+    editableText = $element.text().trim()
 
     hideView = ->
       # Restore the content with initial elements

@@ -122,6 +122,8 @@ Template.publicationSearchResult.destroyed = ->
   @_publicationHandle.stop() if @_publicationHandle
   @_publicationHandle = null
 
+Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
+
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null
   @_dateRangeHandle = null

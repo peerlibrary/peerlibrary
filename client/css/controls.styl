@@ -1,5 +1,38 @@
 @import 'variables.import'
 
+
+/* General form controls
+======================== */
+
+input, button
+  display inline-block
+  padding 5px
+  font-size 13px
+  border 1px solid box-shadow-border
+  transition all 0.2s
+
+input:focus
+  border 1px solid #a1b3c2
+
+button
+  padding 6px
+  background-color box-shadow-background
+
+button:hover
+  background-color box-shadow-border
+
+/* Edit button
+============== */
+
+.edit, .meta-menu .edit
+  display inline-block
+  background none
+  border none
+
+.edit:hover, .meta-menu .edit:hover
+  background none
+  color blue-accent
+
 /* Search bar
 ============= */
 .search-bar
@@ -31,20 +64,6 @@
   input, button
     display block
     width 227px
-    padding 5px
-    font-size 13px
-    border 1px solid box-shadow-border
-    transition all 0.2s
-
-  input:focus
-    border 1px solid #a1b3c2
-
-  button
-    padding 6px
-    background-color box-shadow-background
-
-  button:hover
-    background-color box-shadow-border
 
   .input-and-buttons
     width 100%
@@ -121,13 +140,7 @@
       left 7px
       top 11px
 
-  .edit
-    display inline-block
-    background none
-    border none
-
   .edit:hover
-    background none
     color #ccc
 
 /* Layouts

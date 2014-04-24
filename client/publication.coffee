@@ -489,12 +489,12 @@ Template.publication.notfound = ->
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
-Template.publicationMetaMenu.created = ->
-  @_titleEditable = null
+Template.publicationMetaMenuTitle.created = ->
+  @_editable = null
 
-Template.publicationMetaMenu.rendered = ->
-  @_titleEditable.stop() if @_titleEditable
-  @_titleEditable = $(@findAll '.title').editable =>
+Template.publicationMetaMenuTitle.rendered = ->
+  @_editable.stop() if @_editable
+  @_editable = $(@findAll '.title').editable =>
     @data.hasMaintainerAccess Meteor.person()
   ,
     (value) =>
@@ -502,9 +502,9 @@ Template.publicationMetaMenu.rendered = ->
   ,
     "Enter publication title"
 
-Template.publicationMetaMenu.destroyed = ->
-  @_titleEditable.stop() if @_titleEditable
-  @_titleEditable = null
+Template.publicationMetaMenuTitle.destroyed = ->
+  @_editable.stop() if @_editable
+  @_editable = null
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->
