@@ -490,7 +490,21 @@ Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationMetaMenu.created = ->
-  $(@findAll '.title')
+  @_titleEditable = null
+
+Template.publicationMetaMenu.rendered = ->
+  @_titleEditable.stop() if @_titleEditable
+  @_titleEditable = $(@findAll '.title').editable =>
+    @data.hasMaintainerAccess Meteor.person()
+  ,
+    (value) =>
+      # TODO: Update publication title
+  ,
+    "Enter publication title"
+
+Template.publicationMetaMenu.destroyed = ->
+  @_titleEditable.stop() if @_titleEditable
+  @_titleEditable = null
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->

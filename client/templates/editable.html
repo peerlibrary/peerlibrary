@@ -1,0 +1,12 @@
+<template name="editableButton">
+  <button class="edit icon-edit" type="button"></button>
+</template>
+
+<template name="editable">
+  <form class="editable input-and-buttons">
+    {{! Non-empty placeholder solves weird webkit rendering bug.}}
+    <div><input class="editable-input" type="text" placeholder="&nbsp;" /></div>
+    <div><button class="editable-ok icon-check" type="submit"></button></div>
+    <div><button class="editable-cancel icon-cancel" type="button"></button></div>
+  </form>
+</template>
