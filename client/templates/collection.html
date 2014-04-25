@@ -10,13 +10,17 @@
         <p>Collection not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
-      <h1>{{collection.name}}</h1>
+      {{> collectionName collection}}
       <div class="row">
         {{> collectionPublications collection}}
         {{> collectionDetails collection}}
       </div>
     {{/if}}
   {{/if}}
+</template>
+
+<template name="collectionName">
+  <h1>{{name}}</h1>
 </template>
 
 <template name="collectionPublications">
