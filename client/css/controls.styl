@@ -50,10 +50,10 @@
     input
       border-right none
 
-/* Meta menus
-============= */
+/* Meta menus and jQuery UI widgets
+=================================== */
 
-.meta-menu
+.meta-menu, .ui-widget
   input, button
     display block
     padding 8px 12px
@@ -109,6 +109,75 @@
       left 0
       width 30px
       text-align center
+
+/* jQuery UI widgets
+==================== */
+
+.ui-widget
+  border none
+  border-radius 2px
+  padding 0
+  background overlay-translucent
+  color white
+  font-family "Source Sans Pro", sans-serif
+  font-size 14px
+
+  .ui-widget-header
+    border 0
+    border-radius 2px 2px 0 0
+    padding 8px 10px
+    background overlay-translucent
+    color white
+    font-size 1.17em
+    font-weight bold
+
+    .ui-state-default
+      background transparent
+
+    .ui-state-hover
+      color #ccc
+
+  .ui-widget-content
+    padding 10px
+    margin 0
+    background none
+
+  .ui-state-default
+    border none
+    color white
+    background rgba(120,120,120,0.9)
+
+  .ui-state-hover
+    background rgba(80,80,80,0.9)
+
+  input, button.ui-widget
+    font-family "Source Sans Pro", sans-serif
+    font-size 13px
+
+  .ui-button-text
+    padding 0
+
+  .ui-icon
+    background none
+    text-indent 0
+
+  .ui-icon-closethick:before
+    font-size 14px
+    font-family "glyph"
+    content '\e803'
+
+
+.ui-dialog
+  .ui-dialog-titlebar
+    .ui-dialog-title
+      margin 0
+
+  .ui-dialog-buttonpane
+    padding-top 0
+    border none
+
+    button
+      margin 0 0 0 10px
 
 /* Layouts
 ========== */
