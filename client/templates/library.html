@@ -1,10 +1,15 @@
 <template name="library">
-  {{#if currentPerson}}
+  {{#unless currentPerson}}
+    <div class="simple">
+      <h1>Library</h1>
+      <p>Sign in to view your library.</p>
+    </div>
+  {{else}}
     <div class="row">
       {{> libraryPublications}}
       {{> collections}}
     </div>
-  {{/if}}
+  {{/unless}}
 </template>
 
 <template name="libraryPublications">
