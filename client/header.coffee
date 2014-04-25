@@ -127,7 +127,7 @@ Deps.autorun ->
   progressHide = Meteor.setTimeout ->
     Session.set 'currentPublicationProgress', null
     progressHide = null
-  , 250
+  , 250 # ms
 
 Accounts.ui.config
   passwordSignupFields: 'USERNAME_AND_EMAIL'
