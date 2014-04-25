@@ -64,13 +64,11 @@ meta-menu-icon-font-size = 20px
     overflow-y auto
 
     .editable.title
-      /* So that edit button does not flicker when title is multiline */
       display inline-block
       padding-right 25px
       position relative
 
       .edit
-        display none
         position absolute
         top 0
         left 0
@@ -88,10 +86,6 @@ meta-menu-icon-font-size = 20px
     .editable.title.editing
       padding-right 0
       display block
-
-    .title:hover
-      .edit
-        display inline-block
 
     .authors
       span::after

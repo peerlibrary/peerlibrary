@@ -1,4 +1,5 @@
 (($) ->
+
   $.fn.editable = (isEditableFunction, updateFunction, placeholderText, resizeToContent) ->
     throw new Error "Editable only works on a single element" if @length > 1
     $editableButton = null
@@ -25,11 +26,7 @@
         # Create the edit form
         $editView = $(Template.editable null)
 
-        if resizeToContent
-          $wrap = $element.wrapInner('<span/>').children()
-          $editView.css('width', $wrap.get(0).getBoundingClientRect().width)
-          $wrap.contents().appendTo($wrap.parent())
-          $wrap.remove()
+        $editView.css('width', $element.contentsWidth()) if resizeToContent
 
         $editInput = $editView.find('.editable-input')
         $editInput.attr('value', editableText) unless $element.hasClass('missing-value')
@@ -66,7 +63,7 @@
 
 )(jQuery)
 
-# Helper that enables template to be editable
+# Helper that enables a template to be editable
 class @Editable
   @template: (template, isEditableFunction, updateFunction, placeholderText, resizeToContent) ->
     # Make sure we don't override template callbacks
@@ -79,7 +76,6 @@ class @Editable
 
     template.rendered = ->
       @_editable.stop() if @_editable
-      console.log @firstNode
       @_editable = $(@findAll '> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
 
     template.destroyed = ->
