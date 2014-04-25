@@ -539,6 +539,12 @@ annotations-control-height = 30px
         .tags .tagit-new
           display none
 
+      .annotation-content, .annotation-content-editor
+        ul, ol
+          margin-left 0
+          margin-right 0
+          padding 0 1.8em
+
       .saved
         position absolute
         right 4px
@@ -641,7 +647,6 @@ annotations-control-height = 30px
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
       /*disable highlighting*/
       /*box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow*/
-
 
   /* We use only 1px here to still have shadow border visible, but not 5px
      top margin which makes visible lower than the crop top line when
