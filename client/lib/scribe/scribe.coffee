@@ -27,7 +27,6 @@
 
   scribe.use Scribe.plugins['blockquote-command']()
   scribe.use Scribe.plugins['heading-command'](4) # Heading should be h4
-  scribe.use Scribe.plugins['intelligent-unlink-command']()
   scribe.use Scribe.plugins['keyboard-shortcuts'] commandsToKeyboardShortcutsMap
   scribe.use Scribe.plugins['link-prompt-command']()
   scribe.use Scribe.plugins['sanitizer']

@@ -30,10 +30,6 @@
 	path = packages/scribe/scribe-plugin-keyboard-shortcuts
 	url = https://github.com/peerlibrary/scribe-plugin-keyboard-shortcuts.git
 	branch = dist
-[submodule "packages/scribe/scribe-plugin-intelligent-unlink-command"]
-	path = packages/scribe/scribe-plugin-intelligent-unlink-command
-	url = https://github.com/peerlibrary/scribe-plugin-intelligent-unlink-command.git
-	branch = dist
 [submodule "packages/scribe/scribe-plugin-heading-command"]
 	path = packages/scribe/scribe-plugin-heading-command
 	url = https://github.com/peerlibrary/scribe-plugin-heading-command.git

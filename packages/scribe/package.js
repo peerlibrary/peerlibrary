@@ -11,7 +11,6 @@ Package.on_use(function (api) {
     'scribe/scribe.js',
     'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',
     'scribe-plugin-heading-command/scribe-plugin-heading-command.js',
-    'scribe-plugin-intelligent-unlink-command/scribe-plugin-intelligent-unlink-command.js',
     'scribe-plugin-keyboard-shortcuts/scribe-plugin-keyboard-shortcuts.js',
     'scribe-plugin-sanitizer/scribe-plugin-sanitizer.js',
     'scribe-plugin-toolbar/scribe-plugin-toolbar.js',
