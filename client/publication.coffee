@@ -6,7 +6,7 @@ publicationHandle = null
 publicationCacheHandle = null
 
 # If set to an annotation id, focus on next render
-focusAnnotationId = null
+#focusAnnotationId = null
 
 # We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
@@ -85,7 +85,7 @@ class @Publication extends Publication
     @_pages = []
     @_highlighter = new Highlighter @_$displayWrapper, true
 
-    focusAnnotationId = null
+    #focusAnnotationId = null
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -259,7 +259,7 @@ class @Publication extends Publication
     Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
-    focusAnnotationId = null
+    #focusAnnotationId = null
 
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
@@ -334,7 +334,7 @@ class @Publication extends Publication
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
   showTEI: =>
-    focusAnnotationId = null
+    #focusAnnotationId = null
 
     # To make sure we are starting with empty slate
     @_$displayWrapper.empty()
@@ -977,6 +977,7 @@ Template.publicationAnnotations.rendered = ->
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
 
+###
 focusAnnotation = (body) ->
   return unless body
 
@@ -995,6 +996,7 @@ focusAnnotation = (body) ->
 focusEditor = ($editor) ->
   currentPublication?._highlighter?._annotator?._deselectAllHighlights()
   $editor.focus()
+###
 
 Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
@@ -1074,10 +1076,12 @@ Template.publicationAnnotationsItem.rendered = ->
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
+  ###
   if focusAnnotationId is @data._id
     focusAnnotationId = null
 
-    focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
+    focusAnnotation $(@findAll '.annotation-content-editor').get(0)
+  ###
 
 Template.publicationAnnotationsItem.canModify = ->
   @hasMaintainerAccess Meteor.person()
@@ -1153,7 +1157,7 @@ Template.annotationEditor.events
 
         LocalAnnotation.documents.remove @_id
 
-        focusAnnotationId = annotationId
+        #focusAnnotationId = annotationId
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
@@ -1166,7 +1170,7 @@ Template.annotationEditor.events
           $unset:
             editing: ''
 
-        focusAnnotationId = @_id
+        #focusAnnotationId = @_id
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1179,7 +1183,7 @@ Template.annotationEditor.events
       $set:
         editing: true
 
-    focusEditor $(e.currentTarget)
+    #focusEditor $(e.currentTarget)
 
     return # Make sure CoffeeScript does not return anything
 
