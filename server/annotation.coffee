@@ -11,9 +11,6 @@ class @Annotation extends Annotation
 
 registerForAccess Annotation
 
-startsWith = (string, start) ->
-  string.lastIndexOf(start, 0) is 0
-
 # TODO: This parsing could be done through PeerDB instead, on any body field change
 parseReferences = (body) ->
   references =
@@ -26,50 +23,18 @@ parseReferences = (body) ->
     comments: []
     urls: []
 
-  localPath = (path) ->
-    resolved = routeResolve path
-    # We extract only those paths for which a route has documentId configured
-    return unless resolved?.route?.documentId
-    # And only those which are available in the schema
-    return unless resolved.name and references["#{ resolved.name }s"]
-
-    if _.isFunction resolved.route.documentId
-      referenceId = resolved.route.documentId resolved.params
-    else
-      referenceId = resolved.params[resolved.route.documentId]
-    references["#{ resolved.name }s"].push _id: referenceId if referenceId
-
   $ = cheerio.load body
   $.root().find('a').each (i, a) =>
     href = $(a).attr('href')
 
-    return localPath href if href[0] is '/'
+    [referenceName, referenceId] = parseURL href
 
-    href = UrlUtils.normalize href
+    return unless referenceName and referenceId and references["#{ referenceName }s"]
 
-    rootUrl = Meteor.absoluteUrl()
-    return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
+    references["#{ referenceName }s"].push
+      _id: referenceId
 
-    # When doing local development, we can use both localhost or 127.0.0.1, so let's check both
-    rootUrl = Meteor.absoluteUrl replaceLocalhost: true
-    return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
-
-    try
-      urlId = Url.documents.insert
-        url: href
-    catch error
-      if error.name isnt 'MongoError'
-        throw error
-      # TODO: Improve when https://jira.mongodb.org/browse/SERVER-3069
-      if /E11000 duplicate key error index:.*Urls\.\$url/.test error.err
-        # This should then always succeed
-        # No need for requireReadAccessSelector because urls are internal
-        urlId = Url.documents.findOne({url: href}, {fields: _id: 1})._id
-      else
-        throw error
-
-    references.urls.push
-      _id: urlId
+    return # Make sure CoffeeScript does not return anything
 
   references
 

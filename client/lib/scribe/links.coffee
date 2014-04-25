@@ -88,6 +88,10 @@ Scribe.plugins['link-prompt-command'] = ->
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
 
+      $dialog.find('.editor-link-input').on 'keyup, change', (event) ->
+        console.log event
+        return # Make sure CoffeeScript does not return anything
+
     linkPromptCommand.queryState = ->
       # Is selection inside a link?
       return true if getParentAnchor()

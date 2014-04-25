@@ -252,11 +252,3 @@ Meteor.Router.add
   '*': ->
     setSession()
     'notfound'
-
-# TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
-parseQuery = (qs) ->
-  query = {}
-  for pair in qs.replace('?', '').split '&'
-    [k, v] = pair.split('=')
-    query[k] = v
-  query
