@@ -4,9 +4,8 @@
 
 <template name="editable">
   <form class="editable-control input-and-buttons">
-    {{! Non-empty placeholder solves weird webkit rendering bug.}}
-    <div><input class="editable-input" type="text" placeholder="&nbsp;" /></div>
-    <div><button class="editable-ok icon-check" type="submit"></button></div>
-    <div><button class="editable-cancel icon-cancel" type="button"></button></div>
+    <button class="editable-cancel icon-cancel" type="button"></button>
+    <button class="editable-ok icon-check" type="submit"></button>
+    <div class="input"><input class="editable-input" type="text" /></div>
   </form>
 </template>

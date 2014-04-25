@@ -76,6 +76,9 @@ button:hover
   .input-and-buttons
     width 100%
 
+    button
+      width auto
+
     input
       border-right-width 0
 
@@ -111,17 +114,14 @@ button:hover
   .input-and-buttons
     width 100%
 
-    > div
-      input, button
-        border-radius 0
+    input, button
+      border-radius 0
 
-    > div:first-child
-      input, button
-        border-radius 2px 0 0 2px
+    input
+      border-radius 2px 0 0 2px
 
-    > div:last-child
-      input, button
-        border-radius 0 2px 2px 0
+    button:first-child
+      border-radius 0 2px 2px 0
 
   .toggle-list
     list-style none
@@ -155,11 +155,20 @@ button:hover
 ========== */
 
 .input-and-buttons
-  display table
-
-  > div
-    display table-cell
+  font-size 13px
+  min-width 15em
 
   input, button
     box-sizing border-box
-    width 100%
+
+  button
+    float right
+
+  .input
+    overflow hidden
+
+    input
+      width 100%
+      min-width auto
+
+
