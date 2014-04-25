@@ -13,7 +13,6 @@ Package.on_use(function (api) {
     'scribe-plugin-heading-command/scribe-plugin-heading-command.js',
     'scribe-plugin-intelligent-unlink-command/scribe-plugin-intelligent-unlink-command.js',
     'scribe-plugin-keyboard-shortcuts/scribe-plugin-keyboard-shortcuts.js',
-    'scribe-plugin-link-prompt-command/scribe-plugin-link-prompt-command.js',
     'scribe-plugin-sanitizer/scribe-plugin-sanitizer.js',
     'scribe-plugin-toolbar/scribe-plugin-toolbar.js',
     'client.js'
