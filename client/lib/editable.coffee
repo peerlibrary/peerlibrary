@@ -1,16 +1,17 @@
 (($) ->
-  $.fn.editable = (isEditableFunction, updateFunction, placeholderText) ->
+  $.fn.editable = (isEditableFunction, updateFunction, placeholderText, resizeToContent) ->
     throw new Error "Editable only works on a single element" if @length > 1
     $editableButton = null
     $editView = null
     $element = @
     editableText = $element.text().trim()
+    $elementContents = null
 
     hideView = ->
       # Restore the content with initial elements
-      $element.show()
       $editView.remove()
       $editView = null
+      $element.append($elementContents).removeClass('editing')
 
       return # Make sure CoffeeScript does not return anything
 
@@ -23,6 +24,12 @@
       $editableButton.click (e) ->
         # Create the edit form
         $editView = $(Template.editable null)
+
+        if resizeToContent
+          $wrap = $element.wrapInner('<span/>').children()
+          $editView.css('width', $wrap.get(0).getBoundingClientRect().width)
+          $wrap.contents().appendTo($wrap.parent())
+          $wrap.remove()
 
         $editInput = $editView.find('.editable-input')
         $editInput.attr('value', editableText) unless $element.hasClass('missing-value')
@@ -42,8 +49,8 @@
           return # Make sure CoffeeScript does not return anything
 
         # Replace the content with the edit form
-        $element.after($editView)
-        $element.hide()
+        $elementContents = $element.contents().detach()
+        $element.append($editView).addClass('editing')
 
         # Focus on the input
         $editInput.focus()
@@ -61,7 +68,7 @@
 
 # Helper that enables template to be editable
 class @Editable
-  @template: (template, isEditableFunction, updateFunction, placeholderText) ->
+  @template: (template, isEditableFunction, updateFunction, placeholderText, resizeToContent) ->
     # Make sure we don't override template callbacks
     assert not template.created
     assert not template.rendered
@@ -69,12 +76,11 @@ class @Editable
 
     template.created = ->
       @_editable = null
-      console.log "CREATED"
-      console.log @
 
     template.rendered = ->
       @_editable.stop() if @_editable
-      @_editable = $(@firstNode).editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText)
+      console.log @firstNode
+      @_editable = $(@findAll '> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
 
     template.destroyed = ->
       @_editable.stop() if @_editable

@@ -51,6 +51,8 @@ Editable.template Template.groupName, ->
       return Notify.meteorError error, true if error
 ,
   "Enter group name"
+,
+  true
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->

@@ -11,6 +11,9 @@ input, button
   border 1px solid box-shadow-border
   transition all 0.2s
 
+input
+  min-width 10em
+
 input:focus
   border 1px solid #a1b3c2
 
@@ -25,13 +28,18 @@ button:hover
 ============== */
 
 .edit, .meta-menu .edit
-  display inline-block
+  display none
+  vertical-align middle
   background none
   border none
 
 .edit:hover, .meta-menu .edit:hover
   background none
   color blue-accent
+
+.editable:hover
+  .edit
+    display inline-block
 
 /* Search bar
 ============= */
