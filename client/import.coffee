@@ -225,6 +225,15 @@ Template.importCancelButton.events =
         status: 'canceled'
     return
 
+Template.importCancelButton.invisibility = ->
+  finished = ImportingFile.documents.findOne(@_id)?.finished
+  canceled = ImportingFile.documents.findOne(@_id)?.canceled
+  errored = ImportingFile.documents.findOne(@_id)?.errored
+  if finished or canceled or errored
+    ret = 'invisible'
+    return ret
+  return
+
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
     e.preventDefault()
@@ -314,11 +323,6 @@ Template.importOverlay.importOverlayActive = ->
 
 Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
-
-Handlebars.registerHelper 'checkImportComplete', (v1, v2, v3, ret) ->
-  if v1 or v2 or v3
-    return ret
-  return
 
 Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
