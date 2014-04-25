@@ -385,31 +385,33 @@ annotations-control-height = 30px
       clear left
       overflow-x hidden
 
-      ul.format-buttons
-        list-style none
-        display block
+      .format-buttons
         padding 0
         margin 0 auto
 
-        li
-          display inline-block
+        button
           padding 8px
+          border none
+          background transparent
           cursor pointer
+          line-height default-line-height
 
           i
             color icon-gray
 
-        li:hover
+        button:hover
           i
             color icon-gray-hover
 
-        /* Using the same color for now because this does not
-           work perfectly in Scribe */
-        li.active
+        button.active
           i
-            color icon-gray
+            color icon-gray-active
 
-        li.inactive, li.inactive:hover
+        button.active:hover
+          i
+            color icon-gray-active-hover
+
+        button.disabled, button.disabled:hover
           i
             color icon-gray-inactive
 

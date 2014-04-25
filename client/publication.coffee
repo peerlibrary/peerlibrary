@@ -1098,30 +1098,10 @@ Template.annotationTags.rendered = ->
   ###
 
 Template.annotationEditor.created = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  return if @_rendered
-  @_rendered = true
-
-  # Load Scribe
-  @_scribe = new Scribe @find('.annotation-content-editor'),
-    allowBlockElements: true
-
-  @_scribe.use Scribe.plugins['blockquote-command']()
-  @_scribe.use Scribe.plugins['link-prompt-command']()
-  @_scribe.use Scribe.plugins['sanitizer']
-    tags:
-      p: {}
-      br: {}
-      b: {}
-      i: {}
-      blockquote: {}
-      ol: {}
-      ul: {}
-      li: {}
-      a:
-        href: true
+  @_scribe = createEditor $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
   ###
   TODO: Temporary disabled, not yet finalized code
@@ -1134,10 +1114,8 @@ Template.annotationEditor.rendered = ->
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
   ###
 
-  return # Make sure CoffeeScript does not return anything
-
 Template.annotationEditor.destroyed = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationEditor.events
   'click button.save': (e, template) ->
@@ -1223,52 +1201,6 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown .format-buttons li': (e, template) ->
-    e.preventDefault()
-
-    # Port of scribe-plugin-toolbar
-    # https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
-    command = template._scribe.getCommand $(e.currentTarget).data 'command-name'
-    template._scribe.el.focus()
-    command.execute()
-
-    return # Make sure CoffeeScript does not return anything
-
-  'keyup .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseup .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'focus .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'blur .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-# Port of scribe-plugin-toolbar
-# https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
-updateScribeUI = (e, template) ->
-  $button = $(e.currentTarget)
-  selection = new template._scribe.api.Selection()
-  command = template._scribe.getCommand $button.data 'command-name'
-
-  if selection.range and command.queryEnabled()
-    $button.removeAttr 'disabled'
-
-    if command.queryState()
-      $button.addClass 'active'
-    else
-      $button.removeClass 'active'
-  else
-    $button.attr 'disabled', 'disabled'
-
-  return # Make sure CoffeeScript does not return anything
-
 Template.visibilityMenu.public = ->
   getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
 
@@ -1300,7 +1232,7 @@ Template.annotationCommentsListItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentEditor.created = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
@@ -1311,23 +1243,10 @@ Template.annotationCommentEditor.rendered = ->
   else
     $wrapper.removeClass 'active'
 
-  # Run only once
-  return if @_rendered
-  @_rendered = true
-
-  @_scribe = new Scribe @find('.comment-content-editor'),
-    # We want comments to be oneline, so no block elements and no <br/>
-    allowBlockElements: false
-
-  @_scribe.use Scribe.plugins['sanitizer']
-    tags:
-      b: {}
-      i: {}
-      a:
-        href: true
+  @_scribe = createEditor $(@findAll '.comment-content-editor'), null, true unless @_scribe
 
 Template.annotationCommentEditor.destroyed = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationCommentEditor.events
   'focus .comment-content-editor': (e, template) ->

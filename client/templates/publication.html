@@ -234,16 +234,18 @@
         }}
         <div class="form-content">
           <div class="format-toolbar">
-            <ul class="format-buttons">
-              <li data-command-name="bold"><i class="icon-bold"></i></li>
-              <li data-command-name="italic"><i class="icon-italic"></i></li>
-              <li data-command-name="insertOrderedList"><i class="icon-list-numbered"></i></li>
-              <li data-command-name="insertUnorderedList"><i class="icon-list-bullet"></i></li>
-              <li data-command-name="linkPrompt"><i class="icon-link"></i></li>
-              <li data-command-name="blockquote"><i class="icon-quote-left"></i></li>
-              <li class="inactive"><i class="icon-math"></i></li>
-              <li class="inactive"><i class="icon-code"></i></li>
-            </ul>
+            {{#constant}}
+              <div class="format-buttons">
+                <button data-command-name="bold" type="button"><i class="icon-bold"></i></button>
+                <button data-command-name="italic" type="button"><i class="icon-italic"></i></button>
+                <button data-command-name="insertOrderedList" type="button"><i class="icon-list-numbered"></i></button>
+                <button data-command-name="insertUnorderedList" type="button"><i class="icon-list-bullet"></i></button>
+                <button data-command-name="linkPrompt" type="button"><i class="icon-link"></i></button>
+                <button data-command-name="blockquote" type="button"><i class="icon-quote-left"></i></button>
+                <button class="disabled" type="button"><i class="icon-math"></i></button>
+                <button class="disabled" type="button"><i class="icon-code"></i></button>
+              </div>
+            {{/constant}}
           </div>
           <div class="form-body">
             {{#constant}}
