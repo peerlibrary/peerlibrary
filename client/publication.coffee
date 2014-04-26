@@ -1391,14 +1391,20 @@ Template.editorLinkPrompt.parsedLink = ->
 
   return parsedLink if parsedLink?.error
 
+  # For an empty input we might not have an error, but also no reference name and ID
   return unless parsedLink?.referenceName and parsedLink?.referenceId
 
   if parsedLink.referenceName is 'external'
     parsedLink.isExternal = true
     return parsedLink
 
+  # If we have a helper to help us resolve a path from the ID, let's
+  # use that. This will build a canonical URL if possible to help
+  # user verify their URL.
   if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
     parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+    # We assume here that we will always have a shortcut prefix
+    # which is the first letter of the reference name
     parsedLink.prefix = parsedLink.referenceName.substr 0, 1
 
   parsedLink
