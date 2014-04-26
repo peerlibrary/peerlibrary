@@ -62,7 +62,7 @@ Scribe.plugins['link-prompt-command'] = ->
 
       buttons.push
         text: if parentAnchor then "Update" else "Create"
-        class: 'highlighted'
+        class: 'default'
         click: (event) =>
           link = $dialog.find('.editor-link-input').val().trim()
           return unless link
@@ -88,9 +88,6 @@ Scribe.plugins['link-prompt-command'] = ->
         width: 360
         close: (event, ui) =>
           $dialog.remove()
-          return # Make sure CoffeeScript does not return anything
-        create: (event, ui) =>
-          $(event.target).find('.editor-link-input').focus()
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
 

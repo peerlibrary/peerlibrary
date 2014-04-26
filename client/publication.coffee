@@ -1410,7 +1410,7 @@ Template.editorLinkPrompt.parsedLink = ->
   parsedLink
 
 Template.editorLinkPrompt.events
- 'keyup .editor-link-input, change .editor-link-input': (event, template) ->
+  'keyup .editor-link-input, change .editor-link-input': (event, template) ->
     href = $(event.target).val().trim()
     parsedLink = parseURL href
 
@@ -1419,5 +1419,13 @@ Template.editorLinkPrompt.events
         error: true
 
     @_parsedLink.set parsedLink
+
+    return # Make sure CoffeeScript does not return anything
+
+  'submit .editor-link-form': (event, template) ->
+    event.preventDefault()
+
+    # On form submit click on a default button
+    $(template.findAll '.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
 
     return # Make sure CoffeeScript does not return anything
