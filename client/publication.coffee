@@ -1370,3 +1370,48 @@ Template.contextMenuGroupListing.workingInside = ->
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
+
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addParsedLinkReactiveVariable = (data) ->
+  data._parsedLink = new Variable parseURL data.link unless data._parsedLink
+
+Template.editorLinkPrompt.created = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.rendered = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.destroyed = ->
+  @data._parsedLink = null if @data._parsedLink
+
+Template.editorLinkPrompt.parsedLink = ->
+  addParsedLinkReactiveVariable @
+
+  parsedLink = @_parsedLink()
+
+  return parsedLink if parsedLink?.error
+
+  return unless parsedLink?.referenceName and parsedLink?.referenceId
+
+  if parsedLink.referenceName is 'external'
+    parsedLink.isExternal = true
+    return parsedLink
+
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
+    parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+    parsedLink.prefix = parsedLink.referenceName.substr 0, 1
+
+  parsedLink
+
+Template.editorLinkPrompt.events
+ 'keyup .editor-link-input, change .editor-link-input': (event, template) ->
+    href = $(event.target).val().trim()
+    parsedLink = parseURL href
+
+    if not parsedLink and href
+      parsedLink =
+        error: true
+
+    @_parsedLink.set parsedLink
+
+    return # Make sure CoffeeScript does not return anything

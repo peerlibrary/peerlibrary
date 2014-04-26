@@ -27,7 +27,7 @@ parseReferences = (body) ->
   $.root().find('a').each (i, a) =>
     href = $(a).attr('href')
 
-    [referenceName, referenceId] = parseURL href
+    {referenceName, referenceId} = parseURL(href) or {}
 
     return unless referenceName and referenceId and references["#{ referenceName }s"]
 

@@ -45,9 +45,18 @@ localPath = (path) ->
 
   return unless referenceId
 
-  [resolved.name, referenceId]
+  try
+    check referenceId, DocumentId
+  catch error
+    # Not a valid document ID
+    return
+
+  referenceName: resolved.name
+  referenceId: referenceId
 
 @parseURL = (href) ->
+  return unless href
+
   return localPath href if href[0] is '/'
 
   href = UrlUtils.normalize href if Meteor.isServer
@@ -74,6 +83,8 @@ localPath = (path) ->
       else
         throw error
 
-    return ['url', urlId]
+    referenceName: 'url'
+    referenceId: urlId
   else
-    return ['external', href]
+    referenceName: 'external'
+    referenceId: href

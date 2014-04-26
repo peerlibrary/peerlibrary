@@ -75,7 +75,11 @@ Scribe.plugins['link-prompt-command'] = ->
 
           return # Make sure CoffeeScript does not return anything
 
-      $dialog = $(Template.editorLinkPrompt link: parentAnchor?.href).dialog
+      editorLinkPrompt = Meteor.render =>
+        Template.editorLinkPrompt
+          link: parentAnchor?.href
+
+      $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
         dialogClass: 'editor-link-prompt-dialog'
         title: if parentAnchor then "Edit link" else "New link"
         position: position
@@ -87,10 +91,6 @@ Scribe.plugins['link-prompt-command'] = ->
           $(event.target).find('.editor-link-input').focus()
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
-
-      $dialog.find('.editor-link-input').on 'keyup, change', (event) ->
-        console.log event
-        return # Make sure CoffeeScript does not return anything
 
     linkPromptCommand.queryState = ->
       # Is selection inside a link?
