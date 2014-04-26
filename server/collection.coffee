@@ -182,6 +182,26 @@ Meteor.methods
         updatedAt: moment.utc().toDate()
         publications: publications
 
+  # TODO: Use this code on the client side as well
+  'collection-set-name': (collectionId, name) ->
+    check collectionId, DocumentId
+    check name, NonEmptyString
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
+      _id: collectionId
+    )
+    throw new Meteor.Error 400, "Invalid collection." unless collection
+
+    Collection.documents.update Group.requireMaintainerAccessSelector(person,
+        _id: collection._id
+      ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        name: name
+
 Meteor.publish 'collection-by-id', (collectionId) ->
   check collectionId, DocumentId
 

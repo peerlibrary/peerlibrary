@@ -394,6 +394,26 @@ Meteor.methods
         library:
           _id: publication._id
 
+  # TODO: Use this code on the client side as well
+  'publication-set-title': (publicationId, title) ->
+    check publicationId, DocumentId
+    check title, NonEmptyString
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    Publication.documents.update Publication.requireMaintainerAccessSelector(person,
+      _id: publication._id
+    ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        title: title
+
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, NonEmptyString
 

@@ -113,18 +113,7 @@
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">
-          <a href="{{publicationPath _id slug}}">
-            {{#if title}}
-              {{title}}
-            {{else}}
-              {{#if importing.0.filename}}
-                {{! Used only in personal library list, elsewhere we display "metadata missing" to invite users to provide metadata }}
-                {{importing.0.filename}}
-              {{else}}
-                <i>metadata missing</i>
-              {{/if}}
-            {{/if}}
-          </a>
+          {{> publicationSearchResultTitle}}
         </h2>
         <div class="clearfix"></div>
         {{#if authors.length}}
@@ -165,6 +154,23 @@
       {{/if}}
     </div>
   </li>
+</template>
+
+<template name="publicationSearchResultTitle">
+  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+    <a href="{{publicationPath _id slug}}">
+      {{#if title}}
+        {{title}}
+      {{else}}
+        {{#if importing.0.filename}}
+        {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.0.filename}}
+        {{else}}
+          <i>title metadata missing</i>
+        {{/if}}
+      {{/if}}
+    </a>
+  </span>
 </template>
 
 <template name="accessIcon">

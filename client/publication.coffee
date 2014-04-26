@@ -489,6 +489,15 @@ Template.publication.notfound = ->
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
+Editable.template Template.publicationMetaMenuTitle, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+  (title) ->
+    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter publication title"
+
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->
     # A special case to prevent defocus after click on the input box

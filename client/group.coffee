@@ -43,6 +43,17 @@ Template.group.group = ->
 Template.group.canModifyMembership = ->
   Group.documents.findOne(Session.get('currentGroupId'))?.hasAdminAccess Meteor.person()
 
+Editable.template Template.groupName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+  (name) ->
+    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->
     e.preventDefault()

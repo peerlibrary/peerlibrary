@@ -1,5 +1,46 @@
 @import 'variables.import'
 
+
+/* General form controls
+======================== */
+
+input, button
+  display inline-block
+  padding 5px
+  font-size 13px
+  border 1px solid box-shadow-border
+  transition all 0.2s
+
+input
+  min-width 10em
+
+input:focus
+  border 1px solid #a1b3c2
+
+button
+  padding 6px
+  background-color box-shadow-background
+
+button:hover
+  background-color box-shadow-border
+
+/* Edit button
+============== */
+
+.edit, .meta-menu .edit
+  display none
+  vertical-align middle
+  background none
+  border none
+
+.edit:hover, .meta-menu .edit:hover
+  background none
+  color blue-accent
+
+.editable:hover
+  .edit
+    display inline-block
+
 /* Search bar
 ============= */
 .search-bar
@@ -31,24 +72,18 @@
   input, button
     display block
     width 227px
-    padding 5px
-    font-size 13px
-    border 1px solid box-shadow-border
-    transition all 0.2s
 
-  input:focus
-    border 1px solid #a1b3c2
+  .input-and-buttons
+    width 100%
 
-  button
-    padding 6px
-    background-color box-shadow-background
+    button
+      width auto
 
-  button:hover
-    background-color box-shadow-border
-
-  .input-and-button
     input
-      border-right none
+      border-right-width 0
+
+    input:focus
+      border-right-width 1px
 
 /* Meta menus
 ============= */
@@ -76,11 +111,16 @@
   button:hover
     background-color rgba(80,80,80,0.9)
 
-  .input-and-button
+  .input-and-buttons
+    width 100%
+
+    input, button
+      border-radius 0
+
     input
       border-radius 2px 0 0 2px
 
-    button
+    button:first-child
       border-radius 0 2px 2px 0
 
   .toggle-list
@@ -103,26 +143,32 @@
     button:hover
       background overlay-translucent
 
-    .toggled:before
-      content "✓"
+    .icon-check::before
       position absolute
-      left 0
-      width 30px
-      text-align center
+      left 7px
+      top 11px
+
+  .edit:hover
+    color #ccc
 
 /* Layouts
 ========== */
 
-.input-and-button
-  display table
-  width 100%
+.input-and-buttons
+  font-size 13px
+  min-width 15em
 
-  input
-    display table-cell
+  input, button
     box-sizing border-box
-    width 70%
 
   button
-    display table-cell
-    box-sizing border-box
-    width 30%
+    float right
+
+  .input
+    overflow hidden
+
+    input
+      width 100%
+      min-width auto
+
+
