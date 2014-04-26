@@ -374,15 +374,20 @@ annotations-control-height = 30px
       .format-buttons
         padding 0
         margin 0 auto
+        height 100%
 
         button
-          padding 8px
+          padding 2px
           border none
           background transparent
           cursor pointer
           line-height default-line-height
+          height 100%
 
           i
+            padding 3px
+            border 1px solid transparent
+            border-radius 2px
             color icon-gray
 
         button:hover
@@ -392,12 +397,16 @@ annotations-control-height = 30px
         button.active
           i
             color icon-gray-active
+            border-color #e3e3e3
+            background #f6f8f8
 
         button.active:hover
           i
-            color icon-gray-active-hover
+            color icon-gray-hover
 
         button.disabled, button.disabled:hover
+          cursor default
+
           i
             color icon-gray-inactive
 
