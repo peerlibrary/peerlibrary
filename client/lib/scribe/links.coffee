@@ -39,6 +39,7 @@ Scribe.plugins['link-prompt-command'] = ->
       if childAnchors.length or parentAnchor
         buttons.push
           text: if childAnchors.length > 1 then "Remove links" else "Remove link"
+          class: 'alternative'
           click: (event) =>
             if parentAnchor
               range.selectNode parentAnchor
@@ -61,6 +62,7 @@ Scribe.plugins['link-prompt-command'] = ->
 
       buttons.push
         text: if parentAnchor then "Update" else "Create"
+        class: 'highlighted'
         click: (event) =>
           link = $dialog.find('.editor-link-input').val().trim()
           return unless link
@@ -83,7 +85,7 @@ Scribe.plugins['link-prompt-command'] = ->
         dialogClass: 'editor-link-prompt-dialog'
         title: if parentAnchor then "Edit link" else "New link"
         position: position
-        width: 300
+        width: 360
         close: (event, ui) =>
           $dialog.remove()
           return # Make sure CoffeeScript does not return anything
