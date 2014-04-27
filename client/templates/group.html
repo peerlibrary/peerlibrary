@@ -7,7 +7,7 @@
     {{#if notfound}}
       <div class="simple notfound">
         <h2>404 Not found</h2>
-        <p>Group not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
+        <p>Group not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
       {{> groupName group}}
