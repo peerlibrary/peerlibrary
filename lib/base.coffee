@@ -233,6 +233,7 @@ else
 
     '/c/:collectionId/:collectionSlug?':
       as: 'collection'
+      documentId: 'collectionId'
       to: (collectionId, collectionSlug) ->
         setSession
           currentCollectionId: collectionId

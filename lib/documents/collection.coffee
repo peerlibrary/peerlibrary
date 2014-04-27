@@ -24,6 +24,8 @@ class @Collection extends ReadAccessDocument
   # slug: unique slug for URL
   # publications: list of
   #   _id: publication's id
+  # referencingAnnotations: list of (reverse field from Annotation.references.collections)
+  #   _id: annotation id
 
   @Meta
     name: 'Collection'

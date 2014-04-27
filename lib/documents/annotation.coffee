@@ -44,6 +44,10 @@ class @Annotation extends ReadAccessDocument
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  #   collections: list of
+  #     _id
+  #     slug
+  #     name
   #   comments: list of
   #     _id
   #   urls: list of
@@ -78,6 +82,7 @@ class @Annotation extends ReadAccessDocument
         groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
+        collections: [@ReferenceField Collection, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for urls? This could become a huge list for popular urls.
         comments: [@ReferenceField Comment, [], true, 'referencingAnnotations']
         urls: [@ReferenceField Url, ['url'], true, 'referencingAnnotations']

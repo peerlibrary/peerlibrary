@@ -127,3 +127,10 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
+# We allow passing the collection slug if caller knows it
+Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) ->
+  collection = Collection.documents.findOne collectionId
+
+  return Meteor.Router.collectionPath collection._id, collection.slug if collection
+
+  Meteor.Router.collectionPath collectionId, slug

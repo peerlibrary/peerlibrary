@@ -20,6 +20,7 @@ parseReferences = (body) ->
     persons: []
     groups: []
     tags: []
+    collections: []
     comments: []
     urls: []
 

@@ -46,6 +46,7 @@ Meteor.startup ->
     persons: []
     groups: []
     tags: []
+    collections: []
     comments: []
     urls: []
   tags: []
