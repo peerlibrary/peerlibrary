@@ -1,4 +1,4 @@
-@createEditor = ($element, $toolbar, inline=false) ->
+@createEditor = (template, $element, $toolbar, inline=false) ->
   scribe = new Scribe $element.get(0),
     allowBlockElements: not inline
 
@@ -28,9 +28,24 @@
   scribe.use Scribe.plugins['blockquote-command']()
   scribe.use Scribe.plugins['heading-command'](4) # Heading should be h4
   scribe.use Scribe.plugins['keyboard-shortcuts'] commandsToKeyboardShortcutsMap
-  scribe.use Scribe.plugins['link-prompt-command']()
+  scribe.use Scribe.plugins['link-prompt-command'](template)
   scribe.use Scribe.plugins['sanitizer']
     tags: tags
   scribe.use Scribe.plugins['toolbar'] $toolbar.get(0) if $toolbar
 
+  template._$dialog = null
+
   scribe
+
+@destroyEditor = (template) ->
+  # Do we have to cleanup a dialog
+  return unless template._$dialog
+
+  $dialog = template._$dialog
+  template._$dialog = null
+
+  # We have to clean a dialog after current flush which
+  # is just hapennig, otherwise Spark errors occur if
+  # we remove DOM elements while Spark is working
+  Deps.afterFlush ->
+    $dialog.dialog('destroy')

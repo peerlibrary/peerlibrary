@@ -1,4 +1,4 @@
-Scribe.plugins['link-prompt-command'] = ->
+Scribe.plugins['link-prompt-command'] = (template) ->
   (scribe) ->
     linkPromptCommand = new scribe.api.Command 'createLink'
     linkPromptCommand.nodeName = 'A'
@@ -27,6 +27,9 @@ Scribe.plugins['link-prompt-command'] = ->
 
       currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
       return unless currentEditor.length
+
+      template._$dialog.dialog('destroy') if template._$dialog
+      template._$dialog = null
 
       position =
         my: 'top+25'
@@ -57,6 +60,7 @@ Scribe.plugins['link-prompt-command'] = ->
                   new scribe.api.Element(childAnchor.parentNode).unwrap(childAnchor)
 
             $dialog.dialog('destroy')
+            template._$dialog = null
 
             return # Make sure CoffeeScript does not return anything
 
@@ -74,6 +78,7 @@ Scribe.plugins['link-prompt-command'] = ->
           scribe.api.SimpleCommand::execute.call @, link
 
           $dialog.dialog('destroy')
+          template._$dialog = null
 
           return # Make sure CoffeeScript does not return anything
 
@@ -88,8 +93,12 @@ Scribe.plugins['link-prompt-command'] = ->
         width: 360
         close: (event, ui) =>
           $dialog.remove()
+          template._$dialog = null
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
+
+      # To be able to destroy a dialog when template is destroyed
+      template._$dialog = $dialog
 
     linkPromptCommand.queryState = ->
       # Is selection inside a link?

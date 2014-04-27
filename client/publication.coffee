@@ -1105,7 +1105,7 @@ Template.annotationEditor.created = ->
   @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  @_scribe = createEditor $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
+  @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
   ###
   TODO: Temporary disabled, not yet finalized code
@@ -1119,6 +1119,7 @@ Template.annotationEditor.rendered = ->
   ###
 
 Template.annotationEditor.destroyed = ->
+  destroyEditor @
   @_scribe = null
 
 Template.annotationEditor.events
@@ -1247,9 +1248,10 @@ Template.annotationCommentEditor.rendered = ->
   else
     $wrapper.removeClass 'active'
 
-  @_scribe = createEditor $(@findAll '.comment-content-editor'), null, true unless @_scribe
+  @_scribe = createEditor @, $(@findAll '.comment-content-editor'), null, true unless @_scribe
 
 Template.annotationCommentEditor.destroyed = ->
+  destroyEditor @
   @_scribe = null
 
 Template.annotationCommentEditor.events
