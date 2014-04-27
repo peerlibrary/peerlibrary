@@ -44,7 +44,10 @@ Meteor.startup ->
     annotations: []
     publications: []
     persons: []
+    groups: []
     tags: []
+    comments: []
+    urls: []
   tags: []
   body: ''
 
