@@ -218,6 +218,8 @@ Template.importButton.events =
 Template.importCancelButton.events =
   'click .canceled': (e) ->
     e.preventDefault()
+    # We stop event propagation to prevent the cancel from bubbling up 
+    # to hide the overlay.
     e.stopPropagation()
 
     ImportingFile.documents.update @_id,
@@ -299,13 +301,13 @@ Template.importOverlay.events =
 
     _.each e.dataTransfer.files, importFile
 
-: Check if this is still necessary in the new version of Meteor
-    return # Make sure CoffeeScript does not r
+    return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
     # We are stopping propagation in click on cancel button but it still
     # propagates so we cancel here.
     # TODO: Check if this is still necessary in the new version of Meteor
+
     return if e.isPropagationStopped()
     hideOverlay()
 
