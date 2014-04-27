@@ -39,17 +39,17 @@ localPath = (path) ->
   return unless resolved.name
 
   if _.isFunction resolved.route.documentId
+    # resolved.route.documentId should check params itself
     referenceId = resolved.route.documentId resolved.params
   else
     referenceId = resolved.params[resolved.route.documentId]
+    try
+      check referenceId, DocumentId
+    catch error
+      # Not a valid document ID
+      return
 
   return unless referenceId
-
-  try
-    check referenceId, DocumentId
-  catch error
-    # Not a valid document ID
-    return
 
   referenceName: resolved.name
   referenceId: referenceId

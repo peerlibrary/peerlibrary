@@ -75,7 +75,7 @@
   <li class="member person">
     <img src="{{avatar}}" class="avatar" />
     <h4 class="member-name">
-      <a href="{{personPath slug}}" title="{{displayName}}">{{displayName}}</a>
+      <a href="{{personPathFromId _id slug}}" title="{{displayName}}">{{displayName}}</a>
     </h4>
     <button class="remove-button icon-cancel"></button>
   </li>
@@ -85,7 +85,7 @@
   <li class="member group">
     <i class="icon-group avatar"></i>
     <h4 class="member-name">
-      <a href="{{groupPath _id slug}}" title="{{name}}">{{name}}</a>
+      <a href="{{groupPathFromId _id slug}}" title="{{name}}">{{name}}</a>
     </h4>
     <button class="remove-button icon-cancel"></button>
   </li>

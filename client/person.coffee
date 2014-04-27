@@ -20,6 +20,9 @@ Deps.autorun ->
     ,
       _id: slug
     ]
+  ,
+    fields:
+      slug: 1
 
   return unless person
 
@@ -28,7 +31,7 @@ Deps.autorun ->
 
 Template.person.person = ->
   Person.documents.findOne
-    # We can search by slug because we assured that the URL is canonical in autorun
+    # We can search by only slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
 Template.person.isMine = ->
@@ -38,6 +41,7 @@ Template.person.isMine = ->
 # Publications authored by this person
 Template.person.authoredPublications = ->
   person = Person.documents.findOne
+    # We can search by only slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
   Publication.documents.find
@@ -55,3 +59,22 @@ Handlebars.registerHelper 'currentPerson', (options) ->
 
 Handlebars.registerHelper 'currentPersonId', (options) ->
   Meteor.personId()
+
+# We allow passing the person slug if caller knows it.
+# If you do not know if you have an ID or a slug, you can pass
+# it in as an ID and hopefully something useful will come out.
+Handlebars.registerHelper 'personPathFromId', (personId, slug, options) ->
+  person = Person.documents.findOne
+    $or: [
+      slug: personId
+    ,
+      _id: personId
+    ]
+
+  return Meteor.Router.personPath person.slug if person
+
+  # Even if did not find any person document, we still prefer slug over ID
+  return Meteor.Router.personPath slug if slug
+
+  # Otherwise use ID (which is maybe a slug) and let it be resolved later
+  Meteor.Router.personPath personId

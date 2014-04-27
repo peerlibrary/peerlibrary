@@ -33,7 +33,7 @@
       <p><b>{{title}}</b></p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{personPath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
       <p>Source: {{source}}</p>
@@ -180,7 +180,7 @@
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{selected}}">
     {{#if local}}
-      <a href="{{personPath currentPerson.slug}}">
+      <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
         <img src="{{currentPerson.avatar 30}}" class="avatar" />
       </a>
     {{else}}
@@ -201,10 +201,10 @@
           </div>
         {{/if}}
         <div class="annotation-footer">
-          <a href="{{personPath author.slug}}">
+          <a href="{{personPathFromId author._id author.slug}}">
             <img src="{{author.avatar 30}}" class="avatar" />
           </a>
-          <h4 class="author-name"><a href="{{personPath author.slug}}">{{author.displayName}}</a></h4>
+          <h4 class="author-name"><a href="{{personPathFromId author._id author.slug}}">{{author.displayName}}</a></h4>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
@@ -291,7 +291,7 @@
 
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
-    <a href="{{personPath author.slug}}">
+    <a href="{{personPathFromId author_.id author.slug}}">
       <img src="{{author.avatar 30}}" class="avatar" />
     </a>
     <div class="comment-content">
@@ -305,7 +305,7 @@
 
 <template name="annotationCommentEditor">
   <li class="comment-editor">
-    <a href="{{personPath currentPerson.slug}}">
+    <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
       <img src="{{currentPerson.avatar 30}}" class="avatar" />
     </a>
     <div class="comment-content">
@@ -326,7 +326,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -409,7 +409,7 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{personPath slug}}">{{displayName}}</a></span>
+      <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
     {{/with}}
   </p>
   <p class="time">{{createdAt}}</p>
@@ -434,7 +434,7 @@
         <div class="filter">
           Groups filter:
           {{#each inside}}
-            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
+            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
           {{/each}}
         </div>
       {{/if}}
@@ -451,7 +451,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -460,7 +460,7 @@
         <p class="inside">
           Inside groups:
           {{#each inside}}
-            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
+            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
           {{/each}}
         </p>
       {{/if}}

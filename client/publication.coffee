@@ -1431,3 +1431,11 @@ Template.editorLinkPrompt.events
     $(template.findAll '.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
 
     return # Make sure CoffeeScript does not return anything
+
+# We allow passing the publication slug if caller knows it
+Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options) ->
+  publication = Publication.documents.findOne publicationId
+
+  return Meteor.Router.publicationPath publication._id, publication.slug if publication
+
+  Meteor.Router.publicationPath publicationId, slug

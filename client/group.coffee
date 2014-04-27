@@ -173,3 +173,11 @@ Template.groupMembersAddControlResultsItem.events
       Notify.success "Member added." if count
 
     return # Make sure CoffeeScript does not return anything
+
+# We allow passing the group slug if caller knows it
+Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
+  group = Group.documents.findOne groupId
+
+  return Meteor.Router.groupPath group._id, group.slug if group
+
+  Meteor.Router.groupPath groupId, slug

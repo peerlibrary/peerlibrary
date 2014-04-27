@@ -113,7 +113,7 @@
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">
-          <a href="{{publicationPath _id slug}}">
+          <a href="{{publicationPathFromId _id slug}}">
             {{#if title}}
               {{title}}
             {{else}}
@@ -130,7 +130,7 @@
         {{#if authors.length}}
           <span class="authors">
             {{#each authors}}
-              <span><a href="{{personPath slug}}">{{displayName}}</a></span>
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
             {{/each}}
           </span>
           <br/>
@@ -145,7 +145,7 @@
               <a href="#" class="preview-link">Abstract</a> &middot;
             {{/if}}
           {{/if}}
-          <a href="{{publicationPath _id slug}}">Full text</a>{{> accessIcon}}
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
         </span>
       </div>
       {{#if thumbnailUrls.length}}

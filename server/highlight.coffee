@@ -11,17 +11,19 @@ Meteor.methods
   'highlights-path': (highlightId) ->
     check highlightId, DocumentId
 
-    highlight = Highlight.documents.findOne Highlight.requireReadAccessSelector(Meteor.person(),
+    person = Meteor.person()
+
+    # No need for requireReadAccessSelector because highlights are public
+    highlight = Highlight.documents.findOne
       _id: highlightId
-    )
     return unless highlight
 
-    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(Meteor.person(),
+    publication = Publication.documents.findOne Publication.requireCacheAccessSelector(person,
       _id: highlight.publication._id
     )
     return unless publication
 
-    [publication._id, publication.slug, highlightId]
+    [publication._id, publication.slug, highlight._id]
 
   # By specifying various highlightIds user could check which highlights exist
   # even if otherwise they would not have access to a highlight. This does not

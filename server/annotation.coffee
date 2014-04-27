@@ -54,7 +54,7 @@ Meteor.methods
     )
     return unless publication
 
-    [publication._id, publication.slug, annotationId]
+    [publication._id, publication.slug, annotation._id]
 
   'create-annotation': (publicationId, body, access, groups) ->
     check publicationId, DocumentId

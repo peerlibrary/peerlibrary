@@ -407,7 +407,11 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
-      slug: slug
+      $or: [
+        slug: slug
+      ,
+        _id: slug
+      ]
     ,
       fields:
         _id: 1 # We want only id

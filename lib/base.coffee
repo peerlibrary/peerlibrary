@@ -69,6 +69,12 @@ redirectAnnotationId = (annotationId) ->
     Meteor.Router.to Meteor.Router.annotationPath path...
   return # Return nothing
 
+redirectCommentId = (commentId) ->
+  Meteor.call 'comments-path', commentId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.commentPath path...
+  return # Return nothing
+
 if INSTALL
   Meteor.Router.add
     '/': ->
@@ -119,7 +125,7 @@ else
           currentAnnotationId: annotationId
         'publication'
 
-    '/p/:publicationId/:publicationSlug?/c/:commentId':
+    '/p/:publicationId/:publicationSlug?/m/:commentId':
       as: 'comment'
       documentId: 'commentId'
       to: (publicationId, publicationSlug, commentId) ->
@@ -166,10 +172,26 @@ else
     '/u/:personSlug':
       as: 'person'
       documentId: (params) ->
-        return unless params.personSlug
+        try
+          check params.personSlug, NonEmptyString
+        catch error
+          # Not a valid document ID or slug
+          return
 
-        # No need for requireReadAccessSelector because persons are public
-        Person.documents.findOne({slug: params.personSlug}, {fields: _id: 1})?._id
+        person = Person.documents.findOne
+          $or: [
+            slug: params.personSlug
+          ,
+            _id: params.personSlug
+          ]
+        ,
+          fields:
+            _id: 1
+
+        return person._id if person
+
+        # A special case for the client side, we return slug as an ID which is then passed to personPathFromId
+        params.personSlug if Meteor.isClient
       to: (personSlug) ->
         setSession
           currentPersonSlug: personSlug
@@ -187,6 +209,13 @@ else
       to: (annotationId) ->
         setSession()
         redirectAnnotationId annotationId
+        'redirecting'
+
+    '/m/:commentId':
+      as: 'commentId'
+      to: (commentId) ->
+        setSession()
+        redirectCommentId commentId
         'redirecting'
 
     '/s/:searchQuery?':
