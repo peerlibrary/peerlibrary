@@ -32,11 +32,17 @@ startsWith = (string, start) ->
   string.lastIndexOf(start, 0) is 0
 
 localPath = (path) ->
+  if Meteor.isClient
+    internal =
+      referenceName: 'internal'
+      referenceId: null
+
   resolved = routeResolve path
   # We extract only those paths for which a route has documentId configured
-  return unless resolved?.route?.documentId
+  # TODO: Should we on the client check if the internal path is valid and give immediate feedback? We could simply check if path resolved? We should probably then assure that all our routes are named.
+  return internal unless resolved?.route?.documentId
   # And name set
-  return unless resolved.name
+  return internal unless resolved.name
 
   if _.isFunction resolved.route.documentId
     # resolved.route.documentId should check params itself
@@ -62,11 +68,13 @@ localPath = (path) ->
   href = UrlUtils.normalize href if Meteor.isServer
 
   rootUrl = Meteor.absoluteUrl()
-  return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
+  rootUrl = rootUrl.substr 0, rootUrl.length - 1 # Remove trailing /
+  return localPath href.substring rootUrl.length if startsWith href, rootUrl
 
   # When doing local development, we can use both localhost or 127.0.0.1, so let's check both
   rootUrl = Meteor.absoluteUrl replaceLocalhost: true
-  return localPath href.substring rootUrl.length - 1 if startsWith href, rootUrl
+  rootUrl = rootUrl.substr 0, rootUrl.length - 1 # Remove trailing /
+  return localPath href.substring rootUrl.length if startsWith href, rootUrl
 
   if Meteor.isServer
     try
@@ -87,4 +95,4 @@ localPath = (path) ->
     referenceId: urlId
   else
     referenceName: 'external'
-    referenceId: href
+    referenceId: null

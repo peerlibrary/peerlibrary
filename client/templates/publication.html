@@ -630,8 +630,12 @@
           {{#if parsedLink.isExternal}}
             You are linking an external URL.
           {{else}}
-            You are referencing {{parsedLink.referenceName}}:
-              {{#if parsedLink.path}}<a href="{{parsedLink.path}}"{{#if parsedLink.title}} title="{{parsedLink.title}}"{{/if}}>{{/if}}{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}{{#if parsedLink.path}}</a>{{/if}}
+            {{#if parsedLink.isInternal}}
+              You are linking an internal URL.
+            {{else}}
+              You are referencing {{parsedLink.referenceName}}:
+                {{#if parsedLink.path}}<a href="{{parsedLink.path}}"{{#if parsedLink.title}} title="{{parsedLink.title}}"{{/if}}>{{/if}}{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}{{#if parsedLink.path}}</a>{{/if}}
+            {{/if}}
           {{/if}}
         {{/if}}
       {{/unless}}

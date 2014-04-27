@@ -1402,12 +1402,16 @@ Template.editorLinkPrompt.parsedLink = ->
 
   return parsedLink if parsedLink?.error
 
-  # For an empty input we might not have an error, but also no reference name and ID
-  return unless parsedLink?.referenceName and parsedLink?.referenceId
-
-  if parsedLink.referenceName is 'external'
+  if parsedLink?.referenceName is 'external'
     parsedLink.isExternal = true
     return parsedLink
+
+  if parsedLink?.referenceName is 'internal'
+    parsedLink.isInternal = true
+    return parsedLink
+
+  # For an empty input we might not have an error, but also no reference name and ID
+  return unless parsedLink?.referenceName and parsedLink?.referenceId
 
   # If we have a helper to help us resolve a path from the ID, let's
   # use that. This will build a canonical URL if possible to help
