@@ -137,6 +137,8 @@ class @Annotator extends Annotator
     highlight.deselect() for highlight in @getHighlights()
 
   _addHighlightToEditor: (id) =>
+    # TODO: Add highlight link to the editor
+    ###
     LocalAnnotation.documents.update
       local: true
       'publication._id': Session.get 'currentPublicationId'
@@ -146,6 +148,7 @@ class @Annotator extends Annotator
       $addToSet:
         'references.highlights':
           _id: id
+    ###
 
   updateLocation: =>
     # This is our annotations

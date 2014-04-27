@@ -206,7 +206,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_showControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if noControl
+    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] unless noControl
 
   unhover: (noControl) =>
     # Probably not really necessary to check if highlight already marked as hovered but to match check above
@@ -221,7 +221,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_hideControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
+    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] unless noControl
 
   _annotationMouseenterHandler: (e, annotationId) =>
     @hover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'

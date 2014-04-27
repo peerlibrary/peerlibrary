@@ -1060,11 +1060,11 @@ Template.publicationAnnotationsItem.rendered = ->
   $annotation.off '.publicationAnnotationsItem'
 
   $annotation.on 'highlightMouseenter.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.addClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.addClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'highlightMouseleave.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.removeClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.removeClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'mouseenter.publicationAnnotationsItem', (e) =>

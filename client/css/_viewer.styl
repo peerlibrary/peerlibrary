@@ -675,10 +675,10 @@ annotations-control-height = 30px
       width 200px
       height auto
 
-  .annotation:hover .annotation-wrapper, .annotation.selected annotation-wrapper, .annotation.hovered annotation-wrapper
+  .annotation:hover .annotation-wrapper, .annotation.selected .annotation-wrapper, .annotation.hovered .annotation-wrapper
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      /*disable highlighting*/
-      /*box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow*/
+      /* TODO: Better show which annotations are selected, which annotations are hovered, and which annotations are highlighted to show which are linked to a highlight user is hovering over */
+      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
   /* We use only 1px here to still have shadow border visible, but not 5px
      top margin which makes visible lower than the crop top line when
