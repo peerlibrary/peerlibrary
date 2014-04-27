@@ -92,8 +92,13 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         position: position
         width: 360
         close: (event, ui) =>
-          $dialog.remove()
+          range.selectNode parentAnchor if parentAnchor
+          selection.selection.removeAllRanges()
+          selection.selection.addRange range
+
+          $dialog.dialog('destroy')
           template._$dialog = null
+
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
 
