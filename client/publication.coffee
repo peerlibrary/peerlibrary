@@ -1071,7 +1071,7 @@ Template.publicationAnnotationsItem.rendered = ->
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseleave.publicationAnnotationsItem', (e, highlightId) =>
+  $annotation.on 'mouseleave.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 

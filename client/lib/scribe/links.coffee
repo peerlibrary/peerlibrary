@@ -121,10 +121,30 @@ Scribe.plugins['link-prompt-command'] = (template) ->
       else
         assert false
 
-      $dialog.closest('.editor-link-prompt-dialog').on 'mouseup', (event) =>
+      $dialogWrapper = $dialog.closest('.editor-link-prompt-dialog')
+
+      # We use mouseup and not click so that draging
+      # a dialog around updates location, too
+      $dialogWrapper.on 'mouseup', (event) =>
         # Select parent annotation on click on the dialog
         updateLocation()
 
+        return # Make sure CoffeeScript does not return anything
+
+      # We also have to manually do hover events again, because dialog is
+      # not part of the annotation so event handlers there do not apply.
+      # In general we have to duplicate all event handlers used for UX.
+      # We have to duplicate event handlers because we cannot just move
+      # dialogs inside the annotation DOM element because then it cannot
+      # be dragged around the page freely, but it is clipped by the
+      # annotation list.
+
+      $dialogWrapper.on 'mouseenter', (e) =>
+        $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [annotationId] if annotationId
+        return # Make sure CoffeeScript does not return anything
+
+      $dialogWrapper.on 'mouseleave', (e, highlightId) =>
+        $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [annotationId] if annotationId
         return # Make sure CoffeeScript does not return anything
 
       # To be able to destroy a dialog when template is destroyed
