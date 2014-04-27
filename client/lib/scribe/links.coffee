@@ -37,19 +37,16 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         of: currentEditor
         collision: 'fit'
 
-      updateLocation = ->
-        if annotationId
-          Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
-        else
-          # For local annotations, set location to the publication location
-          Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
-
       destroyDialog = ->
         $dialog.dialog('destroy')
         template._$dialog = null
 
         # Select parent annotation when closing the dialog
-        updateLocation()
+        if annotationId
+          Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+        # For local annotations, set location to the publication location
+        else
+          Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
       buttons = []
 
@@ -99,6 +96,7 @@ Scribe.plugins['link-prompt-command'] = (template) ->
           link: parentAnchor?.href
 
       $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
+        appendTo: template.findAll '.dialogs-placholder'
         dialogClass: 'editor-link-prompt-dialog'
         title: if parentAnchor then "Edit link" else "New link"
         position: position
@@ -120,12 +118,6 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         annotationId = template.data._id unless template.data.local
       else
         assert false
-
-      $dialog.closest('.editor-link-prompt-dialog').on 'mouseup', (event) =>
-        # Select parent annotation on click on the dialog
-        updateLocation()
-
-        return # Make sure CoffeeScript does not return anything
 
       # To be able to destroy a dialog when template is destroyed
       template._$dialog = $dialog
