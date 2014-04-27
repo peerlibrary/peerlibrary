@@ -64,3 +64,9 @@ Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
   return Meteor.Router.annotationIdPath annotationId unless publication
 
   Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+
+# Optional annotation document
+Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->
+  annotation = Annotation.documents.findOne annotationId unless annotation
+
+  text: "a:#{ annotationId }"

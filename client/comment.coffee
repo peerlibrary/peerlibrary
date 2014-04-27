@@ -10,3 +10,9 @@ Handlebars.registerHelper 'commentPathFromId', (commentId, options) ->
   return Meteor.Router.commentIdPath commentId unless publication
 
   Meteor.Router.commentPath publication._id, publication.slug, commentId
+
+# Optional comment document
+Handlebars.registerHelper 'commentReference', (commentId, comment, options) ->
+  comment = Comment.documents.findOne commentId unless comment
+
+  text: "m:#{ commentId }"

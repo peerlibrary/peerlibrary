@@ -134,3 +134,10 @@ Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) 
   return Meteor.Router.collectionPath collection._id, collection.slug if collection
 
   Meteor.Router.collectionPath collectionId, slug
+
+# Optional collection document
+Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
+  collection = Collection.documents.findOne collectionId unless collection
+
+  text: "c:#{ collectionId }"
+  title: collection?.name or collection?.slug

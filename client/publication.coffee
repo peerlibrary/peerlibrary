@@ -1414,9 +1414,10 @@ Template.editorLinkPrompt.parsedLink = ->
   # user verify their URL.
   if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
     parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
-    # We assume here that we will always have a shortcut prefix
-    # which is the first letter of the reference name
-    parsedLink.prefix = parsedLink.referenceName.substr 0, 1
+
+  # If we have a helper to help us create text and title, let's use that.
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
+    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null)
 
   parsedLink
 
@@ -1448,3 +1449,10 @@ Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options
   return Meteor.Router.publicationPath publication._id, publication.slug if publication
 
   Meteor.Router.publicationPath publicationId, slug
+
+# Optional publication document
+Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
+  publication = Publication.documents.findOne publicationId unless publication
+
+  text: "p:#{ publicationId }"
+  title: publication?.title

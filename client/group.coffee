@@ -192,3 +192,10 @@ Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
   return Meteor.Router.groupPath group._id, group.slug if group
 
   Meteor.Router.groupPath groupId, slug
+
+# Optional group document
+Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
+  group = Group.documents.findOne groupId unless group
+
+  text: "g:#{ groupId }"
+  title: group?.name or group?.slug

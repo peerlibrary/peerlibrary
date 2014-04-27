@@ -78,3 +78,21 @@ Handlebars.registerHelper 'personPathFromId', (personId, slug, options) ->
 
   # Otherwise use ID (which is maybe a slug) and let it be resolved later
   Meteor.Router.personPath personId
+
+# Optional person document.
+# If you do not know if you have an ID or a slug, you can pass
+# it in as an ID and hopefully something useful will come out.
+Handlebars.registerHelper 'personReference', (personId, person, options) ->
+  unless person
+    person = Person.documents.findOne
+      $or: [
+        slug: personId
+      ,
+        _id: personId
+      ]
+
+  if person
+    text: "@#{ person.slug }"
+    title: person.displayName()
+  else
+    text: "@#{ personId }"
