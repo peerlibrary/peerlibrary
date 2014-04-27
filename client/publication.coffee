@@ -952,6 +952,13 @@ Template.publicationAnnotations.created = ->
       # through a publication-only location
       return
 
+    # Left mouse button and mouseup happened on a link prompt dialog
+    else if e.which is 1 and $(e.target).closest('.editor-link-prompt-dialog').length
+      # If mouseup happened on a link prompt dialog, we leave location unchanged
+      # so that we update location to the dialog parent location without going
+      # through a publication-only location
+      return
+
     else
       # Otherwise we deselect the annotation
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')

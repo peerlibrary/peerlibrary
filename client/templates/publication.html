@@ -188,7 +188,7 @@
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li class="annotation {{#if local}}local{{/if}} {{selected}}">
+  <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
       <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
         <img src="{{currentPerson.avatar 30}}" class="avatar" />

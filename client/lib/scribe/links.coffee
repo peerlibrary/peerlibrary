@@ -37,6 +37,13 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         of: currentEditor
         collision: 'fit'
 
+      destroyDialog = ->
+        $dialog.dialog('destroy')
+        template._$dialog = null
+
+        # Select parent annotation when closing the dialog
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
       buttons = []
 
       if childAnchors.length or parentAnchor
@@ -59,8 +66,7 @@ Scribe.plugins['link-prompt-command'] = (template) ->
                 for childAnchor in childAnchors
                   new scribe.api.Element(childAnchor.parentNode).unwrap(childAnchor)
 
-            $dialog.dialog('destroy')
-            template._$dialog = null
+            destroyDialog()
 
             return # Make sure CoffeeScript does not return anything
 
@@ -77,8 +83,7 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
           scribe.api.SimpleCommand::execute.call @, link
 
-          $dialog.dialog('destroy')
-          template._$dialog = null
+          destroyDialog()
 
           return # Make sure CoffeeScript does not return anything
 
@@ -96,11 +101,23 @@ Scribe.plugins['link-prompt-command'] = (template) ->
           selection.selection.removeAllRanges()
           selection.selection.addRange range
 
-          $dialog.dialog('destroy')
-          template._$dialog = null
+          destroyDialog()
 
           return # Make sure CoffeeScript does not return anything
         buttons: buttons
+
+      if template.data instanceof Comment
+        annotationId = template.data.annotation._id
+      else if template.data instanceof Annotation
+        annotationId = template.data._id
+      else
+        assert false
+
+      $dialog.closest('.editor-link-prompt-dialog').on 'mouseup', (event) =>
+        # Select parent annotation on click on the dialog
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+        return # Make sure CoffeeScript does not return anything
 
       # To be able to destroy a dialog when template is destroyed
       template._$dialog = $dialog
