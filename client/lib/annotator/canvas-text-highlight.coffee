@@ -224,11 +224,11 @@ class CanvasTextHighlight extends Annotator.Highlight
     $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
 
   _annotationMouseenterHandler: (e, annotationId) =>
-    @hover true if annotationId in _.pluck @annotation.annotations, '_id'
+    @hover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _annotationMouseleaveHandler: (e, annotationId) =>
-    @unhover true if annotationId in _.pluck @annotation.annotations, '_id'
+    @unhover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _createHighlight: =>
