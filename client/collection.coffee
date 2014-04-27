@@ -138,6 +138,8 @@ Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) 
 # Optional collection document
 Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
   collection = Collection.documents.findOne collectionId unless collection
+  assert collectionId, comment._id if collection
 
+  _id: collectionId # TODO: Remove when we will be able to access parent template context
   text: "c:#{ collectionId }"
   title: collection?.name or collection?.slug

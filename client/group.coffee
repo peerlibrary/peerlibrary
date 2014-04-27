@@ -196,6 +196,8 @@ Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
 # Optional group document
 Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
   group = Group.documents.findOne groupId unless group
+  assert groupId, group._id if group
 
+  _id: groupId # TODO: Remove when we will be able to access parent template context
   text: "g:#{ groupId }"
   title: group?.name or group?.slug

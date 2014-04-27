@@ -14,5 +14,7 @@ Handlebars.registerHelper 'commentPathFromId', (commentId, options) ->
 # Optional comment document
 Handlebars.registerHelper 'commentReference', (commentId, comment, options) ->
   comment = Comment.documents.findOne commentId unless comment
+  assert commentId, comment._id if comment
 
+  _id: commentId # TODO: Remove when we will be able to access parent template context
   text: "m:#{ commentId }"

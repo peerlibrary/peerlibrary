@@ -48,7 +48,6 @@ Meteor.startup ->
     tags: []
     collections: []
     comments: []
-    urls: []
   tags: []
   body: ''
 
@@ -68,5 +67,7 @@ Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
 # Optional annotation document
 Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->
   annotation = Annotation.documents.findOne annotationId unless annotation
+  assert annotationId, annotation._id if annotation
 
+  _id: annotationId # TODO: Remove when we will be able to access parent template context
   text: "a:#{ annotationId }"

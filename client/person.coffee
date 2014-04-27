@@ -90,9 +90,12 @@ Handlebars.registerHelper 'personReference', (personId, person, options) ->
       ,
         _id: personId
       ]
+  assert personId, person._id if person
 
   if person
+    _id: personId # TODO: Remove when we will be able to access parent template context
     text: "@#{ person.slug }"
     title: person.displayName()
   else
+    _id: personId # TODO: Remove when we will be able to access parent template context
     text: "@#{ personId }"

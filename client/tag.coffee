@@ -19,7 +19,9 @@ Handlebars.registerHelper 'tagPathFromId', (tagId, slug, options) ->
 # Optional tag document
 Handlebars.registerHelper 'tagReference', (tagId, tag, options) ->
   tag = Tag.documents.findOne tagId unless tag
+  assert tagId, tag._id if tag
 
   # TODO: We want to display tags customized to the user, but store them with the ID
   # TODO: Maybe we could return from localPath also referenceSlug as provided in URL and use that as what we display to the user as a fallback
+  _id: tagId # TODO: Remove when we will be able to access parent template context
   text: "##{ tagId }"

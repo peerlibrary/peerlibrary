@@ -1453,6 +1453,8 @@ Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options
 # Optional publication document
 Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
   publication = Publication.documents.findOne publicationId unless publication
+  assert publicationId, publication._id if publication
 
+  _id: publicationId # TODO: Remove when we will be able to access parent template context
   text: "p:#{ publicationId }"
   title: publication?.title
