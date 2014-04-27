@@ -2,6 +2,15 @@
   scribe = new Scribe $element.get(0),
     allowBlockElements: not inline
 
+  $element.on 'click', 'a', (event) =>
+    # We have to prevent default so that our router is not triggered by a
+    # click on a link while editing. External links are not active because
+    # browsers disable them, but internal links we are processing ourselves
+    # through our router (single page app) and have to make sure router
+    # does not process them. Preventing default accomplishes that.
+    event.preventDefault()
+    return # Make sure CoffeeScript does not return anything
+
   # For inline editor block elements and no <br/>
   tags =
     b: {}
