@@ -3,12 +3,7 @@ ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
 
 USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 
-FORBIDDEN_USERNAMES = [
-  'webmster'
-  'root'
-  'peerlibrary'
-  'administrator'
-]
+FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
 Accounts.onCreateUser (options, user) ->
   try
@@ -27,14 +22,22 @@ Accounts.onCreateUser (options, user) ->
 
     throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 400, "Username already exists." if user.username in FORBIDDEN_USERNAMES
+    throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 400, "Invalid e-mail address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+    # Check for unique username in a case insensitive manner.
+    # We do not have to escape username because we have already
+    # checked that it contains only a-zA-Z0-9_- characters.
+    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne 'username': new RegExp "^#{ user.username }$", 'i'
 
-    throw new Meteor.Error 400, "Invalid e-mail address." if user.emails?.length > 1
+    throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+
+    throw new Meteor.Error 400, "Invalid email address." if user.emails?.length > 1
 
     # A race condition, but better than nothing. Otherwise it fails later on when creating an
     # user document, but person document has already been created and is not cleaned up.
+    # We do not really care if users are reusing their email address, we just do not want errors
+    # later on when MongoDB unique index fails. So we are not checking here an email in a
+    # case insensitive manner, or normalize it in some other way (like removing Gmail +suffix).
     throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
 
     user.person =
