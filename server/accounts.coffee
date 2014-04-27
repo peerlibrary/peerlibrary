@@ -12,6 +12,10 @@ Accounts.onCreateUser (options, user) ->
       personId = ADMIN_PERSON_ID
     else
       personId = Random.id()
+      # Person _id must not match any existing User username otherwise our queries for
+      # Person documents querying both _id and slug would return multiple documents
+      while User.documents.findOne(username: personId)
+        personId = Random.id()
 
     # We are verifying things here and not in a validateNewUser hook to prevent creation
     # of a profile document and then failure later on when validating through validateNewUser
@@ -27,7 +31,11 @@ Accounts.onCreateUser (options, user) ->
     # Check for unique username in a case insensitive manner.
     # We do not have to escape username because we have already
     # checked that it contains only a-zA-Z0-9_- characters.
-    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne 'username': new RegExp "^#{ user.username }$", 'i'
+    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ user.username }$", 'i'
+
+    # Username must not match any existing Person _id otherwise our queries for
+    # Person documents querying both _id and slug would return multiple documents
+    throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: user.username
 
     throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
