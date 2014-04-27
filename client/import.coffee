@@ -219,20 +219,21 @@ Template.importCancelButton.events =
   'click .canceled': (e) ->
     e.preventDefault()
     e.stopPropagation()
+
     ImportingFile.documents.update @_id,
       $set:
         canceled: true
         status: 'canceled'
-    return
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.importCancelButton.invisibility = ->
-  finished = ImportingFile.documents.findOne(@_id)?.finished
-  canceled = ImportingFile.documents.findOne(@_id)?.canceled
-  errored = ImportingFile.documents.findOne(@_id)?.errored
-  if finished or canceled or errored
+  file = ImportingFile.documents.findOne(@_id)
+  if file?.finished or file?.canceled or file?.errored
     ret = 'invisible'
     return ret
-  return
+
+  return # Make sure CoffeeScript does not return anything
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
@@ -298,14 +299,14 @@ Template.importOverlay.events =
 
     _.each e.dataTransfer.files, importFile
 
-    return # Make sure CoffeeScript does not return anything
+: Check if this is still necessary in the new version of Meteor
+    return # Make sure CoffeeScript does not r
 
   'click': (e, template) ->
     # We are stopping propagation in click on cancel button but it still
     # propagates so we cancel here.
     # TODO: Check if this is still necessary in the new version of Meteor
-    if e.isPropagationStopped()
-      return
+    return if e.isPropagationStopped()
     hideOverlay()
 
     return # Make sure CoffeeScript does not return anything
