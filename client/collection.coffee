@@ -38,6 +38,17 @@ Template.collection.notfound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
+Editable.template Template.collectionName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+  (name) ->
+    Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter collection name"
+,
+  true
+
 Template.collection.collection = ->
   Collection.documents.findOne Session.get('currentCollectionId')
 

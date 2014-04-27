@@ -239,7 +239,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     # things in different browsers: in Firefox it seems to return almost precise
     # but a bit offset values (maybe just more testing would be needed), but in
     # Chrome it returns both text node and div node rects, so too many rects.
-    # To assure cross browser compatibilty, we compute positions of text nodes
+    # To assure cross browser compatibility, we compute positions of text nodes
     # in a range manually.
     segments = for node in @normedRange.textNodes()
       $node = $(node)
@@ -343,7 +343,7 @@ class CanvasTextHighlight extends Annotator.Highlight
   in: (clientX, clientY) =>
     @_$highlight.find('.highlights-layer-segment').is (i) ->
       # @ (this) is here a segment, DOM element
-      rect = @.getBoundingClientRect()
+      rect = @getBoundingClientRect()
 
       rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
 

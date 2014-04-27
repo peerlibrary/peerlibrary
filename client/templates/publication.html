@@ -30,7 +30,9 @@
   <div class="meta-menu">
     <i class="icon-menu"></i>
     <div class="meta-content">
-      <p><b>{{title}}</b></p>
+      <p>
+        {{> publicationMetaMenuTitle}}
+      </p>
       <p class="authors">
         {{#each authors}}
           <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
@@ -43,6 +45,14 @@
       {{/if}}
     </div>
   </div>
+</template>
+
+<template name="publicationMetaMenuTitle">
+  {{#if title}}
+    <b class="title">{{title}}</b>
+  {{else}}
+    <i class="title missing-value">title metadata missing</i>
+  {{/if}}
 </template>
 
 <template name="publicationLibraryMenu">
@@ -94,7 +104,7 @@
 
 <template name="publicationLibraryMenuCollectionListing">
   <li class="library-menu-collection toggle-list-item">
-    <button class="{{#if inCollection}}remove-from-collection toggled{{else}}add-to-collection{{/if}}">
+    <button class="{{#if inCollection}}remove-from-collection icon-check{{else}}add-to-collection{{/if}}">
       <span class="collection-name">{{name}}</span>
       <span class="publications-count">{{countDescription}}</span>
     </button>
@@ -542,7 +552,7 @@
 
 <template name="contextMenuGroupListing">
   <li class="context-menu-group toggle-list-item">
-    <button class="{{#if workingInside}}remove-from-working-inside toggled{{else}}add-to-working-inside{{/if}}">
+    <button class="{{#if workingInside}}remove-from-working-inside icon-check{{else}}add-to-working-inside{{/if}}">
       <span class="group-name">{{name}}</span>
     </button>
   </li>

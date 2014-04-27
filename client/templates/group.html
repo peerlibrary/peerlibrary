@@ -10,7 +10,7 @@
         <p>Group not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
-      <h1>{{group.name}}</h1>
+      {{> groupName group}}
       <div class="row">
         <div class="col12 groups-directory">
           <h2>Group Activity</h2>
@@ -25,6 +25,10 @@
       </div>
     {{/if}}
   {{/if}}
+</template>
+
+<template name="groupName">
+  <h1>{{name}}</h1>
 </template>
 
 <template name="groupMembersList">

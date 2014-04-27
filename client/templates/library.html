@@ -1,10 +1,15 @@
 <template name="library">
-  {{#if currentPerson}}
+  {{#unless currentPerson}}
+    <div class="simple">
+      <h1>Library</h1>
+      <p>Sign in to view your library.</p>
+    </div>
+  {{else}}
     <div class="row">
       {{> libraryPublications}}
       {{> collections}}
     </div>
-  {{/if}}
+  {{/unless}}
 </template>
 
 <template name="libraryPublications">
@@ -60,8 +65,8 @@
 
 <template name="addNewCollection">
   <h3>Create a new collection</h3>
-  <form class="add-collection input-and-button">
-    <input type="text" class="name" placeholder="Collection name" />
+  <form class="add-collection input-and-buttons">
     <button type="submit" class="add">Create</button>
+    <div class="input"><input type="text" class="name" placeholder="Collection name" /></div>
   </form>
 </template>

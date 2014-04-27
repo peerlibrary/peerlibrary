@@ -202,14 +202,17 @@ class @Publication extends ReadAccessDocument
   @_requireReadAccessConditions: (person, cache=false) ->
     conditions = [
       access: @ACCESS.OPEN
-    ,
-      access: @ACCESS.PRIVATE
-      'readPersons._id': person?._id
-    ,
-      access: @ACCESS.PRIVATE
-      'readGroups._id':
-        $in: _.pluck person?.inGroups, '_id'
     ]
+
+    if person?._id
+      conditions = conditions.concat [
+        access: @ACCESS.PRIVATE
+        'readPersons._id': person._id
+      ,
+        access: @ACCESS.PRIVATE
+        'readGroups._id':
+          $in: _.pluck person.inGroups, '_id'
+      ]
 
     unless cache
       # Access to publication metadata is allowed for closed access

@@ -13,6 +13,18 @@
       "src": "fontawesome"
     },
     {
+      "uid": "f04a5d24e9e659145b966739c4fde82a",
+      "css": "bookmark",
+      "code": 59392,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "2f5ef6f6b7aaebc56458ab4e865beff5",
+      "css": "bookmark-empty",
+      "code": 59393,
+      "src": "fontawesome"
+    },
+    {
       "uid": "ab95e1351ebaec5850101097cbf7097f",
       "css": "quote-left",
       "code": 59402,
@@ -33,7 +45,7 @@
     {
       "uid": "197375a3cea8cb90b02d06e4ddf1433d",
       "css": "public",
-      "code": 59393,
+      "code": 59412,
       "src": "fontawesome"
     },
     {
@@ -67,6 +79,12 @@
       "src": "fontawesome"
     },
     {
+      "uid": "14017aae737730faeda4a6fd8fb3a5f0",
+      "css": "check",
+      "code": 59414,
+      "src": "entypo"
+    },
+    {
       "uid": "c709da589c923ba3c2ad48d9fc563e93",
       "css": "cancel",
       "code": 59395,
@@ -79,9 +97,15 @@
       "src": "entypo"
     },
     {
+      "uid": "c77fd2fd065b5fe16d6f2b41e190b266",
+      "css": "edit",
+      "code": 59415,
+      "src": "entypo"
+    },
+    {
       "uid": "8704cd847a47b64265b8bb110c8b4d62",
       "css": "down",
-      "code": 59394,
+      "code": 59413,
       "src": "entypo"
     },
     {
@@ -95,6 +119,12 @@
       "css": "link",
       "code": 59401,
       "src": "mfglabs"
+    },
+    {
+      "uid": "e36d581e4f2844db345bddc205d15dda",
+      "css": "group",
+      "code": 59394,
+      "src": "elusive"
     },
     {
       "uid": "ad194658d0e68d781eb334d9c1099d6e",
@@ -117,26 +147,8 @@
     {
       "uid": "221947bea81f49a11b863c686a7bd235",
       "css": "search",
-      "code": 59392,
+      "code": 59411,
       "src": "websymbols"
-    },
-    {
-      "uid": "f04a5d24e9e659145b966739c4fde82a",
-      "css": "bookmark",
-      "code": 59392,
-      "src": "fontawesome"
-    },
-    {
-      "uid": "2f5ef6f6b7aaebc56458ab4e865beff5",
-      "css": "bookmark-empty",
-      "code": 59393,
-      "src": "fontawesome"
-    },
-    {
-      "uid": "e36d581e4f2844db345bddc205d15dda",
-      "css": "group",
-      "code": 59394,
-      "src": "elusive"
     }
   ]
 }
