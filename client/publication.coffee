@@ -1216,7 +1216,10 @@ Template.annotationEditor.events
     return # Make sure CoffeeScript does not return anything
 
 Template.visibilityMenu.public = ->
-  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+  if @local
+    getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+  else
+    @access is Annotation.ACCESS.PUBLIC
 
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
