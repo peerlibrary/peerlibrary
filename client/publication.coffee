@@ -1062,9 +1062,15 @@ Template.publicationAnnotationsItem.events
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
-      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+      return
     else if $(e.target).closest('.annotations-list .annotation li.comment').length
       Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
+    # Local annotations are special and we de not set location when clicking on them.
+    # IDs are local to the client and we do not want to make user believe annotation
+    # is already saved and that ID is permanent, or even that user would link to that
+    # location.
+    else if @local
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 

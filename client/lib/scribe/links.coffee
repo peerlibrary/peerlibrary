@@ -37,12 +37,19 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         of: currentEditor
         collision: 'fit'
 
+      updateLocation = ->
+        if annotationId
+          Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+        else
+          # For local annotations, set location to the publication location
+          Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+
       destroyDialog = ->
         $dialog.dialog('destroy')
         template._$dialog = null
 
         # Select parent annotation when closing the dialog
-        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+        updateLocation()
 
       buttons = []
 
@@ -109,13 +116,14 @@ Scribe.plugins['link-prompt-command'] = (template) ->
       if template.data instanceof Comment
         annotationId = template.data.annotation._id
       else if template.data instanceof Annotation
-        annotationId = template.data._id
+        # We do not want to change location for local annotations
+        annotationId = template.data._id unless template.data.local
       else
         assert false
 
       $dialog.closest('.editor-link-prompt-dialog').on 'mouseup', (event) =>
         # Select parent annotation on click on the dialog
-        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+        updateLocation()
 
         return # Make sure CoffeeScript does not return anything
 
