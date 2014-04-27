@@ -6,11 +6,6 @@ Deps.autorun ->
     Meteor.subscribe 'persons-by-id-or-slug', slug
     Meteor.subscribe 'publications-by-author-slug', slug
 
-    if slug is Meteor.person()?.slug
-      Meteor.subscribe 'my-publications'
-      # So that users can see their own filename of the imported file, before a publication has metadata
-      Meteor.subscribe 'my-publications-importing'
-
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -34,10 +29,6 @@ Template.person.person = ->
     # We can search by only slug because we assured that the URL is canonical in autorun
     slug: Session.get 'currentPersonSlug'
 
-Template.person.isMine = ->
-  # TODO: This is not a permission check, should check if you have permissions if this is what is wanted
-  Session.equals 'currentPersonSlug', Meteor.person()?.slug
-
 # Publications authored by this person
 Template.person.authoredPublications = ->
   person = Person.documents.findOne
@@ -47,12 +38,6 @@ Template.person.authoredPublications = ->
   Publication.documents.find
     _id:
       $in: _.pluck person?.publications, '_id'
-
-# Publications in logged user's library
-Template.person.myPublications = ->
-  Publication.documents.find
-    _id:
-      $in: _.pluck Meteor.person()?.library, '_id'
 
 Handlebars.registerHelper 'currentPerson', (options) ->
   Meteor.person()
