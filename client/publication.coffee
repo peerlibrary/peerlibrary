@@ -1033,29 +1033,6 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-  # We do conversion of local annotation already in mousedown so that
-  # we are before mousedown on document which deselects highlights
-  'mousedown': (e, template) ->
-    return
-
-    ###
-    TODO: Get rid of this. Annotation invites are being replaced.
-
-    return unless @local
-
-    LocalAnnotation.documents.update @_id,
-      $unset:
-        local: ''
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
-
-    # On click to convert local annotation we are for sure inside the annotation, so we can
-    # immediatelly send a mouse enter event to make sure related highlight has a hovered state
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
-
-    return # Make sure CoffeeScript does not return anything
-    ###
-
   'click': (e, template) ->
     # We do not select and even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
