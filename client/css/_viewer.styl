@@ -577,6 +577,12 @@ annotations-control-height = 30px
           margin-right 0
           padding 0 1.8em
 
+        /* Spans are added only by rangy.saveSelection marks,
+           so we make sure they are not displayed */
+        span
+          line-height 0
+          display none
+
       .saved
         position absolute
         right 4px
@@ -625,8 +631,21 @@ annotations-control-height = 30px
             color #444
             outline 0px solid transparent
 
+            /* Spans are added only by rangy.saveSelection marks,
+               so we make sure they are not displayed */
+            span
+              line-height 0
+              display none
+
           .remove-button
             float right
+
+          .body
+            /* Spans are added only by rangy.saveSelection marks,
+               so we make sure they are not displayed */
+            span
+              line-height 0
+              display none
 
           button.comment
             display none

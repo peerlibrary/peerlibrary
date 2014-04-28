@@ -17,12 +17,11 @@
     i: {}
     a:
       href: true
-    # Used for saving and restoring selection by rangy
+    # Used for saving and restoring selection by rangy. It is using also
+    # class and style attributes, but we set those ourselves through CSS.
     # TODO: We should make sure we remove any on the server side
     span:
       id: true
-      class: true
-      style: true
 
   unless inline
     tags = _.extend tags,
