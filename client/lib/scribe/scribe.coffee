@@ -17,6 +17,10 @@
     i: {}
     a:
       href: true
+    # Used for saving and restoring selection by rangy
+    # TODO: We should make sure we remove any on the server side
+    span:
+      id: true
 
   unless inline
     tags = _.extend tags,

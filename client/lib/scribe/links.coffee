@@ -3,33 +3,33 @@ Scribe.plugins['link-prompt-command'] = (template) ->
     linkPromptCommand = new scribe.api.Command 'createLink'
     linkPromptCommand.nodeName = 'A'
 
-    getParentAnchor = (selection) ->
-      selection = new scribe.api.Selection() unless selection
-      selection.getContaining (node) ->
-        node.nodeName is linkPromptCommand.nodeName
+    getParentAnchor = (range) ->
+      # First we find closest .content-editor or a, and then we keep only a if we found that
+      $(range.commonAncestorContainer).closest(".content-editor, #{ linkPromptCommand.nodeName }").filter(linkPromptCommand.nodeName).get(0)
 
-    getChildAnchors = (selection) ->
-      selection = new scribe.api.Selection() unless selection
-      return [] unless selection.range
-
-      range = new rangy.WrappedRange selection.range
+    getChildAnchors = (range) ->
       range.getNodes [1], (node) -> # 1 is element node type
         node.nodeName is linkPromptCommand.nodeName
 
     linkPromptCommand.execute = ->
-      selection = new scribe.api.Selection()
-      range = selection.range
+      selection = rangy.getSelection()
 
-      return unless range
+      return unless selection.rangeCount
+      range = selection.getRangeAt 0
 
-      parentAnchor = getParentAnchor selection
-      childAnchors = getChildAnchors selection
+      # TODO: Currently we support only one range per selection
+      selection.setSingleRange range if selection.rangeCount > 1
+
+      parentAnchor = getParentAnchor range
+      childAnchors = getChildAnchors range
 
       currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
       return unless currentEditor.length
 
       template._$dialog.dialog('destroy') if template._$dialog
       template._$dialog = null
+
+      savedSelection = rangy.saveSelection()
 
       position =
         my: 'top+25'
@@ -84,9 +84,14 @@ Scribe.plugins['link-prompt-command'] = (template) ->
           link = $dialog.find('.editor-link-input').val().trim()
           return unless link
 
-          range.selectNode parentAnchor if parentAnchor
-          selection.selection.removeAllRanges()
-          selection.selection.addRange range
+          if parentAnchor
+            rangy.removeMarkers savedSelection
+            range = rangy.createRange()
+            range.selectNode parentAnchor
+            selection = rangy.getSelection()
+            selection.setSingleRange range
+          else
+            rangy.restoreSelection savedSelection, true
 
           scribe.api.SimpleCommand::execute.call @, link
 
@@ -104,9 +109,7 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         position: position
         width: 360
         close: (event, ui) =>
-          range.selectNode parentAnchor if parentAnchor
-          selection.selection.removeAllRanges()
-          selection.selection.addRange range
+          rangy.restoreSelection savedSelection, true
 
           destroyDialog()
 
@@ -151,10 +154,15 @@ Scribe.plugins['link-prompt-command'] = (template) ->
       template._$dialog = $dialog
 
     linkPromptCommand.queryState = ->
+      selection = rangy.getSelection()
+
+      return false unless selection.rangeCount
+      range = selection.getRangeAt 0
+
       # Is selection inside a link?
-      return true if getParentAnchor()
+      return true if getParentAnchor range
 
       # Is link inside a selection?
-      return !!getChildAnchors().length
+      return !!getChildAnchors(range).length
 
     scribe.commands.linkPrompt = linkPromptCommand
