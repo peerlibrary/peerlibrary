@@ -462,8 +462,9 @@ Deps.autorun ->
 Deps.autorun ->
   return unless Session.get 'currentPublicationId'
 
-  # No editor unless logged in
-  return unless Meteor.person()
+  # Enough is to check if user is logged in. Check if user has
+  # read access to the publication is made on the server side.
+  return unless Meteor.personId()
 
   localAnnotation = LocalAnnotation.documents.findOne
     local: true

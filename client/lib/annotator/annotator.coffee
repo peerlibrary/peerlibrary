@@ -192,6 +192,8 @@ class @Annotator extends Annotator
     true
 
   canCreateHighlight: =>
+    # Enough is to check if user is logged in. Check if user has read
+    # access to the publication content is made on the server side.
     Meteor.personId()
 
   onSuccessfulSelection: (event, immediate) =>
