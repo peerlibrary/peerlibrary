@@ -26,147 +26,157 @@ Scribe.plugins['link-prompt-command'] = (template) ->
       childAnchors = getChildAnchors range
       collapsed = range.collapsed
 
-      currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
-      return unless currentEditor.length
+      $currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
+      return unless $currentEditor.length
 
       template._destroyDialog() if template._destroyDialog
       template._destroyDialog = null
 
       savedSelection = rangy.saveSelection()
 
-      position =
-        my: 'top+25'
-        at: 'bottom'
-        of: currentEditor
-        collision: 'fit'
+      # rangy.saveSelection adds marks to content, which triggers Scribe's mutation observers
+      # which in turn mingles with focus when trying to manage changes to the content. So, to
+      # leave time for mutation observers to run, we schedule the rest of the code onto the
+      # event queue. This makes autofocusing the dialog input element (the one with autofocus
+      # attribute) work again. Ugly, but it works.
+      Meteor.setTimeout =>
+        position =
+          my: 'top+25'
+          at: 'bottom'
+          of: $currentEditor
+          collision: 'fit'
 
-      updateLocation = ->
-        if annotationId
-          Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
-        else
-          # For local annotations, set location to the publication location
-          Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+        updateLocation = ->
+          if annotationId
+            Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+          else
+            # For local annotations, set location to the publication location
+            Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
-      destroyDialog = ->
-        $dialog.dialog('destroy')
-        template._destroyDialog = null
+        destroyDialog = ->
+          $dialog.dialog('destroy')
+          template._destroyDialog = null
 
-        # Select parent annotation when closing the dialog
-        updateLocation()
+          # Select parent annotation when closing the dialog
+          updateLocation()
 
-      selectParentAnchor = ->
-        selection = rangy.getSelection()
-        range = selection.getRangeAt 0
-        # We have to find parent anchor again because original one might not be in DOM anymore
-        parentAnchor = getParentAnchor range
-        range.selectNode parentAnchor
-        selection.setSingleRange range
+        selectParentAnchor = ->
+          selection = rangy.getSelection()
+          range = selection.getRangeAt 0
+          # We have to find parent anchor again because original one might not be in DOM anymore
+          parentAnchor = getParentAnchor range
+          range.selectNode parentAnchor
+          selection.setSingleRange range
 
-      buttons = []
+        buttons = []
 
-      if childAnchors.length or parentAnchor
-        buttons.push
-          text: if childAnchors.length > 1 then "Remove links" else "Remove link"
-          class: 'alternative'
-          click: (event) =>
-            rangy.restoreSelection savedSelection, true
-
-            # If we do not have a selection, but just a cursor
-            # on an existing link, we unlink the whole link
-            if collapsed and parentAnchor
-              selectParentAnchor()
-
-              # We store selection again so that we can reselect back exactly the same selection
-              savedSelection = rangy.saveSelection()
-
-              scribe.transactionManager.run =>
-                new scribe.api.Element(parentAnchor.parentNode).unwrap(parentAnchor)
-
+        if childAnchors.length or parentAnchor
+          buttons.push
+            text: if childAnchors.length > 1 then "Remove links" else "Remove link"
+            class: 'alternative'
+            click: (event) =>
               rangy.restoreSelection savedSelection, true
 
-            else
-              unlinkCommand.execute()
+              # If we do not have a selection, but just a cursor
+              # on an existing link, we unlink the whole link
+              if collapsed and parentAnchor
+                selectParentAnchor()
+
+                # We store selection again so that we can reselect back exactly the same selection
+                savedSelection = rangy.saveSelection()
+
+                scribe.transactionManager.run =>
+                  new scribe.api.Element(parentAnchor.parentNode).unwrap(parentAnchor)
+
+                rangy.restoreSelection savedSelection, true
+
+              else
+                unlinkCommand.execute()
+
+              destroyDialog()
+
+              return # Make sure CoffeeScript does not return anything
+
+        buttons.push
+          text: if collapsed and parentAnchor then "Update" else "Create"
+          class: 'default'
+          click: (event) =>
+            link = $dialog.find('.editor-link-input').val().trim()
+            return unless link
+
+            rangy.restoreSelection savedSelection, true
+
+            # If we do not have a selection, but just a cursor on
+            # an existing link, we replace whole link with a new one
+            selectParentAnchor() if collapsed and parentAnchor
+
+            scribe.api.SimpleCommand::execute.call @, link
 
             destroyDialog()
 
             return # Make sure CoffeeScript does not return anything
 
-      buttons.push
-        text: if collapsed and parentAnchor then "Update" else "Create"
-        class: 'default'
-        click: (event) =>
-          link = $dialog.find('.editor-link-input').val().trim()
-          return unless link
+        editorLinkPrompt = Meteor.render =>
+          Template.editorLinkPrompt
+            link: parentAnchor?.href
 
-          rangy.restoreSelection savedSelection, true
+        $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
+          dialogClass: 'editor-link-prompt-dialog'
+          title: if collapsed and parentAnchor then "Edit link" else "New link"
+          position: position
+          width: 360
+          close: (event, ui) =>
+            rangy.restoreSelection savedSelection, true
 
-          # If we do not have a selection, but just a cursor on
-          # an existing link, we replace whole link with a new one
-          selectParentAnchor() if collapsed and parentAnchor
+            destroyDialog()
 
-          scribe.api.SimpleCommand::execute.call @, link
+            return # Make sure CoffeeScript does not return anything
+          buttons: buttons
 
-          destroyDialog()
+        if template.data instanceof Comment
+          annotationId = template.data.annotation._id
+        else if template.data instanceof Annotation
+          # We do not want to change location for local annotations
+          annotationId = template.data._id unless template.data.local
+        else
+          assert false
+
+        $dialogWrapper = $dialog.closest('.editor-link-prompt-dialog')
+
+        # We use mouseup and not click so that draging
+        # a dialog around updates location, too
+        $dialogWrapper.on 'mouseup', (event) =>
+          # Select parent annotation on click on the dialog
+          updateLocation()
 
           return # Make sure CoffeeScript does not return anything
 
-      editorLinkPrompt = Meteor.render =>
-        Template.editorLinkPrompt
-          link: parentAnchor?.href
+        # We also have to manually do hover events again, because dialog is
+        # not part of the annotation so event handlers there do not apply.
+        # In general we have to duplicate all event handlers used for UX.
+        # We have to duplicate event handlers because we cannot just move
+        # dialogs inside the annotation DOM element because then it cannot
+        # be dragged around the page freely, but it is clipped by the
+        # annotation list.
 
-      $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
-        dialogClass: 'editor-link-prompt-dialog'
-        title: if collapsed and parentAnchor then "Edit link" else "New link"
-        position: position
-        width: 360
-        close: (event, ui) =>
-          rangy.restoreSelection savedSelection, true
-
-          destroyDialog()
-
+        $dialogWrapper.on 'mouseenter', (e) =>
+          $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [annotationId] if annotationId
           return # Make sure CoffeeScript does not return anything
-        buttons: buttons
 
-      if template.data instanceof Comment
-        annotationId = template.data.annotation._id
-      else if template.data instanceof Annotation
-        # We do not want to change location for local annotations
-        annotationId = template.data._id unless template.data.local
-      else
-        assert false
+        $dialogWrapper.on 'mouseleave', (e, highlightId) =>
+          $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [annotationId] if annotationId
+          return # Make sure CoffeeScript does not return anything
 
-      $dialogWrapper = $dialog.closest('.editor-link-prompt-dialog')
-
-      # We use mouseup and not click so that draging
-      # a dialog around updates location, too
-      $dialogWrapper.on 'mouseup', (event) =>
-        # Select parent annotation on click on the dialog
-        updateLocation()
-
-        return # Make sure CoffeeScript does not return anything
-
-      # We also have to manually do hover events again, because dialog is
-      # not part of the annotation so event handlers there do not apply.
-      # In general we have to duplicate all event handlers used for UX.
-      # We have to duplicate event handlers because we cannot just move
-      # dialogs inside the annotation DOM element because then it cannot
-      # be dragged around the page freely, but it is clipped by the
-      # annotation list.
-
-      $dialogWrapper.on 'mouseenter', (e) =>
-        $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [annotationId] if annotationId
-        return # Make sure CoffeeScript does not return anything
-
-      $dialogWrapper.on 'mouseleave', (e, highlightId) =>
-        $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [annotationId] if annotationId
-        return # Make sure CoffeeScript does not return anything
-
-      # To be able to destroy a dialog when template is destroyed
-      template._destroyDialog = ->
-        # We do not call updateLocation or set template._destroyDialog
-        # to null, all this should be done by our caller
-        rangy.removeMarkers savedSelection
-        $dialog.dialog('destroy')
+        # To be able to destroy a dialog when template is destroyed
+        template._destroyDialog = ->
+          # We do not call updateLocation or set template._destroyDialog
+          # to null, all this should be done by our caller
+          rangy.removeMarkers savedSelection
+          $dialog.dialog('destroy')
+      # We do not need any delay really, just that mutation observers events are
+      # processed before us (which are, because they were already scheduled at
+      # the time we called Meteor.setTimeout.
+      , 0 # ms
 
     linkPromptCommand.queryState = ->
       selection = rangy.getSelection()
