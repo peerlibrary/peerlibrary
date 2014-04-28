@@ -85,10 +85,11 @@ Scribe.plugins['link-prompt-command'] = (template) ->
           return unless link
 
           if parentAnchor
-            rangy.removeMarkers savedSelection
-            range = rangy.createRange()
-            range.selectNode parentAnchor
+            rangy.restoreSelection savedSelection, true
             selection = rangy.getSelection()
+            range = selection.getRangeAt 0
+            parentAnchor = getParentAnchor range
+            range.selectNode parentAnchor
             selection.setSingleRange range
           else
             rangy.restoreSelection savedSelection, true

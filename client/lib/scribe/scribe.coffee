@@ -21,6 +21,8 @@
     # TODO: We should make sure we remove any on the server side
     span:
       id: true
+      class: true
+      style: true
 
   unless inline
     tags = _.extend tags,
