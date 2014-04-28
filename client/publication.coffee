@@ -1116,6 +1116,8 @@ Template.annotationEditor.events
 
     # Collapse
     LocalAnnotation.documents.update template.data._id,
+      $set:
+        local: LocalAnnotation.LOCAL.AUTOMATIC
       $unset:
         editing: ''
 
@@ -1396,7 +1398,7 @@ Template.editorLinkPrompt.parsedLink = ->
 
   # If we have a helper to help us create text and title, let's use that.
   if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
-    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null)
+    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
 
   parsedLink
 

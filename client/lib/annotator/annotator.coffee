@@ -136,19 +136,17 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
-  _addHighlightToEditor: (id) =>
-    # TODO: Add highlight link to the editor
-    ###
-    LocalAnnotation.documents.update
-      local: true
+  _addHighlightToEditor: (highlightId) =>
+    body = Template.highlightPromptInEditor(_id: highlightId).trim()
+
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
       'publication._id': Session.get 'currentPublicationId'
     ,
       $set:
-        editing: true
-      $addToSet:
-        'references.highlights':
-          _id: id
-    ###
+        body: body
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html(body) if count
 
   updateLocation: =>
     # This is our annotations
