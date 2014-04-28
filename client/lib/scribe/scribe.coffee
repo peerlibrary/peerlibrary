@@ -48,19 +48,19 @@
     tags: tags
   scribe.use Scribe.plugins['toolbar'] $toolbar.get(0) if $toolbar
 
-  template._$dialog = null
+  template._destroyDialog = null
 
   scribe
 
 @destroyEditor = (template) ->
   # Do we have to cleanup a dialog
-  return unless template._$dialog
+  return unless template._destroyDialog
 
-  $dialog = template._$dialog
-  template._$dialog = null
+  destroyDialog = template._destroyDialog
+  template._destroyDialog = null
 
   # We have to clean a dialog after current flush which
   # is just hapennig, otherwise Spark errors occur if
   # we remove DOM elements while Spark is working
   Deps.afterFlush ->
-    $dialog.dialog('destroy')
+    destroyDialog()

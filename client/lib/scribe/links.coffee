@@ -3,6 +3,8 @@ Scribe.plugins['link-prompt-command'] = (template) ->
     linkPromptCommand = new scribe.api.Command 'createLink'
     linkPromptCommand.nodeName = 'A'
 
+    unlinkCommand = new scribe.api.Command 'unlink'
+
     getParentAnchor = (range) ->
       # First we find closest .content-editor or a, and then we keep only a if we found that
       $(range.commonAncestorContainer).closest(".content-editor, #{ linkPromptCommand.nodeName }").filter(linkPromptCommand.nodeName).get(0)
@@ -22,12 +24,13 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
       parentAnchor = getParentAnchor range
       childAnchors = getChildAnchors range
+      collapsed = range.collapsed
 
       currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
       return unless currentEditor.length
 
-      template._$dialog.dialog('destroy') if template._$dialog
-      template._$dialog = null
+      template._destroyDialog() if template._destroyDialog
+      template._destroyDialog = null
 
       savedSelection = rangy.saveSelection()
 
@@ -46,10 +49,18 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
       destroyDialog = ->
         $dialog.dialog('destroy')
-        template._$dialog = null
+        template._destroyDialog = null
 
         # Select parent annotation when closing the dialog
         updateLocation()
+
+      selectParentAnchor = ->
+        selection = rangy.getSelection()
+        range = selection.getRangeAt 0
+        # We have to find parent anchor again because original one might not be in DOM anymore
+        parentAnchor = getParentAnchor range
+        range.selectNode parentAnchor
+        selection.setSingleRange range
 
       buttons = []
 
@@ -58,41 +69,40 @@ Scribe.plugins['link-prompt-command'] = (template) ->
           text: if childAnchors.length > 1 then "Remove links" else "Remove link"
           class: 'alternative'
           click: (event) =>
-            if parentAnchor
-              range.selectNode parentAnchor
-              selection.selection.removeAllRanges()
-              selection.selection.addRange range
+            rangy.restoreSelection savedSelection, true
+
+            # If we do not have a selection, but just a cursor
+            # on an existing link, we unlink the whole link
+            if collapsed and parentAnchor
+              selectParentAnchor()
+
+              # We store selection again so that we can reselect back exactly the same selection
+              savedSelection = rangy.saveSelection()
+
               scribe.transactionManager.run =>
                 new scribe.api.Element(parentAnchor.parentNode).unwrap(parentAnchor)
 
-            else if childAnchors.length
-              # TODO: Why unlink command here does not work here? (But this one does not work as well.)
-              selection.selection.removeAllRanges()
-              selection.selection.addRange range
-              scribe.transactionManager.run =>
-                for childAnchor in childAnchors
-                  new scribe.api.Element(childAnchor.parentNode).unwrap(childAnchor)
+              rangy.restoreSelection savedSelection, true
+
+            else
+              unlinkCommand.execute()
 
             destroyDialog()
 
             return # Make sure CoffeeScript does not return anything
 
       buttons.push
-        text: if parentAnchor then "Update" else "Create"
+        text: if collapsed and parentAnchor then "Update" else "Create"
         class: 'default'
         click: (event) =>
           link = $dialog.find('.editor-link-input').val().trim()
           return unless link
 
-          if parentAnchor
-            rangy.restoreSelection savedSelection, true
-            selection = rangy.getSelection()
-            range = selection.getRangeAt 0
-            parentAnchor = getParentAnchor range
-            range.selectNode parentAnchor
-            selection.setSingleRange range
-          else
-            rangy.restoreSelection savedSelection, true
+          rangy.restoreSelection savedSelection, true
+
+          # If we do not have a selection, but just a cursor on
+          # an existing link, we replace whole link with a new one
+          selectParentAnchor() if collapsed and parentAnchor
 
           scribe.api.SimpleCommand::execute.call @, link
 
@@ -106,7 +116,7 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
       $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
         dialogClass: 'editor-link-prompt-dialog'
-        title: if parentAnchor then "Edit link" else "New link"
+        title: if collapsed and parentAnchor then "Edit link" else "New link"
         position: position
         width: 360
         close: (event, ui) =>
@@ -152,7 +162,11 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         return # Make sure CoffeeScript does not return anything
 
       # To be able to destroy a dialog when template is destroyed
-      template._$dialog = $dialog
+      template._destroyDialog = ->
+        # We do not call updateLocation or set template._destroyDialog
+        # to null, all this should be done by our caller
+        rangy.removeMarkers savedSelection
+        $dialog.dialog('destroy')
 
     linkPromptCommand.queryState = ->
       selection = rangy.getSelection()
