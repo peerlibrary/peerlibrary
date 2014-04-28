@@ -898,6 +898,11 @@ viewportAnnotations = (local) ->
       $exists: false
     'references.highlights._id':
       $in: visibleHighlights
+  ,
+    # We display those which the user is editing (otherwise user could lose edited content)
+    local:
+      $exists: false
+    editing: true
   ]
 
   if local
