@@ -52,7 +52,10 @@
   {{! TODO: Here should come a list of links for the user and notifications }}
 
   <div class="menu-item">
-    <a href="{{profilePath currentPerson.slug}}">Profile</a>
+    <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">Profile</a>
+  </div>
+  <div class="menu-item">
+    <a href="{{libraryPath}}">Library</a>
   </div>
   {{#if currentPerson.isAdmin}}
     <div class="menu-item">

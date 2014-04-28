@@ -51,8 +51,8 @@
 </template>
 
 <template name="sidebarSearch">
-  <div class="col4 push12 sidebar-search">
-    <h3>Search</h3>
+  <div class="col4 push12 sidebar sidebar-search">
+    <h2>Search</h2>
     <form id="sidebar-search">
       <span class="filter">
         <input type="text" id="general" />
@@ -106,28 +106,20 @@
 </template>
 
 <template name="publicationSearchResult">
-  <li class="result-item">
+  <li class="result-item" data-publication-id="{{_id}}">
+    {{#if currentPersonId}}
+      {{> publicationLibraryMenu}}
+    {{/if}}
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">
-          <a href="{{publicationPath _id slug}}">
-            {{#if title}}
-              {{title}}
-            {{else}}
-              {{#if importing.0.filename}}
-                {{! Used only in personal library list, elsewhere we display "metadata missing" to invite users to provide metadata }}
-                {{importing.0.filename}}
-              {{else}}
-                <i>metadata missing</i>
-              {{/if}}
-            {{/if}}
-          </a>
+          {{> publicationSearchResultTitle}}
         </h2>
         <div class="clearfix"></div>
         {{#if authors.length}}
           <span class="authors">
             {{#each authors}}
-              <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
             {{/each}}
           </span>
           <br/>
@@ -142,7 +134,7 @@
               <a href="#" class="preview-link">Abstract</a> &middot;
             {{/if}}
           {{/if}}
-          <a href="{{publicationPath _id slug}}">Full text</a>
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
         </span>
       </div>
       {{#if thumbnailUrls.length}}
@@ -162,4 +154,25 @@
       {{/if}}
     </div>
   </li>
+</template>
+
+<template name="publicationSearchResultTitle">
+  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+    <a href="{{publicationPathFromId _id slug}}">
+      {{#if title}}
+        {{title}}
+      {{else}}
+        {{#if importing.0.filename}}
+        {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.0.filename}}
+        {{else}}
+          <i>title metadata missing</i>
+        {{/if}}
+      {{/if}}
+    </a>
+  </span>
+</template>
+
+<template name="accessIcon">
+  <i class="{{iconName}}"></i>
 </template>

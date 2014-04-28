@@ -1,7 +1,7 @@
 PeerLibrary
 ===========
 
-Capturing the global conversation on academic literature.
+Facilitating the global conversation on academic literature.
 
 https://peerlibrary.org/ | http://blog.peerlibrary.org/ | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
@@ -84,6 +84,31 @@ Log in as `admin` and go to _Admin dashboard_ ([http://localhost:3000/admin](htt
 Click on the _Initialize database with sample data_ button, to initialize the database with
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
+
+### ArXiv publications ###
+
+To load and use [arXiv](http://arxiv.org/) publications, open _Admin dashboard_
+([http://localhost:3000/admin](http://localhost:3000/admin)) and click on _Sync arXiv metadata_
+button first and after it loads all the metadata, click _Sync arXiv PDF cache_ button to load
+all PDFs. After the caching finishes and PDFs are processed you will be able to search and open
+arXiv publications in PeerLibrary.
+
+**arXiv is a huge repository and loading all the publications takes a lot of space (few 100 GBs) and time.
+You probably do not want to do this. It consumes arXiv resources and costs you money. Use _Initialize
+database with sample data_ to get a small sample of arXiv publications.**
+
+You will need [AWS](http://aws.amazon.com/) `accessKeyId` and `secretAccessKey` which you have to put into
+your `settings.json` file. All PDF transfer costs will be [billed against this account](http://arxiv.org/help/bulk_data_s3).
+
+### Free Speech Movement publications ###
+
+To load and use [Free Speech Movement](http://bancroft.berkeley.edu/FSM/) publications, open _Admin dashboard_
+([http://localhost:3000/admin](http://localhost:3000/admin)) and click on _Sync FSM metadata_ button first
+and after it loads all the metadata, click _Sync FSM cache_ button to load all the TEI textual documents.
+After the caching finishes you will be able to search and open FSM publications in PeerLibrary.
+
+You will need [FSM API](http://digitalhumanities.berkeley.edu/hackfsm/api) `appId` and `appKey` which you
+have to put into your `settings.json` file.
 
 ### Troubleshooting ###
 

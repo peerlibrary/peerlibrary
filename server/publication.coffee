@@ -32,32 +32,82 @@ class @Publication extends Publication
                 error: "#{ error.toString?() or error }"
                 stack: error.stack
 
-          Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
+          Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
 
       fields
 
+  @_arXivFilename: (arXivId) ->
+    # TODO: Verify that id is not insecure
+    'arxiv' + Storage._path.sep + arXivId + '.pdf'
+
+  @_FSMFilename: (fsmId) ->
+    # TODO: Verify that id is not insecure
+    'FSM' + Storage._path.sep + fsmId + '.tei'
+
+  foreignFilename: =>
+    filename = switch @source
+      when 'arXiv' then Publication._arXivFilename @foreignId
+      when 'FSM' then Publication._FSMFilename @foreignId
+      else null
+
+    return unless filename
+
+    Publication._filenamePrefix() + filename
+
+  foreignUrl: =>
+    Storage.url @foreignFilename()
+
   checkCache: =>
     return if @cached
 
-    if not Storage.exists @filename()
-      Log.info "Caching PDF for #{ @_id } from the central server"
+    if not Storage.exists @cachedFilename()
+      # We provide a way for easy caching of sample publications so that
+      # developers can easily bootstrap their local development instance
+      return unless @foreignFilename()
 
-      pdf = HTTP.get 'http://stage.peerlibrary.org' + @url(),
-        timeout: 10000 # ms
-        encoding: null # PDFs are binary data
+      if Storage.exists @foreignFilename()
+        Log.info "Linking PDF for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
 
-      Storage.save @filename(), pdf.content
+        Storage.link @foreignFilename(), @cachedFilename()
+        assert Storage.exists @cachedFilename()
+
+      else
+        Log.info "Caching file for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
+
+        pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
+          timeout: 10000 # ms
+          encoding: null # PDFs are binary data
+
+        Storage.save @foreignFilename(), pdf.content
+        assert Storage.exists @foreignFilename()
+        Storage.link @foreignFilename(), @cachedFilename()
+        assert Storage.exists @cachedFilename()
+
+    if not @sha256
+      pdfContent = Storage.open @cachedFilename()
+      hash = new Crypto.SHA256()
+      hash.update pdfContent
+      @sha256 = hash.finalize()
 
     @cached = moment.utc().toDate()
-    Publication.documents.update @_id, $set: cached: @cached
+    Publication.documents.update @_id,
+      $set:
+        cached: @cached
+        sha256: @sha256
 
   process: =>
+    switch @mediaType
+      when 'pdf' then @processPDF()
+      when 'tei' then @processTEI()
+      else throw new Error "Unsupported media type: #{ @mediaType }"
+
+  processPDF: =>
     currentlyProcessingPublication @_id
 
     try
-      pdf = Storage.open @filename()
+      pdf = Storage.open @cachedFilename()
 
       textContents = []
 
@@ -82,7 +132,7 @@ class @Publication extends Publication
 
       progressCallback = (progress) =>
 
-      Log.info "Processing PDF for #{ @_id }: #{ @filename() }"
+      Log.info "Processing PDF for #{ @_id }: #{ @cachedFilename() }"
 
       PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
@@ -104,12 +154,28 @@ class @Publication extends Publication
     finally
       currentlyProcessingPublication null
 
-  _temporaryFilename: =>
+  processTEI: =>
+    tei = Storage.open @cachedFilename()
+
+    $ = cheerio.load tei
+    @fullText = $.root().text().replace(/\s+/g, ' ').trim()
+
+    # TODO: We could also add some additional information (statistics, how long it took and so on)
+    @processed = moment.utc().toDate()
+    Publication.documents.update @_id,
+      $set:
+        processed: @processed
+        fullText: @fullText
+
+    # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
+    @fullText
+
+  _importingFilename: =>
     # We assume that importing contains only this person, see comment in uploadPublication
     assert @importing?[0]?.person?._id
     assert.equal @importing[0].person._id, Meteor.personId()
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].temporaryFilename + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -123,20 +189,9 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A subset of public fields used for search results to optimize transmission to a client
-  # This list is applied to PUBLIC_FIELDS to get a subset
-  @PUBLIC_SEARCH_RESULTS_FIELDS: ->
-    [
-      'slug'
-      'createdAt'
-      'authors'
-      'title'
-      'numberOfPages'
-      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-    ]
-
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+  @PUBLISH_FIELDS: ->
     fields:
       slug: 1
       createdAt: 1
@@ -148,13 +203,36 @@ class @Publication extends Publication
       doi: 1
       foreignId: 1
       source: 1
+      mediaType: 1
+      access: 1
+      readPersons: 1
+      readGroups: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+      adminPersons: 1
+      adminGroups: 1
+
+  # A subset of public fields used for search results to optimize transmission to a client
+  @PUBLISH_SEARCH_RESULTS_FIELDS: ->
+    fields: _.pick @PUBLISH_FIELDS().fields, [
+      'slug'
+      'createdAt'
+      'authors'
+      'title'
+      'numberOfPages'
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
+      'access'
+    ]
+
+registerForAccess Publication
 
 Meteor.methods
   'create-publication': (filename, sha256) ->
     check filename, String
-    check sha256, String
+    check sha256, SHA256String
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     existingPublication = Publication.documents.findOne
       sha256: sha256
@@ -162,10 +240,10 @@ Meteor.methods
     # Filter importing to contain only this person
     if existingPublication?.importing
       existingPublication.importing = _.filter existingPublication.importing, (importingBy) ->
-        return importingBy.person._id is Meteor.personId()
+        return importingBy.person._id is person._id
 
     already = false
-    if existingPublication?._id in _.pluck Meteor.person()?.library, '_id'
+    if existingPublication?._id in _.pluck person.library, '_id'
       # This person already has the publication in library
       id = existingPublication._id
       verify = false
@@ -182,14 +260,14 @@ Meteor.methods
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
-          $ne: Meteor.personId()
+          $ne: person._id
       ,
         $addToSet:
           importing:
             person:
-              _id: Meteor.personId()
+              _id: person._id
             filename: filename
-            temporaryFilename: Random.id()
+            importingId: Random.id()
       # TODO: We could check here if we updated anything, if we did not, then it seems user was just added to importing in parallel, so we could go to the case above (and reorder code a bit)
 
       # If we have the file, ask for verification. Otherwise, ask for upload
@@ -198,21 +276,22 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
-      id = Publication.documents.insert
+      id = Publication.documents.insert Publication.applyDefaultAccess person._id,
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
         source: 'import'
         importing: [
           person:
-            _id: Meteor.personId()
+            _id: person._id
           filename: filename
-          temporaryFilename: Random.id()
+          importingId: Random.id()
         ]
+        cachedId: Random.id()
+        mediaType: 'pdf'
         sha256: sha256
-        metadata: false
       verify = false
 
-    samples = if verify then existingPublication._verificationSamples Meteor.personId() else null
+    samples = if verify then existingPublication._verificationSamples person._id else null
 
     # Return
     publicationId: id
@@ -223,13 +302,14 @@ Meteor.methods
   'upload-publication': (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
-      publicationId: String
+      publicationId: DocumentId
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     publication = Publication.documents.findOne
       _id: options.publicationId
-      'importing.person._id': Meteor.personId()
+      'importing.person._id': person._id
       cached:
         $exists: false
     ,
@@ -237,7 +317,8 @@ Meteor.methods
         # Ensure that importing contains only this person
         'importing.$': 1
         sha256: 1
-        source: 1
+        cachedId: 1
+        mediaType: 1
 
     # File maybe finished by somebody else, or wrong publicationId, or something else.
     # If the file was maybe finished by somebody else, we do not want really to continue writing
@@ -246,22 +327,22 @@ Meteor.methods
 
     # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
-    Storage.saveMeteorFile file, publication._temporaryFilename()
+    Storage.saveMeteorFile file, publication._importingFilename()
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
-      pdf = Storage.open publication._temporaryFilename()
+      pdf = Storage.open publication._importingFilename()
 
       hash = new Crypto.SHA256()
       hash.update pdf
       sha256 = hash.finalize()
 
       unless sha256 == publication.sha256
-        throw new Meteor.Error 403, "Hash of uploaded file does not match hash provided initially."
+        throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._temporaryFilename(), publication.filename()
+        Storage.rename publication._importingFilename(), publication.cachedFilename()
         Publication.documents.update
           _id: publication._id
         ,
@@ -271,17 +352,20 @@ Meteor.methods
 
       # Hash was verified, so add it to uploader's library
       Person.documents.update
-        '_id': Meteor.personId()
+        _id: person._id
+        'library._id':
+          $ne: publication._id
       ,
         $addToSet:
           library:
             _id: publication._id
 
   'verify-publication': (publicationId, samplesData) ->
-    check publicationId, String
+    check publicationId, DocumentId
     check samplesData, [Uint8Array]
 
-    throw new Meteor.Error 401, "User not signed in." unless Meteor.personId()
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
     publication = Publication.documents.findOne
       _id: publicationId
@@ -291,321 +375,138 @@ Meteor.methods
     throw new Meteor.Error 400, "Error verifying file. Please retry." unless publication
     throw new Meteor.Error 400, "Invalid number of samples." unless samplesData?.length == NUMBER_OF_VERIFICATION_SAMPLES
 
-    publicationFile = Storage.open publication.filename()
-    serverSamples = publication._verificationSamples Meteor.personId()
+    publicationFile = Storage.open publication.cachedFilename()
+    serverSamples = publication._verificationSamples person._id
 
     verified = _.every _.map serverSamples, (serverSample, index) ->
       clientSampleData = samplesData[index]
       serverSampleData = new Uint8Array publicationFile.slice serverSample.offset, serverSample.offset + serverSample.size
       _.isEqual clientSampleData, serverSampleData
 
-    throw new Meteor.Error 403, "Verification failed." unless verified
+    throw new Meteor.Error 400, "Verification failed." unless verified
 
     # Samples were verified, so add it to person's library
     Person.documents.update
-      '_id': Meteor.personId()
+      '_id': person._id
+      'library._id':
+        $ne: publication._id
     ,
       $addToSet:
         library:
           _id: publication._id
 
-# TODO: Should we use try/except around the code so that if there is any exception we stop handlers?
-publishUsingMyLibrary = (publish, selector, options) ->
-  # There are moments when two observes are observing mostly similar list
-  # of publications ids so it could happen that one is changing or removing
-  # publication just while the other one is adding, so we are making sure
-  # using currentPublications variable that we have a consistent view of the
-  # publications we published
-  currentPublications = {}
-  handlePublications = null
+  # TODO: Use this code on the client side as well
+  'publication-set-title': (publicationId, title) ->
+    check publicationId, DocumentId
+    check title, NonEmptyString
 
-  publishPublications = (newIsAdmin, newLibrary) =>
-    newLibrary ||= []
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    initializing = true
-    initializedPublications = []
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
 
-    oldHandlePublications = handlePublications
-    handlePublications = Publication.documents.find(selector(newIsAdmin, newLibrary), options).observeChanges
-      added: (id, fields) =>
-        initializedPublications.push id if initializing
-
-        return if currentPublications[id]
-        currentPublications[id] = true
-
-        publish.added 'Publications', id, fields
-
-      changed: (id, fields) =>
-        return if not currentPublications[id]
-
-        publish.changed 'Publications', id, fields
-
-      removed: (id) =>
-        return if not currentPublications[id]
-        delete currentPublications[id]
-
-        publish.removed 'Publications', id
-
-    initializing = false
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandlePublications.stop() if oldHandlePublications
-
-    # And then we remove those which are not published anymore
-    for id in _.difference _.keys(currentPublications), initializedPublications
-      delete currentPublications[id]
-      publish.removed 'Publications', id
-
-  currentPersonId = null # Just for asserts
-
-  if publish.personId
-    handlePersons = Person.documents.find(
-      _id: publish.personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        library: 1
-      transform: null # We are only interested in data
-    ).observe
-      added: (person) =>
-        # There should be only one person with the id at every given moment
-        assert.equal currentPersonId, null
-
-        currentPersonId = person._id
-        publishPublications person.isAdmin, _.pluck person.library, '_id'
-
-      changed: (newPerson, oldPerson) =>
-        # Person should already be added
-        assert.equal currentPersonId, newPerson._id
-
-        publishPublications newPerson.isAdmin, _.pluck newPerson.library, '_id'
-
-      removed: (oldPerson) =>
-        # We cannot remove the person if we never added the person before
-        assert.equal currentPersonId, oldPerson._id
-
-        currentPersonId = null
-        publishPublications false, []
-
-  # If we get to here and currentPersonId was not set when initializing,
-  # we call publishPublications with empty list so that possibly something
-  # is published. If later on person is added, publishPublications will be
-  # simply called again.
-  publishPublications false, [] unless currentPersonId
-
-  publish.ready()
-
-  publish.onStop =>
-    handlePersons.stop() if handlePersons
-    handlePublications.stop() if handlePublications
+    Publication.documents.update Publication.requireMaintainerAccessSelector(person,
+      _id: publication._id
+    ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        title: title
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, String
+  check slug, NonEmptyString
 
-  return unless slug
+  @related (author, person) ->
+    return unless author?._id
 
-  currentPublications = {}
-  handlePublications = null
-
-  publishPublications = (authorId, newIsAdmin, newLibrary) =>
-    newLibrary ||= []
-
-    initializing = true
-    initializedPublications = []
-
-    oldHandlePublications = handlePublications
-    if authorId
-      handlePublications = Publication.documents.find(
-        if newIsAdmin
-          'authors._id': authorId
-          cached:
-            $exists: true
-        else
-          'authors._id': authorId
-          cached:
-            $exists: true
-          $or: [
-            processed:
-              $exists: true
-          ,
-            _id:
-              $in: newLibrary
-          ]
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      'authors._id': author._id
+    ),
+      Publication.PUBLISH_FIELDS()
+  ,
+    Person.documents.find
+      $or: [
+        slug: slug
       ,
-        Publication.PUBLIC_FIELDS()
-      ).observeChanges
-        added: (id, fields) =>
-          initializedPublications.push id if initializing
-
-          return if currentPublications[id]
-          currentPublications[id] = true
-
-          @added 'Publications', id, fields
-
-        changed: (id, fields) =>
-          return if not currentPublications[id]
-
-          @changed 'Publications', id, fields
-
-        removed: (id) =>
-          return if not currentPublications[id]
-          delete currentPublications[id]
-
-          @removed 'Publications', id
-
-    initializing = false
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandlePublications.stop() if oldHandlePublications
-
-    # And then we remove those which are not published anymore
-    for id in _.difference _.keys(currentPublications), initializedPublications
-      delete currentPublications[id]
-      @removed 'Publications', id
-
-  currentPersonId = null # Just for asserts
-  lastIsAdmin = false
-  lastLibrary = []
-
-  if @personId
-    handlePersons = Person.documents.find(
-      _id: @personId
+        _id: slug
+      ]
     ,
       fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        library: 1
-    ).observeChanges
-      added: (id, fields) =>
-        # There should be only one person with the id at every given moment
-        assert.equal currentPersonId, null
-
-        currentPersonId = id
-        lastIsAdmin = fields.isAdmin
-        lastLibrary = _.pluck fields.library, '_id'
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
-
-      changed: (id, fields) =>
-        # Person should already be added
-        assert.equal currentPersonId, id
-
-        lastIsAdmin = fields.isAdmin if _.has fields, 'isAdmin'
-        lastLibrary = _.pluck fields.library, '_id' if _.has fields, 'library'
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
-
-      removed: (id) =>
-        # We cannot remove the person if we never added the person before
-        assert.equal currentPersonId, id
-
-        currentPersonId = null
-        lastIsAdmin = false
-        lastLibrary = []
-        publishPublications currentAuthorId, lastIsAdmin, lastLibrary
-
-  currentAuthorId = null # Just for asserts
-
-  handleAuthors = Person.documents.find(
-    slug: slug
+        _id: 1 # We want only id
   ,
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentAuthorId, null
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
 
-      currentAuthorId = id
-      publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+Meteor.publish 'publications-by-id', (publicationId) ->
+  check publicationId, DocumentId
 
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.equal currentAuthorId, id
+  @related (person) ->
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    ),
+      Publication.PUBLISH_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
 
-      currentAuthorId = null
-      publishPublications currentAuthorId, lastIsAdmin, lastLibrary
+# We could try to combine publications-by-id and publications-cached-by-id,
+# but it is easier to have two and leave to Meteor to merge them together
+Meteor.publish 'publications-cached-by-id', (id) ->
+  check id, DocumentId
 
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handleAuthors.stop() if handleAuthors
-    handlePublications.stop() if handlePublications
-
-Meteor.publish 'publications-by-id', (id) ->
-  check id, String
-
-  return unless id
-
-  publishUsingMyLibrary @, (isAdmin, library) =>
-    if isAdmin
+  @related (person) ->
+    Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
-      cached:
-        $exists: true
-    else
-      _id: id
-      cached:
-        $exists: true
-      $or: [
-        processed:
-          $exists: true
-      ,
-        _id:
-          $in: library
-      ]
+    ),
+      fields: _.extend Publication.PUBLISH_FIELDS().fields,
+        # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+        'cachedId': 1
   ,
-    Publication.PUBLIC_FIELDS()
-
-Meteor.publish 'publications-by-ids', (ids) ->
-  check ids, [String]
-
-  return unless ids?.length
-
-  publishUsingMyLibrary @, (isAdmin, library) =>
-    if isAdmin
-      _id:
-        $in: ids
-      cached:
-        $exists: true
-    else
-      _id:
-        $in: ids
-      cached:
-        $exists: true
-      $or: [
-        processed:
-          $exists: true
-      ,
-        _id:
-          $in: library
-      ]
-  ,
-    Publication.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'my-publications', ->
-  # TODO: isAdmin is not really used, so this publish is not as optimized as it should be, probably we should make publishUsingMyLibrary a more general query constructor
-  publishUsingMyLibrary @, (isAdmin, library) =>
-    _id:
-      $in: library
-    cached:
-      $exists: true
-  ,
-    Publication.PUBLIC_FIELDS()
+  @related (person) ->
+    return unless person?.library
 
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      _id:
+        $in: _.pluck person.library, '_id'
+    ),
+      Publication.PUBLISH_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Publication.readAccessPersonFields(),
+        library: 1
+
+# Use use this publish endpoint so that users can see their own filename
+# of the imported file, before a publication has metadata.
 # We could try to combine my-publications and my-publications-importing,
 # but it is easier to have two and leave to Meteor to merge them together,
-# because we are using $ in fields
+# because we are using $ in fields.
 Meteor.publish 'my-publications-importing', ->
-  Publication.documents.find
-    'importing.person._id': @personId
-    cached:
-      $exists: true
+  @related (person) ->
+    return unless person?._id
+
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      'importing.person._id': person._id
+    ),
+      fields: _.extend Publication.PUBLISH_FIELDS().fields,
+        # TODO: We should not push temporaryFile to the client
+        # Ensure that importing contains only this person
+        'importing.$': 1
   ,
-    fields: _.extend Publication.PUBLIC_FIELDS().fields,
-      # TODO: We should not push temporaryFile to the client
-      # Ensure that importing contains only this person
-      'importing.$': 1
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()

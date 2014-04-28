@@ -126,9 +126,7 @@ importFile = (file) ->
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
-      if error
-        Notify.meteorError error, true
-        return
+      return Notify.meteorError error, true if error
 
       # So that meteor-file knows what to update
       file._id = id
@@ -142,7 +140,7 @@ importFile = (file) ->
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
-      , 5 # 0 does not seem to work, 5 seems to work
+      , 5 # ms, 0 does not seem to work, 5 seems to work
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
@@ -159,13 +157,13 @@ hideOverlay = ->
   # We prevent hiding if user is uploading files
   if allCount == finishedAndErroredCount
     Session.set 'importOverlayActive', false
-    ImportingFile.documents.remove({})
+    ImportingFile.documents.remove {}
 
   Session.set 'signInOverlayActive', false
 
 $(document).on 'dragstart', (e) ->
-  # We want to prevent dragging of everything except the viewport
-  return if $(e.target).is('.viewport')
+  # We want to prevent dragging of everything except jQuery UI controls
+  return if $(e.target).is('.ui-draggable')
 
   e.preventDefault()
 
@@ -212,6 +210,13 @@ Template.importButton.events =
 
     Session.set 'importOverlayActive', true
     _.each e.target.files, importFile
+
+    # Replaces file input with a new version which does not have any file
+    # selected. This assures that change event is triggered even if the user
+    # selects the same file. It is not really reasonable to do that, but
+    # it is still better that we do something than simply nothing because
+    # no event is triggered.
+    $(e.target, template).replaceWith($(e.target).clone())
 
     return # Make sure CoffeeScript does not return anything
 
@@ -350,8 +355,8 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
     Notify.success "Imported #{ finishedImportingFiles.length } publications."
-    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
+    Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false
 
-  ImportingFile.documents.remove({})
+  ImportingFile.documents.remove {}

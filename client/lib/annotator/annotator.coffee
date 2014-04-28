@@ -5,18 +5,24 @@ class @Annotator.Plugin.TextAnchors extends Annotator.Plugin.TextAnchors
     # Just to be sure we reset the variable
     @mouseStartingInsideSelectedHighlight = false
 
-    if event
-      return unless @annotator.mouseIsDown
+    # checkForEndSelection is called without an event object after the enableAnnotating
+    # event, but we are not really using that (calling things manually instead, based on
+    # how/when publication is renderes) so we don't do anything. This also fixes occasional
+    # duplication of a highlight if it was in the URL and got selected on page load, calling
+    # checkForEndSelection sometimes then duplicates it and creates a new one.
+    return unless event
 
-      return unless event.which is 1 # Left mouse button
+    return unless @annotator.mouseIsDown
 
-      event.previousMousePosition = @annotator.mousePosition
-      @annotator.mousePosition = null
+    return unless event.which is 1 # Left mouse button
 
-      # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
-      # we prevent default to prevent deselection of the highlight
-      if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
-        event.preventDefault()
+    event.previousMousePosition = @annotator.mousePosition
+    @annotator.mousePosition = null
+
+    # If click (mousedown coordinates same as mouseup coordinates) is on existing selected highlight,
+    # we prevent default to prevent deselection of the highlight
+    if event.previousMousePosition and event.previousMousePosition.pageX - event.pageX == 0 and event.previousMousePosition.pageY - event.pageY == 0 and @annotator._inAnySelectedHighlight event.clientX, event.clientY
+      event.preventDefault()
 
     super event
 
@@ -31,6 +37,9 @@ class @Annotator extends Annotator
     super $displayWrapper,
       noScan: true
     delete @options.noScan
+
+    # We have out own UI for adding annotations, so we remove Annotator's
+    @adder.remove()
 
     @_annotations = {}
     @selectedAnnotationId = null
@@ -127,14 +136,29 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
+  _addHighlightToEditor: (highlightId) =>
+    body = Template.highlightPromptInEditor(_id: highlightId).trim()
+
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        body: body
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html(body) if count
+
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
+    commentId = Session.get 'currentCommentId'
     # @selectedAnnotationId is Annotator's annotation, so our highlights
     if @selectedAnnotationId
       Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
     else if annotationId
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else if commentId
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), commentId
     else
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
@@ -149,13 +173,14 @@ class @Annotator extends Annotator
         pageY: event.pageY
 
   confirmSelection: (event) =>
-    return true unless @selectedTargets.length is 1
+    # TODO: We currently support only when there is one selected target
+    return false unless @selectedTargets.length is 1
 
-    # event.previousMousePosition might not exist if checkForEndSelection was called manually without an event object
-    # We ignore if mouse movement was to small to select really anything meaningful
+    # event.previousMousePosition might not exist if checkForEndSelection was called manually without
+    # an event object. We ignore if mouse movement was to small to select really anything meaningful.
     return false if event.previousMousePosition and Math.abs(event.previousMousePosition.pageX - event.pageX) <= 1 and Math.abs(event.previousMousePosition.pageY - event.pageY) <= 1
 
-    quote = @plugins.TextAnchors.getQuoteForTarget @selectedTargets[0]
+    quote = @getQuoteForTarget? @selectedTargets[0]
     # Quote should be a non-empty string
     return false unless quote
 
@@ -165,14 +190,16 @@ class @Annotator extends Annotator
     true
 
   canCreateHighlight: =>
+    # Enough is to check if user is logged in. Check if user has read
+    # access to the publication content is made on the server side.
     Meteor.personId()
 
   onSuccessfulSelection: (event, immediate) =>
     assert event
-    assert event.targets
+    assert event.segments
 
-    # Store the selected targets
-    @selectedTargets = event.targets
+    # Describe the selection with targets
+    @selectedTargets = (@_getTargetFromSelection s for s in event.segments)
 
     return unless @confirmSelection event
 
@@ -228,6 +255,7 @@ class @Annotator extends Annotator
   createAnnotation: ->
     annotation = super
 
+    # Highlights are a special case and we make _id on the client
     annotation._id = Random.id()
 
     annotation
@@ -236,11 +264,16 @@ class @Annotator extends Annotator
     id of @_annotations
 
   setupAnnotation: (annotation) ->
-    annotation = super
+    # We transform the Annotator's annotation into PeerLibrary highlight document.
+    # Read below for more information on how we are using Annotator's annotations
+    # as highlights.
+    annotation = new Highlight annotation
+
+    annotation = super annotation
 
     @_annotations[annotation._id] = annotation
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
@@ -252,21 +285,21 @@ class @Annotator extends Annotator
 
     delete @_annotations[annotation._id]
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     annotation
 
   _realizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
   _virtualizePage: (index) =>
     super
 
-    setHighlights @_getRenderedHighlights()
+    currentHighlights.set @_getRenderedHighlights()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -285,7 +318,7 @@ class @Annotator extends Annotator
 
   _highlightChanged: (id, fields) =>
     # TODO: What if target changes on existing annotation? How we update Annotator's annotation so that anchors and its highligts are moved?
-    # TODO: Do we have to call setHighlights in updateAnnotation?
+    # TODO: Do we have to call currentHighlights.set in updateAnnotation? Currently we are ignoring values, only comparing keys when setting highlights
 
     annotation = _.extend @_annotations[id], fields
     @updateAnnotation annotation
@@ -295,35 +328,23 @@ class @Annotator extends Annotator
     @deleteAnnotation annotation if annotation
 
   _insertHighlight: (annotation) =>
-    # Populate with some of our fields
-    annotation.author =
-      _id: Meteor.personId()
-    annotation.publication =
-      _id: Session.get 'currentPublicationId'
-    annotation.highlights = []
-
-    # Remove fields we do not want to store into the database
-    highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
-    highlight.target = _.map highlight.target, (t) =>
+    target = _.map annotation.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlight.documents.insert highlight, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      if error
-        Notify.meteorError error, true
-        return
+    # Highlights are a special case and we provide _id from the client
+    Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, highlightId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      return Notify.meteorError error, true if error
+
+      assert.equal annotation._id, highlightId
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
       # Finally select it (until now it was just drawn selected) and update location
-      @_selectHighlight id
+      @_selectHighlight highlightId
 
     annotation
-
-  _removeHighlight: (id) =>
-    Highlight.documents.remove id, (error) =>
-      Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]
@@ -339,15 +360,8 @@ class @Annotator extends Annotator
       # selected when it is finally created in _createHighlight.
       highlight.select() for highlight in highlights when not highlight.isSelected()
 
-      annotation = createAnnotationDocument()
-      annotation.local = true
-      annotation.highlights = [
-        _id: id
-      ]
-
-      LocalAnnotation.documents.remove
-        local: true
-      LocalAnnotation.documents.insert annotation
+      # Add reference to annotation
+      @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
       # immediatelly send a mouse enter event to make sure related annotation has
@@ -360,9 +374,6 @@ class @Annotator extends Annotator
       @selectedAnnotationId = null
 
       @_deselectAllHighlights()
-
-      LocalAnnotation.documents.remove
-        local: true
 
     # We might not be called from _highlightLocationHandle autorun, so make sure location matches selected highlight
     @updateLocation()

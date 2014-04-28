@@ -1,0 +1,60 @@
+<template name="collection">
+  {{#if loading}}
+    <div class="simple loading">
+      <h2>Loading</h2>
+    </div>
+  {{else}}
+    {{#if notfound}}
+      <div class="simple notfound">
+        <h2>404 Not found</h2>
+        <p>Collection not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
+      </div>
+    {{else}}
+      {{> collectionName collection}}
+      <div class="row">
+        {{> collectionPublications collection}}
+        {{> collectionDetails collection}}
+      </div>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="collectionName">
+  <h1>{{name}}</h1>
+</template>
+
+<template name="collectionPublications">
+  <div class="col12">
+    <ol class="collection-publications item-list">
+      {{#each publications}}
+        {{> publicationSearchResult}}
+      {{/each}}
+    </ol>
+  </div>
+</template>
+
+<template name="collectionDetails">
+  <div class="col4 push12 sidebar collection-details">
+    <h2>Collection by</h2>
+    <div class="member person">
+      <img src="{{authorPerson.avatar}}" class="avatar" />
+      <h4 class="member-name"><a href="{{personPathFromId authorPerson._id authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
+    </div>
+    {{#if canModify}}
+      <h3>Tools</h3>
+      {{#if canRemove}}
+        <p>
+          <button class="delete-collection">Delete collection</button>
+          {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
+          {{! TODO: Remove all publications from collection }}
+        </p>
+      {{/if}}
+      <p class="hint">
+        You can reorder publications in a collection by dragging them.
+      </p>
+      <p class="to-my-library">
+        <a href="{{libraryPath}}">To My Library</a>
+      </p>
+    {{/if}}
+  </div>
+</template>

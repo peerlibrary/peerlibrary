@@ -10,3 +10,11 @@ Handlebars.registerHelper 'highlightPathFromId', (highlightId, options) ->
   return Meteor.Router.highlightIdPath highlightId unless publication
 
   Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+
+# Optional highlight document
+Handlebars.registerHelper 'highlightReference', (highlightId, highlight, options) ->
+  highlight = Highlight.documents.findOne highlightId unless highlight
+  assert highlightId, highlight._id if highlight
+
+  _id: highlightId # TODO: Remove when we will be able to access parent template context
+  text: "h:#{ highlightId }"

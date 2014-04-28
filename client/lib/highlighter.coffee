@@ -87,9 +87,29 @@ class Page
     return if @highlightsEnabled
     @highlightsEnabled = true
 
+    @_cleanTextSegments()
+
     # For debugging
     #@_showSegments()
     #@_showTextSegments()
+
+  _cleanTextSegments: =>
+    # We traverse from the end and search for segments which should be before the first segment
+    # and mark them unselectable. The rationale is that those segments which are spatially positioned
+    # before the first segment, but are out-of-order in the array are watermarks or headers and other
+    # elements not connected with the content, but they interfer with highlighting. It seems they are
+    # simply appended at the end so we search them only near the end. We still allow unselectable
+    # segments to be selected in the browser if user is directly over it.
+    # See https://github.com/peerlibrary/peerlibrary/issues/387
+
+    # Few segments can be correctly ordered among those at the end. For example, page numbers.
+    threshold = 5 # segments, currently chosen completely arbritrary (just that it is larger than 1)
+    for segment in @textSegments by -1
+      if segment.boundingBox.left >= @textSegments[0].boundingBox.left and segment.boundingBox.top >= @textSegments[0].boundingBox.top
+        threshold--
+        break if threshold is 0
+        continue
+      segment.unselectable = true
 
   _distanceX: (position, area) =>
     return Number.POSITIVE_INFINITY unless area
@@ -133,6 +153,17 @@ class Page
     left: e.pageX - offset.left
     top: e.pageY - offset.top
 
+  _overTextSegment: (position) =>
+    segmentIndex = -1
+    # We still want to allow unselectable segments to be selected in the
+    # browser if user is directly over it, so we go over all segments here.
+    for segment, index in @textSegments
+      if @_distanceX(position, segment.boundingBox) + @_distanceY(position, segment.boundingBox) is 0
+        segmentIndex = index
+        break
+
+    segmentIndex
+
   # Finds a text layer segment which is it to the left and up of the given position
   # and has highest index. Highest index means it is latest in the text flow of the
   # page. So we are searching for for latest text layer segment in text flow on the
@@ -140,7 +171,7 @@ class Page
   # text which flows left to right, top to bottom.
   _findLastLeftUpTextSegment: (position) =>
     segmentIndex = -1
-    for segment, index in @textSegments
+    for segment, index in @textSegments when not segment.unselectable
       # We allow few additional pixels so that position can be slightly to the left
       # of the text segment. This helps when user is with mouse between two columns
       # of text. With this the text segment to the right (in the right column) is
@@ -160,7 +191,7 @@ class Page
     closestSegmentIndex = -1
     closestDistance = Number.POSITIVE_INFINITY
 
-    for segment, index in @textSegments
+    for segment, index in @textSegments when not segment.unselectable
       distance = @_distance position, segment.boundingBox
       if distance < closestDistance
         closestSegmentIndex = index
@@ -226,6 +257,15 @@ class Page
   padTextSegments: (e) =>
     position = @_eventToPosition e
 
+    # First check if we are directly above a text segment. We could combine this
+    # with _findLastLeftUpTextSegment below, but we also want to handle the case
+    # when we are directly above an unselectable segment.
+    segmentIndex = @_overTextSegment position
+
+    if segmentIndex isnt -1
+      @_padTextSegment position, segmentIndex
+      return
+
     # Find latest text layer segment in text flow on the page before the given position
     segmentIndex = @_findLastLeftUpTextSegment position
 
@@ -233,9 +273,9 @@ class Page
     # infinity in this case, so things work out
     if @_distanceY(position, @textSegments[segmentIndex]?.boundingBox) is 0
       # A clear case, we are directly over a segment y-wise. This means that
-      # we are really directly over a segment, or that segment is to the right
-      # of mouse position (because we searched for all segments to the left and
-      # up of the position). In any case, this is the segment we want to pad.
+      # segment is to the left of mouse position (because we searched for
+      # all segments to the left and up of the position and we already checked
+      # if we are directly over a segment). This is the segment we want to pad.
       @_padTextSegment position, segmentIndex
       return
 
@@ -247,11 +287,20 @@ class Page
     # of the page and there are no text segments to the left and up. So we as well
     # do a search from the beginning of the page to the last text segment on the
     # text line just above our position.
-    while @textSegments[segmentIndex + 1]
-      if @textSegments[segmentIndex + 1].boundingBox.top + @textSegments[segmentIndex + 1].boundingBox.height > position.top
-        break
+    # We keep track of the number of skipped unselectable segments to not increase
+    # segmentIndex until we get to a selectable segment again (if we do at all).
+    skippedUnselectable = 0
+    while @textSegments[segmentIndex + skippedUnselectable + 1]
+      segment = @textSegments[segmentIndex + skippedUnselectable + 1]
+      if segment.unselectable
+        skippedUnselectable++
       else
-        segmentIndex++
+        segmentIndex += skippedUnselectable
+        skippedUnselectable = 0
+        if segment.boundingBox.top + segment.boundingBox.height > position.top
+          break
+        else
+          segmentIndex++
 
     # segmentIndex can still be -1 if there are no text segments before
     # the mouse position, so let's simply find closest segment and pad that.
@@ -281,6 +330,7 @@ class Page
 
     return unless $textLayerDummy.is(':visible')
 
+    return if @rendering
     @rendering = true
 
     $textLayerDummy.hide()
@@ -319,7 +369,7 @@ class Page
     @highlighter.pageRemoved @
 
 class @Highlighter
-  constructor: (@_$displayWrapper) ->
+  constructor: (@_$displayWrapper, isPdf) ->
     @_pages = []
     @_numPages = null
     @mouseDown = false
@@ -329,16 +379,22 @@ class @Highlighter
 
     @_annotator = new Annotator @, @_$displayWrapper
 
-    @_annotator.addPlugin 'TextHighlights'
+    @_annotator.addPlugin 'CanvasTextHighlights'
     @_annotator.addPlugin 'DomTextMapper'
     @_annotator.addPlugin 'TextAnchors'
-    @_annotator.addPlugin 'PeerLibraryPDF'
+    @_annotator.addPlugin 'TextRange'
+    @_annotator.addPlugin 'TextPosition'
+    @_annotator.addPlugin 'TextQuote'
+    @_annotator.addPlugin 'DOMAnchors'
 
-    # Because TextHighlights is loaded after TextAnchors, we have to manually
-    # set Annotator.TextHighlight value in TextAnchors plugin instance
-    @_annotator.plugins.TextAnchors.Annotator.TextHighlight = Annotator.TextHighlight
+    @_annotator.addPlugin 'PeerLibraryPDF' if isPdf
 
-    $(window).on 'scroll.highlighter resize.highlighter', @checkRender
+    # Annotator.TextPositionAnchor does not seem to be set globally from the
+    # TextPosition's pluginInit, so let's do it here again
+    # TODO: Can this be fixed somehow?
+    Annotator.TextPositionAnchor = @_annotator.plugins.TextPosition.Annotator.TextPositionAnchor
+
+    $(window).on 'scroll.highlighter resize.highlighter', @checkRender if isPdf
 
   destroy: =>
     $(window).off '.highlighter'

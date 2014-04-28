@@ -32,8 +32,7 @@ Template.installWizard.events
         # Refocus for user to correct an error
         Meteor.setTimeout =>
           $(template.findAll '#install-password-input').focus()
-        ,
-          10
+        , 10 # ms
       else
         # We keep installInProgress set to true to prevent any race-condition duplicate form submission
 

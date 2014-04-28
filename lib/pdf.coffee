@@ -1,5 +1,4 @@
 WHITESPACE_REGEX = /\s+/g
-TRIM_WHITESPACE_REGEX = /^\s+|\s+$/gm
 
 if Meteor.isClient
   ctx = document.createElement('canvas').getContext '2d'
@@ -75,14 +74,17 @@ PDFJS.pdfImageSegment = (geom) ->
   boundingBox: _.pick geom, 'left', 'top', 'width', 'height'
   style: _.pick geom, 'left', 'top', 'width', 'height'
 
+# This has to be in sync with how browser text selection is converted to a string (it adds
+# a space between divs) and how it is then normalized in DomTextMapper.readSelectionText,
+# DomTextMatcher.readSelectionText, Annotator.normalizeString (they trim and replace white space)
 PDFJS.pdfExtractText = (textContents...) ->
   texts = for textContent in textContents
     text = (t.str for t in textContent).join ' '
 
-    # Remove multiple whitespace characters and trim them away
-    text = text.replace(WHITESPACE_REGEX, ' ').replace(TRIM_WHITESPACE_REGEX, '')
+    # Trim and remove multiple whitespace characters
+    text = text.trim().replace(WHITESPACE_REGEX, ' ')
 
-    # TODO: Clean-up the text: remove hypenation
+    # TODO: Clean-up the text: remove hypenation (be careful, DomTextMapper.readSelectionText should do the same then)
 
     text
 

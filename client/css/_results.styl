@@ -11,15 +11,52 @@ ol.item-list
   padding 5px
 
   li.result-item
+    position relative
     background white
     padding 20px
     margin 10px 0
     border-radius 2px
-    box-shadow 0 0 0 1px rgba(14,41,57,0.12)
-    transition 0.2s
+    box-shadow 0 0 0 1px box-shadow-border
+    transition box-shadow 0.2s
+
+    .edit, .library-menu
+      display inline-block
+      visibility hidden
+      opacity 0
+
+    .editable-control
+      width 100%
+
+    .library-menu
+      position absolute
+      right 10px
+      top 0
+      left auto
+      width 22px
+      padding 10px 0
+      border-radius 0 0 2px 2px
+      min-height 0
+      transition all 0.2s
+
+      .library-menu-button:first-of-type
+        margin-top 5px
+
+      .icon
+        float right
+        font-size 16px
+
+    .library-menu:hover
+      border-radius 2px
+      width 300px
+      padding 10px
+      right 0
 
   li.result-item:hover
-    box-shadow 0 0 0 1px rgba(14,41,57,0.12), 0 2px 5px rgba(14,41,57,0.34)
+    box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+    .edit, .library-menu
+      visibility visible
+      opacity 1
 
 .abstract
   display none
