@@ -62,7 +62,7 @@ class @Annotation extends ReadAccessDocument
   #   _id: annotation id
   # license: license information, if known
   # inside: inside which groups this annotations was made/shared
-  # local (client only): is this annotation just a temporary annotation on the client side
+  # local (client only): if it exists this is just a temporary annotation on the client side, 1 (automatically created, LOCAL.AUTOMATIC), 2 (user changed the content, LOCAL.CHANGED)
   # editing (client only): is this annotation being edited
 
   @Meta

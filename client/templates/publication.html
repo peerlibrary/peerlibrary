@@ -233,6 +233,7 @@
 </template>
 
 <template name="annotationEditor">
+  {{! editing can be false here only for local annotations }}
   <div class="annotations-editor {{#unless editing}}collapsed{{/unless}}">
     <div class="annotations-editor-form-wrapper">
       <form class="annotations-form">

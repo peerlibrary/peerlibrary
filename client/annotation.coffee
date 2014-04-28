@@ -10,6 +10,10 @@ class @LocalAnnotation extends Annotation
     name: 'LocalAnnotation'
     collection: null
 
+  @LOCAL:
+    AUTOMATIC: 1
+    CHANGED: 2
+
 Meteor.startup ->
   Annotation.documents.find({}).observeChanges
     added: (id, fields) ->

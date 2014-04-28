@@ -459,7 +459,8 @@ Deps.autorun ->
   return unless Meteor.personId()
 
   localAnnotation = LocalAnnotation.documents.findOne
-    local: true
+    local:
+      $exists: true
     'author._id': Meteor.personId()
     'publication._id': Session.get 'currentPublicationId'
 
@@ -467,7 +468,7 @@ Deps.autorun ->
 
   # There should always be one local annotation (the editor)
   annotation = createAnnotationDocument()
-  annotation.local = true
+  annotation.local = LocalAnnotation.LOCAL.AUTOMATIC
 
   LocalAnnotation.documents.insert annotation
 
@@ -899,7 +900,8 @@ viewportAnnotations = (local) ->
   if local
     conditions.push
       # We display the annotation editor
-      local: true
+      local:
+        $exists: true
       'author._id': Meteor.personId()
 
   if insideGroups.length
@@ -988,10 +990,6 @@ Template.publicationAnnotations.rendered = ->
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
-
-focusEditor = ($editor) ->
-  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
-  $editor.focus()
 
 Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
@@ -1094,6 +1092,45 @@ Template.annotationEditor.destroyed = ->
   @_scribe = null
 
 Template.annotationEditor.events
+  'focus .annotation-content-editor': (e, template) ->
+    return if template.data.editing
+
+    # We set editing based on the focus only for local annotations
+    return unless template.data.local
+
+    # Expand
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .annotation-content-editor': (e, template) ->
+    return unless template.data.editing
+
+    # We set editing based on the focus only for local annotations
+    return unless template.data.local
+
+    $editor = $(e.currentTarget)
+    return if template.data.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # Collapse
+    LocalAnnotation.documents.update template.data._id,
+      $unset:
+        editing: ''
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
+  'input .annotation-content-editor': (e, template) ->
+    return unless template.data.local is LocalAnnotation.LOCAL.AUTOMATIC
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        local: LocalAnnotation.LOCAL.CHANGED
+
+    return # Make sure CoffeeScript does not return anything
+
   'click button.save': (e, template) ->
     $editor = $(template.findAll '.annotation-content-editor')
 
@@ -1144,35 +1181,6 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseup .annotation-content-editor': (e,template) ->
-    return if template.data.editing
-
-    LocalAnnotation.documents.update template.data._id,
-      $set:
-        editing: true
-
-    focusEditor $(e.currentTarget)
-
-    return # Make sure CoffeeScript does not return anything
-
-  'input .annotation-content-editor': (e, template) ->
-    $editor = $(e.currentTarget)
-
-    if $editor.text()
-      unless template.data.editing
-        # Expand
-        LocalAnnotation.documents.update template.data._id,
-          $set:
-            editing: true
-    else
-      if template.data.editing
-        # Collapse
-        LocalAnnotation.documents.update template.data._id,
-          $unset:
-            editing: ''
-
-    return # Make sure CoffeeScript does not return anything
-
 Template.visibilityMenu.public = ->
   if @local
     getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
@@ -1213,12 +1221,12 @@ Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text() or $editor.is ':focus'
+  if $editor.text().trim() or $editor.is ':focus'
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
 
-  @_scribe = createEditor @, $(@findAll '.comment-content-editor'), null, true unless @_scribe
+  @_scribe = createEditor @, $editor, null, true unless @_scribe
 
 Template.annotationCommentEditor.destroyed = ->
   destroyEditor @
@@ -1231,12 +1239,18 @@ Template.annotationCommentEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'blur .comment-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.removeClass 'active' unless $editor.text().trim()
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
   'input .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
-
-    if $editor.text()
-      $wrapper.addClass 'active'
+    $wrapper.addClass 'active' if $editor.text().trim()
 
     return # Make sure CoffeeScript does not return anything
 
