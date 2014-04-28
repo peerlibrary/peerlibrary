@@ -24,9 +24,9 @@
 </template>
 
 <template name="importCancelButton">
-  <button href="" class="canceled {{invisibility}}">
-    <i class="icon-cancel"></i>
-  </button>
+  <button href="" class="{{invisibility}}">
+    <i class="icon-cancel canceled"></i>
+  </button >
 </template>
 
 <template name="signInOverlay">
@@ -40,7 +40,7 @@
 </template>
 
 <template name="importingFilesName">
-  <div>{{name}}</div>
+  <div>{{truncateName}}</div>
 </template> 
 
 <template name="importingFilesProgress">

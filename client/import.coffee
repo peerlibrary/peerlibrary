@@ -218,7 +218,7 @@ Template.importButton.events =
 Template.importCancelButton.events =
   'click .canceled': (e) ->
     e.preventDefault()
-    # We stop event propagation to prevent the cancel from bubbling up
+    # We stop event propagation to prevent the cancel from bubbling up 
     # to hide the overlay.
     e.stopPropagation()
 
@@ -326,6 +326,14 @@ Template.importOverlay.importOverlayActive = ->
 
 Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
+
+Template.importingFilesName.truncateName = ->
+  filename = ImportingFile.documents.findOne(@_id)?.name
+  len = filename.length
+  if len < 60
+    return filename
+  return filename.substring(0,28)+'...'+filename.substring(len-28, len)
+
 
 Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
