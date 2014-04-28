@@ -127,3 +127,19 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
+# We allow passing the collection slug if caller knows it
+Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) ->
+  collection = Collection.documents.findOne collectionId
+
+  return Meteor.Router.collectionPath collection._id, collection.slug if collection
+
+  Meteor.Router.collectionPath collectionId, slug
+
+# Optional collection document
+Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
+  collection = Collection.documents.findOne collectionId unless collection
+  assert collectionId, comment._id if collection
+
+  _id: collectionId # TODO: Remove when we will be able to access parent template context
+  text: "c:#{ collectionId }"
+  title: collection?.name or collection?.slug

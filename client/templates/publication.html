@@ -7,13 +7,13 @@
     {{#if notfound}}
       <div class="simple notfound">
         <h2>404 Not found</h2>
-        <p>Publication not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
+        <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
       <div class="viewer">
         {{#with publication}}
           {{> publicationMetaMenu}}
-          {{#if currentPerson}}
+          {{#if currentPersonId}}
             {{> publicationLibraryMenu}}
           {{/if}}
         {{/with}}
@@ -35,7 +35,7 @@
       </p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/each}}
       </p>
       <p>Source: {{source}}</p>
@@ -188,9 +188,9 @@
 </template>
 
 <template name="publicationAnnotationsItem">
-  <li class="annotation {{#if local}}local{{/if}} {{selected}}">
+  <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
-      <a href="{{profilePath currentPerson.slug}}">
+      <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
         <img src="{{currentPerson.avatar 30}}" class="avatar" />
       </a>
     {{else}}
@@ -211,10 +211,10 @@
           </div>
         {{/if}}
         <div class="annotation-footer">
-          <a href="{{profilePath author.slug}}">
+          <a href="{{personPathFromId author._id author.slug}}">
             <img src="{{author.avatar 30}}" class="avatar" />
           </a>
-          <h4 class="author-name"><a href="{{profilePath author.slug}}">{{author.displayName}}</a></h4>
+          <h4 class="author-name"><a href="{{personPathFromId author._id author.slug}}">{{author.displayName}}</a></h4>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
@@ -233,31 +233,28 @@
 </template>
 
 <template name="annotationEditor">
+  {{! editing can be false here only for local annotations }}
   <div class="annotations-editor {{#unless editing}}collapsed{{/unless}}">
     <div class="annotations-editor-form-wrapper">
       <form class="annotations-form">
-        {{!
-        <div class="form-header">
-          <span class="form-title"><h2>New Annotation</h2></span>
-          <span class="form-status">Changes saved</span>
-        </div>
-        }}
         <div class="form-content">
           <div class="format-toolbar">
-            <ul class="format-buttons">
-              <li data-command-name="bold"><i class="icon-bold"></i></li>
-              <li data-command-name="italic"><i class="icon-italic"></i></li>
-              <li data-command-name="insertOrderedList"><i class="icon-list-numbered"></i></li>
-              <li data-command-name="insertUnorderedList"><i class="icon-list-bullet"></i></li>
-              <li data-command-name="linkPrompt"><i class="icon-link"></i></li>
-              <li data-command-name="blockquote"><i class="icon-quote-left"></i></li>
-              <li class="inactive"><i class="icon-math"></i></li>
-              <li class="inactive"><i class="icon-code"></i></li>
-            </ul>
+            {{#constant}}
+              <div class="format-buttons">
+                <button data-command-name="bold" type="button" title="{{keyboardShortcut}}B"><i class="icon-bold"></i></button>
+                <button data-command-name="italic" type="button" title="{{keyboardShortcut}}I"><i class="icon-italic"></i></button>
+                <button data-command-name="insertOrderedList" type="button"><i class="icon-list-numbered"></i></button>
+                <button data-command-name="insertUnorderedList" type="button"><i class="icon-list-bullet"></i></button>
+                <button data-command-name="linkPrompt" type="button" title="{{keyboardShortcut}}L"><i class="icon-link"></i></button>
+                <button data-command-name="blockquote" type="button"><i class="icon-quote-left"></i></button>
+                <button class="disabled" type="button"><i class="icon-math"></i></button>
+                <button class="disabled" type="button"><i class="icon-code"></i></button>
+              </div>
+            {{/constant}}
           </div>
           <div class="form-body">
             {{#constant}}
-              <div class="annotation-content-editor" contenteditable>
+              <div class="content-editor annotation-content-editor" contenteditable="contenteditable">
                 {{{body}}}
               </div>
             {{/constant}}
@@ -297,7 +294,7 @@
     {{#each comments}}
       {{> annotationCommentsListItem}}
     {{/each}}
-    {{#if currentPerson}}
+    {{#if currentPersonId}}
       {{> annotationCommentEditor}}
     {{/if}}
   </ul>
@@ -305,7 +302,7 @@
 
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
-    <a href="{{profilePath author.slug}}">
+    <a href="{{personPathFromId author_.id author.slug}}">
       <img src="{{author.avatar 30}}" class="avatar" />
     </a>
     <div class="comment-content">
@@ -319,12 +316,12 @@
 
 <template name="annotationCommentEditor">
   <li class="comment-editor">
-    <a href="{{profilePath currentPerson.slug}}">
+    <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
       <img src="{{currentPerson.avatar 30}}" class="avatar" />
     </a>
     <div class="comment-content">
       {{#constant}}
-        <div class="comment-content-editor" contenteditable></div>
+        <div class="content-editor comment-content-editor" contenteditable="contenteditable"></div>
       {{/constant}}
       <button type="button" class="btn blue comment">Comment</button>
     </div>
@@ -340,7 +337,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -380,7 +377,7 @@
       <div class="vertical-align-inner">
         <p class="no-annotations hint balance-text">
           There are no annotations yet.
-          {{#if currentPerson}}
+          {{#if currentPersonId}}
             Create the first above.
           {{else}}
             Sing in to create the first.
@@ -389,13 +386,13 @@
         <p class="hint balance-text">
           {{#unless highlights}}
             There are no highlights yet.
-            {{#if currentPerson}}
+            {{#if currentPersonId}}
               Select text in the publication to create one.
             {{else}}
               Sing in to create one.
             {{/if}}
           {{else}}
-            {{#if currentPerson}}
+            {{#if currentPersonId}}
               Select text in the publication to create a highlight, or click on an existing highlight to select it.
             {{else}}
               To create a highlight sign in.
@@ -408,7 +405,7 @@
 </template>
 
 <template name="annotationSignInInvite">
-  {{#unless currentPerson}}
+  {{#unless currentPersonId}}
     <li class="annotation">
       <p class="hint balance-text">
         Sign in to create an annotation or a highlight.
@@ -423,23 +420,26 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+      <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
     {{/with}}
   </p>
   <p class="time">{{createdAt}}</p>
   <p class="time">{{updatedAt}}</p>
-  <p class="annotations">
+  <p class="references">
+    Referencing:
     {{#each referencingAnnotations}}
-      <span><a href="{{annotationPathFromId _id}}">a:{{_id}}</a></span>
-    {{else}}
-      Not linked to any annotation.
+      {{#with annotationReference _id this}}
+        <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+          {{text}}
+        </a></span>
+      {{/with}}
     {{/each}}
   </p>
 </template>
 
 <template name="annotationsControl">
   <div class="annotations-control">
-    {{#if currentPerson}}
+    {{#if currentPersonId}}
       {{! TODO: Temporary disabled, not yet finalized code
         <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
       }}
@@ -448,7 +448,7 @@
         <div class="filter">
           Groups filter:
           {{#each inside}}
-            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
+            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
           {{/each}}
         </div>
       {{/if}}
@@ -465,7 +465,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -474,15 +474,67 @@
         <p class="inside">
           Inside groups:
           {{#each inside}}
-            <span><a href="{{groupPath _id slug}}">{{name}}</a></span>
+            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
           {{/each}}
         </p>
       {{/if}}
-      <p class="highlights">
+      <p class="references">
+        Referencing:
         {{#each references.highlights}}
-          <span><a href="{{highlightPathFromId _id}}">h:{{_id}}</a></span>
-        {{else}}
-          Not linked to any highlight.
+          {{#with highlightReference _id this}}
+            <span><a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.annotations}}
+          {{#with annotationReference _id this}}
+            <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.publications}}
+          {{#with publicationReference _id this}}
+            <span><a href="{{publicationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.persons}}
+          {{#with personReference _id this}}
+            <span><a href="{{personPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.groups}}
+          {{#with groupReference _id this}}
+            <span><a href="{{groupPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.tags}}
+          {{#with tagReference _id this}}
+            <span><a href="{{tagPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.collections}}
+          {{#with collectionReference _id this}}
+            <span><a href="{{collectionPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
+        {{/each}}
+        {{#each references.comments}}
+          {{#with commentReference _id this}}
+            <span><a href="{{commentPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
+              {{text}}
+            </a></span>
+          {{/with}}
         {{/each}}
       </p>
       {{#if canModifyAccess}}
@@ -560,4 +612,39 @@
       <span class="group-name">{{name}}</span>
     </button>
   </li>
+</template>
+
+<template name="editorLinkPrompt">
+  <div class="editor-link-prompt">
+    <form class="editor-link-form">
+      {{#constant}}
+        <input type="text" placeholder="Enter URL" value="{{link}}" class="editor-link-input" autofocus="autofocus" />
+      {{/constant}}
+    </form>
+    <p class="hint">
+      {{#unless parsedLink}}
+        Enter the URL of a highlight, annotation, publication, etc., to make a reference to it.
+      {{else}}
+        {{#if parsedLink.error}}
+          Error parsing the URL.
+        {{else}}
+          {{#if parsedLink.isExternal}}
+            You are linking an external URL.
+          {{else}}
+            {{#if parsedLink.isInternal}}
+              You are linking an internal URL.
+            {{else}}
+              You are referencing {{parsedLink.referenceName}}:
+                {{#if parsedLink.path}}<a href="{{parsedLink.path}}"{{#if parsedLink.title}} title="{{parsedLink.title}}"{{/if}}>{{/if}}{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}{{#if parsedLink.path}}</a>{{/if}}
+            {{/if}}
+          {{/if}}
+        {{/if}}
+      {{/unless}}
+  </div>
+</template>
+
+<template name="highlightPromptInEditor">
+  {{#with highlightReference _id}}
+    <p>In <a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a> ...</p>
+  {{/with}}
 </template>

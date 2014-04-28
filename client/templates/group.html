@@ -7,7 +7,7 @@
     {{#if notfound}}
       <div class="simple notfound">
         <h2>404 Not found</h2>
-        <p>Group not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
+        <p>Group not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
       {{> groupName group}}
@@ -42,7 +42,7 @@
 <template name="groupMembersAddControl">
     <h3>Add a member</h3>
     <div class="add-control">
-      <input type="text" class="add-group-member" placeholder="Search by username, name, or e-mail" />
+      <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
       {{> groupMembersAddControlNoResults}}
       {{> groupMembersAddControlResults}}
       {{> groupMembersAddControlLoading}}
@@ -79,7 +79,7 @@
   <li class="member person">
     <img src="{{avatar}}" class="avatar" />
     <h4 class="member-name">
-      <a href="{{profilePath slug}}" title="{{displayName}}">{{displayName}}</a>
+      <a href="{{personPathFromId _id slug}}" title="{{displayName}}">{{displayName}}</a>
     </h4>
     <button class="remove-button icon-cancel"></button>
   </li>
@@ -89,7 +89,7 @@
   <li class="member group">
     <i class="icon-group avatar"></i>
     <h4 class="member-name">
-      <a href="{{groupPath _id slug}}" title="{{name}}">{{name}}</a>
+      <a href="{{groupPathFromId _id slug}}" title="{{name}}">{{name}}</a>
     </h4>
     <button class="remove-button icon-cancel"></button>
   </li>

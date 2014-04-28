@@ -60,8 +60,7 @@ subscribe = (template, email) ->
       # Refocus for user to correct an error
       Meteor.setTimeout =>
         $(template.findAll '#newsletter-dialog-email').focus()
-      ,
-        10
+      , 10 # ms
 
     else
       Session.set 'newsletterError', null

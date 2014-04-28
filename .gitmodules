@@ -22,15 +22,19 @@
 	path = packages/scribe/scribe-plugin-blockquote-command
 	url = https://github.com/peerlibrary/scribe-plugin-blockquote-command.git
 	branch = dist
-[submodule "packages/scribe/scribe-plugin-curly-quotes"]
-	path = packages/scribe/scribe-plugin-curly-quotes
-	url = https://github.com/peerlibrary/scribe-plugin-curly-quotes.git
-	branch = dist
-[submodule "packages/scribe/scribe-plugin-link-prompt-command"]
-	path = packages/scribe/scribe-plugin-link-prompt-command
-	url = https://github.com/peerlibrary/scribe-plugin-link-prompt-command.git
-	branch = dist
 [submodule "packages/scribe/scribe-plugin-sanitizer"]
 	path = packages/scribe/scribe-plugin-sanitizer
 	url = https://github.com/peerlibrary/scribe-plugin-sanitizer.git
 	branch = peerlibrary
+[submodule "packages/scribe/scribe-plugin-keyboard-shortcuts"]
+	path = packages/scribe/scribe-plugin-keyboard-shortcuts
+	url = https://github.com/peerlibrary/scribe-plugin-keyboard-shortcuts.git
+	branch = dist
+[submodule "packages/scribe/scribe-plugin-heading-command"]
+	path = packages/scribe/scribe-plugin-heading-command
+	url = https://github.com/peerlibrary/scribe-plugin-heading-command.git
+	branch = dist
+[submodule "packages/scribe/scribe-plugin-toolbar"]
+	path = packages/scribe/scribe-plugin-toolbar
+	url = https://github.com/peerlibrary/scribe-plugin-toolbar.git
+	branch = dist

@@ -184,3 +184,20 @@ Template.groupMembersAddControlResultsItem.events
       Notify.success "Member added." if count
 
     return # Make sure CoffeeScript does not return anything
+
+# We allow passing the group slug if caller knows it
+Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
+  group = Group.documents.findOne groupId
+
+  return Meteor.Router.groupPath group._id, group.slug if group
+
+  Meteor.Router.groupPath groupId, slug
+
+# Optional group document
+Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
+  group = Group.documents.findOne groupId unless group
+  assert groupId, group._id if group
+
+  _id: groupId # TODO: Remove when we will be able to access parent template context
+  text: "g:#{ groupId }"
+  title: group?.name or group?.slug

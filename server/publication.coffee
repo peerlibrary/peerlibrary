@@ -157,7 +157,8 @@ class @Publication extends Publication
   processTEI: =>
     tei = Storage.open @cachedFilename()
 
-    @fullText = cheerio.load(tei).root().text().replace(/\s+/g, ' ').trim()
+    $ = cheerio.load tei
+    @fullText = $.root().text().replace(/\s+/g, ' ').trim()
 
     # TODO: We could also add some additional information (statistics, how long it took and so on)
     @processed = moment.utc().toDate()
@@ -426,7 +427,11 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       Publication.PUBLISH_FIELDS()
   ,
     Person.documents.find
-      slug: slug
+      $or: [
+        slug: slug
+      ,
+        _id: slug
+      ]
     ,
       fields:
         _id: 1 # We want only id

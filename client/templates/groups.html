@@ -23,7 +23,7 @@
           The filter matches no groups.
         {{else}}
           There are no groups yet.
-            {{#if currentPerson}}
+            {{#if currentPersonId}}
               Create the first using the form on the right.
             {{else}}
               Sing in and create the first.
@@ -32,7 +32,7 @@
       </p>
       {{/if}}
     </div>
-    {{#if currentPerson}}
+    {{#if currentPersonId}}
       {{> myGroups}}
     {{/if}}
   </div>
@@ -40,7 +40,7 @@
 
 <template name="groupListing">
   <li class="group-listing">
-    <h2><a href="{{groupPath _id slug}}" class="group-name">{{name}}</a></h2>
+    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
     <span class="group-count">{{countDescription}}</span>
   </li>
 </template>

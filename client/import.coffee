@@ -135,7 +135,7 @@ importFile = (file) ->
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
-      , 5 # 0 does not seem to work, 5 seems to work
+      , 5 # ms, 0 does not seem to work, 5 seems to work
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()

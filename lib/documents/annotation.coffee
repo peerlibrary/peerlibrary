@@ -36,10 +36,23 @@ class @Annotation extends ReadAccessDocument
   #     gravatarHash
   #     user
   #       username
+  #   groups: list of
+  #     _id
+  #     slug
+  #     name
   #   tags: list of
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  #   collections: list of
+  #     _id
+  #     slug
+  #     name
+  #   comments: list of
+  #     _id
+  #   urls: list of
+  #     _id
+  #     url
   # tags: list of
   #   tag:
   #     _id
@@ -49,7 +62,7 @@ class @Annotation extends ReadAccessDocument
   #   _id: annotation id
   # license: license information, if known
   # inside: inside which groups this annotations was made/shared
-  # local (client only): is this annotation just a temporary annotation on the client side
+  # local (client only): if it exists this is just a temporary annotation on the client side, 1 (automatically created, LOCAL.AUTOMATIC), 2 (user changed the content, LOCAL.CHANGED)
   # editing (client only): is this annotation being edited
 
   @Meta
@@ -66,8 +79,13 @@ class @Annotation extends ReadAccessDocument
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
         persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
+        collections: [@ReferenceField Collection, ['slug', 'name'], true, 'referencingAnnotations']
+        # TODO: Are we sure that we want a reverse field for urls? This could become a huge list for popular urls.
+        comments: [@ReferenceField Comment, [], true, 'referencingAnnotations']
+        urls: [@ReferenceField Url, ['url'], true, 'referencingAnnotations']
       tags: [
         tag: @ReferenceField Tag, ['name', 'slug']
       ]

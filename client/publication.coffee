@@ -5,9 +5,6 @@ currentPublication = null
 publicationHandle = null
 publicationCacheHandle = null
 
-# If set to an annotation id, focus on next render
-focusAnnotationId = null
-
 # We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
 # Otherwise publicationDOMReady stored in Session would be restored to true which
@@ -84,8 +81,6 @@ class @Publication extends Publication
     @_pagesDone = 0
     @_pages = []
     @_highlighter = new Highlighter @_$displayWrapper, true
-
-    focusAnnotationId = null
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -259,7 +254,6 @@ class @Publication extends Publication
     Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
-    focusAnnotationId = null
 
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
@@ -334,8 +328,6 @@ class @Publication extends Publication
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
   showTEI: =>
-    focusAnnotationId = null
-
     # To make sure we are starting with empty slate
     @_$displayWrapper.empty()
     publicationDOMReady.set false
@@ -462,11 +454,13 @@ Deps.autorun ->
 Deps.autorun ->
   return unless Session.get 'currentPublicationId'
 
-  # No editor unless logged in
-  return unless Meteor.person()
+  # Enough is to check if user is logged in. Check if user has
+  # read access to the publication is made on the server side.
+  return unless Meteor.personId()
 
   localAnnotation = LocalAnnotation.documents.findOne
-    local: true
+    local:
+      $exists: true
     'author._id': Meteor.personId()
     'publication._id': Session.get 'currentPublicationId'
 
@@ -474,7 +468,7 @@ Deps.autorun ->
 
   # There should always be one local annotation (the editor)
   annotation = createAnnotationDocument()
-  annotation.local = true
+  annotation.local = LocalAnnotation.LOCAL.AUTOMATIC
 
   LocalAnnotation.documents.insert annotation
 
@@ -843,8 +837,6 @@ Template.annotationsControl.events
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       return Notify.meteorError error, true if error
 
-      focusAnnotationId = annotationId
-
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
@@ -898,12 +890,18 @@ viewportAnnotations = (local) ->
       $exists: false
     'references.highlights._id':
       $in: visibleHighlights
+  ,
+    # We display those which the user is editing (otherwise user could lose edited content)
+    local:
+      $exists: false
+    editing: true
   ]
 
   if local
     conditions.push
       # We display the annotation editor
-      local: true
+      local:
+        $exists: true
       'author._id': Meteor.personId()
 
   if insideGroups.length
@@ -952,6 +950,13 @@ Template.publicationAnnotations.created = ->
       # through a publication-only location
       return
 
+    # Left mouse button and mouseup happened on a link prompt dialog
+    else if e.which is 1 and $(e.target).closest('.editor-link-prompt-dialog').length
+      # If mouseup happened on a link prompt dialog, we leave location unchanged
+      # so that we update location to the dialog parent location without going
+      # through a publication-only location
+      return
+
     else
       # Otherwise we deselect the annotation
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
@@ -986,25 +991,6 @@ Template.publicationAnnotations.rendered = ->
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
 
-focusAnnotation = (body) ->
-  return unless body
-
-  if $(body).text().length > 0
-    currentPublication?._highlighter?._annotator?._deselectAllHighlights()
-
-    range = document.createRange()
-    selection = window.getSelection()
-    range.setStart body, 1
-    range.collapse true
-    selection.removeAllRanges()
-    selection.addRange range
-
-  body.focus()
-
-focusEditor = ($editor) ->
-  currentPublication?._highlighter?._annotator?._deselectAllHighlights()
-  $editor.focus()
-
 Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
     e.preventDefault()
@@ -1024,38 +1010,21 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-  # We do conversion of local annotation already in mousedown so that
-  # we are before mousedown on document which deselects highlights
-  'mousedown': (e, template) ->
-    return
-
-    ###
-    TODO: Get rid of this. Annotation invites are being replaced.
-
-    return unless @local
-
-    LocalAnnotation.documents.update @_id,
-      $unset:
-        local: ''
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
-
-    # On click to convert local annotation we are for sure inside the annotation, so we can
-    # immediatelly send a mouse enter event to make sure related highlight has a hovered state
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
-
-    return # Make sure CoffeeScript does not return anything
-    ###
-
   'click': (e, template) ->
     # We do not select and even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
-      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+      return
     else if $(e.target).closest('.annotations-list .annotation li.comment').length
       Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
+    # Local annotations are special and we de not set location when clicking on them.
+    # IDs are local to the client and we do not want to make user believe annotation
+    # is already saved and that ID is permanent, or even that user would link to that
+    # location.
+    else if @local
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1068,25 +1037,20 @@ Template.publicationAnnotationsItem.rendered = ->
   $annotation.off '.publicationAnnotationsItem'
 
   $annotation.on 'highlightMouseenter.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.addClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.addClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'highlightMouseleave.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.removeClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.removeClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'mouseenter.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseleave.publicationAnnotationsItem', (e, highlightId) =>
+  $annotation.on 'mouseleave.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
-
-  if focusAnnotationId is @data._id
-    focusAnnotationId = null
-
-    focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
 
 Template.publicationAnnotationsItem.canModify = ->
   @hasMaintainerAccess Meteor.person()
@@ -1107,31 +1071,10 @@ Template.annotationTags.rendered = ->
   ###
 
 Template.annotationEditor.created = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  return if @_rendered
-  @_rendered = true
-
-  # Load Scribe
-  @_scribe = new Scribe @find('.annotation-content-editor'),
-    allowBlockElements: true
-
-  @_scribe.use Scribe.plugins['blockquote-command']()
-  @_scribe.use Scribe.plugins['link-prompt-command']()
-  @_scribe.use Scribe.plugins['curly-quotes']()
-  @_scribe.use Scribe.plugins['sanitizer']
-    tags:
-      p: {}
-      br: {}
-      b: {}
-      i: {}
-      blockquote: {}
-      ol: {}
-      ul: {}
-      li: {}
-      a:
-        href: true
+  @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
   ###
   TODO: Temporary disabled, not yet finalized code
@@ -1144,12 +1087,52 @@ Template.annotationEditor.rendered = ->
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
   ###
 
-  return # Make sure CoffeeScript does not return anything
-
 Template.annotationEditor.destroyed = ->
-  @_rendered = false
+  destroyEditor @
+  @_scribe = null
 
 Template.annotationEditor.events
+  'focus .annotation-content-editor': (e, template) ->
+    return if template.data.editing
+
+    # We set editing based on the focus only for local annotations
+    return unless template.data.local
+
+    # Expand
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        editing: true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .annotation-content-editor': (e, template) ->
+    return unless template.data.editing
+
+    # We set editing based on the focus only for local annotations
+    return unless template.data.local
+
+    $editor = $(e.currentTarget)
+    return if template.data.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # Collapse
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        local: LocalAnnotation.LOCAL.AUTOMATIC
+      $unset:
+        editing: ''
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
+  'input .annotation-content-editor': (e, template) ->
+    return unless template.data.local is LocalAnnotation.LOCAL.AUTOMATIC
+
+    LocalAnnotation.documents.update template.data._id,
+      $set:
+        local: LocalAnnotation.LOCAL.CHANGED
+
+    return # Make sure CoffeeScript does not return anything
+
   'click button.save': (e, template) ->
     $editor = $(template.findAll '.annotation-content-editor')
 
@@ -1180,13 +1163,10 @@ Template.annotationEditor.events
     ###
 
     if @local
-      # TODO: Set privacy settings
       Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
         return Notify.meteorError error, true if error
 
         LocalAnnotation.documents.remove @_id
-
-        focusAnnotationId = annotationId
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
@@ -1199,89 +1179,15 @@ Template.annotationEditor.events
           $unset:
             editing: ''
 
-        focusAnnotationId = @_id
-
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseup .annotation-content-editor': (e,template) ->
-    return if template.data.editing
-
-    LocalAnnotation.documents.update template.data._id,
-      $set:
-        editing: true
-
-    focusEditor $(e.currentTarget)
-
-    return # Make sure CoffeeScript does not return anything
-
-  'input .annotation-content-editor': (e, template) ->
-    $editor = $(e.currentTarget)
-
-    if $editor.text()
-      unless template.data.editing
-        # Expand
-        LocalAnnotation.documents.update template.data._id,
-          $set:
-            editing: true
-    else
-      if template.data.editing
-        # Collapse
-        LocalAnnotation.documents.update template.data._id,
-          $unset:
-            editing: ''
-
-    return # Make sure CoffeeScript does not return anything
-
-  'mousedown .format-buttons li': (e, template) ->
-    e.preventDefault()
-
-    # Port of scribe-plugin-toolbar
-    # https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
-    command = template._scribe.getCommand $(e.currentTarget).data 'command-name'
-    template._scribe.el.focus()
-    command.execute()
-
-    return # Make sure CoffeeScript does not return anything
-
-  'keyup .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseup .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'focus .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-  'blur .format-buttons li': (e, template) ->
-    updateScribeUI e, template
-    return # Make sure CoffeeScript does not return anything
-
-# Port of scribe-plugin-toolbar
-# https://github.com/guardian/scribe-plugin-toolbar/blob/dist/scribe-plugin-toolbar.js
-updateScribeUI = (e, template) ->
-  $button = $(e.currentTarget)
-  selection = new template._scribe.api.Selection()
-  command = template._scribe.getCommand $button.data 'command-name'
-
-  if selection.range and command.queryEnabled()
-    $button.removeAttr 'disabled'
-
-    if command.queryState()
-      $button.addClass 'active'
-    else
-      $button.removeClass 'active'
-  else
-    $button.attr 'disabled', 'disabled'
-
-  return # Make sure CoffeeScript does not return anything
-
 Template.visibilityMenu.public = ->
-  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+  if @local
+    getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+  else
+    @access is Annotation.ACCESS.PUBLIC
 
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
@@ -1311,35 +1217,22 @@ Template.annotationCommentsListItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentEditor.created = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text() or $editor.is ':focus'
+  if $editor.text().trim() or $editor.is ':focus'
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
 
-  # Run only once
-  return if @_rendered
-  @_rendered = true
-
-  @_scribe = new Scribe @find('.comment-content-editor'),
-    # No block elements, they would take up too much space
-    allowBlockElements: false
-
-  @_scribe.use Scribe.plugins['curly-quotes']()
-  @_scribe.use Scribe.plugins['sanitizer']
-    tags:
-      b: {}
-      i: {}
-      a:
-        href: true
+  @_scribe = createEditor @, $editor, null, true unless @_scribe
 
 Template.annotationCommentEditor.destroyed = ->
-  @_rendered = false
+  destroyEditor @
+  @_scribe = null
 
 Template.annotationCommentEditor.events
   'focus .comment-content-editor': (e, template) ->
@@ -1348,12 +1241,18 @@ Template.annotationCommentEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'blur .comment-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.removeClass 'active' unless $editor.text().trim()
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
   'input .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
-
-    if $editor.text()
-      $wrapper.addClass 'active'
+    $wrapper.addClass 'active' if $editor.text().trim()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1459,3 +1358,84 @@ Template.contextMenuGroupListing.workingInside = ->
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
+
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addParsedLinkReactiveVariable = (data) ->
+  data._parsedLink = new Variable parseURL data.link unless data._parsedLink
+
+Template.editorLinkPrompt.created = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.rendered = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.destroyed = ->
+  @data._parsedLink = null if @data._parsedLink
+
+Template.editorLinkPrompt.parsedLink = ->
+  addParsedLinkReactiveVariable @
+
+  parsedLink = @_parsedLink()
+
+  return parsedLink if parsedLink?.error
+
+  if parsedLink?.referenceName is 'external'
+    parsedLink.isExternal = true
+    return parsedLink
+
+  if parsedLink?.referenceName is 'internal'
+    parsedLink.isInternal = true
+    return parsedLink
+
+  # For an empty input we might not have an error, but also no reference name and ID
+  return unless parsedLink?.referenceName and parsedLink?.referenceId
+
+  # If we have a helper to help us resolve a path from the ID, let's
+  # use that. This will build a canonical URL if possible to help
+  # user verify their URL.
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
+    parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+
+  # If we have a helper to help us create text and title, let's use that.
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
+    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
+
+  parsedLink
+
+Template.editorLinkPrompt.events
+  'keyup .editor-link-input, change .editor-link-input': (event, template) ->
+    href = $(event.target).val().trim()
+    parsedLink = parseURL href
+
+    if not parsedLink and href
+      parsedLink =
+        error: true
+
+    @_parsedLink.set parsedLink
+
+    return # Make sure CoffeeScript does not return anything
+
+  'submit .editor-link-form': (event, template) ->
+    event.preventDefault()
+
+    # On form submit click on a default button
+    $(template.findAll '.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
+
+    return # Make sure CoffeeScript does not return anything
+
+# We allow passing the publication slug if caller knows it
+Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options) ->
+  publication = Publication.documents.findOne publicationId
+
+  return Meteor.Router.publicationPath publication._id, publication.slug if publication
+
+  Meteor.Router.publicationPath publicationId, slug
+
+# Optional publication document
+Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
+  publication = Publication.documents.findOne publicationId unless publication
+  assert publicationId, publication._id if publication
+
+  _id: publicationId # TODO: Remove when we will be able to access parent template context
+  text: "p:#{ publicationId }"
+  title: publication?.title

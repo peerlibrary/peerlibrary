@@ -15,6 +15,8 @@ class @Comment extends AccessDocument
   #   _id
   # body: in HTML (inline, no block elements)
   # license: license information, if known
+  # referencingAnnotations: list of (reverse field from Annotation.references.urls)
+  #   _id: annotation id
 
   @Meta
     name: 'Comment'

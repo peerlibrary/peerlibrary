@@ -7,7 +7,7 @@
     {{#if notfound}}
       <div class="simple notfound">
         <h2>404 Not found</h2>
-        <p>Collection not found. You might lack permissions to access it.{{#unless currentPerson}} Try signing in.{{/unless}}</p>
+        <p>Collection not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
     {{else}}
       {{> collectionName collection}}
@@ -38,7 +38,7 @@
     <h2>Collection by</h2>
     <div class="member person">
       <img src="{{authorPerson.avatar}}" class="avatar" />
-      <h4 class="member-name"><a href="{{profilePath authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
+      <h4 class="member-name"><a href="{{personPathFromId authorPerson._id authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
     </div>
     {{#if canModify}}
       <h3>Tools</h3>

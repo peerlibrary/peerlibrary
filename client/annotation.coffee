@@ -10,6 +10,10 @@ class @LocalAnnotation extends Annotation
     name: 'LocalAnnotation'
     collection: null
 
+  @LOCAL:
+    AUTOMATIC: 1
+    CHANGED: 2
+
 Meteor.startup ->
   Annotation.documents.find({}).observeChanges
     added: (id, fields) ->
@@ -44,7 +48,10 @@ Meteor.startup ->
     annotations: []
     publications: []
     persons: []
+    groups: []
     tags: []
+    collections: []
+    comments: []
   tags: []
   body: ''
 
@@ -60,3 +67,11 @@ Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
   return Meteor.Router.annotationIdPath annotationId unless publication
 
   Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+
+# Optional annotation document
+Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->
+  annotation = Annotation.documents.findOne annotationId unless annotation
+  assert annotationId, annotation._id if annotation
+
+  _id: annotationId # TODO: Remove when we will be able to access parent template context
+  text: "a:#{ annotationId }"

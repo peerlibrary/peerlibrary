@@ -1,3 +1,5 @@
+url = Npm.require 'url'
+
 class @Annotation extends Annotation
   @Meta
     name: 'Annotation'
@@ -8,6 +10,34 @@ class @Annotation extends Annotation
     fields: {} # All
 
 registerForAccess Annotation
+
+# TODO: This parsing could be done through PeerDB instead, on any body field change
+parseReferences = (body) ->
+  references =
+    highlights: []
+    annotations: []
+    publications: []
+    persons: []
+    groups: []
+    tags: []
+    collections: []
+    comments: []
+    urls: []
+
+  $ = cheerio.load body
+  $.root().find('a').each (i, a) =>
+    href = $(a).attr('href')
+
+    {referenceName, referenceId} = parseURL(href) or {}
+
+    return unless referenceName and referenceId and references["#{ referenceName }s"]
+
+    references["#{ referenceName }s"].push
+      _id: referenceId
+
+    return # Make sure CoffeeScript does not return anything
+
+  references
 
 Meteor.methods
   'annotations-path': (annotationId) ->
@@ -25,7 +55,7 @@ Meteor.methods
     )
     return unless publication
 
-    [publication._id, publication.slug, annotationId]
+    [publication._id, publication.slug, annotation._id]
 
   'create-annotation': (publicationId, body, access, groups) ->
     check publicationId, DocumentId
@@ -39,6 +69,8 @@ Meteor.methods
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
     body = '' unless body
+
+    references = parseReferences body
 
     publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
       _id: publicationId
@@ -64,12 +96,7 @@ Meteor.methods
         _id: person._id
       publication:
         _id: publicationId
-      references:
-        highlights: []
-        annotations: []
-        publications: []
-        persons: []
-        tags: []
+      references: references
       tags: []
       body: body
       access: access
@@ -91,6 +118,8 @@ Meteor.methods
 
     # TODO: Verify if body is valid HTML and does not contain anything we do not allow
 
+    references = parseReferences body
+
     annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
       _id: annotationId
     )
@@ -107,6 +136,7 @@ Meteor.methods
       $set:
         updatedAt: moment.utc().toDate()
         body: body
+        references: references
 
   # TODO: Use this code on the client side as well
   'remove-annotation': (annotationId) ->

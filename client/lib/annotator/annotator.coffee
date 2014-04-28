@@ -136,16 +136,17 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
-  _addHighlightToEditor: (id) =>
-    LocalAnnotation.documents.update
-      local: true
+  _addHighlightToEditor: (highlightId) =>
+    body = Template.highlightPromptInEditor(_id: highlightId).trim()
+
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
       'publication._id': Session.get 'currentPublicationId'
     ,
       $set:
-        editing: true
-      $addToSet:
-        'references.highlights':
-          _id: id
+        body: body
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html(body) if count
 
   updateLocation: =>
     # This is our annotations
@@ -189,6 +190,8 @@ class @Annotator extends Annotator
     true
 
   canCreateHighlight: =>
+    # Enough is to check if user is logged in. Check if user has read
+    # access to the publication content is made on the server side.
     Meteor.personId()
 
   onSuccessfulSelection: (event, immediate) =>

@@ -107,7 +107,7 @@
 
 <template name="publicationSearchResult">
   <li class="result-item" data-publication-id="{{_id}}">
-    {{#if currentPerson}}
+    {{#if currentPersonId}}
       {{> publicationLibraryMenu}}
     {{/if}}
     <div class="article-summary">
@@ -119,7 +119,7 @@
         {{#if authors.length}}
           <span class="authors">
             {{#each authors}}
-              <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
             {{/each}}
           </span>
           <br/>
@@ -134,7 +134,7 @@
               <a href="#" class="preview-link">Abstract</a> &middot;
             {{/if}}
           {{/if}}
-          <a href="{{publicationPath _id slug}}">Full text</a>{{> accessIcon}}
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
         </span>
       </div>
       {{#if thumbnailUrls.length}}
@@ -158,7 +158,7 @@
 
 <template name="publicationSearchResultTitle">
   <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
-    <a href="{{publicationPath _id slug}}">
+    <a href="{{publicationPathFromId _id slug}}">
       {{#if title}}
         {{title}}
       {{else}}
