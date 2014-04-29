@@ -40,6 +40,7 @@ Template.results.created = ->
 Template.results.rendered = ->
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
+    $(window).trigger('scroll.results')
 
 Template.results.destroyed = ->
   $(window).off '.results'
