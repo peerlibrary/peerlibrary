@@ -223,7 +223,7 @@ Template.importButton.events =
 Template.importCancelButton.events =
   'click .canceled': (e) ->
     e.preventDefault()
-    # We stop event propagation to prevent the cancel from bubbling up 
+    # We stop event propagation to prevent the cancel from bubbling up
     # to hide the overlay.
     e.stopPropagation()
 
