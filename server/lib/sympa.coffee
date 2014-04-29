@@ -11,7 +11,7 @@
 if Meteor.settings?.sympa?.username and Meteor.settings?.sympa?.password
   WebApp.connectHandlers.use('/sympa', connect.basicAuth(Meteor.settings.sympa.username, Meteor.settings.sympa.password))
 
-  Meteor.Router.add '/sympa', 'GET', ->
+  Meteor.Router.serverAdd '/sympa', 'GET', ->
     lines = Person.documents.find().map (person, index, cursor) ->
       # Process only registered users
       return '' unless person.user
