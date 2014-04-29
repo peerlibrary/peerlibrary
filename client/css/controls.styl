@@ -14,13 +14,20 @@ input, button
 input
   min-width 10em
 
-input:focus
+input:focus, button:focus
   border 1px solid #a1b3c2
+  box-shadow 0 0 2px #a1b3c2
 
 button
   background-color box-shadow-background
 
 button:hover
+  background-color box-shadow-border
+
+button.default
+  background-color box-shadow-background-default
+
+button.default:hover
   background-color box-shadow-border
 
 /* Edit button
@@ -30,7 +37,10 @@ button:hover
   display none
   vertical-align middle
   background none
-  border none
+  /* For focused style */
+  padding 4px
+  border 1px solid transparent
+  border-radius 5px
 
 .edit:hover, .meta-menu .edit:hover
   background none
@@ -39,6 +49,10 @@ button:hover
 .editable:hover
   .edit
     display inline-block
+
+h1
+  .edit
+    margin-top -5px
 
 /* Search bar
 ============= */
@@ -111,10 +125,13 @@ button:hover
     background-color rgba(80,80,80,0.9)
 
   button.default
-    background-color rgba(190, 190, 190, 0.9)
+    background-color rgba(110, 110, 110, 0.9)
 
   button.default:hover
-    background-color rgba(210, 210, 210, 0.9)
+    background-color rgba(80, 80, 80, 0.9)
+
+  button:focus
+    box-shadow 0 0 0 2px rgba(255, 255, 255, 0.4)
 
   .input-and-buttons
     width 100%
