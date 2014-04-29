@@ -86,6 +86,8 @@ else
   # are using it in parsing HTML to extract all references. We extract
   # only those references for routes which have documentId set (and
   # have a place to store them in schema, eg. Annotation.references).
+  # With documentName you can override the name of a reference
+  # (otherwise route name is used).
 
   Meteor.Router.add
     '/':
@@ -199,6 +201,8 @@ else
 
     '/h/:highlightId':
       as: 'highlightId'
+      documentId: 'highlightId'
+      documentName: 'highlight'
       to: (highlightId) ->
         setSession()
         redirectHighlightId highlightId
@@ -206,6 +210,8 @@ else
 
     '/a/:annotationId':
       as: 'annotationId'
+      documentId: 'annotationId'
+      documentName: 'annotation'
       to: (annotationId) ->
         setSession()
         redirectAnnotationId annotationId
@@ -213,6 +219,8 @@ else
 
     '/m/:commentId':
       as: 'commentId'
+      documentId: 'commentId'
+      documentName: 'comment'
       to: (commentId) ->
         setSession()
         redirectCommentId commentId
