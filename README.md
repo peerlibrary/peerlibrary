@@ -70,6 +70,9 @@ Recursively clone a PeerLibrary repository:
 
     git clone --recursive https://github.com/peerlibrary/peerlibrary.git
 
+This will give you the latest development version of PeerLibrary (`development` branch). The latest
+stable version is in the `master` branch.
+
 And then run a development instance of PeerLibrary:
 
     mrt
