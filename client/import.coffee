@@ -314,6 +314,7 @@ Template.importOverlay.events =
     # TODO: Check if this is still necessary in the new version of Meteor
 
     return if e.isPropagationStopped()
+
     hideOverlay()
 
     return # Make sure CoffeeScript does not return anything
@@ -335,9 +336,11 @@ Template.importOverlay.importingFiles = ->
 Template.importingFilesName.truncateName = ->
   filename = ImportingFile.documents.findOne(@_id)?.name
   len = filename.length
-  if len < 60
+  if len < 50
+
     return filename
-  return filename.substring(0,28)+'...'+filename.substring(len-28, len)
+
+  return filename.substring(0,23)+'...'+filename.substring(len-23, len)
 
 
 Deps.autorun ->
