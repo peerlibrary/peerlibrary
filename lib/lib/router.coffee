@@ -4,6 +4,7 @@ if Meteor.isServer
   # We override Meteor.Router.add with our own function so that same code
   # which  we run on the client side we can reuse on the server side.
   # Code is based on the original Meteor.Router.add client-side code.
+  Meteor.Router.serverAdd = Meteor.Router.add
   Meteor.Router.add = (path, endpoint) ->
     if _.isObject(path) and not _.isRegExp(path)
       return _.each path, (endpoint, p) =>
