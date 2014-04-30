@@ -2,13 +2,8 @@
   {{#if importOverlayActive}}
     <div class="drop-overlay">
       <div class="content">
-        <h1>Imports</h1>
+        <h1>Drop files here</h1>
         <table class="imports-table">
-          <tr>
-            <th class="imports-header name-cell">Name</th>
-            <th class="imports-header progress-cell">Progress</th>
-            <th class="imports-header status-cell">Status</th>
-          </tr>
           {{#each importingFiles}}
             {{> importingFilesItem}}
           {{/each}}
@@ -31,21 +26,20 @@
 <template name="importingFilesItem">
   <tr>
     <td class="imports-cell name-cell">
-      {{truncateName}}
+      {{name}}
     </td>
     <td class="imports-cell progress-cell">
       <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
     </td>
     <td class="imports-cell status-cell">
-      {{#if canceled}}Import Canceled{{else}}{{status}}{{/if}}
+      {{status}}
     </td>
     <td class="imports-cell cancel-cell">
-      {{#if hideCancel}}
-      {{else}}
+      {{#unless hideCancel}}
         <button class="canceled">
           <i class="icon-cancel cancel-white"></i>
         </button>
-      {{/if}}
+      {{/unless}}
     </td>
   </tr>
 </template> 

@@ -6,7 +6,7 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
-  # canceled: true when user cancels import 
+  # canceled: true when user cancels import
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -47,10 +47,12 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
-      # Check if the error thrown is 'canceled' and return nothing if so.
-      if error is 'canceled'
-        return
-      else if error
+      # When the user presses cancel we update the cancel attribute to be true
+      # and throw a special error. This function captures that error and handles
+      # it as a special case.
+      return if error is 'canceled'
+
+      if error
         ImportingFile.documents.update file._id,
           $set:
             errored: true
@@ -231,7 +233,7 @@ Template.importingFilesItem.events =
     ImportingFile.documents.update @_id,
       $set:
         canceled: true
-        status: 'canceled'
+        status: 'Import Canceled'
 
     return # Make sure CoffeeScript does not return anything
 
@@ -315,7 +317,7 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
-    # We are stopping propagation in click on cancel 
+    # We are stopping propagation in click on cancel
     # button but it still propagates so we cancel here
     # TODO: Check if this is still necessary in the new version of Meteor
     return if e.isPropagationStopped()
