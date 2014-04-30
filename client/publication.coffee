@@ -1,4 +1,4 @@
-# Used for assignment of global variables in local scopes
+# Used for global variable assignments in local scopes
 root = @
 
 @SCALE = 1.25
@@ -36,7 +36,7 @@ Meteor.startup ->
 getAnnotationDefaults = ->
   _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
 
-# Set this variable if you want the viewer to display a specific page at start
+# Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
 
 Deps.autorun ->
@@ -773,10 +773,10 @@ Template.publicationScroller.rendered = ->
 
   if startViewerOnPage
     $scroller = $(@findAll '.scroller')
-    $sections = $scroller.find('.section');
+    $sections = $scroller.find('.section')
 
     # Scroll browser viewport to display the desired publication page
-    viewportOffset = $sections.eq(startViewerOnPage-1).offset().top - $scroller.offset().top
+    viewportOffset = $sections.eq(startViewerOnPage - 1).offset().top - $scroller.offset().top
     padding = $sections.eq(0).offset().top - $scroller.offset().top
     scrollToOffset (viewportOffset - padding) / $scroller.height()
 
