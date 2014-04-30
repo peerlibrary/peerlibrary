@@ -1,3 +1,6 @@
+# Used for assignment of global variables in local scopes
+root = @
+
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->
@@ -124,6 +127,12 @@ Template.publicationSearchResult.destroyed = ->
   @_publicationHandle = null
 
 Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
+
+Template.publicationSearchResultThumbnail.events
+  'click li': (e, template) ->
+    root.startViewerOnPage = template.data.page
+    publication = template.data.publication
+    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null
