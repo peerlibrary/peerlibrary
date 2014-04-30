@@ -41,9 +41,10 @@ class @Group extends ReadAccessDocument
     conditions = super
     return conditions unless _.isArray conditions
 
-    conditions.push
-      _id:
-        $in: _.pluck person.inGroups, '_id'
+    if person?._id
+      conditions.push
+        _id:
+          $in: _.pluck person.inGroups, '_id'
 
     conditions
 
