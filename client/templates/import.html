@@ -10,23 +10,12 @@
             <th class="imports-header status-cell">Status</th>
           </tr>
           {{#each importingFiles}}
-            <tr>
-              <td class="imports-cell name-cell">{{> importingFilesName}}</td>
-              <td class="imports-cell progress-cell">{{> importingFilesProgress}}</td>
-              <td class="imports-cell status-cell">{{> importingFilesStatus}}</td>
-              <td class="imports-cell cancel-cell">{{> importCancelButton}}</td>
-            </tr>
+            {{> importingFilesItem}}
           {{/each}}
         <table>
       </div>
     </div>
   {{/if}}
-</template>
-
-<template name="importCancelButton">
-  <button href="" class="canceled {{invisibility}}">
-    <i class="icon-cancel cancel-white"></i>
-  </button>
 </template>
 
 <template name="signInOverlay">
@@ -39,14 +28,24 @@
   {{/if}}
 </template>
 
-<template name="importingFilesName">
-  <div>{{truncateName}}</div>
-</template> 
-
-<template name="importingFilesProgress">
-  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
-</template> 
-
-<template name="importingFilesStatus">
-  <div> {{#if canceled}}Import Canceled{{else}}{{status}}{{/if}}</div>
+<template name="importingFilesItem">
+  <tr>
+    <td class="imports-cell name-cell">
+      {{truncateName}}
+    </td>
+    <td class="imports-cell progress-cell">
+      <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
+    </td>
+    <td class="imports-cell status-cell">
+      {{#if canceled}}Import Canceled{{else}}{{status}}{{/if}}
+    </td>
+    <td class="imports-cell cancel-cell">
+      {{#if hideCancel}}
+      {{else}}
+        <button class="canceled">
+          <i class="icon-cancel cancel-white"></i>
+        </button>
+      {{/if}}
+    </td>
+  </tr>
 </template> 

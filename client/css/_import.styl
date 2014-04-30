@@ -1,27 +1,27 @@
 @import 'variables.import'
 
-table
-  .imports-table
-    text-align left
-    margin auto
-    width 100%
+.imports-table
+  text-align left
+  margin auto
+  width 100%
 
-th
-  .imports-headers
-    font-weight 300
+  th
+    .imports-headers
+      font-weight 300
 
-.name-cell
-  width 50%
+  .name-cell
+    width 50%
+    word-wrap break-word
 
-.progress-cell
-  width 25%
+  .progress-cell
+    width 25%
 
-.status-cell
-  width 20%
+  .status-cell
+    width 20%
 
-.cancel-cell
-  text-align right 
-  width 5%
+  .cancel-cell
+    text-align right 
+    width 5%
 
 .drop-overlay
   font-weight 100
@@ -47,5 +47,7 @@ th
   height 8px
   margin-bottom 3px
 
-.cancel-white
-  color white 
+.canceled
+  border-width 0
+  .cancel-white
+    color white 

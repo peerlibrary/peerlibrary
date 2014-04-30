@@ -6,7 +6,7 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
-  # canceled: true when user hits X button in import overlay dropdown
+  # canceled: true when user cancels import 
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -47,6 +47,7 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
+      # Check if the error thrown is 'canceled' and return nothing if so.
       if error is 'canceled'
         return
       else if error
@@ -220,7 +221,7 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importCancelButton.events =
+Template.importingFilesItem.events =
   'click .canceled': (e) ->
     e.preventDefault()
     # We stop event propagation to prevent the cancel from bubbling up
@@ -234,13 +235,18 @@ Template.importCancelButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importCancelButton.invisibility = ->
-  file = ImportingFile.documents.findOne(@_id)
-  if file?.finished or file?.canceled or file?.errored
-    ret = 'invisible'
-    return ret
+Template.importingFilesItem.truncateName = ->
+  width = 60 # Maxiumum width before truncation
+  subwidth = width / 2 - 2 # Width of substring chunks
+  filename = ImportingFile.documents.findOne(@_id)?.name
+  len = filename.length
 
-  return # Make sure CoffeeScript does not return anything
+  return filename if len < width
+
+  filename.substring(0,subwidth) + '...' + filename.substring(len - subwidth, len)
+
+Template.importingFilesItem.hideCancel = ->
+  @finished or @canceled or @errored
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
@@ -309,10 +315,9 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
-    # We are stopping propagation in click on cancel button but it still
-    # propagates so we cancel here.
+    # We are stopping propagation in click on cancel 
+    # button but it still propagates so we cancel here
     # TODO: Check if this is still necessary in the new version of Meteor
-
     return if e.isPropagationStopped()
 
     hideOverlay()
@@ -332,16 +337,6 @@ Template.importOverlay.importOverlayActive = ->
 
 Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
-
-Template.importingFilesName.truncateName = ->
-  filename = ImportingFile.documents.findOne(@_id)?.name
-  len = filename.length
-  if len < 50
-
-    return filename
-
-  return filename.substring(0,23)+'...'+filename.substring(len-23, len)
-
 
 Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
