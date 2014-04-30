@@ -19,7 +19,7 @@ PeerLibrary has many moving parts, and it is often difficult to reproduce a bug 
 * Describe what you expected to happen and what happened instead.
 * Specify what version of PeerLibrary you are using (your own local development version, beta/stage version, public version). Check the PeerLibrary footer for exact version information.
 * Provide as much as you can about the environment you are using (operating system, browser, are you behind any proxy, are you on campus or off campus).
-* Make and attach a screenshot or screenshots relevant to the bug you are reporting. You can use [LICEcap](http://www.cockos.com/licecap/con) to create a live capture of the bug as a GIF file and attach it to the issue. Do not forget to obfuscate any possibly sensitive or private information visible there.
+* Make and attach a screenshot or screenshots relevant to the bug you are reporting. You can use [LICEcap](http://www.cockos.com/licecap/) to create a live capture of the bug as a GIF file and attach it to the issue. Do not forget to obfuscate any possibly sensitive or private information visible there.
 
 By making it as easy as possible for others to reproduce your bug, you make it easier for your bug to be fixed. We are not always able to tackle issues opened without a reproduction recipe. In those cases we will close them with a pointer to this wiki section and a request for more information.
 
