@@ -44,7 +44,8 @@ randomTimestamp = ->
 
 Meteor.methods
   'sample-data': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -214,7 +215,8 @@ Meteor.methods
     Log.info "Done"
 
   'sync-arxiv-metadata': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -356,7 +358,8 @@ Meteor.methods
     Log.info "Done (#{ count })"
 
   'sync-local-pdf-cache': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
