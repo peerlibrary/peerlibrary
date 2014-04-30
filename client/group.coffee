@@ -129,6 +129,8 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
   not @_loading() and not (searchResult.countPersons or 0)
 
+Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+
 Template.groupMembersAddControlLoading.loading = ->
   addGroupMembersReactiveVariables @
 

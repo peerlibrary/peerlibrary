@@ -121,6 +121,22 @@ Template.privateAccessControlNoResults.noResults = ->
 
   not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
+Template.privateAccessControlNoResults.email = ->
+  query = @_query()
+
+  # Email pattern gist from https://gist.github.com/elijahmanor/1765839#file-emailpattern-coffee
+  emailPattern = /// ^  # begin of line
+   ([\w.-]+)            # one or more letters, numbers, _ . or -
+   @                    # followed by an @ sign
+   ([\w.-]+)            # then one or more letters, numbers, _ . or -
+   \.                   # followed by a period
+   ([a-zA-Z.]{2,6})     # followed by 2 to 6 letters or periods
+   $ ///i               # end of line and ignore case
+
+  return unless query?.match emailPattern
+
+  query
+
 Template.privateAccessControlLoading.loading = ->
   addAccessControlReactiveVariables @
 

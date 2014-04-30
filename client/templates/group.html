@@ -51,8 +51,19 @@
 
 <template name="groupMembersAddControlNoResults">
   {{#if noResults}}
-    <div class="no-results add-control-results">No people found</div>
+    {{#if email}}
+      {{> addControlInviteByEmail email}}
+    {{else}}
+      <div class="no-results add-control-results">No people found</div>
+    {{/if}}
   {{/if}}
+</template>
+
+<template name="addControlInviteByEmail">
+  <div class="invite-by-email add-control-results">
+    <p>Do you want to invite <span class="email">{{this}}</span> to join PeerLibrary?</p>
+    <button>Send invite</button>
+  </div>
 </template>
 
 <template name="groupMembersAddControlResults">
