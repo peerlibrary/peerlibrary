@@ -1,5 +1,3 @@
-console.log Meteor.settings
-
 if Meteor.users.findOne {}
   __meteor_runtime_config__.INSTALL = @INSTALL = false
 
