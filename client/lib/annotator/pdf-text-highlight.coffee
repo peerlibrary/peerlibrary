@@ -123,45 +123,6 @@ class PDFTextHighlight extends Annotator.Highlight
         j++
       i++
 
-    #4-16-14
-    #define temp3 to be the merged row in the form (segment0,segment1,segment2, true, number), number: 1=rectangle, 2=topRow+middle, 3=middle+bottomRow, 4=topRow+middle+bottomRow, 5=topRow+bottomRow, fill three segments from the left to the right, according to the number. e.g., number = 1, then segment0 = segment1 = segment2.
-    #merge from the top row to the bottom row, merged row in the top.
-    #temp3 = []
-    #for segment in temp2
-    #  temp3.push([segment[0],segment[0],segment[0],segment[1],1]) if segment[1]
-    #l = temp3.length
-    #i = 0
-    #while i < l and temp3[i][3]
-    #  currenttype = temp3[i][4]
-    #  j = i+1
-    #  while j < l and temp3[j][3]
-    #    comparetype = temp3[j][4]
-    #    if (currenttype is 1) and (comparetype is 1)
-    #      current = temp3[i][0]
-    #      currentleft = current.left
-    #      currentright = current.left+current.width
-    #      currenttop = current.top
-    #      currentbottom = current.top+current.height
-    #      compare = temp3[j][0]
-    #      compareleft = compare.left
-    #      compareright = compare.left+compare.width
-    #      comparetop = compare.top
-    #      comparebottom = compare.top+compare.height
-    #      if (comparebottom-currentbottom<5) and (comparebottom - currentbottom > -1) #ready to merge
-    #        if (currentleft-compareleft >1) and (currentright-compareright<1) and (currentright-compareright>-1)
-    #          temp3[i][1]= temp3[j][0]
-    #          temp3[i][4]= 2
-    #          temp3[j][3]= false
-    #        if (currentleft
-    #    j++
-    #  i++
-
-    ##4-9-14
-    #@_hover = []
-    #k = 0
-    #while k < temp2.length
-    #  @_hover.push(temp2[k][0]) if temp2[k][1]
-    #  k++
     
     #4-23-14 merge blocks
     temp2.sort (a,b) ->
@@ -191,7 +152,8 @@ class PDFTextHighlight extends Annotator.Highlight
           compareright = compare.left+compare.width
           comparetop = compare.top
           comparebottom = compare.top+compare.height
-          if (((comparetop-currentbottom <=5) and (comparetop-currentbottom >=-1)) or ((currenttop<=comparetop+2) and (comparetop<=currentbottom+2) and (currentbottom<=comparebottom+2)) or ((currentbottom-comparetop<=5) and (currentbottom-comparetop>=-1)) or ((comparetop<=currenttop+2) and (currenttop<=comparebottom+2) and (comparebottom<=currentbottom+2))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) #conditions for two rows to merge
+          #group two rows if they are close to each other, set group number to be equal, i.e., change the group number for all elements in one group to the group number of the other group.
+          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=5)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=5))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) 
             t = _.clone(temp3[k][1])
             temp3[k][1] = temp3[j][1]
             m = 0
@@ -215,7 +177,7 @@ class PDFTextHighlight extends Annotator.Highlight
       temp4.push(_.clone(temp5)) if temp5.length>0
       i++
 
-    #for each group, find the convex hull
+    #for each group, find the vertices of the convex hull
     @_hover = []
     L = temp4.length
     i = 0
@@ -234,6 +196,8 @@ class PDFTextHighlight extends Annotator.Highlight
         lowerright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top+temp4[i][j].height])
         j++
 
+      #want to get hover = [[hoverelt1],..], number of hoverelt's are the same as the group number; [hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]], where [h_ur] = [[pt_x,pt_y],..,[pt_X,pt_Y]] are the vertices in the upperright part of the convex hull, and similar for others.
+
       upperright.sort (a,b) ->
         return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
       hoverelt_ur = [] 
@@ -250,7 +214,7 @@ class PDFTextHighlight extends Annotator.Highlight
           k++
         hoverelt_ur.push(upperright[j]) if not witness
         j++
-      hoverelt.push(hoverelt_ur) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],[h_ur]...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+      hoverelt.push(hoverelt_ur) 
 
       lowerright.sort (a,b) ->
         return if (a[1]<b[1] or (a[1] is b[1] and a[0]>b[0])) then -1 else 1
@@ -268,7 +232,7 @@ class PDFTextHighlight extends Annotator.Highlight
           k++
         hoverelt_lr.push(lowerright[j]) if not witness
         j++
-      hoverelt.push(hoverelt_lr) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+      hoverelt.push(hoverelt_lr)
 
       lowerleft.sort (a,b) ->
         return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
@@ -305,14 +269,10 @@ class PDFTextHighlight extends Annotator.Highlight
           k++
         hoverelt_ul.push(upperleft[j]) if not witness
         j++
-      hoverelt.push(hoverelt_ul) 
+      hoverelt.push(hoverelt_ul)  
 
-      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ul],...],[h_ul] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]],[h_ur] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
       i++
-
-
-    #4-16-14
-    #@_hover = temp2
 
 
 
@@ -330,50 +290,6 @@ class PDFTextHighlight extends Annotator.Highlight
     # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
     context.strokeStyle = 'rgba(180,170,0,9)'
 
-    #4-16-14 elements in hover has the form (square, combined), where separated is boolean, combined=false means beginning a new part, need improvement, two lines are not separated, closed terms are not merged
-    #@_hover[0][1] = false
-    #l = @_hover.length
-    #context.beginPath()
-    #i = 0
-    #while i < l 
-    #  if not @_hover[i][1] # i is the beginning element of a part
-    #    context.moveTo(@_hover[i][0].left,@_hover[i][0].top)
-    #    context.lineTo(@_hover[i][0].left+@_hover[i][0].width,@_hover[i][0].top)
-    #    j = i                                            #j iterate through the whole part
-    #    while j < l and ((@_hover[j][1] and j isnt i) or (j is i))                #draw right half
-    #      if j isnt l-1
-    #        current = @_hover[j][0]
-    #        currentleft = current.left
-    #        currentright = current.left+current.width
-    #        currenttop = current.top
-    #        currentbottom = current.top+current.height        
-    #        compare = @_hover[j+1][0]
-    #        compareleft = compare.left
-    #        compareright = compare.left+compare.width
-    #        comparetop = compare.top
-    #        comparebottom = compare.top+compare.height
-    #        if (((comparetop-currentbottom <=5) and (comparetop-currentbottom >=-1)) or ((currenttop<=comparetop+2) and (comparetop<=currentbottom+2) and (currentbottom<=comparebottom+2))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15))) #ready to merge
-    #          context.lineTo(currentright,comparetop)
-    #          context.lineTo(compareright,comparetop)
-    #        else 
-    #          context.lineTo(currentright,currenttop)
-    #          context.lineTo(currentright,currentbottom)
-    #          @_hover[j+1][1] = false
-    #      else 
-    #        context.lineTo(@_hover[j][0].left+@_hover[j][0].width,@_hover[j][0].top+@_hover[j][0].height)
-    #      j++
-    #    j--
-    #    while j>=i                                                        #draw left half
-    #      current = @_hover[j][0]
-    #      currentleft = current.left
-    #      currentright = current.left+current.width
-    #      currenttop = current.top
-    #      currentbottom = current.top+current.height        
-    #      context.lineTo(currentleft, currentbottom)  #can improve
-    #      context.lineTo(currentleft, currenttop)
-    #      j--
-    #  i++
-    #context.closePath()
 
     #4-23-14
     L = @_hover.length
