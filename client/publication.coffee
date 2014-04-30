@@ -1,3 +1,6 @@
+# Used for assignment of global variables in local scopes
+root = @
+
 @SCALE = 1.25
 
 draggingViewport = false
@@ -32,6 +35,9 @@ Meteor.startup ->
 
 getAnnotationDefaults = ->
   _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+
+# Set this variable if you want the viewer to display a specific page at start
+@startViewerOnPage = null
 
 Deps.autorun ->
   # We have to keep list of default groups updated if user is removed from a group
@@ -669,12 +675,12 @@ makePercentage = (x) ->
 # When scrollTop is 100px, 100px less of display wrapper is visible.
 
 viewportTopPercentage = ->
-  makePercentage($(window).scrollTop() / $('.viewer .display-wrapper').height())
+  makePercentage($(window).scrollTop() / $('.viewer .display-wrapper').outerHeight(true))
 
 viewportBottomPercentage = ->
   availableHeight = $(window).height() - $('header .container').height()
   scrollBottom = $(window).scrollTop() + availableHeight
-  makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
+  makePercentage(scrollBottom / $('.viewer .display-wrapper').outerHeight(true))
 
 debouncedSetCurrentViewport = _.throttle (viewport) ->
   currentViewport.set viewport
@@ -707,7 +713,7 @@ scrollToOffset = (offset) ->
   # Otherwise there is a conflict between what scroll to and how is the viewport then
   # positioned in the scroll event handler and what is the position of the viewport as we
   # are dragging it. This makes movement of the viewport not smooth.
-  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height())
+  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').outerHeight(true))
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller resize.publicationScroller', (e) =>
@@ -764,6 +770,20 @@ Template.publicationScroller.rendered = ->
       return # Make sure CoffeeScript does not return anything
 
   setViewportPosition $viewport
+
+  if startViewerOnPage
+    $scroller = $(@findAll '.scroller')
+    $sections = $scroller.find('.section');
+
+    # Scroll browser viewport to display the desired publication page
+    viewportOffset = $sections.eq(startViewerOnPage-1).offset().top - $scroller.offset().top
+    padding = $sections.eq(0).offset().top - $scroller.offset().top
+    scrollToOffset (viewportOffset - padding) / $scroller.height()
+
+    # Sync the position of the scroller viewport
+    setViewportPosition $viewport
+
+    root.startViewerOnPage = null
 
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'

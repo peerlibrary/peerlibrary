@@ -147,7 +147,7 @@
         <div class="article-thumbnail">
           <ul class="scrubber">
             {{#each thumbnailUrls}}
-              <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{this.page}}"></li>
+              {{> publicationSearchResultThumbnail}}
             {{/each}}
           </ul>
         </div>
@@ -181,4 +181,8 @@
 
 <template name="accessIcon">
   <i class="{{iconName}}"></i>
+</template>
+
+<template name="publicationSearchResultThumbnail">
+  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
 </template>
