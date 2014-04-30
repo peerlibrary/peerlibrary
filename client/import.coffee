@@ -50,7 +50,7 @@ uploadFile = (file, publicationId) ->
       # When the user presses cancel we update the cancel attribute to be true
       # and throw a special error. This function captures that error and handles
       # it as a special case.
-      return if error is 'canceled'
+      return if error is 'Import Canceled'
 
       if error
         ImportingFile.documents.update file._id,
@@ -226,8 +226,8 @@ Template.importButton.events =
 Template.importingFilesItem.events =
   'click .canceled': (e) ->
     e.preventDefault()
-    # We stop event propagation to prevent the cancel from bubbling up
-    # to hide the overlay.
+    # We stop event propagation to prevent the
+    # cancel from bubbling up to hide the overlay
     e.stopPropagation()
 
     ImportingFile.documents.update @_id,
