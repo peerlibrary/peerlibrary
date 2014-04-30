@@ -88,6 +88,8 @@ Click on the _Initialize database with sample data_ button, to initialize the da
 the same publications from [arXiv](http://arxiv.org/). It will fetch metadata, cache a few PDFs
 and process them. Publications will be searchable at your [http://localhost:3000/](http://localhost:3000/).
 
+For more information on configuring your installation, see [settings](https://github.com/peerlibrary/peerlibrary/wiki/Settings).
+
 ### ArXiv publications ###
 
 To load and use [arXiv](http://arxiv.org/) publications, open _Admin dashboard_
@@ -152,16 +154,6 @@ You are not running `mrt` in the top-level directory of PeerLibrary. This is a [
 
 If you notice that `mrt` command disappeared is this because you probably updated Meteor.
 You have to reinstall Meteorite (`npm install -g meteorite`).
-
-### Debug mode ###
-
-To run PeerLibrary in the debug mode, you can run it with debug settings:
-
-    mrt --settings=settings-debug.json
-
-The debug mode currently does not do much, just shows how Meteor is redrawing browser content. So unless
-you are trying to optimize PeerLibrary browser content redrawing performance, there is no need to run in
-the debug mode.
 
 Contributing
 ------------
