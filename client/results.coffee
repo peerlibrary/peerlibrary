@@ -1,3 +1,6 @@
+# Used for global variable assignments in local scopes
+root = @
+
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->
@@ -40,6 +43,8 @@ Template.results.created = ->
 Template.results.rendered = ->
   if Session.get 'currentSearchQueryReady'
     searchLimitIncreasing = false
+    # Trigger scrolling to automatically start loading more results until whole screen is filled
+    $(window).trigger('scroll')
 
 Template.results.destroyed = ->
   $(window).off '.results'
@@ -123,6 +128,13 @@ Template.publicationSearchResult.destroyed = ->
   @_publicationHandle = null
 
 Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
+
+Template.publicationSearchResultThumbnail.events
+  'click li': (e, template) ->
+    root.startViewerOnPage = template.data.page
+    # TODO: Change when you are able to access parent context directly with Meteor
+    publication = template.data.publication
+    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null

@@ -88,6 +88,8 @@ class @Publication extends ReadAccessDocument
   thumbnailUrl: (page) =>
     thumbnail = new String Storage.url @thumbnail page
     thumbnail.page = page
+    # TODO: Remove when you are able to access parent context with Meteor
+    thumbnail.publication = @
     thumbnail
 
   thumbnailUrls: =>
