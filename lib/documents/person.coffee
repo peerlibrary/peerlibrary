@@ -46,6 +46,8 @@ class @Person extends AccessDocument
       @givenName
     else if @user?.username
       @user.username
+    else if @email()
+      @email()
     else
       @slug
 
