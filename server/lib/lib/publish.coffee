@@ -129,9 +129,9 @@ unless originalPublish
 
         publish.onStop ->
           for handle, i in handleRelatedDocuments
-            handle.stop() if handle
+            handle?.stop()
             handleRelatedDocuments[i] = null
-          relatedPublish.stop() if relatedPublish
+          relatedPublish?.stop()
           relatedPublish = null
 
       func.apply publish, args

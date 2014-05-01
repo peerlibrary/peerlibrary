@@ -75,9 +75,9 @@ class @Editable
       @_editable = null
 
     template.rendered = ->
-      @_editable.stop() if @_editable
+      @_editable?.stop()
       @_editable = $(@findAll '> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
 
     template.destroyed = ->
-      @_editable.stop() if @_editable
+      @_editable?.stop()
       @_editable = null

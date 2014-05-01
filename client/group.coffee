@@ -106,7 +106,7 @@ Template.groupMembersAddControl.rendered = ->
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->
-  @_searchHandle.stop() if @_searchHandle
+  @_searchHandle?.stop()
   @_searchHandle = null
 
   @data._query = null
@@ -189,7 +189,7 @@ Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
 
 Template.groupMembersList.destroyed = ->
-  @_personsInvitedHandle.stop() if @_personsInvitedHandle
+  @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
 Template.groupMembersList.events

@@ -50,7 +50,7 @@ Template.privateAccessControl.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
 
 Template.privateAccessControl.destroyed = ->
-  @_personsInvitedHandle.stop() if @_personsInvitedHandle
+  @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
 Template.privateAccessControlAdd.events
@@ -105,7 +105,7 @@ Template.privateAccessControlAdd.rendered = ->
         loading = false
 
 Template.privateAccessControlAdd.destroyed = ->
-  @_searchHandle.stop() if @_searchHandle
+  @_searchHandle?.stop()
   @_searchHandle = null
 
   @data._query = null

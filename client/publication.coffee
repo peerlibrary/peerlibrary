@@ -546,9 +546,9 @@ Template.publicationLibraryMenu.destroyed = ->
   libraryMenuSubscriptionCounter--
 
   unless libraryMenuSubscriptionCounter
-    libraryMenuSubscriptionPersonHandle.stop() if libraryMenuSubscriptionPersonHandle
+    libraryMenuSubscriptionPersonHandle?.stop()
     libraryMenuSubscriptionPersonHandle = null
-    libraryMenuSubscriptionCollectionsHandle.stop() if libraryMenuSubscriptionCollectionsHandle
+    libraryMenuSubscriptionCollectionsHandle?.stop()
     libraryMenuSubscriptionCollectionsHandle = null
 
 Template.publicationLibraryMenu.events
@@ -662,7 +662,7 @@ Template.publicationDisplay.rendered = ->
       Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
-  @_displayHandle.stop() if @_displayHandle
+  @_displayHandle?.stop()
   @_displayHandle = null
   @_displayRendered = false
 
