@@ -107,7 +107,7 @@ wrap = (text) ->
 
   lines.join '\n'
 
-Accounts.emailTemplates.siteName = Meteor.settings?.public?.siteName or "PeerLibrary"
+Accounts.emailTemplates.siteName = SITENAME
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
 Accounts.emailTemplates.resetPassword.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] Password reset"""
