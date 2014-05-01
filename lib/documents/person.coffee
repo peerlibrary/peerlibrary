@@ -42,7 +42,7 @@ class @Person extends AccessDocument
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invitedBy: @ReferenceField 'self', [], false
 
-  displayName: =>
+  displayName: (dontRefetch) =>
     if @givenName and @familyName
       "#{ @givenName } #{ @familyName }"
     else if @givenName
@@ -51,8 +51,13 @@ class @Person extends AccessDocument
       @user.username
     else if @email()
       @email()
-    else
-      @slug
+    else if not dontRefetch # To prevent infinite loop
+      # Maybe we have access to a person document with more fields
+      person = @constructor.documents.findOne @_id
+      person.slug = @slug unless not person or person.slug
+      return person.displayName true if person
+
+    @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
