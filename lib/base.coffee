@@ -107,6 +107,16 @@ else
           resetPasswordToken: resetPasswordToken
         'index'
 
+    '/enroll-account/:enrollAccountToken':
+      to: (enrollAccountToken) ->
+        # Make sure nobody is logged in, it would be confusing otherwise
+        # TODO: How to make it sure we do not log in in the first place? How could we set autoLoginEnabled in time? Because this logs out user in all tabs
+        Meteor.logout()
+        setSession
+          indexActive: true
+          enrollAccountToken: enrollAccountToken
+        'index'
+
     '/p/:publicationId/:publicationSlug?/h/:highlightId':
       as: 'highlight'
       documentId: 'highlightId'
