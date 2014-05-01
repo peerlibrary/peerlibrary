@@ -156,8 +156,8 @@
       },
       "apm": {
         "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.2.2",
-        "commit": "46019950b917191b78a9c81349421521ce07a932"
+        "tag": "v1.2.3",
+        "commit": "b299d8506689d9f21aa3af9bfe7dc367a9dbcc3a"
       },
       "stacktrace": {
         "git": "https://github.com/peerlibrary/meteor-stacktrace.git",

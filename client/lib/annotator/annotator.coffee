@@ -148,6 +148,19 @@ class @Annotator extends Annotator
 
     $('.annotations-list .annotation.local .annotation-content-editor').html(body) if count
 
+  _removeHighlightFromEditor: (highlightId) =>
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
+      'publication._id': Session.get 'currentPublicationId'
+      # We make a simple check for the highlight ID because it is not really possible
+      # for some other ID to appear in our highlightPromptInEditor template and match
+      body: new RegExp "#{ highlightId }"
+    ,
+      $set:
+        body: ''
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html('') if count
+
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
@@ -280,6 +293,9 @@ class @Annotator extends Annotator
   deleteAnnotation: (annotation) ->
     # Deselecting before calling super so that all highlight objects are still available
     @_selectHighlight null if annotation._id is @selectedAnnotationId
+
+    # If the highlight is by chance currently automatically linked in local editor, remove it
+    @_removeHighlightFromEditor annotation._id
 
     annotation = super
 
