@@ -123,19 +123,51 @@ Template.privateAccessControlNoResults.noResults = ->
 
 Template.privateAccessControlNoResults.email = ->
   query = @_query()
+  return unless query?.match EMAIL_REGEX
 
-  # Email pattern gist from https://gist.github.com/elijahmanor/1765839#file-emailpattern-coffee
-  emailPattern = /// ^  # begin of line
-   ([\w.-]+)            # one or more letters, numbers, _ . or -
-   @                    # followed by an @ sign
-   ([\w.-]+)            # then one or more letters, numbers, _ . or -
-   \.                   # followed by a period
-   ([a-zA-Z.]{2,6})     # followed by 2 to 6 letters or periods
-   $ ///i               # end of line and ignore case
-
-  return unless query?.match emailPattern
-
+  # Because it is not possible to access parent data context from event handler, we store it into results
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  query._parent = @
   query
+
+grantAccess = (group, userId) ->
+  methodName = if group then 'grant-read-access-to-group' else 'grant-read-access-to-person'
+
+  # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+  if @_parent.constructor.Meta.collection._name is null
+    documentName = @_parent.constructor.Meta.parent._name
+  else
+    documentName = @_parent.constructor.Meta._name
+
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  Meteor.call methodName, documentName, @_parent._id, userId, (error, count) =>
+    return Notify.meteorError error, true if error
+
+    Notify.success "#{ @constructor.Meta._name } added." if count
+
+logParent = ->
+  console.log @_parent
+
+Template.privateAccessControlNoResults.events
+  'click .add-and-invite': (e, template) ->
+
+    email = @
+
+    return unless email?.match EMAIL_REGEX
+
+    console.log "Trying to create user for email #{email}."
+    console.log @
+    console.log @_parent
+    logParent()
+
+    Meteor.call 'create-and-invite-user', email, (error, newUserId) =>
+      return Notify.meteorError error, true if error
+
+      grantAccess false, newUserId
+
+      return # Make sure CoffeeScript does not return anything
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.privateAccessControlLoading.loading = ->
   addAccessControlReactiveVariables @
@@ -236,22 +268,12 @@ Template.privateAccessControlResultsItem.ifPerson = (options) ->
 Template.privateAccessControlResultsItem.events
   'click .add-button': (e, template) ->
     if @ instanceof Person
-      methodName = 'grant-read-access-to-person'
+      group = no
     else if @ instanceof Group
-      methodName = 'grant-read-access-to-group'
+      group = yes
     else
       assert false
 
-    # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-    if @_parent.constructor.Meta.collection._name is null
-      documentName = @_parent.constructor.Meta.parent._name
-    else
-      documentName = @_parent.constructor.Meta._name
-
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    Meteor.call methodName, documentName, @_parent._id, @_id, (error, count) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "#{ @constructor.Meta._name } added." if count
+    grantAccess group
 
     return # Make sure CoffeeScript does not return anything

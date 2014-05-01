@@ -131,6 +131,28 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
 Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
 
+addMemberToGroup = (userId) ->
+  Meteor.call 'add-to-group', Session.get('currentGroupId'), userId, (error, count) =>
+    return Notify.meteorError error, true if error
+
+    Notify.success "Member added." if count
+
+Template.groupMembersAddControlNoResults.events
+  'click .add-and-invite': (e, template) ->
+
+    email = @
+
+    return unless email?.match EMAIL_REGEX
+
+    Meteor.call 'create-and-invite-user', email, (error, newUserId) =>
+      return Notify.meteorError error, true if error
+
+      addMemberToGroup newUserId
+
+      return # Make sure CoffeeScript does not return anything
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.groupMembersAddControlLoading.loading = ->
   addGroupMembersReactiveVariables @
 
@@ -180,10 +202,7 @@ Template.groupMembersAddControlResultsItem.events
 
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
-    Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "Member added." if count
+    addMemberToGroup @_id
 
     return # Make sure CoffeeScript does not return anything
 
