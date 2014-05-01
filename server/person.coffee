@@ -35,7 +35,7 @@ class @Person extends Person
 
   # A subset of public fields used for automatic publishing
   @PUBLISH_AUTO_FIELDS: ->
-    fields: _.pick @PUBLISH_FIELDS().fields, [
+    fields: _.extend _.pick(@PUBLISH_FIELDS().fields, [
       'user._id'
       'user.username'
       'slug'
@@ -44,7 +44,10 @@ class @Person extends Person
       'familyName'
       'isAdmin'
       'inGroups'
-    ]
+    ]),
+      # Additionally, provide email address so that displayName can
+      # display something meaningful for users who have been invited
+      'user.emails': 1
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, NonEmptyString

@@ -131,8 +131,8 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
 Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
 
-addMemberToGroup = (userId) ->
-  Meteor.call 'add-to-group', Session.get('currentGroupId'), userId, (error, count) =>
+addMemberToGroup = (personId) ->
+  Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
     return Notify.meteorError error, true if error
 
     Notify.success "Member added." if count
@@ -140,16 +140,18 @@ addMemberToGroup = (userId) ->
 Template.groupMembersAddControlNoResults.events
   'click .add-and-invite': (e, template) ->
 
-    email = @
+    # We get the email in @ (this), but it's a String object that also has
+    # the parent context attached so we first convert it to a normal string.
+    email = "#{ @ }"
 
     return unless email?.match EMAIL_REGEX
 
-    Meteor.call 'create-and-invite-user', email, (error, newUserId) =>
+    Meteor.call 'invite-user', email, (error, newPersonId) =>
       return Notify.meteorError error, true if error
 
-      addMemberToGroup newUserId
+      Notify.success "User #{ email } invited."
 
-      return # Make sure CoffeeScript does not return anything
+      addMemberToGroup newPersonId
 
     return # Make sure CoffeeScript does not return anything
 
@@ -182,6 +184,13 @@ Template.groupMembersAddControlResults.results = ->
       ['searchResult.order', 'asc']
     ]
     limit: personsLimit
+
+Template.groupMembersList.created = ->
+  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
+
+Template.groupMembersList.destroyed = ->
+  @_personsInvitedHandle.stop() if @_personsInvitedHandle
+  @_personsInvitedHandle = null
 
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->

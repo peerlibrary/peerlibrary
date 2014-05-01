@@ -43,14 +43,16 @@ class @Person extends AccessDocument
       invitedBy: @ReferenceField 'self', [], false
 
   displayName: (dontRefetch) =>
+    # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
+    dontRefetch = false unless _.isBoolean dontRefetch
     if @givenName and @familyName
-      "#{ @givenName } #{ @familyName }"
+      return "#{ @givenName } #{ @familyName }"
     else if @givenName
-      @givenName
+      return @givenName
     else if @user?.username
-      @user.username
+      return @user.username
     else if @email()
-      @email()
+      return @email()
     else if not dontRefetch # To prevent infinite loop
       # Maybe we have access to a person document with more fields
       person = @constructor.documents.findOne @_id
