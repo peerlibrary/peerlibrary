@@ -14,6 +14,8 @@ class @Person extends AccessDocument
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not
+  # invitedBy: a person who invited this person
+  #   _id
   # inGroups: list of
   #   _id: id of a group the person is in
   # publications: list of
@@ -38,6 +40,7 @@ class @Person extends AccessDocument
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
+      invitedBy: @ReferenceField 'self', [], false
 
   displayName: =>
     if @givenName and @familyName
