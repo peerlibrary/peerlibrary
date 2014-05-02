@@ -1,7 +1,6 @@
 <template name="results">
   <div class="row">
     <div class="results-list col12">
-      <div class="clearfix"></div>
       {{> resultsCount}}
       {{> resultsSearchInvitation}}
       {{> noResults}}
@@ -20,22 +19,22 @@
 
 <template name="resultsCount">
   {{#if publications}}
-    <div class="results-count">Found {{publications}} publications</div>
+    <div class="results-count">Found {{publications}} publications:</div>
   {{/if}}
   {{#if persons}}
-    <div class="results-count">Found {{persons}} people</div>
+    <div class="results-count">Found {{persons}} people:</div>
   {{/if}}
 </template>
 
 <template name="noResults">
   {{#if noResults}}
-    <div class="no-results">No publications or people found</div>
+    <div class="no-results">No publications or people found.</div>
   {{/if}}
 </template>
 
 <template name="resultsLoad">
   {{#if loading}}
-    <div class="results-loading">Loading...</div>
+    <div class="results-loading">Loading …</div>
   {{else}}
     {{#if more}}
       <div class="results-load-more"><button class="load-more">Load more</button></div>
@@ -45,8 +44,11 @@
 
 <template name="resultsSearchInvitation">
   {{#if searchInvitation}}
-    {{! TODO: Make a better search help, explaining how to search, telling to search above and on the right, possibly with suggestions, some arrows and nice illustration? }}
-    <div class="search-invitation">Type in the search query</div>
+    <div class="search-invitation">
+      <p>Type in the search query</p>
+      {{! TODO: Add this text when controls on the right actually work }}
+      {{! <p>Refine your search with controls on the right.</p> }}
+    </div>
   {{/if}}
 </template>
 
@@ -57,49 +59,53 @@
       <span class="filter">
         <input type="text" id="general" />
       </span>
-      <span class="filter">
-        <label for="title">Title contains</label>
-        <input type="text" id="title" disabled="disabled" />
-      </span>
-      <span class="filter">
-        <label for="author">Author(s)</label>
-        {{! TODO: For now disabled }}
-        <input type="text" id="author" disabled="disabled" />
-      </span>
-      <span class="filter">
-        <label for="abstract">Abstract contains</label>
-        {{! TODO: For now disabled }}
-        <input type="text" id="abstract" disabled="disabled" />
-      </span>
-      <span class="filter">
-        <label for="full-text">Full-text contains</label>
-        {{! TODO: For now disabled }}
-        <input type="text" id="full-text" disabled="disabled" />
-      </span>
-      <span class="filter">
-        <label for="tags">Tags</label>
-        {{! TODO: For now disabled }}
-        <select type="text" id="tags" data-placeholder="Select tag(s)" multiple="multiple" class="chzn" disabled="disabled">
-          <option value=""></option>
-          <option>Computer Science</option>
-          <option>Biology</option>
-          <option>Physics</option>
-          <option>Chemistry</option>
-          <option>Philosophy</option>
-          <option>Mathematics</option>
-          <option>Political Science</option>
-          <option>Big Data</option>
-          <option>HTML5 Nanotechnology</option>
-          <option>Bitcoin Casino</option>
-          <option>Robot Circus</option>
-        </select>
-      </span>
-      <span class="filter">
-        <label for="publication-date" class="label-slider">Publication year</label>
-        <input type="text" id="publication-date" disabled="disabled" />
-        <div class="clearfix"></div>
-        <div id="date-range"></div>
-      </span>
+      {{! TODO: Remove under-development div and hint when implemented }}
+      <div class="under-development">
+        <p class="hint">Advanced search options coming soon.</p>
+        <span class="filter">
+          <label for="title">Title contains</label>
+          <input type="text" id="title" disabled="disabled" />
+        </span>
+        <span class="filter">
+          <label for="author">Author(s)</label>
+          {{! TODO: For now disabled }}
+          <input type="text" id="author" disabled="disabled" />
+        </span>
+        <span class="filter">
+          <label for="abstract">Abstract contains</label>
+          {{! TODO: For now disabled }}
+          <input type="text" id="abstract" disabled="disabled" />
+        </span>
+        <span class="filter">
+          <label for="full-text">Full-text contains</label>
+          {{! TODO: For now disabled }}
+          <input type="text" id="full-text" disabled="disabled" />
+        </span>
+        <span class="filter">
+          <label for="tags">Tags</label>
+          {{! TODO: For now disabled }}
+          <select type="text" id="tags" data-placeholder="Select tag(s)" multiple="multiple" class="chzn" disabled="disabled">
+            <option value=""></option>
+            <option>Computer Science</option>
+            <option>Biology</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+            <option>Philosophy</option>
+            <option>Mathematics</option>
+            <option>Political Science</option>
+            <option>Big Data</option>
+            <option>HTML5 Nanotechnology</option>
+            <option>Bitcoin Casino</option>
+            <option>Robot Circus</option>
+          </select>
+        </span>
+        <span class="filter">
+          <label for="publication-date" class="label-slider">Publication year</label>
+          <input type="text" id="publication-date" disabled="disabled" />
+          <div class="clearfix"></div>
+          <div id="date-range"></div>
+        </span>
+      </div>
     </form>
     {{> footer}}
   </div>
@@ -107,30 +113,19 @@
 
 <template name="publicationSearchResult">
   <li class="result-item" data-publication-id="{{_id}}">
-    {{#if currentUserId}}
+    {{#if currentPersonId}}
       {{> publicationLibraryMenu}}
     {{/if}}
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">
-          <a href="{{publicationPath _id slug}}">
-            {{#if title}}
-              {{title}}
-            {{else}}
-              {{#if importing.0.filename}}
-                {{! Used only in personal library list, elsewhere we display "metadata missing" to invite users to provide metadata }}
-                {{importing.0.filename}}
-              {{else}}
-                <i>metadata missing</i>
-              {{/if}}
-            {{/if}}
-          </a>
+          {{> publicationSearchResultTitle}}
         </h2>
         <div class="clearfix"></div>
         {{#if authors.length}}
           <span class="authors">
             {{#each authors}}
-              <span><a href="{{profilePath slug}}">{{displayName}}</a></span>
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
             {{/each}}
           </span>
           <br/>
@@ -145,14 +140,14 @@
               <a href="#" class="preview-link">Abstract</a> &middot;
             {{/if}}
           {{/if}}
-          <a href="{{publicationPath _id slug}}">Full text</a>{{> accessIcon}}
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
         </span>
       </div>
       {{#if thumbnailUrls.length}}
         <div class="article-thumbnail">
           <ul class="scrubber">
             {{#each thumbnailUrls}}
-              <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{this.page}}"></li>
+              {{> publicationSearchResultThumbnail}}
             {{/each}}
           </ul>
         </div>
@@ -167,6 +162,27 @@
   </li>
 </template>
 
+<template name="publicationSearchResultTitle">
+  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+    <a href="{{publicationPathFromId _id slug}}">
+      {{#if title}}
+        {{title}}
+      {{else}}
+        {{#if importing.0.filename}}
+        {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.0.filename}}
+        {{else}}
+          <i>title metadata missing</i>
+        {{/if}}
+      {{/if}}
+    </a>
+  </span>
+</template>
+
 <template name="accessIcon">
   <i class="{{iconName}}"></i>
+</template>
+
+<template name="publicationSearchResultThumbnail">
+  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
 </template>

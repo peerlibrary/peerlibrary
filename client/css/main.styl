@@ -43,6 +43,9 @@ fieldset
   margin 0
   padding 0
 
+button
+  font-family "Source Sans Pro", sans-serif
+
 textarea
   resize vertical
 
@@ -73,8 +76,17 @@ input
   font-family "Source Sans Pro", sans-serif
   outline none
 
+.balance-text
+  text-align center
+
+blockquote
+  border-left 4px solid #ddd
+  padding 0 15px
+  margin-left 0
+  margin-right 0
+
 /* Buttons
-================= */
+========== */
 
 .btn
   height 32px
@@ -99,8 +111,8 @@ input
 .btn.blue:hover
   background hover-blue
 
-/* ui dropdown
-================*/
+/* UI dropdown
+============== */
 .ui-dropdown
   padding 6px 10px
   border 1px solid transparent
@@ -155,8 +167,12 @@ input
   position static
   width auto
 
-section .simple
-  margin-top simple-margin-top
+section
+  .simple
+    margin-top simple-margin-top
+
+  .simple.loading
+    text-align center
 
 .invisible
   visibility hidden

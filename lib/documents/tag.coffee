@@ -1,5 +1,6 @@
 class @Tag extends Document
-  # created: timestamp when tag was created
+  # createdAt: timestamp when document was created
+  # updatedAt: timestamp of this version
   # name:
   #   en: name of the tag in English (ISO 639-1)
   # slug:

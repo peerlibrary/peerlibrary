@@ -41,3 +41,7 @@ scribe
 variable
 async
 cheerio
+isolate-value
+apm
+url-utils
+stacktrace

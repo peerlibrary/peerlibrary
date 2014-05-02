@@ -1,8 +1,19 @@
-Deps.autorun ->
-  currentGroupId = Session.get 'currentGroupId'
+groupHandle = null
 
-  if currentGroupId
-    Meteor.subscribe 'groups-by-id', currentGroupId
+# Mostly used just to force reevaluation of groupHandle
+groupSubscribing = new Variable false
+
+Deps.autorun ->
+  if Session.get 'currentGroupId'
+    groupSubscribing.set true
+    groupHandle = Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+  else
+    groupSubscribing.set false
+    groupHandle = null
+
+Deps.autorun ->
+  if groupSubscribing() and groupHandle?.ready()
+    groupSubscribing.set false
 
 Deps.autorun ->
   group = Group.documents.findOne Session.get('currentGroupId'),
@@ -18,14 +29,30 @@ Deps.autorun ->
 
   Meteor.Router.toNew Meteor.Router.groupPath group._id, group.slug
 
+Template.group.loading = ->
+  groupSubscribing() # To register dependency
+  not groupHandle?.ready()
+
+Template.group.notfound = ->
+  groupSubscribing() # To register dependency
+  groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
+
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-currentUserIsMember = ->
-  Meteor.personId() in _.pluck Group.documents.findOne(Session.get('currentGroupId'))?.members, '_id'
+Template.group.canModifyMembership = ->
+  Group.documents.findOne(Session.get('currentGroupId'))?.hasAdminAccess Meteor.person()
 
-Template.group.currentUserIsMember = ->
-  currentUserIsMember()
+Editable.template Template.groupName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+  (name) ->
+    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->
@@ -142,8 +169,7 @@ Template.groupMembersList.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersList.currentUserIsMember = ->
-  currentUserIsMember()
+Template.groupMembersList.canModifyMembership = Template.group.canModifyMembership
 
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (e, template) ->
@@ -158,3 +184,20 @@ Template.groupMembersAddControlResultsItem.events
       Notify.success "Member added." if count
 
     return # Make sure CoffeeScript does not return anything
+
+# We allow passing the group slug if caller knows it
+Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
+  group = Group.documents.findOne groupId
+
+  return Meteor.Router.groupPath group._id, group.slug if group
+
+  Meteor.Router.groupPath groupId, slug
+
+# Optional group document
+Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
+  group = Group.documents.findOne groupId unless group
+  assert groupId, group._id if group
+
+  _id: groupId # TODO: Remove when we will be able to access parent template context
+  text: "g:#{ groupId }"
+  title: group?.name or group?.slug

@@ -1,5 +1,5 @@
 language: node_js
-env: WAIT_TIME=5000 PACKAGES=''
+env: WAIT_TIME=6000
 node_js:
   - "0.10"
 before_install:
@@ -11,6 +11,6 @@ before_install:
 before_script:
   - coffeelint client/ lib/ server/
 script:
-  - make test
+  - ./.travis.sh
   - rm -f Makefile start_test.js phantom_runner.js
   - mrt --once

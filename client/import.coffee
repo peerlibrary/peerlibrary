@@ -143,7 +143,7 @@ importFile = (file) ->
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
-      , 5 # 0 does not seem to work, 5 seems to work
+      , 5 # ms, 0 does not seem to work, 5 seems to work
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
@@ -158,7 +158,7 @@ hideOverlay = ->
   # We prevent hiding if user is uploading files
   if allCount == finishedAndErroredCount
     Session.set 'importOverlayActive', false
-    ImportingFile.documents.remove({})
+    ImportingFile.documents.remove {}
 
   Session.set 'signInOverlayActive', false
 
@@ -321,8 +321,8 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
   else
     Notify.success "Imported #{ finishedImportingFiles.length } publications."
-    Meteor.Router.toNew Meteor.Router.profilePath Meteor.personId()
+    Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false
 
-  ImportingFile.documents.remove({})
+  ImportingFile.documents.remove {}

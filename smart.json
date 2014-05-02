@@ -36,6 +36,9 @@
       "git": "https://github.com/peerlibrary/meteor-variable.git"
     },
     "async": {},
-    "cheerio": {}
+    "cheerio": {},
+    "isolate-value": {},
+    "apm": {},
+    "stacktrace": {}
   }
 }

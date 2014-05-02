@@ -14,9 +14,6 @@ section.publication
     width 94%
     margin-top simple-margin-top - header-height
 
-  .simple.loading
-    text-align center
-
 /* Meta menu
 ============ */
 
@@ -37,7 +34,6 @@ meta-menu-icon-font-size = 20px
 
 .meta-menu
   position fixed
-  cursor pointer
   width meta-menu-width
   height meta-menu-height
   top meta-menu-top
@@ -66,6 +62,30 @@ meta-menu-icon-font-size = 20px
     padding 5px
     overflow-x hidden
     overflow-y auto
+
+    .editable.title
+      display inline-block
+      padding-right 25px
+      position relative
+
+      .edit
+        position absolute
+        top 0
+        left 0
+        width 100%
+        height 100%
+
+      .edit:hover
+        color inherit
+
+      .icon-edit:before
+        position absolute
+        top 1px
+        right 0
+
+    .editable.title.editing
+      padding-right 0
+      display block
 
     .authors
       span::after
@@ -244,7 +264,7 @@ small-meta-menu-icon-font-size = 13px
             font-size small-meta-menu-icon-font-size
 
           .meta-content
-            .annotations
+            .references
               span::after
                 content ","
 
@@ -253,7 +273,6 @@ small-meta-menu-icon-font-size = 13px
 
         .meta-menu:hover, .meta-menu.displayed
           width 200px
-          min-height 220px
           height auto
 
       .loading
@@ -347,25 +366,22 @@ annotations-control-height = 30px
     outline none
     border none
 
+  .filter
+    color white
+    line-height annotations-control-height
+    margin-left 75px
+
+    span::after
+      content ","
+
+    span:last-child::after
+      content ""
+
 .annotations-editor
   height auto
   z-index 90
 
 .annotations-form-wrapper, .annotations-editor-form-wrapper
-  .form-header
-    height 30px
-    margin 6px 0
-
-    .form-title
-      float left
-
-    .form-status
-      float right
-      display none
-
-      .display
-        display inline
-
   .form-content
     border 1px solid #e3e3e3
     border-radius 2px
@@ -376,50 +392,56 @@ annotations-control-height = 30px
       display block
       border-bottom 1px solid #e3e3e3
       clear left
+      overflow-x hidden
 
-      ul.format-buttons
-        list-style none
-        display block
+      .format-buttons
         padding 0
         margin 0 auto
+        height 100%
 
-        li
-          display inline-block
-          padding 8px
+        button
+          padding 2px
+          border none
+          background transparent
           cursor pointer
+          line-height default-line-height
+          height 100%
 
           i
+            padding 3px
+            border 1px solid transparent
+            border-radius 2px
             color icon-gray
 
-        li:hover
+        button:hover
           i
             color icon-gray-hover
 
-        /* Using the same color for now because this does not
-           work perfectly in Scribe */
-        li.active
+        button.active
           i
-            color icon-gray
+            color icon-gray-active
+            border-color #e3e3e3
+            background #f6f8f8
 
-        li.inactive, li.inactive:hover
+        button.active:hover
+          i
+            color icon-gray-hover
+
+        button.disabled, button.disabled:hover
+          cursor default
+
           i
             color icon-gray-inactive
 
     .form-body
-      height auto
-      min-height 60px
-      padding 0 12px
+      padding 0 0.5em
       font-weight normal
       background white
 
-      .annotation-content
+      .annotation-content-editor
         min-height 100px
-        word-wrap break-word
         color #444
-        line-height 1.4
-        font-size 14px
         outline 0px solid transparent
-        margin 0
 
     .form-tags
       border-top 1px solid #e3e3e3
@@ -444,6 +466,9 @@ annotations-control-height = 30px
       float right
       margin 0 20px
 
+      .hint
+        margin-top 8px
+
     button.save
       margin-right 0
       float right
@@ -452,19 +477,22 @@ annotations-control-height = 30px
   padding 10px
 
 .annotations-editor.collapsed
+  min-height 50px
+
   .form-header
     display none
 
   .form-content
+    min-height 28px
+
     .format-toolbar
       display none
 
-    .form-body
-      min-height 0
+    .form-body .annotation-content-editor
+      min-height 16px
 
-      .annotation-content-editor
-        p
-          margin 6px 0
+      p
+        margin 6px 0
 
   .form-tags
     display none
@@ -547,6 +575,18 @@ annotations-control-height = 30px
         .tags .tagit-new
           display none
 
+      .annotation-content, .annotation-content-editor
+        ul, ol
+          margin-left 0
+          margin-right 0
+          padding 0 1.8em
+
+        /* Spans are added only by rangy.saveSelection marks,
+           so we make sure they are not displayed */
+        span
+          line-height 0
+          display none
+
       .saved
         position absolute
         right 4px
@@ -590,8 +630,26 @@ annotations-control-height = 30px
           .comment-content-editor
             background white
             border 1px solid #e3e3e3
-            padding 7px
+            padding 0.5em
             overflow hidden
+            color #444
+            outline 0px solid transparent
+
+            /* Spans are added only by rangy.saveSelection marks,
+               so we make sure they are not displayed */
+            span
+              line-height 0
+              display none
+
+          .remove-button
+            float right
+
+          .body
+            /* Spans are added only by rangy.saveSelection marks,
+               so we make sure they are not displayed */
+            span
+              line-height 0
+              display none
 
           button.comment
             display none
@@ -625,7 +683,7 @@ annotations-control-height = 30px
         font-size small-meta-menu-icon-font-size
 
       .meta-content
-        .highlights
+        .references, .inside
           span::after
             content ","
 
@@ -638,14 +696,12 @@ annotations-control-height = 30px
 
     .meta-menu:hover, .meta-menu.displayed
       width 200px
-      min-height 220px
       height auto
 
-  .annotation:hover .annotation-wrapper, .annotation.selected annotation-wrapper, .annotation.hovered annotation-wrapper
+  .annotation:hover .annotation-wrapper, .annotation.selected .annotation-wrapper, .annotation.hovered .annotation-wrapper
       /* Style used in pdf-text-highlight.coffee as well, keep it in sync */
-      /*disable highlighting*/
-      /*box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow*/
-
+      /* TODO: Better show which annotations are selected, which annotations are hovered, and which annotations are highlighted to show which are linked to a highlight user is hovering over */
+      box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
   /* We use only 1px here to still have shadow border visible, but not 5px
      top margin which makes visible lower than the crop top line when
@@ -660,10 +716,6 @@ annotations-control-height = 30px
     /* 11px instead of 10px for the same reason we are using 6px for left margin
        instead of 5px - so that it looks better with our 1px shadow border. */
     margin-right 11px
-
-    .body
-      text-align center
-      color gray
 
   .annotation.local
     margin-top 10px
@@ -718,6 +770,8 @@ annotations-control-height = 30px
     padding 0
     background-color transparent
     box-shadow none
+    text-align center
+    z-index -1
 
     .vertical-align-outer
       display table
@@ -728,13 +782,19 @@ annotations-control-height = 30px
         display table-cell
         vertical-align middle
 
+.editor-link-prompt-dialog
+  position fixed
+
 /* Context menu
 =============== */
 
 .context-menu.meta-menu
   position absolute
   top 0
+  /* TODO: Temporary disabled, not yet finalized code
   left 28px
+  */
+  left 0
   height annotations-control-height
   width 70px
   padding 3px 5px

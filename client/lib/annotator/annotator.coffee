@@ -136,25 +136,42 @@ class @Annotator extends Annotator
   _deselectAllHighlights: =>
     highlight.deselect() for highlight in @getHighlights()
 
-  _addHighlightToEditor: (id) =>
-    LocalAnnotation.documents.update
-      local: true
+  _addHighlightToEditor: (highlightId) =>
+    body = Template.highlightPromptInEditor(_id: highlightId).trim()
+
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
       'publication._id': Session.get 'currentPublicationId'
     ,
       $set:
-        editing: true
-      $addToSet:
-        'references.highlights':
-          _id: id
+        body: body
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html(body) if count
+
+  _removeHighlightFromEditor: (highlightId) =>
+    count = LocalAnnotation.documents.update
+      local: LocalAnnotation.LOCAL.AUTOMATIC
+      'publication._id': Session.get 'currentPublicationId'
+      # We make a simple check for the highlight ID because it is not really possible
+      # for some other ID to appear in our highlightPromptInEditor template and match
+      body: new RegExp "#{ highlightId }"
+    ,
+      $set:
+        body: ''
+
+    $('.annotations-list .annotation.local .annotation-content-editor').html('') if count
 
   updateLocation: =>
     # This is our annotations
     annotationId = Session.get 'currentAnnotationId'
+    commentId = Session.get 'currentCommentId'
     # @selectedAnnotationId is Annotator's annotation, so our highlights
     if @selectedAnnotationId
       Meteor.Router.toNew Meteor.Router.highlightPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @selectedAnnotationId
     else if annotationId
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else if commentId
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), commentId
     else
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
@@ -186,6 +203,8 @@ class @Annotator extends Annotator
     true
 
   canCreateHighlight: =>
+    # Enough is to check if user is logged in. Check if user has read
+    # access to the publication content is made on the server side.
     Meteor.personId()
 
   onSuccessfulSelection: (event, immediate) =>
@@ -249,6 +268,7 @@ class @Annotator extends Annotator
   createAnnotation: ->
     annotation = super
 
+    # Highlights are a special case and we make _id on the client
     annotation._id = Random.id()
 
     annotation
@@ -273,6 +293,9 @@ class @Annotator extends Annotator
   deleteAnnotation: (annotation) ->
     # Deselecting before calling super so that all highlight objects are still available
     @_selectHighlight null if annotation._id is @selectedAnnotationId
+
+    # If the highlight is by chance currently automatically linked in local editor, remove it
+    @_removeHighlightFromEditor annotation._id
 
     annotation = super
 
@@ -321,33 +344,23 @@ class @Annotator extends Annotator
     @deleteAnnotation annotation if annotation
 
   _insertHighlight: (annotation) =>
-    # Populate with some of our fields
-    annotation.author =
-      _id: Meteor.personId()
-    annotation.publication =
-      _id: Session.get 'currentPublicationId'
-    annotation.references = {}
-
-    # Remove fields we do not want to store into the database
-    highlight = _.pick annotation, '_id', 'author', 'publication', 'quote', 'target'
-    highlight.target = _.map highlight.target, (t) =>
+    target = _.map annotation.target, (t) =>
       _.pick t, 'source', 'selector'
 
-    Highlight.documents.insert highlight, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+    # Highlights are a special case and we provide _id from the client
+    Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, highlightId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
       return Notify.meteorError error, true if error
+
+      assert.equal annotation._id, highlightId
 
       # TODO: Should we update also other fields (like full author, createdAt timestamp)
       # TODO: Should we force redraw of opened highlight control if it was opened while we still didn't have _id and other fields?
 
       # Finally select it (until now it was just drawn selected) and update location
-      @_selectHighlight id
+      @_selectHighlight highlightId
 
     annotation
-
-  _removeHighlight: (id) =>
-    Highlight.documents.remove id, (error) =>
-      Notify.meteorError error, true if error
 
   _selectHighlight: (id) =>
     if id and @_annotations[id]

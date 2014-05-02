@@ -206,7 +206,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_showControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseenterHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] if noControl
+    $('.annotations-list .annotation').trigger 'highlightMouseenter', [@annotation._id] unless noControl
 
   unhover: (noControl) =>
     # Probably not really necessary to check if highlight already marked as hovered but to match check above
@@ -221,14 +221,14 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_hideControl() unless noControl
 
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
-    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] if noControl
+    $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] unless noControl
 
   _annotationMouseenterHandler: (e, annotationId) =>
-    @hover true if annotationId in _.pluck @annotation.annotations, '_id'
+    @hover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _annotationMouseleaveHandler: (e, annotationId) =>
-    @unhover true if annotationId in _.pluck @annotation.annotations, '_id'
+    @unhover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
   _createHighlight: =>
@@ -239,7 +239,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     # things in different browsers: in Firefox it seems to return almost precise
     # but a bit offset values (maybe just more testing would be needed), but in
     # Chrome it returns both text node and div node rects, so too many rects.
-    # To assure cross browser compatibilty, we compute positions of text nodes
+    # To assure cross browser compatibility, we compute positions of text nodes
     # in a range manually.
     segments = for node in @normedRange.textNodes()
       $node = $(node)
@@ -309,7 +309,7 @@ class CanvasTextHighlight extends Annotator.Highlight
 
   # Just a helper function to draw highlight selected and make it selected by the browser, use annotator._selectHighlight to select
   select: =>
-    selection = window.getSelection()
+    selection = rangy.getSelection()
     selection.addRange @normedRange.toRange()
 
     @_$selectionLayer.addClass 'highlight-selected'
@@ -323,8 +323,14 @@ class CanvasTextHighlight extends Annotator.Highlight
     # Mark this highlight as deselected
     @_$highlight.removeClass 'selected'
 
+    # First store any selection which is outside pages
+    otherRanges = []
+    selection = rangy.getSelection()
+    for r in [0...selection.rangeCount]
+      range = selection.getRangeAt r
+      otherRanges.push range unless $(range.commonAncestorContainer).closest('.display-page').length
+
     # Deselect everything
-    selection = window.getSelection()
     selection.removeAllRanges()
 
     # We will re-add it in highlight.select() if necessary
@@ -332,6 +338,9 @@ class CanvasTextHighlight extends Annotator.Highlight
 
     # And re-select highlights marked as selected
     highlight.select() for highlight in @anchor.annotator.getHighlights() when highlight.isSelected()
+
+    # Reselect selections outside pages
+    selection.addRange range for range in otherRanges
 
     # If mouse is not over the highlight we unhover
     @unhover true unless @_mouseHovering
@@ -343,7 +352,7 @@ class CanvasTextHighlight extends Annotator.Highlight
   in: (clientX, clientY) =>
     @_$highlight.find('.highlights-layer-segment').is (i) ->
       # @ (this) is here a segment, DOM element
-      rect = @.getBoundingClientRect()
+      rect = @getBoundingClientRect()
 
       rect.left <= clientX <= rect.right and rect.top <= clientY <= rect.bottom
 

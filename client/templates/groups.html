@@ -8,7 +8,7 @@
           <span class="search-button">
             <i class="icon-search"></i>
           </span>
-          <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Search groups" autofocus="autofocus">
+          <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Filter groups" autofocus="autofocus">
         </form>
       </div>
       {{#if groups.count}}
@@ -20,14 +20,19 @@
       {{else}}
       <p class="no-groups">
         {{#if searchQuery}}
-          The search matches no groups.
+          The filter matches no groups.
         {{else}}
-          There are no groups yet. Create the first using the form on the right.
+          There are no groups yet.
+            {{#if currentPersonId}}
+              Create the first using the form on the right.
+            {{else}}
+              Sing in and create the first.
+            {{/if}}
         {{/if}}
       </p>
       {{/if}}
     </div>
-    {{#if currentUser}}
+    {{#if currentPersonId}}
       {{> myGroups}}
     {{/if}}
   </div>
@@ -35,25 +40,30 @@
 
 <template name="groupListing">
   <li class="group-listing">
-    <h2><a href="{{groupPath _id slug}}" class="group-name">{{name}}</a></h2>
+    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
     <span class="group-count">{{countDescription}}</span>
   </li>
 </template>
 
 <template name="myGroups">
   <div class="col4 push12 sidebar my-groups">
+    <h2>My Groups</h2>
     {{#if myGroups.count}}
-      <h2>My Groups</h2>
       <ul class="groups-list">
         {{#each myGroups}}
           {{> groupListing}}
         {{/each}}
       </ul>
+    {{else}}
+      <p class="no-groups hint">
+        You don't have any groups. Create one below.
+        {{! TODO: We should also add that you can request membership in a group }}
+      </p>
     {{/if}}
     <h3>Create a new group</h3>
-    <form class="add-group input-and-button">
-      <input type="text" class="name" placeholder="Group name" />
+    <form class="add-group input-and-buttons">
       <button type="submit" class="add">Create</button>
+      <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
     </form>
   </div>
 </template>

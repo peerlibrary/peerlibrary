@@ -5,21 +5,22 @@ unless originalPublish
     originalPublish name, (args...) ->
       publish = @
 
-      # Not the pretiest code in existence, we are redoing the query for each publish call.
+      # Not the prettiest code in existence, we are redoing the query for each publish call.
       # It would be much better if we could rerun this only when userId is invalidated and
       # store personId in the current method invocation context and then just retrieve it
       # here.
       # TODO: Optimize this code
-      person = Person.documents.findOne
-        'user._id': @userId
-      ,
-        _id: 1
+      if @userId
+        person = Person.documents.findOne
+          'user._id': @userId
+        ,
+          _id: 1
 
       publish.personId = person?._id or null
 
       # This function wraps the logic of publishing related documents. publishFunction gets
       # as arguments documents returned from related querysets. Everytime any related document
-      # changes, publishFunction is rerun. The requirement is that related quertsets return
+      # changes, publishFunction is rerun. The requirement is that related querysets return
       # exactly one document. publishFunction can be anything a normal publish endpoint function
       # can be, it can return querysets or can call added/changed/removed. It does not have to
       # care about unpublishing documents which are not published anymore after the rerun, or

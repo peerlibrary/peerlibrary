@@ -3,12 +3,7 @@ ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
 
 USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 
-FORBIDDEN_USERNAMES = [
-  'webmster'
-  'root'
-  'peerlibrary'
-  'administrator'
-]
+FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
 Accounts.onCreateUser (options, user) ->
   try
@@ -17,6 +12,10 @@ Accounts.onCreateUser (options, user) ->
       personId = ADMIN_PERSON_ID
     else
       personId = Random.id()
+      # Person _id must not match any existing User username otherwise our queries for
+      # Person documents querying both _id and slug would return multiple documents
+      while User.documents.findOne(username: personId)
+        personId = Random.id()
 
     # We are verifying things here and not in a validateNewUser hook to prevent creation
     # of a profile document and then failure later on when validating through validateNewUser
@@ -27,14 +26,26 @@ Accounts.onCreateUser (options, user) ->
 
     throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 400, "Username already exists." if user.username in FORBIDDEN_USERNAMES
+    throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test user.username
 
-    throw new Meteor.Error 400, "Invalid e-mail address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+    # Check for unique username in a case insensitive manner.
+    # We do not have to escape username because we have already
+    # checked that it contains only a-zA-Z0-9_- characters.
+    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ user.username }$", 'i'
 
-    throw new Meteor.Error 400, "Invalid e-mail address." if user.emails?.length > 1
+    # Username must not match any existing Person _id otherwise our queries for
+    # Person documents querying both _id and slug would return multiple documents
+    throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: user.username
+
+    throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+
+    throw new Meteor.Error 400, "Invalid email address." if user.emails?.length > 1
 
     # A race condition, but better than nothing. Otherwise it fails later on when creating an
     # user document, but person document has already been created and is not cleaned up.
+    # We do not really care if users are reusing their email address, we just do not want errors
+    # later on when MongoDB unique index fails. So we are not checking here an email in a
+    # case insensitive manner, or normalize it in some other way (like removing Gmail +suffix).
     throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
 
     user.person =
@@ -51,6 +62,8 @@ Accounts.onCreateUser (options, user) ->
 
     _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
+    person = Person.applyDefaultAccess null, person
+
     Person.documents.insert person
 
   catch error
@@ -65,12 +78,13 @@ Accounts.onCreateUser (options, user) ->
 
 # With null name, the record set is automatically sent to all connected clients
 Meteor.publish null, ->
-  return unless @userId
+  return unless @personId
 
+  # No need for requireReadAccessSelector because persons are public
   Person.documents.find
-    'user._id': @userId
+    _id: @personId
   ,
-    fields: _.pick Person.PUBLIC_FIELDS().fields, Person.PUBLIC_AUTO_FIELDS()
+    Person.PUBLISH_AUTO_FIELDS()
 
 MAX_LINE_LENGTH = 68
 
@@ -93,7 +107,7 @@ wrap = (text) ->
 
   lines.join '\n'
 
-Accounts.emailTemplates.siteName = Meteor.settings?.siteName or "PeerLibrary"
+Accounts.emailTemplates.siteName = SITENAME
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
 Accounts.emailTemplates.resetPassword.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] Password reset"""

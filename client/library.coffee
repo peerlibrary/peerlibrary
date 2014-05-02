@@ -1,14 +1,10 @@
 Deps.autorun ->
   if Session.equals 'libraryActive', true
 
-    currentUserId = Meteor.personId()
-
-    # Redirect to frontpage if the user is not logged in
-    Meteor.Router.toNew Meteor.Router.indexPath() unless currentUserId
-
-    Meteor.subscribe 'persons-by-id-or-slug', currentUserId
+    Meteor.subscribe 'my-person-library'
 
     Meteor.subscribe 'my-publications'
+    # So that users can see their own filename of the imported file, before a publication has metadata
     Meteor.subscribe 'my-publications-importing'
 
     Meteor.subscribe 'my-collections'
@@ -29,9 +25,12 @@ Template.libraryPublications.rendered = ->
     cursor: 'move'
     zIndex: 1
     start: (e, ui) ->
+      collections = $('.library-collections-wrapper')
       # When we start to drag a publication, we display collections fixed so they are in view, ready to be dropped onto.
       # TODO: Make sure this works for people with lots of collections.
-      $('.library-collections-wrapper').addClass('fixed')
+      collections.addClass('fixed')
+      # To prevent footer from moving up, force the containing row to be at least as high as the collections.
+      collections.parent('.row').css('min-height', collections.outerHeight())
     stop: (e, ui) ->
       $('.library-collections-wrapper').removeClass('fixed')
 
@@ -39,7 +38,7 @@ Template.collections.myCollections = ->
   return unless Meteor.personId()
 
   Collection.documents.find
-    'author._id': Meteor.personId()
+    'authorPerson._id': Meteor.personId()
   ,
     sort: [
       ['slug', 'asc']
@@ -52,19 +51,13 @@ Template.addNewCollection.events
     name = $(template.findAll '.name').val().trim()
     return unless name
 
-    Collection.documents.insert
-      name: name
-      author:
-        _id: Meteor.personId()
-      publications: []
-    ,
-      (error, id) =>
-        return Notify.meteorError error, true if error
+    Meteor.call 'create-collection', name, (error, collectionId) =>
+      return Notify.meteorError error, true if error
 
-        # Clear the collection name from the form
-        $(template.findAll '.name').val('')
+      # Clear the collection name from the form
+      $(template.findAll '.name').val('')
 
-        Notify.success "Collection created."
+      Notify.success "Collection created."
 
     return # Make sure CoffeeScript does not return anything
 

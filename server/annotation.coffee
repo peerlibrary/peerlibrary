@@ -1,131 +1,180 @@
+url = Npm.require 'url'
+
 class @Annotation extends Annotation
   @Meta
     name: 'Annotation'
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
-
-Annotation.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
-
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
-
-  update: (userId, doc, fieldNames, modifier) ->
-    # TODO: Check whether updated document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
-
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
-
-  remove: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Annotation.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
-
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.references = {} if not doc.references
-    doc.tags = [] if not doc.tags
-    doc.license = 'CC0-1.0+'
-
-    doc = Annotation.applyDefaultAccess Meteor.personId(userId), doc
-
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
 
 registerForAccess Annotation
 
-Meteor.publish 'annotations-by-id', (id) ->
-  check id, String
+# TODO: This parsing could be done through PeerDB instead, on any body field change
+parseReferences = (body) ->
+  references =
+    highlights: []
+    annotations: []
+    publications: []
+    persons: []
+    groups: []
+    tags: []
+    collections: []
+    comments: []
+    urls: []
 
-  return unless id
+  $ = cheerio.load body
+  $.root().find('a').each (i, a) =>
+    href = $(a).attr('href')
 
-  @related (person, publication) ->
-    return unless publication?.hasReadAccess person
+    {referenceName, referenceId} = parseURL(href) or {}
 
-    Annotation.documents.find Annotation.requireReadAccessSelector(person,
-      _id: id
-    ), Annotation.PUBLIC_FIELDS()
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
-  ,
-    Publication.documents.find
-      'annotations._id': id
-    ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+    return unless referenceName and referenceId and references["#{ referenceName }s"]
+
+    references["#{ referenceName }s"].push
+      _id: referenceId
+
+    return # Make sure CoffeeScript does not return anything
+
+  references
+
+Meteor.methods
+  'annotations-path': (annotationId) ->
+    check annotationId, DocumentId
+
+    person = Meteor.person()
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: annotationId
+    )
+    return unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    return unless publication
+
+    [publication._id, publication.slug, annotation._id]
+
+  'create-annotation': (publicationId, body, access, groups) ->
+    check publicationId, DocumentId
+    check body, Match.Optional NonEmptyString
+    check access, MatchAccess Annotation.ACCESS
+    check groups, [DocumentId]
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+
+    body = '' unless body
+
+    references = parseReferences body
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
+
+    personGroups = _.pluck person.inGroups, '_id'
+    throw new Meteor.Error 400, "Invalid groups." if _.difference(groups, personGroups).length
+
+    throw new Meteor.Error 400, "Invalid groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+      _id:
+        $in: groups
+    )).count() isnt groups.length
+
+    groups = (_id: groupId for groupId in groups)
+
+    # TODO: Should we sync this somehow with createAnnotationDocument? Maybe move createAnnotationDocument to Annotation object?
+    createdAt = moment.utc().toDate()
+    annotation =
+      createdAt: createdAt
+      updatedAt: createdAt
+      author:
+        _id: person._id
+      publication:
+        _id: publicationId
+      references: references
+      tags: []
+      body: body
+      access: access
+      inside: groups
+      readGroups: groups
+      license: 'CC0-1.0+'
+
+    annotation = Annotation.applyDefaultAccess person._id, annotation
+
+    Annotation.documents.insert annotation
+
+  # TODO: Use this code on the client side as well
+  'update-annotation-body': (annotationId, body) ->
+    check annotationId, DocumentId
+    check body, NonEmptyString
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+
+    references = parseReferences body
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: annotationId
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
+
+    Annotation.documents.update Annotation.requireMaintainerAccessSelector(person,
+      _id: annotation._id
+    ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        body: body
+        references: references
+
+  # TODO: Use this code on the client side as well
+  'remove-annotation': (annotationId) ->
+    check annotationId, DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: annotationId
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
+
+    Annotation.documents.remove Annotation.requireRemoveAccessSelector(person,
+      _id: annotation._id
+    )
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
-  check publicationId, String
-
-  return unless publicationId
+  check publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
-      'publication._id': publicationId
-    ), Annotation.PUBLIC_FIELDS()
+      'publication._id': publication._id
+    ), Annotation.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1 # Needed by hasReadAccess
+      fields: _.extend Annotation.readAccessPersonFields(), Publication.readAccessPersonFields()
   ,
     Publication.documents.find
       _id: publicationId
     ,
-      fields:
-        # _id field is implicitly added
-        cached: 1
-        processed: 1
-        access: 1
-        readPersons: 1
-        readGroups: 1
+      fields: Publication.readAccessSelfFields()

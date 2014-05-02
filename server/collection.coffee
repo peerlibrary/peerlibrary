@@ -12,162 +12,158 @@ class @Collection extends Collection
           [fields._id, '']
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
-Collection.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the publication
-
-    return false unless userId and doc.name
-
-    personId = Meteor.personId userId
-
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
-
-  update: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
-
-  remove: (userId, doc) ->
-    return false unless userId
-
-    personId = Meteor.personId userId
-
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
-
-# Misuse insert validation to add additional fields on the server before insertion
-Collection.Meta.collection.deny
-# We have to disable transformation so that we have
-# access to the document object which will be inserted
-  transform: null
-
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.publications = [] if not doc.publications
-
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
-
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
-
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
+registerForAccess Collection
 
 Meteor.methods
-  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
-  'add-to-library': (publicationId, collectionId) ->
-    check publicationId, String
-    check collectionId, Match.Optional String
+  'create-collection': (name) ->
+    check name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    publication = Publication.documents.findOne publicationId
-    throw new Meteor.Error 400, "Invalid publication." unless publication?.hasReadAccess person
+    createdAt = moment.utc().toDate()
+    collection =
+      createdAt: createdAt
+      updatedAt: createdAt
+      name: name
+      authorPerson:
+        _id: person._id
+      publications: []
+
+    collection = Collection.applyDefaultAccess person._id, collection
+
+    Collection.documents.insert collection
+
+  # TODO: Use this code on the client side as well
+  'remove-collection': (collectionId) ->
+    check collectionId, DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
+      _id: collectionId
+    )
+    throw new Meteor.Error 400, "Invalid collection." unless collection
+
+    Collection.documents.remove Collection.requireRemoveAccessSelector(person,
+      _id: collection._id
+    )
+
+  # TODO: Use this code on the client side as well
+  'add-to-library': (publicationId, collectionId) ->
+    check publicationId, DocumentId
+    check collectionId, Match.Optional DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
 
     # Add to user's library
-    result = Person.documents.update
-      '_id': person._id
+    result = Person.documents.update Person.requireMaintainerAccessSelector(person,
+      _id: person._id
       'library._id':
-        $ne: publicationId
-    ,
+        $ne: publication._id
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         library:
-          _id: publicationId
+          _id: publication._id
 
     # Optionally add the publication to a collection, if it was specified
     return result unless collectionId
 
-    collection = Collection.documents.findOne
+    collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
       _id: collectionId
-
+    )
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
-    Collection.documents.update
-      _id: collectionId
-      'author._id': person._id
+    Collection.documents.update Collection.requireMaintainerAccessSelector(person,
+      _id: collection._id
       'publications._id':
-        $ne: publicationId
-    ,
+        $ne: publication._id
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $addToSet:
         publications:
-          _id: publicationId
+          _id: publication._id
 
-  # TODO: Move this code to the client side so that we do not have to duplicate document checks from Collection.Meta.collection.allow and modifications from Collection.Meta.collection.deny, see https://github.com/meteor/meteor/issues/1921
+  # TODO: Use this code on the client side as well
   'remove-from-library': (publicationId, collectionId) ->
-    check publicationId, String
-    check collectionId, Match.Optional String
+    check publicationId, DocumentId
+    check collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    publication = Publication.documents.findOne publicationId
-    throw new Meteor.Error 400, "Invalid publication." unless publication?.hasReadAccess person
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: publicationId
+    )
+    throw new Meteor.Error 400, "Invalid publication." unless publication
 
-    # When we're removing from library we also want to remove the publication from all user's collections.
-    # This query will match all user's collections that include this publication.
-    collectionsQuery =
-      'author._id': person._id
-      'publications._id': publicationId
-
-    # If collectionId is specified we modify the query to only remove from that collection
     if collectionId
-      collection = Collection.documents.findOne
+      collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
         _id: collectionId
-
+      )
       throw new Meteor.Error 400, "Invalid collection." unless collection
 
-      collectionsQuery['_id'] = collectionId
+      # If collectionId is specified we only remove from that collection
+      collectionsQuery =
+        _id: collection._id
+        'publications._id': publication._id
+    else
+      # When we're removing from library we also want to remove the publication from all user's
+      # collections. This query will match all user's collections that include this publication.
+      collectionsQuery =
+        'authorPerson._id': person._id
+        'publications._id': publication._id
 
     # Remove from collection
-    result = Collection.documents.update collectionsQuery,
+    result = Collection.documents.update Collection.requireMaintainerAccessSelector(person,
+      collectionsQuery
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         publications:
-          _id: publicationId
+          _id: publication._id
     ,
       multi: not collectionId?
 
     # Only remove from library if collection was not specified
     return result if collectionId
 
-    Person.documents.update
+    Person.documents.update Person.requireMaintainerAccessSelector(person,
       '_id': person._id
-      'library._id': publicationId
-    ,
+      'library._id': publication._id
+    ),
       $set:
         updatedAt: moment.utc().toDate()
       $pull:
         library:
-          _id: publicationId
+          _id: publication._id
 
+  # TODO: Use this code on the client side as well
   'reorder-collection': (collectionId, publicationIds) ->
-    check collectionId, String
-    check publicationIds, [String]
+    check collectionId, DocumentId
+    check publicationIds, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    collection = Collection.documents.findOne collectionId
-
-    throw new Meteor.Error 400, "Invalid collection." unless collection and collection.author._id is person._id
+    collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
+      _id: collectionId
+    )
+    throw new Meteor.Error 400, "Invalid collection." unless collection
 
     oldOrderIds = _.pluck collection.publications, '_id'
 
@@ -175,52 +171,85 @@ Meteor.methods
 
     publications = (_id: publicationId for publicationId in publicationIds)
 
-    Collection.documents.update
-      _id: collectionId
+    Collection.documents.update Collection.requireMaintainerAccessSelector(person,
+      _id: collection._id
       'publications._id':
         $all: oldOrderIds
       publications:
         $size: oldOrderIds.length
-    ,
+    ),
       $set:
+        updatedAt: moment.utc().toDate()
         publications: publications
 
-Meteor.publish 'collection-by-id', (id) ->
-  check id, String
+  # TODO: Use this code on the client side as well
+  'collection-set-name': (collectionId, name) ->
+    check collectionId, DocumentId
+    check name, NonEmptyString
 
-  return unless id
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-  Collection.documents.find
-    _id: id
-  ,
-    Collection.PUBLIC_FIELDS()
+    collection = Collection.documents.findOne Collection.requireReadAccessSelector(person,
+      _id: collectionId
+    )
+    throw new Meteor.Error 400, "Invalid collection." unless collection
 
-Meteor.publish 'my-collections', ->
-  Collection.documents.find
-    'author._id': @personId
-  ,
-    Collection.PUBLIC_FIELDS()
+    Collection.documents.update Group.requireMaintainerAccessSelector(person,
+        _id: collection._id
+      ),
+      $set:
+        updatedAt: moment.utc().toDate()
+        name: name
 
-Meteor.publish 'collection-publications', (id) ->
-  check id, String
+Meteor.publish 'collection-by-id', (collectionId) ->
+  check collectionId, DocumentId
 
-  @related (person, collection) ->
-    Publication.documents.find Publication.requireReadAccessSelector(person,
-      _id:
-        $in: _.pluck collection.publications, '_id'
-    ), Publication.PUBLIC_FIELDS()
+  @related (person) ->
+    Collection.documents.find Collection.requireReadAccessSelector(person,
+      _id: collectionId
+    ),
+      Collection.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: _.extend Collection.readAccessPersonFields()
+
+Meteor.publish 'my-collections', ->
+  @related (person) ->
+    return unless person?._id
+
+    Collection.documents.find Collection.requireReadAccessSelector(person,
+      'authorPerson._id': person._id
+    ),
+      Collection.PUBLISH_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Collection.readAccessPersonFields()
+
+Meteor.publish 'publications-by-collection', (collectionId) ->
+  check collectionId, DocumentId
+
+  @related (person, collection) ->
+    return unless collection?.hasReadAccess person
+    return unless collection?.publications
+
+    Publication.documents.find Publication.requireReadAccessSelector(person,
+      _id:
+        $in: _.pluck collection.publications, '_id'
+    ),
+      Publication.PUBLISH_FIELDS()
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
   ,
     Collection.documents.find
-      _id: id
+      _id: collectionId
     ,
-      fields:
+      fields: _.extend Collection.readAccessSelfFields(),
         publications: 1

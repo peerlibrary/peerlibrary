@@ -1,9 +1,7 @@
 # TODO: Search for persons as well
 Meteor.publish 'search-results', (query, limit) ->
-  check query, String
+  check query, NonEmptyString
   check limit, PositiveNumber
-
-  return unless query
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
@@ -23,7 +21,7 @@ Meteor.publish 'search-results', (query, limit) ->
     searchPublish @, 'search-results', query,
       cursor: Publication.documents.find(restrictedFindQuery,
         limit: limit
-        fields: _.pick Publication.PUBLIC_FIELDS().fields, Publication.PUBLIC_SEARCH_RESULTS_FIELDS()
+        fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
       )
       added: (id, fields) =>
         fields.hasAbstract = !!fields.abstract
@@ -38,8 +36,4 @@ Meteor.publish 'search-results', (query, limit) ->
     Person.documents.find
       _id: @personId
     ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1
-        inGroups: 1
-        library: 1
+      fields: Publication.readAccessPersonFields()

@@ -20,6 +20,7 @@ setSession = (session) ->
     currentPublicationProgress: null
     currentHighlightId: null
     currentAnnotationId: null
+    currentCommentId: null
     currentPersonSlug: null
     currentTagId: null
     currentTagSlug: null
@@ -56,68 +57,22 @@ notFound = ->
   Meteor.Router._page = 'notfound'
   Meteor.Router._pageDeps.changed()
 
-# TODO: We could just use a method here?
 redirectHighlightId = (highlightId) ->
-  highlightsHandle = Meteor.subscribe 'highlights-by-id', highlightId,
-    onError: (error) ->
-      notFound()
-    onReady: ->
-      highlight = Highlight.documents.findOne highlightId
-
-      unless highlight
-        highlightsHandle.stop()
-        notFound()
-        return
-
-      publicationsHandle = Meteor.subscribe 'publications-by-id', highlight.publication._id,
-        onError: (error) ->
-          highlightsHandle.stop()
-          notFound()
-        onReady: ->
-          publication = Publication.documents.findOne highlight.publication._id
-
-          # We do not need subscriptions anymore
-          highlightsHandle.stop()
-          publicationsHandle.stop()
-
-          unless publication
-            notFound()
-            return
-
-          Meteor.Router.to  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
-
+  Meteor.call 'highlights-path', highlightId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.highlightPath path...
   return # Return nothing
 
-# TODO: We could just use a method here?
 redirectAnnotationId = (annotationId) ->
-  annotationsHandle = Meteor.subscribe 'annotations-by-id', annotationId,
-    onError: (error) ->
-      notFound()
-    onReady: ->
-      annotation = LocalAnnotation.documents.findOne annotationId
+  Meteor.call 'annotations-path', annotationId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.annotationPath path...
+  return # Return nothing
 
-      unless annotation
-        annotationsHandle.stop()
-        notFound()
-        return
-
-      publicationsHandle = Meteor.subscribe 'publications-by-id', annotation.publication._id,
-        onError: (error) ->
-          annotationsHandle.stop()
-          notFound()
-        onReady: ->
-          publication = Publication.documents.findOne annotation.publication._id
-
-          # We do not need subscriptions anymore
-          annotationsHandle.stop()
-          publicationsHandle.stop()
-
-          unless publication
-            notFound()
-            return
-
-          Meteor.Router.to  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
-
+redirectCommentId = (commentId) ->
+  Meteor.call 'comments-path', commentId, (error, path) ->
+    return notFound() if error or not path
+    Meteor.Router.to Meteor.Router.commentPath path...
   return # Return nothing
 
 if INSTALL
@@ -127,6 +82,13 @@ if INSTALL
       'install'
 
 else
+  # documentId can be a field or a function which maps from params. We
+  # are using it in parsing HTML to extract all references. We extract
+  # only those references for routes which have documentId set (and
+  # have a place to store them in schema, eg. Annotation.references).
+  # With documentName you can override the name of a reference
+  # (otherwise route name is used).
+
   Meteor.Router.add
     '/':
       as: 'index'
@@ -147,6 +109,7 @@ else
 
     '/p/:publicationId/:publicationSlug?/h/:highlightId':
       as: 'highlight'
+      documentId: 'highlightId'
       to: (publicationId, publicationSlug, highlightId) ->
         setSession
           currentPublicationId: publicationId
@@ -156,6 +119,7 @@ else
 
     '/p/:publicationId/:publicationSlug?/a/:annotationId':
       as: 'annotation'
+      documentId: 'annotationId'
       to: (publicationId, publicationSlug, annotationId) ->
         setSession
           currentPublicationId: publicationId
@@ -163,8 +127,19 @@ else
           currentAnnotationId: annotationId
         'publication'
 
+    '/p/:publicationId/:publicationSlug?/m/:commentId':
+      as: 'comment'
+      documentId: 'commentId'
+      to: (publicationId, publicationSlug, commentId) ->
+        setSession
+          currentPublicationId: publicationId
+          currentPublicationSlug: publicationSlug
+          currentCommentId: commentId
+        'publication'
+
     '/p/:publicationId/:publicationSlug?':
       as: 'publication'
+      documentId: 'publicationId'
       to: (publicationId, publicationSlug) ->
         setSession
           currentPublicationId: publicationId
@@ -173,6 +148,7 @@ else
 
     '/t/:tagId/:tagSlug?':
       as: 'tag'
+      documentId: 'tagId'
       to: (tagId, tagSlug) ->
         setSession
           currentTagId: tagId
@@ -181,6 +157,7 @@ else
 
     '/g/:groupId/:groupSlug?':
       as: 'group'
+      documentId: 'groupId'
       to: (groupId, groupSlug) ->
         setSession
           currentGroupId: groupId
@@ -195,14 +172,37 @@ else
         'groups'
 
     '/u/:personSlug':
-      as: 'profile'
+      as: 'person'
+      documentId: (params) ->
+        try
+          check params.personSlug, NonEmptyString
+        catch error
+          # Not a valid document ID or slug
+          return
+
+        person = Person.documents.findOne
+          $or: [
+            slug: params.personSlug
+          ,
+            _id: params.personSlug
+          ]
+        ,
+          fields:
+            _id: 1
+
+        return person._id if person
+
+        # A special case for the client side, we return slug as an ID which is then passed to personPathFromId
+        params.personSlug if Meteor.isClient
       to: (personSlug) ->
         setSession
           currentPersonSlug: personSlug
-        'profile'
+        'person'
 
     '/h/:highlightId':
       as: 'highlightId'
+      documentId: 'highlightId'
+      documentName: 'highlight'
       to: (highlightId) ->
         setSession()
         redirectHighlightId highlightId
@@ -210,9 +210,20 @@ else
 
     '/a/:annotationId':
       as: 'annotationId'
+      documentId: 'annotationId'
+      documentName: 'annotation'
       to: (annotationId) ->
         setSession()
         redirectAnnotationId annotationId
+        'redirecting'
+
+    '/m/:commentId':
+      as: 'commentId'
+      documentId: 'commentId'
+      documentName: 'comment'
+      to: (commentId) ->
+        setSession()
+        redirectCommentId commentId
         'redirecting'
 
     '/s/:searchQuery?':
@@ -230,6 +241,7 @@ else
 
     '/c/:collectionId/:collectionSlug?':
       as: 'collection'
+      documentId: 'collectionId'
       to: (collectionId, collectionSlug) ->
         setSession
           currentCollectionId: collectionId
@@ -278,11 +290,3 @@ Meteor.Router.add
   '*': ->
     setSession()
     'notfound'
-
-# TODO: Use real parser (arguments can be listed multiple times, arguments can be delimited by ";")
-parseQuery = (qs) ->
-  query = {}
-  for pair in qs.replace('?', '').split '&'
-    [k, v] = pair.split('=')
-    query[k] = v
-  query

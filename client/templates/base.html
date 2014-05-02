@@ -1,5 +1,4 @@
 <head>
-  <title>PeerLibrary</title>
   <link rel="shortcut icon" href="/img/favicon.png" />
 </head>
 
@@ -7,7 +6,7 @@
   {{#unless INSTALL}}
     {{> header}}
   {{/unless}}
-  <section class="{{currentPage}} {{#if currentUser}}logged-in{{else}}logged-out{{/if}}">
+  <section class="{{currentPage}} {{#if currentPersonId}}logged-in{{else}}logged-out{{/if}}">
     <div class="container">
       {{renderPage}}
     </div>

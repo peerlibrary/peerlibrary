@@ -257,7 +257,9 @@ class Page
   padTextSegments: (e) =>
     position = @_eventToPosition e
 
-    # First check if we are directly above a text segment
+    # First check if we are directly above a text segment. We could combine this
+    # with _findLastLeftUpTextSegment below, but we also want to handle the case
+    # when we are directly above an unselectable segment.
     segmentIndex = @_overTextSegment position
 
     if segmentIndex isnt -1

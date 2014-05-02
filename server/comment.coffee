@@ -4,68 +4,116 @@ class @Comment extends Comment
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All
 
-Comment.Meta.collection.allow
-  insert: (userId, doc) ->
-    # TODO: Check whether inserted document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
+Meteor.methods
+  'comments-path': (commentId) ->
+    check commentId, DocumentId
 
-    return false unless userId
+    person = Meteor.person()
 
-    personId = Meteor.personId userId
+    # No need for requireReadAccessSelector because comments are public
+    comment = Comment.documents.findOne
+      _id: commentId
+    return unless comment
 
-    # Only allow insertion if declared author is current user
-    personId and doc.author._id is personId
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: comment.annotation._id
+    )
+    return unless annotation
 
-  update: (userId, doc) ->
-    # TODO: Check whether updated document conforms to schema
-    # TODO: Check that author really has access to the annotation (and publication)
+    assert.equal comment.publication._id, annotation.publication._id
 
-    return false unless userId
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    return unless publication
 
-    personId = Meteor.personId userId
+    [publication._id, publication.slug, comment._id]
 
-    # Only allow update if declared author is current user
-    personId and doc.author._id is personId
+  'create-comment': (annotationId, body) ->
+    check annotationId, DocumentId
+    check body, NonEmptyString
 
-  remove: (userId, doc) ->
-    return false unless userId
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
 
-    personId = Meteor.personId userId
+    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+    # TODO: Parse and store references in comment's body
 
-    # Only allow removal if author is current user
-    personId and doc.author._id is personId
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: annotationId
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless annotation
 
-# Misuse insert validation to add additional fields on the server before insertion
-Comment.Meta.collection.deny
-  # We have to disable transformation so that we have
-  # access to the document object which will be inserted
-  transform: null
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid annotation." unless publication
 
-  insert: (userId, doc) ->
-    doc.createdAt = moment.utc().toDate()
-    doc.updatedAt = doc.createdAt
-    doc.license = 'CC0-1.0+'
+    createdAt = moment.utc().toDate()
+    comment =
+      createdAt: createdAt
+      updatedAt: createdAt
+      author:
+        _id: person._id
+      annotation:
+        _id: annotationId
+      publication:
+        _id: annotation.publication._id
+      body: body
+      license: 'CC0-1.0+'
 
-    # We return false as we are not
-    # checking anything, just adding fields
-    false
+    comment = Comment.applyDefaultAccess person._id, comment
 
-  update: (userId, doc) ->
-    doc.updatedAt = moment.utc().toDate()
+    Comment.documents.insert comment
 
-    # We return false as we are not
-    # checking anything, just updating fields
-    false
+  # TODO: Use this code on the client side as well
+  'remove-comment': (commentId) ->
+    check commentId, DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    comment = Comment.documents.findOne
+      _id: commentId
+    throw new Meteor.Error 400, "Invalid comment." unless comment
+
+    annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
+      _id: comment.annotation._id
+    )
+    throw new Meteor.Error 400, "Invalid comment." unless annotation
+
+    publication = Publication.documents.findOne Publication.requireReadAccessSelector(person,
+      _id: annotation.publication._id
+    )
+    throw new Meteor.Error 400, "Invalid comment." unless publication
+
+    Comment.documents.remove Comment.requireRemoveAccessSelector(person,
+      _id: comment._id
+    )
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
-  check publicationId, String
+  check publicationId, DocumentId
 
-  return unless publicationId
+  @related (person, publication) ->
+    return unless publication?.hasReadAccess person
+    # TODO: We have also to limit only to comments on annotations user has access to
+    # TODO: Assert that comment.publication._id == annotation.publication._id (make a query which returns only valid?)
 
-  Comment.documents.find
-    'publication._id': publicationId
+    # No need for requireReadAccessSelector because comments are public
+    Comment.documents.find
+      'publication._id': publication._id
+    ,
+      Comment.PUBLISH_FIELDS()
   ,
-    Comment.PUBLIC_FIELDS()
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
+  ,
+    Publication.documents.find
+      _id: publicationId
+    ,
+      fields: Publication.readAccessSelfFields()

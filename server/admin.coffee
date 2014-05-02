@@ -36,7 +36,7 @@ class @ArXivPDF extends ArXivPDF
     replaceParent: true
 
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All, only admins have access
 
 randomTimestamp = ->
@@ -44,7 +44,8 @@ randomTimestamp = ->
 
 Meteor.methods
   'sample-data': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -214,7 +215,8 @@ Meteor.methods
     Log.info "Done"
 
   'sync-arxiv-metadata': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -313,7 +315,7 @@ Meteor.methods
           existingAuthor
         else
           author._id = Random.id()
-          Person.documents.insert _.extend author,
+          Person.documents.insert Person.applyDefaultAccess null, _.extend author,
             slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
             user: null
             publications: []
@@ -356,7 +358,8 @@ Meteor.methods
     Log.info "Done (#{ count })"
 
   'sync-local-pdf-cache': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -482,7 +485,7 @@ Meteor.methods
           existingAuthor
         else
           author._id = Random.id()
-          Person.documents.insert _.extend author,
+          Person.documents.insert Person.applyDefaultAccess null, _.extend author,
             slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
             user: null
             publications: []
@@ -566,74 +569,21 @@ Meteor.methods
     Log.info "Done (#{ count })"
 
 Meteor.publish 'arxiv-pdfs', ->
-  currentArXivPDFs = {}
-  currentPersonId = null # Just for asserts
-  handleArXivPDFs = null
+  return unless @personId
 
-  removeArXivPDFs = =>
-    for id of currentArXivPDFs
-      delete currentArXivPDFs[id]
-      @removed 'ArXivPDFs', id
+  @related (person) ->
+    return unless person?.isAdmin
 
-  publishArXivPDFs = =>
-    oldHandleArXivPDFs = handleArXivPDFs
-    handleArXivPDFs = ArXivPDF.documents.find(
-      {}
-    ,
-      fields: ArXivPDF.PUBLIC_FIELDS().fields
+    ArXivPDF.documents.find {},
+      fields: ArXivPDF.PUBLISH_FIELDS().fields
       sort: [
         ['processingStart', 'desc']
       ]
       limit: 5
-    ).observeChanges
-      added: (id, fields) =>
-        return if currentArXivPDFs[id]
-        currentArXivPDFs[id] = true
-
-        @added 'ArXivPDFs', id, fields
-
-      changed: (id, fields) =>
-        return if not currentArXivPDFs[id]
-
-        @changed 'ArXivPDFs', id, fields
-
-      removed: (id) =>
-        return if not currentArXivPDFs[id]
-        delete currentArXivPDFs[id]
-
-        @removed 'ArXivPDFs', id
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandleArXivPDFs.stop() if oldHandleArXivPDFs
-
-  handlePersons = Person.documents.find(
-    _id: @personId
-    isAdmin: true
   ,
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
-
-      currentPersonId = id
-      publishArXivPDFs()
-
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.notEqual currentPersonId, null
-
-      handleArXivPDFs.stop() if handleArXivPDFs
-      handleArXivPDFs = null
-
-      currentPersonId = null
-      removeArXivPDFs()
-
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handleArXivPDFs.stop() if handleArXivPDFs
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
