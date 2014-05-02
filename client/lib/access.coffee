@@ -47,6 +47,8 @@ Template.accessControl.private = ->
   @access is @constructor.ACCESS.PRIVATE
 
 Template.privateAccessControl.created = ->
+  # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
+  # the list of people we invited so the emails appear in the list instead of IDs.
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
 
 Template.privateAccessControl.destroyed = ->

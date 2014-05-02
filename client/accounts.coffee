@@ -33,11 +33,7 @@ $(document).on 'keyup', (e) ->
 
 # Don't allow dropping files while password reset is in progress
 Template._resetPasswordDialog.events
-  'dragover': (e, template) ->
-    e.preventDefault()
-    return # Make sure CoffeeScript does not return anything
-
-  'dragleave': (e, template) ->
+  'dragover, dragleave': (e, template) ->
     e.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
@@ -78,11 +74,7 @@ Deps.autorun ->
 
 # Don't allow dropping files while account enrollment is in progress
 Template._enrollAccountDialog.events
-  'dragover': (e, template) ->
-    e.preventDefault()
-    return # Make sure CoffeeScript does not return anything
-
-  'dragleave': (e, template) ->
+  'dragover, dragleave': (e, template) ->
     e.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
@@ -139,11 +131,6 @@ Deps.autorun ->
 
 Template._loginButtonsLoggedInDropdownActions.events
   'click .invite-button': (e, template) ->
-    # Return if not a normal click (maybe user wants to open a link in a tab)
-    return if e.altKey or e.ctrlKey or e.metaKey or e.shiftKey
-    return unless e.which is 1 # Left mouse button
-
-    e.preventDefault()
     Session.set 'inviteDialogActive', true
     Session.set 'inviteDialogError', null
     $('#invite-dialog-email').val('')
@@ -152,7 +139,7 @@ Template._loginButtonsLoggedInDropdownActions.events
 
     Meteor.setTimeout =>
       $('#invite-dialog-email').focus()
-    , 100 # ms
+    , 10 # ms
 
     return # Make sure CoffeeScript does not return anything
 
@@ -169,7 +156,7 @@ Template.inviteDialog.waiting = ->
 Template.inviteDialog.inviteError = ->
   Session.get 'inviteDialogError'
 
-# To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
+# To close invite dialog box when clicking, focusing, or pressing a key somewhere outside
 $(document).on 'click focus keypress', (e) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
@@ -192,9 +179,14 @@ Template.inviteDialog.events
   'submit .invite-send': (e, template) ->
     e.preventDefault()
     return if Session.get 'inviteDialogSending'
-    Session.set 'inviteDialogSending', true
 
     email = $(template.findAll '#invite-dialog-email').val()
+
+    unless email.match EMAIL_REGEX
+      Session.set 'inviteDialogError', "Please enter a valid email address."
+      return
+
+    Session.set 'inviteDialogSending', true
 
     Meteor.call 'invite-user', email, (error) =>
       Session.set 'inviteDialogSending', false

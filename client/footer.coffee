@@ -60,9 +60,14 @@ Template.newsletter.events
   'submit .newsletter-subscribe': (e, template) ->
     e.preventDefault()
     return if Session.get 'newsletterSubscribing'
-    Session.set 'newsletterSubscribing', true
 
     email = $(template.findAll '#newsletter-dialog-email').val()
+
+    unless email.match EMAIL_REGEX
+      Session.set 'newsletterError', "Please enter a valid email address."
+      return
+
+    Session.set 'newsletterSubscribing', true
 
     Meteor.call 'newsletter-subscribe', email, (error) =>
       Session.set 'newsletterSubscribing', false
