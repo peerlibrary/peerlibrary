@@ -25,17 +25,16 @@
 </template>
 
 <template name="newsletter">
-  <div class="newsletter-dialog {{newsletterActive}} {{newsletterSubscribing}}">
-    <div class="description">
+  <div class="newsletter-dialog popup-dialog {{#if displayed}}displayed{{/if}} {{#if waiting}}waiting{{/if}}">
+    <p class="description">
       Subscribe to PeerLibrary announcements, news, and important things. Low traffic.
-    </div>
-    <div class="email-label-and-input">
-      <label class="email-label" for="newsletter-dialog-email">Email</label>
-      <input id="newsletter-dialog-email" type="text" {{#if newsletterSubscribing}}disabled="disabled"{{/if}} />
-    </div>
-    {{#if newsletterError}}
-      <div class="message error-message">{{newsletterError}}</div>
-    {{/if}}
-    <div class="subscribe-form-submit">Subscribe</div>
+    </p>
+    <form class="newsletter-subscribe">
+      <input id="newsletter-dialog-email" type="text" placeholder="Email" class="waiting-icon" {{#if newsletterSubscribing}}disabled="disabled"{{/if}} />
+      {{#if newsletterError}}
+        <p class="message error-message">{{newsletterError}}</p>
+      {{/if}}
+      <button class="subscribe-form-submit">Subscribe</button>
+    </form>
   </div>
 </template>

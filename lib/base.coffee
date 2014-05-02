@@ -27,6 +27,9 @@ setSession = (session) ->
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
+    inviteDialogActive: false
+    inviteDialogSubscribing: false
+    inviteDialogError: null
     newsletterActive: false
     newsletterSubscribing: false
     newsletterError: null

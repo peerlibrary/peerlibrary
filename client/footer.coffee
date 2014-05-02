@@ -18,8 +18,9 @@ Template.footer.events
     Session.set 'newsletterError', null
     $(template.findAll '#newsletter-dialog-email').val(Meteor.user()?.emails?[0]?.address or '')
 
-    Meteor.defer =>
+    Meteor.setTimeout =>
       $(template.findAll '#newsletter-dialog-email').focus()
+    , 10 # ms
 
     return # Make sure CoffeeScript does not return anything
 
@@ -27,11 +28,11 @@ Template.footer.events
     e.newsletterDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-Template.newsletter.newsletterActive = ->
-  'newsletter-active' if Session.get 'newsletterActive'
+Template.newsletter.displayed = ->
+  Session.get 'newsletterActive'
 
-Template.newsletter.newsletterSubscribing = ->
-  'newsletter-subscribing' if Session.get 'newsletterSubscribing'
+Template.newsletter.waiting = ->
+  Session.get 'newsletterSubscribing'
 
 Template.newsletter.newsletterError = ->
   Session.get 'newsletterError'
@@ -47,27 +48,6 @@ $(document).on 'keyup', (e) ->
   Session.set 'newsletterActive', false if e.keyCode is 27 # Escape key
   return # Make sure CoffeeScript does not return anything
 
-subscribe = (template, email) ->
-  return if Session.get 'newsletterSubscribing'
-  Session.set 'newsletterSubscribing', true
-
-  Meteor.call 'newsletter-subscribe', email, (error) =>
-    Session.set 'newsletterSubscribing', false
-
-    if error
-      Session.set 'newsletterError', (error.reason or "Unknown error.")
-
-      # Refocus for user to correct an error
-      Meteor.setTimeout =>
-        $(template.findAll '#newsletter-dialog-email').focus()
-      , 10 # ms
-
-    else
-      Session.set 'newsletterError', null
-      Session.set 'newsletterActive', false
-
-      Notify.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
-
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.newsletter.events
   # We have to bind directly to newsletter-dialog to intercept click on the parent
@@ -77,14 +57,28 @@ Template.newsletter.events
     e.newsletterDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click .subscribe-form-submit': (e, template) ->
-    subscribe template, $(template.findAll '#newsletter-dialog-email').val()
+  'submit .newsletter-subscribe': (e, template) ->
+    e.preventDefault()
+    return if Session.get 'newsletterSubscribing'
+    Session.set 'newsletterSubscribing', true
 
-    return # Make sure CoffeeScript does not return anything
+    email = $(template.findAll '#newsletter-dialog-email').val()
 
-  'keypress #newsletter-dialog-email': (e, template) ->
-    return unless e.keyCode is 13 # Enter key
+    Meteor.call 'newsletter-subscribe', email, (error) =>
+      Session.set 'newsletterSubscribing', false
 
-    subscribe template, $(template.findAll '#newsletter-dialog-email').val()
+      if error
+        Session.set 'newsletterError', (error.reason or "Unknown error.")
+
+        # Refocus for user to correct an error
+        Meteor.setTimeout =>
+          $(template.findAll '#newsletter-dialog-email').focus()
+        , 10 # ms
+
+      else
+        Session.set 'newsletterError', null
+        Session.set 'newsletterActive', false
+
+        Notify.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
 
     return # Make sure CoffeeScript does not return anything

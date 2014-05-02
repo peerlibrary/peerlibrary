@@ -220,10 +220,10 @@ Sign in buttons
     color blue-accent 
 
 /*
-Authentication menu and newsletter dialog (for footer)
-====================================================== */
+Authentication menu and popup dialogs (newsletter, invite)
+========================================================== */
 
-header.logged-out #login-dropdown-list, .newsletter-dialog, .accounts-centered-dialog
+header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
   color black
   background white
   border-color rgb(210,210,210)
@@ -305,6 +305,28 @@ header.logged-out #login-dropdown-list, .newsletter-dialog, .accounts-centered-d
     line-height default-line-height
     margin-top 10px
 
+.popup-dialog
+  display none
+  box-sizing border-box
+  padding 20px
+  line-height default-line-height
+
+  .description
+    margin 10px 0 20px
+
+  .message
+    margin 20px 0 0
+
+  &.displayed
+    display block
+
+  &.waiting .waiting-icon
+    background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+    background-position 50% 50%
+    background-repeat no-repeat
+    transition none
+    color gray
+
 header.logged-in
   #login-dropdown-list
     background white 
@@ -385,7 +407,7 @@ header.index-header.logged-in
   #login-dropdown-list:before
     left 149px
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button, .newsletter-dialog .email-label-and-input, .newsletter-dialog .description, .newsletter-dialog .message
+#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
   padding 0 20px
 
 .login-close-text

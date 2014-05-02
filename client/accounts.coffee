@@ -136,3 +136,82 @@ Deps.autorun ->
     else
       Notify.success "Signed out."
     lastPersonId = personId
+
+Template._loginButtonsLoggedInDropdownActions.events
+  'click .invite-button': (e, template) ->
+    # Return if not a normal click (maybe user wants to open a link in a tab)
+    return if e.altKey or e.ctrlKey or e.metaKey or e.shiftKey
+    return unless e.which is 1 # Left mouse button
+
+    e.preventDefault()
+    Session.set 'inviteDialogActive', true
+    Session.set 'inviteDialogError', null
+    $('#invite-dialog-email').val('')
+
+    Accounts._loginButtonsSession.closeDropdown()
+
+    Meteor.setTimeout =>
+      $('#invite-dialog-email').focus()
+    , 100 # ms
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .invite-button, focus .invite-button, keypress .invite-button': (e, template) ->
+    e.inviteDialogBoxEvent = true
+    return # Make sure CoffeeScript does not return anything
+
+Template.inviteDialog.displayed = ->
+  Session.get 'inviteDialogActive'
+
+Template.inviteDialog.waiting = ->
+  Session.get 'inviteDialogSending'
+
+Template.inviteDialog.inviteError = ->
+  Session.get 'inviteDialogError'
+
+# To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
+$(document).on 'click focus keypress', (e) ->
+  # originalEvent is defined only for native events, but we are triggering
+  # click manually as well, so originalEvent is not always defined
+  Session.set 'inviteDialogActive', false unless e.originalEvent?.inviteDialogBoxEvent
+  return # Make sure CoffeeScript does not return anything
+
+$(document).on 'keyup', (e) ->
+  Session.set 'inviteDialogActive', false if e.keyCode is 27 # Escape key
+  return # Make sure CoffeeScript does not return anything
+
+# But if clicked inside, we mark the event so that dialog box is not closed
+Template.inviteDialog.events
+# We have to bind directly to invite-dialog to intercept click on the parent
+# element of all and not directly on child elements. For example, when input is
+# disabled, its click handler is not called, but invite-dialog handler is.
+  'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (e, template) ->
+    e.inviteDialogBoxEvent = true
+    return # Make sure CoffeeScript does not return anything
+
+  'submit .invite-send': (e, template) ->
+    e.preventDefault()
+    return if Session.get 'inviteDialogSending'
+    Session.set 'inviteDialogSending', true
+
+    email = $(template.findAll '#invite-dialog-email').val()
+
+    Meteor.call 'invite-user', email, (error) =>
+      Session.set 'inviteDialogSending', false
+
+      if error
+        Session.set 'inviteDialogError', (error.reason or "Unknown error.")
+
+        # Refocus for user to correct an error
+        Meteor.setTimeout =>
+          $(template.findAll '#invite-dialog-email').focus()
+        , 10 # ms
+
+      else
+        Session.set 'inviteDialogError', null
+        Session.set 'inviteDialogActive', false
+
+        Notify.success "User #{ email } invited."
+
+      return # Make sure CoffeeScript does not return anything
+

@@ -9,7 +9,9 @@ INVITE_SECRET = Random.id()
 
 Meteor.methods
   'invite-user': (email) ->
-    check email, EMail
+    check email, String
+
+    throw new Meteor.Error 400, "Please enter a valid email address." unless EMAIL_REGEX.test email
 
     # We require that user inviting is logged in
     person = Meteor.person()
