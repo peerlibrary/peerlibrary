@@ -609,9 +609,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'add-to-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
       return Notify.meteorError error, true if error
 
@@ -622,9 +620,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .remove-from-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'remove-from-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
       Notify.success "Publication removed from the collection." if count
@@ -1015,7 +1011,7 @@ Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
@@ -1024,7 +1020,7 @@ Template.publicationAnnotationsItem.events
   'click .cancel-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $unset:
         editing: ''
 
@@ -1113,29 +1109,29 @@ Template.annotationEditor.destroyed = ->
 
 Template.annotationEditor.events
   'focus .annotation-content-editor': (e, template) ->
-    return if template.data.editing
+    return if @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
     # Expand
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .annotation-content-editor': (e, template) ->
-    return unless template.data.editing
+    return unless @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
     $editor = $(e.currentTarget)
-    return if template.data.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
 
     # Collapse
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.AUTOMATIC
       $unset:
@@ -1145,9 +1141,9 @@ Template.annotationEditor.events
 
   # TODO: Should we detect changes with some other event as well?
   'input .annotation-content-editor': (e, template) ->
-    return unless template.data.local is LocalAnnotation.LOCAL.AUTOMATIC
+    return unless @local is LocalAnnotation.LOCAL.AUTOMATIC
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.CHANGED
 
@@ -1284,7 +1280,7 @@ Template.annotationCommentEditor.events
 
     body = $editor.html().trim()
 
-    Meteor.call 'create-comment', template.data._id, body, (error, commentId) =>
+    Meteor.call 'create-comment', @_id, body, (error, commentId) =>
       return Notify.meteorError error, true if error
 
       # Reset editor
