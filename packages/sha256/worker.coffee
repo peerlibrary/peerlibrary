@@ -1,7 +1,7 @@
-@SHA256Worker =
+SHA256Worker =
   # defaults
   disableWorker: false
-  workerSrc: '/workers/sha256_worker.js'
+  workerSrc: '/packages/sha256/web-worker.js'
   chunkSize: 1024 * 32 # bytes
 
   run: (params) ->

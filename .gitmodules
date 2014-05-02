@@ -38,3 +38,6 @@
 	path = packages/scribe/scribe-plugin-toolbar
 	url = https://github.com/peerlibrary/scribe-plugin-toolbar.git
 	branch = dist
+[submodule "packages/sha256/digest.js"]
+	path = packages/sha256/digest.js
+	url = https://github.com/peerlibrary/digest.js

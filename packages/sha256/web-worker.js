@@ -1,4 +1,4 @@
-importScripts('/assets/digest.js');
+importScripts('digest.js/digest.js');
 
 onmessage = function(oEvent){
   var file = oEvent.data.file;
