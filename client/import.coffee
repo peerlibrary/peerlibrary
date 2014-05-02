@@ -76,8 +76,28 @@ importFile = (file) ->
       hash.update fileContent
       sha256 = hash.finalize()
       console.log sha256
+      chunkSize = 1024 * 32 # bytes
 
-      SHA256Worker.run
+      sendChunk = () ->
+        chunkEnd = chunkStart + chunkSize
+        chunkData = fileContent.slice(chunkStart, chunkEnd)
+        SHA256Worker.addChunk
+          chunk: chunkData
+          onDone: ->
+            undefined
+        chunkStart += chunkSize
+
+      chunkStart = 0
+      chunkEnd = 0
+      streamLength = fileContent.byteLength
+      
+      #console.log "Sending chunks... (length=" + streamLength + ")"
+      #sendChunk() while chunkStart < streamLength 
+      #console.log "Chunks sent, finalizing"
+      #SHA256Worker.finalize()
+      #console.log "Done"
+
+      SHA256Worker.fromFile
         file: file
         onProgress: (progress) ->
           console.log progress

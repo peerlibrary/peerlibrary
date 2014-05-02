@@ -3,31 +3,40 @@ SHA256Worker =
   disableWorker: false
   workerSrc: '/packages/sha256/web-worker.js'
   chunkSize: 1024 * 32 # bytes
+  chunks: false
 
-  run: (params) ->
+  fromFile: (params) ->
+    if @chunks
+      throw new Error('Unable to receive file while receiving chunks')
+    @initWorker params
+    @worker.sendFile params
+
+  addChunk: (params) ->
+    if not @chunks
+      console.log "Processing file in chunks"
+      @initWorker params
+      @chunks = true
+    @worker.sendChunk params
+
+  finalize: ->
+    if not @chunks
+      throw new Error('Unable to finalize - no chunks sent')
+    @worker.sendFinalize()
+    console.log "Final chunk received" 
+
+  initWorker: (params) ->
     if !@disableWorker && window && window.Worker
-      @.runWebWorker params
+      @worker = new WebWorker params
     else
-      @.runWorkerFallback params
-
-  runWebWorker: (params) ->
-    @worker = new WebWorker params
-    @worker.run()
-    @worker
-
-  runWorkerFallback: (params) ->
-    @worker = new WorkerFallback params
-    @worker.run()
-    @worker
+      @worker = new WorkerFallback params
 
 class BaseWorker
   constructor: (params) ->
     self = @
-    @_file = params.file
     @_onProgress = params.onProgress or ->
     @_onDone = params.onDone
 
-    if not (@_file and @_onDone)
+    if not @_onDone
       throw new Error('Not enough parameters')
 
     @_handler = 
@@ -47,37 +56,55 @@ class WebWorker extends BaseWorker
       message = oEvent.data.message
       self._handler[message] data
 
-  run: ->
-    @worker.postMessage file: @_file, chunkSize: SHA256Worker.chunkSize
+  sendFile: (params) ->
+    @worker.postMessage message: 'file', file: params.file, chunkSize: SHA256Worker.chunkSize
+
+  sendChunk: (params) ->
+    @worker.postMessage message: 'chunk', chunk: params.chunk
+
+  sendFinalize: (params) ->
+    @worker.postMessage message: 'finalize'
 
 class WorkerFallback extends BaseWorker
   constructor: (params) ->
     super params
 
-    @_fileSize = @_file.size
     @_chunkSize = SHA256Worker.chunkSize
     @_chunkStart = 0
+    @chunks = false
     
-  run: ->
+  sendFile: (params) ->
     self = @
+    @_file = params.file
+    @_fileSize = @_file.size
     @_reader = new FileReader()
     @_hash = new Crypto.SHA256()
     @_reader.onload = ->
       self._hash.update @result
+      console.log self._hash
       self._handler.progress chunkNumber: @_chunkStart / @_chunkSize, progress: Math.min(@_chunkStart, @_fileSize) / @_fileSize
       self.readNext()
     self.readNext()
 
   readNext: ->
+    self = @
     start = @_chunkStart
     end = start + @_chunkSize
     # check if all the chunks are read
     if start >= @_fileSize
-      sha256 = @_hash.finalize()
-      @_handler.done sha256: sha256
+      @sendFinalize()
     else
       # increase chunkStart
       @_chunkStart = end
+      console.log @_file
       blob = @_file.slice start, end
       @_reader.readAsArrayBuffer blob
     return
+
+  sendFinalize: ->
+    sha256 = @_hash.finalize()
+    @_handler.done sha256: sha256   
+  
+  sendChunk: ->
+    #TODO handle chunks in fallback worker
+    return  
