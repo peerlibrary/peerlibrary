@@ -1259,7 +1259,7 @@ Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text().trim() or $editor.is ':focus'
+  if $editor.text().trim() or $editor.is(':focus') or @_destroyDialog
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
@@ -1280,7 +1280,7 @@ Template.annotationCommentEditor.events
   'blur .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
-    $wrapper.removeClass 'active' unless $editor.text().trim()
+    $wrapper.removeClass 'active' unless $editor.text().trim() or template._destroyDialog
 
     return # Make sure CoffeeScript does not return anything
 
