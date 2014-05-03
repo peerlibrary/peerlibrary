@@ -1092,6 +1092,14 @@ Template.annotationEditor.created = ->
 Template.annotationEditor.rendered = ->
   @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
+  # If editor got collapsed, close any open dialog (we do not
+  # really collapse when user is actively editing (like having
+  # a dialog open), but for every case, if it happens, we want
+  # to cleanup)
+  unless @data.editing
+    @_destroyDialog?()
+    @_destroyDialog = null
+
   ###
   TODO: Temporary disabled, not yet finalized code
 
@@ -1121,14 +1129,26 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  # We collapse a local editor if there was no change to the content
+  # and user is not activelly editing it (like having a dialog open)
   'blur .annotation-content-editor': (e, template) ->
+    # We do nothing if editor is already collapsed
     return unless @editing
 
     # We set editing based on the focus only for local annotations
     return unless @local
 
+    # Do nothing if content was changed, and content is not empty
     $editor = $(e.currentTarget)
     return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If focus moved somewhere else in the editor (like
+    # click on a toolbar button), we do not do anything
+    $annotation = $editor.closest('.annotation')
+    return if $annotation.is(e.relatedTarget) or $annotation.has(e.relatedTarget).length
+
+    # If dialog is open, we do not do anything
+    return if template._destroyDialog
 
     # Collapse
     LocalAnnotation.documents.update @_id,

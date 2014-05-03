@@ -14,6 +14,12 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         node.nodeName is linkPromptCommand.nodeName
 
     linkPromptCommand.execute = ->
+      # This also restores any selection, so we should call it first.
+      # We restore the selection so that if user double clicks on a link
+      # button selection is not reset but stays on the link, for example.
+      template._destroyDialog?()
+      template._destroyDialog = null
+
       selection = rangy.getSelection()
 
       return unless selection.rangeCount
@@ -29,17 +35,19 @@ Scribe.plugins['link-prompt-command'] = (template) ->
       $currentEditor = $(range.commonAncestorContainer).closest('.content-editor')
       return unless $currentEditor.length
 
-      template._destroyDialog() if template._destroyDialog
-      template._destroyDialog = null
-
       savedSelection = rangy.saveSelection()
+
+      # A simpler version to cleanup, until we have a dialog really open.
+      # With this we also mark that dialog is in process of being created.
+      template._destroyDialog = ->
+        rangy.restoreSelection savedSelection, true
 
       # rangy.saveSelection adds marks to content, which triggers Scribe's mutation observers
       # which in turn mingles with focus when trying to manage changes to the content. So, to
       # leave time for mutation observers to run, we schedule the rest of the code onto the
       # event queue. This makes autofocusing the dialog input element (the one with autofocus
       # attribute) work again. Ugly, but it works.
-      Meteor.setTimeout =>
+      Meteor.defer =>
         position =
           my: 'top+25'
           at: 'bottom'
@@ -116,9 +124,24 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
             return # Make sure CoffeeScript does not return anything
 
+        # If for some reason we are not editing anymore, abort
+        return unless template.data.editing
+
         editorLinkPrompt = Meteor.render =>
           Template.editorLinkPrompt
             link: parentAnchor?.href
+
+        # To be able to destroy a dialog when template is destroyed. We
+        # assign this to template before creating a dialog because we
+        # are using template._destroyDialog to mark that dialog is open.
+        # For example, we do not collapse a local editor if dialog is open.
+        template._destroyDialog = ->
+          # We do not call updateLocation or set template._destroyDialog
+          # to null, all this should be done by our caller. We restore
+          # the selection so that if user double clicks on a link button
+          # selection is not reset but stays on the link, for example.
+          rangy.restoreSelection savedSelection, true
+          $dialog?.dialog('destroy')
 
         $dialog = $(editorLinkPrompt.childNodes).wrap('<div/>').parent().dialog
           dialogClass: 'editor-link-prompt-dialog'
@@ -166,17 +189,6 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         $dialogWrapper.on 'mouseleave', (e, highlightId) =>
           $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [annotationId] if annotationId
           return # Make sure CoffeeScript does not return anything
-
-        # To be able to destroy a dialog when template is destroyed
-        template._destroyDialog = ->
-          # We do not call updateLocation or set template._destroyDialog
-          # to null, all this should be done by our caller
-          rangy.removeMarkers savedSelection
-          $dialog.dialog('destroy')
-      # We do not need any delay really, just that mutation observers events are
-      # processed before us (which are, because they were already scheduled at
-      # the time we called Meteor.setTimeout.
-      , 0 # ms
 
     linkPromptCommand.queryState = ->
       selection = rangy.getSelection()
