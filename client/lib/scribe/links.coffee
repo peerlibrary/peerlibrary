@@ -124,8 +124,8 @@ Scribe.plugins['link-prompt-command'] = (template) ->
 
             return # Make sure CoffeeScript does not return anything
 
-        # If for some reason we are not editing anymore, abort
-        return unless template.data.editing
+        # If for some reason we are not editing the annotation anymore, or are a comment editor, abort
+        return unless template.data.editing or $currentEditor.hasClass 'comment-content-editor'
 
         editorLinkPrompt = Meteor.render =>
           Template.editorLinkPrompt
