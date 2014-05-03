@@ -121,8 +121,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.8.3",
-        "commit": "1700fb316e99756e85f7b21137975353c6c95a1e"
+        "tag": "v0.8.4",
+        "commit": "104ff9bec3a9b1854e47fc7dfe15e3e894d9bec5"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -156,8 +156,8 @@
       },
       "apm": {
         "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.2.3",
-        "commit": "b299d8506689d9f21aa3af9bfe7dc367a9dbcc3a"
+        "tag": "v1.2.5",
+        "commit": "c4552ec9c2d011604729af42d66d8c896aaa77d4"
       },
       "stacktrace": {
         "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
