@@ -5,8 +5,7 @@
 $(document).on 'click focus keypress', (e) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
-  Session.set 'newsletterActive', false unless e.originalEvent?.newsletterDialogBoxEvent
-  Session.set 'inviteDialogActive', false unless e.originalEvent?.inviteDialogBoxEvent
+  (Session.set variable, false for variable in ['newsletterActive', 'inviteDialogActive']) unless e.originalEvent?.dialogBoxEvent
 
   return # Make sure CoffeeScript does not return anything
 
@@ -22,7 +21,7 @@ Template.footer.events
     e.preventDefault()
     Session.set 'newsletterActive', true
     Session.set 'newsletterError', null
-    $(template.findAll '#newsletter-dialog-email').val(Meteor.user()?.emails?[0]?.address or '')
+    $(template.findAll '#newsletter-dialog-email').val(Meteor.person()?.email() or '')
 
     Meteor.setTimeout =>
       $(template.findAll '#newsletter-dialog-email').focus()
@@ -31,7 +30,7 @@ Template.footer.events
     return # Make sure CoffeeScript does not return anything
 
   'click .newsletter, focus .newsletter, keypress .newsletter': (e, template) ->
-    e.newsletterDialogBoxEvent = true
+    e.dialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
 Template.newsletter.displayed = ->
@@ -53,7 +52,7 @@ Template.newsletter.events
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but newsletter-dialog handler is.
   'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (e, template) ->
-    e.newsletterDialogBoxEvent = true
+    e.dialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
   'submit .newsletter-subscribe': (e, template) ->
@@ -105,7 +104,7 @@ Template._loginButtonsLoggedInDropdownActions.events
     return # Make sure CoffeeScript does not return anything
 
   'click .invite-button, focus .invite-button, keypress .invite-button': (e, template) ->
-    e.inviteDialogBoxEvent = true
+    e.dialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
 Template.inviteDialog.displayed = ->
@@ -127,7 +126,7 @@ Template.inviteDialog.events
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but invite-dialog handler is.
   'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (e, template) ->
-    e.inviteDialogBoxEvent = true
+    e.dialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
   'submit .invite-send': (e, template) ->
