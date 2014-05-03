@@ -1,0 +1,29 @@
+<template name="newsletter">
+    <div class="newsletter-dialog popup-dialog {{#if displayed}}displayed{{/if}} {{#if waiting}}waiting{{/if}}">
+        <p class="description">
+            Subscribe to PeerLibrary announcements, news, and important things. Low traffic.
+        </p>
+        <form class="newsletter-subscribe">
+            <input id="newsletter-dialog-email" type="text" placeholder="Email" class="waiting-icon" {{#if newsletterSubscribing}}disabled="disabled"{{/if}} />
+            {{#if newsletterError}}
+            <p class="message error-message">{{newsletterError}}</p>
+            {{/if}}
+            <button class="subscribe-form-submit">Subscribe</button>
+        </form>
+    </div>
+</template>
+
+<template name="inviteDialog">
+    <div class="invite-dialog popup-dialog {{#if displayed}}displayed{{/if}} {{#if waiting}}waiting{{/if}}">
+        <p class="description">
+            Tell your friends about PeerLibrary.
+        </p>
+        <form class="invite-send">
+            <input id="invite-dialog-email" type="text" placeholder="Email" class="waiting-icon" {{#if inviteSending}}disabled="disabled"{{/if}} />
+            {{#if inviteError}}
+            <p class="message error-message">{{inviteError}}</p>
+            {{/if}}
+            <button class="subscribe-form-submit">Invite</button>
+        </form>
+    </div>
+</template>
