@@ -609,9 +609,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'add-to-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
       return Notify.meteorError error, true if error
 
@@ -622,9 +620,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .remove-from-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'remove-from-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
       Notify.success "Publication removed from the collection." if count
@@ -1015,7 +1011,7 @@ Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
@@ -1024,7 +1020,7 @@ Template.publicationAnnotationsItem.events
   'click .cancel-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $unset:
         editing: ''
 
@@ -1096,6 +1092,14 @@ Template.annotationEditor.created = ->
 Template.annotationEditor.rendered = ->
   @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
+  # If editor got collapsed, close any open dialog (we do not
+  # really collapse when user is actively editing (like having
+  # a dialog open), but for every case, if it happens, we want
+  # to cleanup)
+  unless @data.editing
+    @_destroyDialog?()
+    @_destroyDialog = null
+
   ###
   TODO: Temporary disabled, not yet finalized code
 
@@ -1113,29 +1117,41 @@ Template.annotationEditor.destroyed = ->
 
 Template.annotationEditor.events
   'focus .annotation-content-editor': (e, template) ->
-    return if template.data.editing
+    return if @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
     # Expand
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
     return # Make sure CoffeeScript does not return anything
 
+  # We collapse a local editor if there was no change to the content
+  # and user is not activelly editing it (like having a dialog open)
   'blur .annotation-content-editor': (e, template) ->
-    return unless template.data.editing
+    # We do nothing if editor is already collapsed
+    return unless @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
+    # Do nothing if content was changed, and content is not empty
     $editor = $(e.currentTarget)
-    return if template.data.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If focus moved somewhere else in the editor (like
+    # click on a toolbar button), we do not do anything
+    $annotation = $editor.closest('.annotation')
+    return if $annotation.is(e.relatedTarget) or $annotation.has(e.relatedTarget).length
+
+    # If dialog is open, we do not do anything
+    return if template._destroyDialog
 
     # Collapse
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.AUTOMATIC
       $unset:
@@ -1145,9 +1161,9 @@ Template.annotationEditor.events
 
   # TODO: Should we detect changes with some other event as well?
   'input .annotation-content-editor': (e, template) ->
-    return unless template.data.local is LocalAnnotation.LOCAL.AUTOMATIC
+    return unless @local is LocalAnnotation.LOCAL.AUTOMATIC
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.CHANGED
 
@@ -1243,7 +1259,7 @@ Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text().trim() or $editor.is ':focus'
+  if $editor.text().trim() or $editor.is(':focus') or @_destroyDialog
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
@@ -1264,7 +1280,7 @@ Template.annotationCommentEditor.events
   'blur .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
-    $wrapper.removeClass 'active' unless $editor.text().trim()
+    $wrapper.removeClass 'active' unless $editor.text().trim() or template._destroyDialog
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1284,7 +1300,7 @@ Template.annotationCommentEditor.events
 
     body = $editor.html().trim()
 
-    Meteor.call 'create-comment', template.data._id, body, (error, commentId) =>
+    Meteor.call 'create-comment', @_id, body, (error, commentId) =>
       return Notify.meteorError error, true if error
 
       # Reset editor

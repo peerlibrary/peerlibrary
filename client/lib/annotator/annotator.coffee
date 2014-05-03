@@ -142,6 +142,9 @@ class @Annotator extends Annotator
     count = LocalAnnotation.documents.update
       local: LocalAnnotation.LOCAL.AUTOMATIC
       'publication._id': Session.get 'currentPublicationId'
+      # Do not set a new body if annotation is in the process of editing (even if user has not yet changed anything)
+      editing:
+        $exists: false
     ,
       $set:
         body: body
@@ -155,6 +158,11 @@ class @Annotator extends Annotator
       # We make a simple check for the highlight ID because it is not really possible
       # for some other ID to appear in our highlightPromptInEditor template and match
       body: new RegExp "#{ highlightId }"
+      # If user is editing an annotation, we leave it be (this is consistent with
+      # us not updating or removing links to highlights, which are removed, from other
+      # existing annotations)
+      editing:
+        $exists: false
     ,
       $set:
         body: ''

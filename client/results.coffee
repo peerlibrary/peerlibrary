@@ -131,9 +131,9 @@ Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitl
 
 Template.publicationSearchResultThumbnail.events
   'click li': (e, template) ->
-    root.startViewerOnPage = template.data.page
+    root.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
-    publication = template.data.publication
+    publication = @publication
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.sidebarSearch.created = ->
