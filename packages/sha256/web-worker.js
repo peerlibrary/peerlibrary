@@ -1,4 +1,7 @@
 importScripts('digest.js/digest.js');
+currentChunk = 0;
+chunkBuffer = new Array();
+hash = Digest.SHA256(),
 
 onmessage = function (oEvent){
   var message = oEvent.data.message;
@@ -7,16 +10,19 @@ onmessage = function (oEvent){
 
 // handles messages received from main thread
 var ActionHandler = {
-  hash: Digest.SHA256(),
-  chunk: function SHA256WebWorkerChunkHandler_updateChunk (eventData) {
-    // TODO: Handle chunkNumber
-    var chunk = eventData.chunk;
-    this.hash.update(chunk);
+  chunk: function SHA256WebWorkerActionHandler_updateChunk (eventData) {
+    // buffering chunk
+    chunkBuffer[ eventData.chunkNumber ] = eventData.chunk;
+    // flushing buffer
+    flushBuffer();
   },
-  finalize: function SHA256WebWorkerChunkHandler_finalizeChunks (eventData) {
-    MessageHandler.done(SHA256WebWorker_getFinalHashString(this.hash));
+  finalize: function SHA256WebWorkerActionHandler_finalizeChunks (eventData) {
+    // flushing buffer before finalizing
+    flushBuffer();
+    // finalizing
+    MessageHandler.done(SHA256WebWorker_getFinalHashString(hash));
   },
-  file: function SHA256WebWorkerChunkHandler_processFile (eventData) {
+  file: function SHA256WebWorkerActionHandler_processFile (eventData) {
     var file = eventData.file;
     var chunkSize = eventData.chunkSize;
     SHA256WebWorker_getSHA256FromFile(file, chunkSize);
@@ -68,4 +74,14 @@ function SHA256WebWorker_getSHA256FromFile (file, chunkSize){
     MessageHandler.progress(i/chunkSize, chunkSize, fileSize);
   }
   MessageHandler.done(SHA256WebWorker_getFinalHashString(hash));
+}
+
+// flushes leading continuos chunks from buffer
+function flushBuffer () {
+  while( currentChunk in chunkBuffer ) {
+    var chunk = chunkBuffer[currentChunk]
+    hash.update(chunk);
+    delete chunkBuffer[ currentChunk ];
+    currentChunk++;
+  }
 }
