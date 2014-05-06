@@ -1,5 +1,5 @@
 @inviteUser = (email, message, onSuccess, onError) ->
-  Meteor.call 'invite-user', email, message, (error, newPersonId) =>
+  Meteor.call 'invite-user', email, (message or ''), (error, newPersonId) =>
     if (error)
       showNotification = if onError then onError error else true
       Notify.meteorError error, true if showNotification

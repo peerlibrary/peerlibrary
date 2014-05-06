@@ -32,7 +32,7 @@ Meteor.methods
         invited:
           by:
             _id: person._id
-          message: message?.trim()
+          message: message?.trim() or null
 
     console.log "Sending email"
 
