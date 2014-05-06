@@ -150,11 +150,18 @@ wrap = (text, maxLength=MAX_LINE_LENGTH) ->
   lines.join '\n'
 
 indent = (text, amount) ->
+  assert amount >= 0
   padding = (' ' for i in [0...amount]).join ''
-  text = wrap text, MAX_LINE_LENGTH - 2
   lines = for line in text.split '\n'
     padding + line
   lines.join '\n'
+
+wrapWithIndent = (text, indentAmount=2, wrapLength=MAX_LINE_LENGTH) ->
+  # Wrap text to narrower width
+  text = wrap text, wrapLength - indentAmount
+
+  # Indent it to reach back to full width
+  indent text, indentAmount
 
 Accounts.emailTemplates.siteName = Meteor.settings?.public?.siteName or "PeerLibrary"
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
@@ -216,7 +223,7 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
     parts.push """
     :
 
-    #{ indent message, 2 }
+    #{ wrapWithIndent message }
 
     To learn more about #{ Accounts.emailTemplates.siteName }, visit:
 

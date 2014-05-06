@@ -1,3 +1,13 @@
+@inviteUser = (email, message, onSuccess, onError) ->
+  Meteor.call 'invite-user', email, message, (error, newPersonId) =>
+    if (error)
+      showNotification = if onError then onError error else true
+      Notify.meteorError error, true if showNotification
+      return
+
+    showNotification = if onSuccess then onSuccess newPersonId else true
+    Notify.success "User #{ email } invited.", "We have created an account and sent them an invitation email with a link to set their password." if showNotification
+
 Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
   Meteor.person()?.displayName()
 

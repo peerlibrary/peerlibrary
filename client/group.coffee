@@ -146,12 +146,9 @@ Template.groupMembersAddControlNoResults.events
 
     return unless email?.match EMAIL_REGEX
 
-    Meteor.call 'invite-user', email, (error, newPersonId) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "User #{ email } invited."
-
+    inviteUser email, null, (newPersonId) =>
       addMemberToGroup newPersonId
+      return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 

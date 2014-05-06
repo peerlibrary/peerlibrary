@@ -1,7 +1,10 @@
 # Common dialog code
 # ==================
 
-DIALOG_VARIABLES = ['newsletterDialogActive', 'inviteDialogActive']
+DIALOG_VARIABLES =
+  NEWSLETTER: 'newsletterDialogActive'
+  INVITE: 'inviteDialogActive'
+
 
 # To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
 $(document).on 'click focus keypress', (e) ->
@@ -20,7 +23,7 @@ $(document).on 'keyup', (e) ->
   return # Make sure CoffeeScript does not return anything
 
 # Newsletter subscribe dialog
-# ==========================
+# ===========================
 
 Template.footer.events
   'click .newsletter': (e, template) ->
@@ -29,9 +32,12 @@ Template.footer.events
     return unless e.which is 1 # Left mouse button
 
     e.preventDefault()
-    Session.set 'newsletterDialogActive', true
+    Session.set DIALOG_VARIABLES.NEWSLETTER, true
     Session.set 'newsletterDialogError', null
-    $(template.findAll '#newsletter-dialog-email').val(Meteor.person()?.email() or '')
+
+    # Prefill subscribe form with user's email
+    $email = $(template.findAll '#newsletter-dialog-email')
+    $email.val Meteor.person()?.email() unless $email.val()
 
     Meteor.setTimeout =>
       $(template.findAll '#newsletter-dialog-email').focus()
@@ -40,11 +46,11 @@ Template.footer.events
     return # Make sure CoffeeScript does not return anything
 
   'click .newsletter, focus .newsletter, keypress .newsletter': (e, template) ->
-    e.preserveDialogVariable = 'newsletterDialogActive'
+    e.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
 Template.newsletterDialog.displayed = ->
-  Session.get 'newsletterDialogActive'
+  Session.get DIALOG_VARIABLES.NEWSLETTER
 
 Template.newsletterDialog.waiting = ->
   Session.get 'newsletterDialogSubscribing'
@@ -58,7 +64,7 @@ Template.newsletterDialog.events
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but newsletter-dialog handler is.
   'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (e, template) ->
-    e.preserveDialogVariable = 'newsletterDialogActive'
+    e.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
   'submit .newsletter-subscribe': (e, template) ->
@@ -86,7 +92,8 @@ Template.newsletterDialog.events
 
       else
         Session.set 'newsletterDialogError', null
-        Session.set 'newsletterDialogActive', false
+        Session.set DIALOG_VARIABLES.NEWSLETTER, false
+        $(template.findAll '#newsletter-dialog-email').val('')
 
         Notify.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
 
@@ -97,11 +104,8 @@ Template.newsletterDialog.events
 
 Template._loginButtonsLoggedInDropdownActions.events
   'click .invite-button': (e, template) ->
-    Session.set 'inviteDialogActive', true
+    Session.set DIALOG_VARIABLES.INVITE, true
     Session.set 'inviteDialogError', null
-
-    # We are clearing the email and not the optional message (so it can be reused)
-    $('#invite-dialog-email').val('')
 
     Accounts._loginButtonsSession.closeDropdown()
 
@@ -112,11 +116,11 @@ Template._loginButtonsLoggedInDropdownActions.events
     return # Make sure CoffeeScript does not return anything
 
   'click .invite-button, focus .invite-button, keypress .invite-button': (e, template) ->
-    e.preserveDialogVariable = 'inviteDialogActive'
+    e.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
 Template.inviteDialog.displayed = ->
-  Session.get 'inviteDialogActive'
+  Session.get DIALOG_VARIABLES.INVITE
 
 Template.inviteDialog.waiting = ->
   Session.get 'inviteDialogSending'
@@ -125,7 +129,7 @@ Template.inviteDialog.inviteError = ->
   Session.get 'inviteDialogError'
 
 $(document).on 'keyup', (e) ->
-  Session.set 'inviteDialogActive', false if e.keyCode is 27 # Escape key
+  Session.set DIALOG_VARIABLES.INVITE, false if e.keyCode is 27 # Escape key
   return # Make sure CoffeeScript does not return anything
 
 # But if clicked inside, we mark the event so that dialog box is not closed
@@ -134,7 +138,7 @@ Template.inviteDialog.events
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but invite-dialog handler is.
   'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (e, template) ->
-    e.preserveDialogVariable = 'inviteDialogActive'
+    e.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
   'submit .invite-send': (e, template) ->
@@ -151,10 +155,19 @@ Template.inviteDialog.events
 
     Session.set 'inviteDialogSending', true
 
-    Meteor.call 'invite-user', email, message, (error) =>
-      Session.set 'inviteDialogSending', false
+    inviteUser email, message
+    ,
+      (newPersonId) =>
+        Session.set 'inviteDialogSending', false
+        Session.set 'inviteDialogError', null
+        Session.set DIALOG_VARIABLES.INVITE, false
 
-      if error
+        # We are clearing the email and not the optional message (so it can be reused)
+        $('#invite-dialog-email').val('')
+
+        return true # Show success notification
+    ,
+      (error) =>
         Session.set 'inviteDialogError', (error.reason or "Unknown error.")
 
         # Refocus for user to correct an error
@@ -162,11 +175,6 @@ Template.inviteDialog.events
           $(template.findAll '#invite-dialog-email').focus()
         , 10 # ms
 
-      else
-        Session.set 'inviteDialogError', null
-        Session.set 'inviteDialogActive', false
+        return false # We've handled the error ourselves, so don't show the notification
 
-        Notify.success "User #{ email } invited."
-
-      return # Make sure CoffeeScript does not return anything
-
+    return # Make sure CoffeeScript does not return anything

@@ -131,7 +131,7 @@ Template.privateAccessControlNoResults.noResults = ->
   not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
 Template.privateAccessControlNoResults.email = ->
-  query = @_query()
+  query = @_query().trim()
   return unless query?.match EMAIL_REGEX
 
   # Because it is not possible to access parent data context from event handler, we store it into results
@@ -168,13 +168,11 @@ Template.privateAccessControlNoResults.events
 
     return unless email?.match EMAIL_REGEX
 
-    Meteor.call 'invite-user', email, (error, newPersonId) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "User #{ email } invited."
-
+    inviteUser email, null, (newPersonId) =>
       grantAccess @_parent, new Person
         _id: newPersonId
+
+      return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 
