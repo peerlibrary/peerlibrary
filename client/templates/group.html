@@ -16,11 +16,8 @@
           <h2>Group Activity</h2>
         </div>
         <div class="col4 push12 sidebar group-members-panel">
-          <h2 class="directory-title">Members</h2>
-          {{> groupMembersList group}}
-          {{#if canModifyMembership}}
-            {{> groupMembersAddControl group}}
-          {{/if}}
+          {{> groupMembers group}}
+          {{> groupDetails group}}
         </div>
       </div>
     {{/if}}
@@ -29,6 +26,14 @@
 
 <template name="groupName">
   <h1>{{name}}</h1>
+</template>
+
+<template name="groupMembers">
+  <h2 class="directory-title">Members</h2>
+  {{> groupMembersList}}
+  {{#if canModifyMembership}}
+    {{> groupMembersAddControl}}
+  {{/if}}
 </template>
 
 <template name="groupMembersList">
@@ -124,4 +129,16 @@
       </div>
     </button>
   </li>
+</template>
+
+<template name="groupDetails">
+  {{#if canModify}}
+    <h3>Tools</h3>
+    {{#if canRemove}}
+      <p>
+        <button class="delete-group">Delete group</button>
+        {{! TODO: Add confirmation or undo for this action }}
+      </p>
+    {{/if}}
+  {{/if}}
 </template>

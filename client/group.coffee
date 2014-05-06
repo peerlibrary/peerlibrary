@@ -40,9 +40,6 @@ Template.group.notfound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Template.group.canModifyMembership = ->
-  Group.documents.findOne(Session.get('currentGroupId'))?.hasAdminAccess Meteor.person()
-
 Editable.template Template.groupName, ->
   @data.hasMaintainerAccess Meteor.person()
 ,
@@ -53,6 +50,28 @@ Editable.template Template.groupName, ->
   "Enter group name"
 ,
   true
+
+Template.groupMembers.canModifyMembership = ->
+  @hasAdminAccess Meteor.person()
+
+Template.groupMembersList.created = ->
+  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
+
+Template.groupMembersList.destroyed = ->
+  @_personsInvitedHandle?.stop()
+  @_personsInvitedHandle = null
+
+Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+
+Template.groupMembersList.events
+  'click .remove-button': (e, template) ->
+
+    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Member removed." if count
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->
@@ -182,25 +201,6 @@ Template.groupMembersAddControlResults.results = ->
     ]
     limit: personsLimit
 
-Template.groupMembersList.created = ->
-  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
-
-Template.groupMembersList.destroyed = ->
-  @_personsInvitedHandle?.stop()
-  @_personsInvitedHandle = null
-
-Template.groupMembersList.events
-  'click .remove-button': (e, template) ->
-
-    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "Member removed." if count
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.groupMembersList.canModifyMembership = Template.group.canModifyMembership
-
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (e, template) ->
 
@@ -209,6 +209,24 @@ Template.groupMembersAddControlResultsItem.events
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
     addMemberToGroup @_id
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.groupDetails.canModify = ->
+  @hasMaintainerAccess Meteor.person()
+
+Template.groupDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person()
+
+Template.groupDetails.events
+  'click .delete-group': (e, template) ->
+    Meteor.call 'remove-group', @_id, (error, count) =>
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Notify.success "Group removed."
+      Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
 
