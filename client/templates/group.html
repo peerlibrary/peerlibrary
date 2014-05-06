@@ -51,7 +51,16 @@
 
 <template name="groupMembersAddControlNoResults">
   {{#if noResults}}
-    <div class="no-results add-control-results">No people found</div>
+    <div class="no-results add-control-results">
+      No people found
+      {{> addControlInviteByEmail email}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="addControlInviteByEmail">
+  {{#if this}}
+    <button class="add-and-invite">Add and invite {{this}}</button>
   {{/if}}
 </template>
 

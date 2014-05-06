@@ -1,8 +1,6 @@
 Meteor.methods
   'newsletter-subscribe': (email) ->
-    check email, String
-
-    throw new Meteor.Error 400, "Please enter a valid email address." unless EMAIL_REGEX.test email
+    check email, EMail
 
     result = Meteor.http.post 'http://lists.peerlibrary.org/lists',
       params:

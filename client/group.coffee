@@ -106,7 +106,7 @@ Template.groupMembersAddControl.rendered = ->
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->
-  @_searchHandle.stop() if @_searchHandle
+  @_searchHandle?.stop()
   @_searchHandle = null
 
   @data._query = null
@@ -128,6 +128,29 @@ Template.groupMembersAddControlNoResults.noResults = ->
   return unless searchResult
 
   not @_loading() and not (searchResult.countPersons or 0)
+
+Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+
+addMemberToGroup = (personId) ->
+  Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
+    return Notify.meteorError error, true if error
+
+    Notify.success "Member added." if count
+
+Template.groupMembersAddControlNoResults.events
+  'click .add-and-invite': (e, template) ->
+
+    # We get the email in @ (this), but it's a String object that also has
+    # the parent context attached so we first convert it to a normal string.
+    email = "#{ @ }"
+
+    return unless email?.match EMAIL_REGEX
+
+    inviteUser email, null, (newPersonId) =>
+      addMemberToGroup newPersonId
+      return true # Show success notification
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControlLoading.loading = ->
   addGroupMembersReactiveVariables @
@@ -159,6 +182,13 @@ Template.groupMembersAddControlResults.results = ->
     ]
     limit: personsLimit
 
+Template.groupMembersList.created = ->
+  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
+
+Template.groupMembersList.destroyed = ->
+  @_personsInvitedHandle?.stop()
+  @_personsInvitedHandle = null
+
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->
 
@@ -178,10 +208,7 @@ Template.groupMembersAddControlResultsItem.events
 
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
-    Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "Member added." if count
+    addMemberToGroup @_id
 
     return # Make sure CoffeeScript does not return anything
 
