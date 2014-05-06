@@ -22,13 +22,17 @@
   #login-buttons-reset-password-button, #login-buttons-enroll-account-button
     padding 0
 
+  #reset-password-new-password-label, #enroll-account-password-label
+    margin-bottom 20px
+
   /* Hacks to get "Cancel" instead of "x" */
   #login-buttons-cancel-reset-password, #login-buttons-cancel-enroll-account
     visibility hidden
     display block
+    height 10px
 
   #login-buttons-cancel-reset-password:after, #login-buttons-cancel-enroll-account:after
     display block
     visibility visible
     content 'Cancel'
-    margin-top -36px
+    margin-top -20px

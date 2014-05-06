@@ -14,25 +14,32 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
   top 50%
   left 50%
   margin-left -151px
-  margin-top -220px
-  padding 20px 0
+  margin-top -170px
+  padding 30px 0
   width 300px
   right 0px
   font-size 14px
-  line-height 36px
+  line-height default-line-height
   /* Higher than header but below importing overlay */
   z-index 5500
+
+  p, .message
+    margin 0 0 20px
+
+  .description
+    text-align center
 
   label
     display block
     font-weight bold
-    padding-top 16px
+    margin-bottom 10px
 
-  input
+  input, textarea
     position relative
     min-height 20px
     width 242px
     padding 7px 8px
+    margin-bottom 20px
     outline medium none
     color rgb(51,51,51)
     background-color rgb(255,255,255)
@@ -45,15 +52,18 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
     transition all 0.15s ease-in 0s
     vertical-align middle
 
-  input:focus
+  textarea
+    min-height 100px
+
+  input:focus, textarea:focus
     border-color rgb(81,167,232)
     box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
   .login-button, .subscribe-form-submit
     width 258px
-    height 40px
+    line-height 40px
     position relative
-    margin 0 auto 10px auto
+    margin 0 auto 20px
     padding 0
     background bg-blue
     border 1px solid border-blue
@@ -64,9 +74,6 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
     cursor pointer
     transition all 0.15s ease-in 0s
 
-  .login-button-form-submit, .subscribe-form-submit
-    margin-top 20px
-
   .login-button:hover, .subscribe-form-submit:hover
     background hover-blue
 
@@ -75,27 +82,20 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
     color blue-accent
     text-align center
 
+  .additional-link-container
+    margin-bottom 20px
+
   .loading
     display none
 
-  .description
-    text-align center
-
-  .message, .description
-    line-height default-line-height
-    margin-top 10px
+  form > *:last-child, .login-form > *:last-child
+    margin-bottom 0
 
 .popup-dialog
   display none
   box-sizing border-box
-  padding 20px
+  padding 30px 20px
   line-height default-line-height
-
-  .description
-    margin 10px 0 20px
-
-  .message
-    margin 20px 0 0
 
   &.displayed
     display block
@@ -110,5 +110,8 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
 /* Specific dialog overrides
 ============================ */
 
-.newsletter-dialog.popup-dialog, .invite-dialog.popup-dialog
+.newsletter-dialog.popup-dialog
   margin-top -110px
+
+.invite-dialog.popup-dialog
+  margin-top -150px

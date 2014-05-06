@@ -8,8 +8,9 @@ FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 INVITE_SECRET = Random.id()
 
 Meteor.methods
-  'invite-user': (email) ->
+  'invite-user': (email, message) ->
     check email, EMail
+    check message, Match.Optional String
 
     # We require that user inviting is logged in
     person = Meteor.person()
@@ -28,8 +29,12 @@ Meteor.methods
       _id: invited._id
     ,
       $set:
-        invitedBy:
-          _id: person._id
+        invited:
+          by:
+            _id: person._id
+          message: message?.trim()
+
+    console.log "Sending email"
 
     Accounts.sendEnrollmentEmail userId
 
@@ -124,9 +129,10 @@ Meteor.publish null, ->
 
 MAX_LINE_LENGTH = 68
 
-wrap = (text) ->
+# Formats text into lines of MAX_LINE_LENGTH width for pretty emails
+wrap = (text, maxLength=MAX_LINE_LENGTH) ->
   lines = for line in text.split '\n'
-    if line.length <= MAX_LINE_LENGTH
+    if line.length <= maxLength
       line
     else
       words = line.split ' '
@@ -135,12 +141,19 @@ wrap = (text) ->
       else
         ls = [words.shift()]
         for word in words
-          if ls[ls.length - 1].length + word.length + 1 <= MAX_LINE_LENGTH
+          if ls[ls.length - 1].length + word.length + 1 <= maxLength
             ls[ls.length - 1] += ' ' + word
           else
             ls.push word
         ls.join '\n'
 
+  lines.join '\n'
+
+indent = (text, amount) ->
+  padding = (' ' for i in [0...amount]).join ''
+  text = wrap text, MAX_LINE_LENGTH - 2
+  lines = for line in text.split '\n'
+    padding + line
   lines.join '\n'
 
 Accounts.emailTemplates.siteName = Meteor.settings?.public?.siteName or "PeerLibrary"
@@ -182,17 +195,39 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
   invited = Meteor.person user._id
 
-  assert invited.invitedBy?._id
+  assert invited.invited?.by._id
 
   person = Person.documents.findOne
-    _id: invited.invitedBy._id
+    _id: invited.invited.by._id
 
   assert person
 
-  wrap """
+  # Construct email body
+  parts = []
+
+  parts.push """
   Hello #{ invited.displayName() }!
 
-  #{ person.displayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName() } is inviting you to join the conversation with them. To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+  #{ person.displayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName() } is inviting you to join the conversation with them
+  """
+
+  message = invited.invited.message
+  if message
+    parts.push """
+    :
+
+    #{ indent message, 2 }
+
+    To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+
+    """
+  else
+    parts.push """
+    . To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+
+    """
+
+  parts.push """
 
   #{ Meteor.absoluteUrl() }
 
@@ -214,3 +249,5 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   #{ Accounts.emailTemplates.siteName }
   #{ Meteor.absoluteUrl() }
   """
+
+  wrap parts.join ''

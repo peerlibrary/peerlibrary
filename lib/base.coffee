@@ -30,9 +30,9 @@ setSession = (session) ->
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null
-    newsletterActive: false
-    newsletterSubscribing: false
-    newsletterError: null
+    newsletterDialogActive: false
+    newsletterDialogSubscribing: false
+    newsletterDialogError: null
     installInProgress: false
     installRestarting: false
     installError: null
