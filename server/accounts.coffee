@@ -16,6 +16,8 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
+    throw new Meteor.Error 400, "User is already a member." if User.documents.findOne 'emails.address': email
+
     userId = Accounts.createUser
       email: email
       secret: INVITE_SECRET

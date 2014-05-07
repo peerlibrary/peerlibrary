@@ -54,7 +54,7 @@ Template.newsletterDialog.displayed = ->
 Template.newsletterDialog.waiting = ->
   Session.get 'newsletterDialogSubscribing'
 
-Template.newsletterDialog.newsletterError = ->
+Template.newsletterDialog.error = ->
   Session.get 'newsletterDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
@@ -124,7 +124,7 @@ Template.inviteDialog.displayed = ->
 Template.inviteDialog.waiting = ->
   Session.get 'inviteDialogSending'
 
-Template.inviteDialog.inviteError = ->
+Template.inviteDialog.error = ->
   Session.get 'inviteDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
@@ -163,6 +163,7 @@ Template.inviteDialog.events
         return true # Show success notification
     ,
       (error) =>
+        Session.set 'inviteDialogSending', false
         Session.set 'inviteDialogError', (error.reason or "Unknown error.")
 
         # Refocus for user to correct an error
