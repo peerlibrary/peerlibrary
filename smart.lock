@@ -41,7 +41,8 @@
       "cheerio": {},
       "isolate-value": {},
       "apm": {},
-      "stacktrace": {}
+      "stacktrace": {},
+      "related": {}
     },
     "packages": {
       "router": {
@@ -163,6 +164,11 @@
         "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
         "tag": "v0.1.1",
         "commit": "9eaacd4755852a3d40940c17d7a32facb9931b33"
+      },
+      "related": {
+        "git": "https://github.com/peerlibrary/meteor-related.git",
+        "tag": "v0.1.0",
+        "commit": "29546af744e05f3a6d362bf44b3fa9010427df5c"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
