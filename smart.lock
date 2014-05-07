@@ -167,8 +167,8 @@
       },
       "related": {
         "git": "https://github.com/peerlibrary/meteor-related.git",
-        "tag": "v0.1.0",
-        "commit": "29546af744e05f3a6d362bf44b3fa9010427df5c"
+        "tag": "v0.1.1",
+        "commit": "7a4148fd0b7b9fa48ee93b75693a99993853b57e"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
