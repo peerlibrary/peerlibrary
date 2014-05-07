@@ -27,9 +27,12 @@ setSession = (session) ->
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
-    newsletterActive: false
-    newsletterSubscribing: false
-    newsletterError: null
+    inviteDialogActive: false
+    inviteDialogSubscribing: false
+    inviteDialogError: null
+    newsletterDialogActive: false
+    newsletterDialogSubscribing: false
+    newsletterDialogError: null
     installInProgress: false
     installRestarting: false
     installError: null
@@ -105,6 +108,16 @@ else
         setSession
           indexActive: true
           resetPasswordToken: resetPasswordToken
+        'index'
+
+    '/enroll-account/:enrollAccountToken':
+      to: (enrollAccountToken) ->
+        # Make sure nobody is logged in, it would be confusing otherwise
+        # TODO: How to make it sure we do not log in in the first place? How could we set autoLoginEnabled in time? Because this logs out user in all tabs
+        Meteor.logout()
+        setSession
+          indexActive: true
+          enrollAccountToken: enrollAccountToken
         'index'
 
     '/p/:publicationId/:publicationSlug?/h/:highlightId':

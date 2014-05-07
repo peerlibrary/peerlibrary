@@ -400,9 +400,9 @@ class @Highlighter
     $(window).off '.highlighter'
 
     # We stop handles here and not just leave it to Deps.autorun to do it to cleanup in the right order
-    @_highlightsHandle.stop() if @_highlightsHandle
+    @_highlightsHandle?.stop()
     @_highlightsHandle = null
-    @_highlightLocationHandle.stop() if @_highlightLocationHandle
+    @_highlightLocationHandle?.stop()
     @_highlightLocationHandle = null
 
     page.destroy() for page in @_pages

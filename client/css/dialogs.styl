@@ -1,0 +1,117 @@
+@import 'variables.import'
+
+/* Authentication menu and popup dialogs (newsletter, invite)
+============================================================= */
+
+header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
+  color black
+  background white
+  border-color rgb(210,210,210)
+  border-radius 5px
+  border-style solid
+  border-width 1px
+  position fixed
+  top 50%
+  left 50%
+  margin-left -151px
+  margin-top -170px
+  padding 30px 0
+  width 300px
+  right 0px
+  font-size 14px
+  line-height default-line-height
+  /* Higher than header but below importing overlay */
+  z-index 5500
+
+  p, .message
+    margin 0 0 20px
+
+  .description
+    text-align center
+
+  label
+    display block
+    font-weight bold
+    margin-bottom 10px
+
+  input, textarea
+    position relative
+    min-height 20px
+    width 242px
+    padding 7px 8px
+    margin-bottom 20px
+    outline medium none
+    color rgb(51,51,51)
+    background-color rgb(255,255,255)
+    background-repeat no-repeat
+    background-position right center
+    border 1px solid rgb(204,204,204)
+    border-radius 3px 3px 3px 3px
+    box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
+    -moz-box-sizing border-box
+    transition all 0.15s ease-in 0s
+    vertical-align middle
+
+  textarea
+    min-height 100px
+
+  input:focus, textarea:focus
+    border-color rgb(81,167,232)
+    box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
+
+  .login-button, .subscribe-form-submit
+    width 258px
+    line-height 40px
+    position relative
+    margin 0 auto 20px
+    padding 0
+    background bg-blue
+    border 1px solid border-blue
+    border-radius 3px
+    text-align center
+    font-weight bold
+    color white
+    cursor pointer
+    transition all 0.15s ease-in 0s
+
+  .login-button:hover, .subscribe-form-submit:hover
+    background hover-blue
+
+  .additional-link, .accounts-close
+    background transparent
+    color blue-accent
+    text-align center
+
+  .additional-link-container
+    margin-bottom 20px
+
+  .loading
+    display none
+
+  form > *:last-child, .login-form > *:last-child
+    margin-bottom 0
+
+.popup-dialog
+  display none
+  box-sizing border-box
+  padding 30px 20px
+  line-height default-line-height
+
+  &.displayed
+    display block
+
+  &.waiting .waiting-icon
+    background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+    background-position 50% 50%
+    background-repeat no-repeat
+    transition none
+    color gray
+
+/* Specific dialog overrides
+============================ */
+
+.newsletter-dialog.popup-dialog
+  margin-top -110px
+
+.invite-dialog.popup-dialog
+  margin-top -150px

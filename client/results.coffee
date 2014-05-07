@@ -124,7 +124,7 @@ Template.publicationSearchResult.rendered = ->
   $(@findAll '.scrubber').iscrubber()
 
 Template.publicationSearchResult.destroyed = ->
-  @_publicationHandle.stop() if @_publicationHandle
+  @_publicationHandle?.stop()
   @_publicationHandle = null
 
 Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
@@ -141,12 +141,12 @@ Template.sidebarSearch.created = ->
   @_dateRangeHandle = null
 
 Template.sidebarSearch.rendered = ->
-  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle?.stop()
   @_searchQueryHandle = Deps.autorun =>
     # Sync input field unless change happened because of this input field itself
     $(@findAll '#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
 
-  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle?.stop()
   @_dateRangeHandle = Deps.autorun =>
     statistics = Statistics.documents.findOne {},
       fields:
@@ -187,9 +187,9 @@ Template.sidebarSearch.rendered = ->
     no_results_text: "No tag match"
 
 Template.sidebarSearch.destroyed = ->
-  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle?.stop()
   @_searchQueryHandle = null
-  @_dateRangeHandle.stop() if @_dateRangeHandle
+  @_dateRangeHandle?.stop()
   @_dateRangeHandle = null
 
 sidebarIntoQuery = (template) ->

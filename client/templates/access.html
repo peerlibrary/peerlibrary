@@ -56,7 +56,10 @@
 
 <template name="privateAccessControlNoResults">
   {{#if noResults}}
-    <div class="no-results add-control-results">No people or groups found</div>
+    <div class="no-results add-control-results">
+      No people or groups found
+      {{> addControlInviteByEmail email}}
+    </div>
   {{/if}}
 </template>
 

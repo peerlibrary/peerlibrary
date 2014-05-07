@@ -54,9 +54,15 @@
   <div class="menu-item">
     <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">Profile</a>
   </div>
+
   <div class="menu-item">
     <a href="{{libraryPath}}">Library</a>
   </div>
+
+  <div class="invite-button menu-item">
+    Invite friends
+  </div>
+
   {{#if currentPerson.isAdmin}}
     <div class="menu-item">
       <a href="{{adminPath}}">Admin dashboard</a>

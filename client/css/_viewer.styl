@@ -370,6 +370,13 @@ annotations-control-height = 30px
     color white
     line-height annotations-control-height
     margin-left 75px
+    padding-right 5px
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
+    span
+      margin-left 3px
 
     span::after
       content ","
@@ -553,6 +560,9 @@ annotations-control-height = 30px
           margin 0
           border-radius 4px
           display inline-block
+
+        .author-avatar:hover
+          text-decoration none
 
         .author-name
           margin 0 10px

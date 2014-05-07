@@ -26,3 +26,7 @@ INVALID_SHA256_CHARS_REGEX = new RegExp '[^a-f0-9]'
   check x, String
   check x, Match.Where (y) -> y.length is 64
   not INVALID_SHA256_CHARS_REGEX.test x
+
+@EMail = Match.Where (x) ->
+  check x, NonEmptyString
+  EMAIL_REGEX.test x
