@@ -1,6 +1,6 @@
 SHA256Worker =
   # defaults
-  disableWorker: true
+  disableWorker: false
   workerSrc: '/packages/sha256/web-worker.js'
   chunkSize: 1024 * 2 # bytes
   _chunks: false
@@ -40,14 +40,17 @@ SHA256Worker =
         chunkNumber: cn
       beenThere.push cn
 
-  finalize: ->
+  finalize: (onDone) ->
     if not @_chunks
       throw new Error('Unable to finalize - no chunks sent')
+    if not onDone?
+      throw new Error('Unable to finalize - callback function not set')
+    @worker.setOnDone(onDone)
     #@addRandomizedChunks()
     @worker.finalize()
 
   initWorker: (params) ->
-    if !@disableWorker && window && window.Worker
+    if !@disableWorker && typeof window != "undefined" && window.Worker
       @worker = new WebWorker params
     else
       @worker = new WorkerFallback params
@@ -59,17 +62,16 @@ class BaseWorker
   constructor: (params) ->
     self = @
     @_onProgress = params.onProgress or ->
-    @_onDone = params.onDone
-
-    if not @_onDone
-      throw new Error('Not enough parameters')
+    @_onDone = params.onDone or ->
 
     @_handler =
       progress: (data) ->
         self._onProgress data
-
       done: (data) ->
         self._onDone data.sha256
+
+   setOnDone: (onDone) ->
+     @_onDone = onDone
 
 class WebWorker extends BaseWorker
   constructor: (params) ->
@@ -132,7 +134,7 @@ class WorkerFallback extends BaseWorker
     return
 
   sendChunk: (params) ->
-    @_chunkBuffer[ params.chunkNumber ] = params.chunk
+    @_chunkBuffer[params.chunkNumber] = params.chunk
     @_flushBuffer()
 
   finalize: ->
