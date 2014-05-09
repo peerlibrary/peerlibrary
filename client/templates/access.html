@@ -34,12 +34,12 @@
   <div class="private-access-control-members">
     <ol class="access-list access-list-users member-list">
       {{#each readPersonsList}}
-        {{>personMember}}
+        {{> member}}
       {{/each}}
     </ol>
     <ol class="access-list access-list-groups member-list">
       {{#each readGroupsList}}
-        {{>groupMember}}
+        {{> member}}
       {{/each}}
     </ol>
   </div>
@@ -65,7 +65,7 @@
 
 <template name="privateAccessControlResults">
   {{#if results.length}}
-    <ul class="access-results add-control-results member-list">
+    <ul class="access-results add-control-results">
       {{#each results}}
         {{> privateAccessControlResultsItem}}
       {{/each}}
@@ -74,15 +74,11 @@
 </template>
 
 <template name="privateAccessControlResultsItem">
-  {{#ifPerson}}
-    {{> personMemberAdd}}
-  {{else}}
-    {{> groupMemberAdd}}
-  {{/ifPerson}}
+  {{> memberAdd}}
 </template>
 
 <template name="privateAccessControlLoading">
   {{#if loading}}
-    <div class="results-loading add-control-results">Loading...</div>
+    <div class="results-loading add-control-results">Loading …</div>
   {{/if}}
 </template>

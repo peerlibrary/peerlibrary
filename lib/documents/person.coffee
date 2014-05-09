@@ -71,9 +71,11 @@ class @Person extends AccessDocument
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
     size = 24 unless _.isNumber size
+    # TODO: Replace image link with one served from peerlibary.org
+    defaultAvatar = if @user then 'identicon' else 'http%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F5%2F52%2FSpacer.gif'
     # TODO: We should specify default URL to the image of an avatar which is generated from name initials
     # TODO: gravatarHash does not appear
-    "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }"
+    "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }&d=#{ defaultAvatar }"
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

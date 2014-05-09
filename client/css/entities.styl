@@ -1,0 +1,105 @@
+@import 'variables.import'
+
+/* Entities
+=========== */
+
+.entity
+  position relative
+  display inline-block
+  box-sizing border-box
+  max-width 100%
+  font-size 13px
+  line-height 25px
+  height 24px
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+  .avatar
+    display inline-block
+    height 100%
+    margin-right 0.38em
+
+    &.only-icon::after
+      content ""
+      display inline-block
+
+    img
+      position relative
+      z-index 1
+      vertical-align top
+      padding-right 1px
+
+    &::before
+      position absolute
+      left 0
+      top 50%
+      margin -0.4em 0 0
+      z-index 0
+
+    &.icon-person::before
+      font-size 1.07em
+
+    &.icon-group::before
+      font-size 1.53em
+
+  .name
+    font-weight bold
+
+.entity:hover
+  text-decoration none
+
+  .name
+    text-decoration underline
+
+.person.entity.no-user
+  .avatar
+    opacity 0.3
+
+.person.entity
+  .avatar
+    min-width 1.1em
+
+.group.entity
+  .avatar
+    min-width 1.5em
+
+/* Members
+========== */
+
+.member-list
+  padding 0
+  list-style none
+
+  .member
+    position relative
+    display inline-block
+    max-width 100%
+    margin 0 10px 10px 0
+
+    .entity
+      padding-right 24px
+
+    .remove-button
+      display block
+      position absolute
+      right 0
+      top 1px
+      width 24px
+      height 24px
+      padding 0
+      border none
+      background none
+      font-size 14px
+
+    .remove-button:hover
+      color blue-accent
+      background none
+
+.read-only.member-list
+  .member
+    .entity
+      padding-right 0
+
+    .remove-button
+      display none

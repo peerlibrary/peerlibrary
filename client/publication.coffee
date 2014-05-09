@@ -1077,6 +1077,12 @@ Template.publicationAnnotationsItem.selected = ->
 Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
 
+Template.publicationAnnotationsItem.author = ->
+  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  @author.avatarSize = 30
+  @author
+
 Template.annotationTags.rendered = ->
   # TODO: Make links work
   ###

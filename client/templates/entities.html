@@ -1,0 +1,41 @@
+<!-- ENTITIES
+Used for generalized displays of entities -->
+
+<template name="personEntity">
+  {{#spaceless}}
+    <a class="entity person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
+      <i class="avatar icon-person" title="{{status}}">
+        <img src="{{avatar}}"/>
+      </i>
+      <span class="name" title="{{displayName}}">{{displayName}}</span>
+    </a>
+  {{/spaceless}}
+</template>
+
+<template name="groupEntity">
+  <a class="entity group" {{#unless noLink}}href="{{groupPathFromId _id slug}}"{{/unless}}>
+    <i class="avatar only-icon icon-group" title="Group"></i>
+    <span class="name" title="{{name}}">{{name}}</span>
+  </a>
+</template>
+
+
+<!-- MEMBERS
+Used when entities appear in contexts of lists and need add/remove controls -->
+
+<template name="member">
+  <li class="member">
+    {{#if entityIsPerson}}{{> personEntity}}{{/if}}
+    {{#if entityIsGroup}}{{> groupEntity}}{{/if}}
+    <button class="remove-button icon-cancel"></button>
+  </li>
+</template>
+
+<template name="memberAdd">
+  <li class="member">
+    <button class="add-button">
+      {{#if entityIsPerson}}{{> personEntity noLinkEntity}}{{/if}}
+      {{#if entityIsGroup}}{{> groupEntity noLinkEntity}}{{/if}}
+    </button>
+  </li>
+</template>

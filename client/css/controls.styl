@@ -62,6 +62,43 @@ h1
     background none
     font-weight 300
 
+/* Add control
+============== */
+
+.add-control
+  .member
+    .add-button
+      display block
+      border none
+      background none
+      padding 5px
+      height 34px
+      text-align left
+
+      .entity
+        .avatar
+          width 24px
+          text-align center
+
+          img
+            position absolute
+            left 0
+
+          &::before
+            position static
+            vertical-align middle
+            margin-top -2px
+
+        .name
+          text-decoration none
+
+  .add-and-invite
+    width 100%
+    margin-top 10px
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
 /* Sidebar
 ========== */
 .sidebar
@@ -79,7 +116,7 @@ h1
     font-size 0.9em
     font-weight 300
 
-  input, button, select
+  input, button, select, .add-control
     display block
     width 235px
     box-sizing border-box
@@ -95,6 +132,17 @@ h1
 
     input:focus
       border-right-width 1px
+
+  .add-control
+    border 1px solid box-shadow-border
+
+    input, input:focus
+      width 233px
+      border none
+      box-shadow none
+
+    .add-button:hover
+      background-color box-shadow-border
 
 /* Meta menus and jQuery UI widgets
 =================================== */
@@ -170,6 +218,35 @@ h1
 
   .edit:hover
     color #ccc
+
+  .add-control
+    background white
+
+    .add-button
+      display block
+      width 100%
+      padding 5px
+      margin-bottom 0
+      background none
+      text-align left
+
+      .entity
+        color black
+
+    button
+      background-color rgba(120,120,120,0.2)
+      color black
+
+    button:hover
+      background-color rgba(120,120,120,0.3)
+
+    .access-results
+      margin 0
+
+  .add-control-results
+    color black
+    padding 0 10px 10px
+    font-weight 300
 
 /* jQuery UI widgets
 ==================== */
