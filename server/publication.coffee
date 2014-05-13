@@ -333,9 +333,8 @@ Meteor.methods
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
       pdf = Storage.open publication._importingFilename()
 
-      hash = new Crypto.SHA256()
-      hash.update pdf
-      sha256 = hash.finalize()
+      sha256 = SHA256Worker.fromFile
+        file: pdf
 
       unless sha256 == publication.sha256
         throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."

@@ -83,8 +83,6 @@ importFile = (file) ->
         chunkData = fileContent.slice(chunkStart, chunkEnd)
         SHA256Worker.addChunk
           chunk: chunkData
-          onDone: ->
-            console.log sha256
         chunkStart += chunkSize
 
       chunkStart = 0
@@ -93,7 +91,8 @@ importFile = (file) ->
       
       try
         sendChunk() while chunkStart < streamLength
-        SHA256Worker.finalize()
+        SHA256Worker.finalize () ->
+          console.log sha256
       catch error
         console.error error
 
