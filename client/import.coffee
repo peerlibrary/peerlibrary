@@ -57,8 +57,8 @@ uploadFile = (file, publicationId) ->
           finished: true
           publicationId: publicationId
 
-testPDF = (file, fileContent, callback) ->
-  PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
+testPDF = (file, source, callback) ->
+  PDFJS.getDocument(source).then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
       $set:
         errored: true
@@ -69,47 +69,47 @@ importFile = (file) ->
   reader.onload = ->
     fileContent = @result
 
-    testPDF file, fileContent, ->
-      # TODO: Compute SHA in chunks
-      # TODO: Compute SHA in a web worker?
-      hash = new Crypto.SHA256()
-      hash.update fileContent
-      sha256 = hash.finalize()
+    if URL and URL.createObjectURL
+      source = url: URL.createObjectURL(file), password: ''
+    else
+      source = data: fileContent, password: ''
 
-      alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
-      if alreadyImporting
-        ImportingFile.documents.update file._id,
-          $set:
-            finished: true
-            status: "File is already importing"
-            # publicationId might not yet be available, but let's try
-            publicationId: alreadyImporting.publicationId
-        return
-
-      ImportingFile.documents.update file._id,
-        $set:
-          sha256: sha256
-
-      Meteor.call 'create-publication', file.name, sha256, (error, result) ->
-        if error
-          ImportingFile.documents.update file._id,
-            $set:
-              errored: true
-              status: error.toString()
-          return
-
-        if result.already
+    testPDF file, source, (dataContext) ->
+      dataContext.sha256().then (sha256) ->
+        alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
+        if alreadyImporting
           ImportingFile.documents.update file._id,
             $set:
               finished: true
-              status: "File already imported"
-              publicationId: result.publicationId
+              status: "File is already importing"
+              # publicationId might not yet be available, but let's try
+              publicationId: alreadyImporting.publicationId
           return
 
-        if result.verify
-          verifyFile file, fileContent, result.publicationId, result.samples
-        else
-          uploadFile file, result.publicationId
+        ImportingFile.documents.update file._id,
+          $set:
+            sha256: sha256
+
+        Meteor.call 'create-publication', file.name, sha256, (error, result) ->
+          if error
+            ImportingFile.documents.update file._id,
+              $set:
+                errored: true
+                status: error.toString()
+            return
+
+          if result.already
+            ImportingFile.documents.update file._id,
+              $set:
+                finished: true
+                status: "File already imported"
+                publicationId: result.publicationId
+            return
+
+          if result.verify
+            verifyFile file, fileContent, result.publicationId, result.samples
+          else
+            uploadFile file, result.publicationId
 
   ImportingFile.documents.insert
     name: file.name
