@@ -1,3 +1,18 @@
+Template.catalogFilter.collection = ->
+  @collection
+
+Template.catalogSort.field = ->
+  Session.set @variables.sortName, @sorting[0].name
+  Session.set @variables.sort, @sorting[0].sort
+  @sorting[0].name
+
+Template.catalogFilter.events
+  'keyup .filter input': (e, template) ->
+    filter = $(template.findAll '.filter input').val()
+    Session.set template.data.variables.filter, filter
+
+    return # Make sure CoffeeScript does not return anything
+
 LIMIT_INCREASE_STEP = 10
 
 # Helper that enables a list of entities with infinite scrolling and filtering
@@ -17,7 +32,7 @@ class @Catalog
       Session.set variables.ready, false
       if  Session.get(variables.active) and Session.get(variables.limit)
         Session.set variables.loading, true
-        Meteor.subscribe subscription, Session.get(variables.limit), Session.get(variables.filter),
+        Meteor.subscribe subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
           onReady: ->
             Session.set variables.ready, true
             Session.set variables.loading, false

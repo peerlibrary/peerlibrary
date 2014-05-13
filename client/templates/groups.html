@@ -2,33 +2,28 @@
   <h1>Groups</h1>
   <div class="row">
     <div class="col12 groups-directory">
-      <div class="search-bar">
-        <form id="groups-search">
-          <span class="search-button">
-            <i class="icon-search"></i>
-          </span>
-          <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Filter groups" autofocus="autofocus">
-        </form>
-      </div>
+      {{> catalogControls catalogSettings}}
       {{> noGroups}}
-      {{#if entities}}
-        <ol class="groups-list">
-          {{#each entities}}
-            {{> groupListing}}
-          {{/each}}
-        </ol>
-      {{/if}}
+      {{> groupsList entities}}
       {{> groupsLoading}}
     </div>
-    {{#if currentPersonId}}
-      {{> myGroups}}
-    {{/if}}
+    {{> myGroups}}
   </div>
 </template>
 
 <template name="groupsCount">
   {{#if entitiesCount}}
     <p class="groups-count">{{entitiesCount}} groups:</p>
+  {{/if}}
+</template>
+
+<template name="groupsList">
+  {{#if this}}
+    <ol class="groups-list">
+      {{#each this}}
+        {{> groupListing}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
@@ -67,25 +62,27 @@
 </template>
 
 <template name="myGroups">
-  <div class="col4 push12 sidebar my-groups">
-    <h2>My Groups</h2>
-    {{#if myGroups.count}}
-      <ul class="groups-list">
-        {{#each myGroups}}
-          {{> groupListing}}
-        {{/each}}
-      </ul>
-    {{else}}
-      <p class="no-groups hint">
-        You don't have any groups. Create one below.
-        {{! TODO: We should also add that you can request membership in a group }}
-      </p>
-    {{/if}}
-    <h3>Create a new group</h3>
-    <form class="add-group input-and-buttons">
-      <button type="submit" class="add">Create</button>
-      <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
-    </form>
-    {{> footer}}
-  </div>
+  {{#if currentPersonId}}
+    <div class="col4 push12 sidebar my-groups">
+      <h2>My Groups</h2>
+      {{#if myGroups.count}}
+        <ul class="groups-list">
+          {{#each myGroups}}
+            {{> groupListing}}
+          {{/each}}
+        </ul>
+      {{else}}
+        <p class="no-groups hint">
+          You don't have any groups. Create one below.
+          {{! TODO: We should also add that you can request membership in a group }}
+        </p>
+      {{/if}}
+      <h3>Create a new group</h3>
+      <form class="add-group input-and-buttons">
+        <button type="submit" class="add">Create</button>
+        <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
+      </form>
+      {{> footer}}
+    </div>
+  {{/if}}
 </template>

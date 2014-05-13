@@ -33,6 +33,8 @@ setSession = (session) ->
     currentGroupsLoading: false
     currentGroupsReady: false
     currentGroupsLimit: INITIAL_CATALOG_LIMIT
+    currentGroupsSortName: null
+    currentGroupsSort: null
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null

@@ -10,18 +10,42 @@ Catalog.create 'groups', Group,
   count: 'currentGroupsCount'
   filter: 'currentGroupsFilter'
   limit: 'currentGroupsLimit'
+  sort: 'currentGroupsSort'
 
 Deps.autorun ->
   if Session.equals 'groupsActive', true
     Meteor.subscribe 'my-groups'
 
+Template.groups.catalogSettings = ->
+  settings =
+    collection: "groups"
+    sorting: [
+        name: 'members'
+        sort: [
+          ['membersCount', 'desc']
+          ['name', 'asc']
+        ]
+      ,
+        name: 'name'
+        sort: [
+          ['name', 'asc']
+        ]
+      ,
+        name: 'last active'
+        sort: [
+          ['updatedAt', 'desc']
+          ['membersCount', 'desc']
+          ['name', 'asc']
+        ]
+    ]
+    variables:
+      filter: 'currentGroupsFilter'
+      sort: 'currentGroupsSort'
+      sortName: 'currentGroupsSortName'
+
+  settings
+
 Template.groups.events
-  'keyup .groups-directory .search-input': (e, template) ->
-    filter = $(template.findAll '.groups-directory .search-input').val()
-    Session.set 'currentGroupsFilter', filter
-
-    return # Make sure CoffeeScript does not return anything
-
   'submit .add-group': (e, template) ->
     e.preventDefault()
 

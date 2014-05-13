@@ -169,9 +169,10 @@ Meteor.publish 'my-groups', ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'groups', (limit, filter) ->
+Meteor.publish 'groups', (limit, filter, sort) ->
   check limit, PositiveNumber
   check filter, Optional String
+  check sort, Optional [[String]]
 
   findQuery = {}
   findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter
@@ -183,6 +184,7 @@ Meteor.publish 'groups', (limit, filter) ->
       cursor: Group.documents.find(restrictedFindQuery,
         limit: limit
         fields: Group.PUBLISH_LISTING_FIELDS().fields
+        sort: sort
       )
   ,
     Person.documents.find

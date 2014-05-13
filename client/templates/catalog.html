@@ -1,0 +1,20 @@
+<template name="catalogControls">
+  <div class="catalog-controls">
+    {{> catalogSort}}
+    {{> catalogFilter}}
+  </div>
+</template>
+
+<template name="catalogFilter">
+  <div class="filter control">
+    <i class="icon-search"></i>
+    <input name="filter" type="text" placeholder="Filter {{collection}}" autocomplete="off" autofocus="autofocus"/>
+  </div>
+</template>
+
+<template name="catalogSort">
+  <div class="sort control">
+    <i class="icon-sort"></i>
+    <span>Sort by {{field}}</span>
+  </div>
+</template>
