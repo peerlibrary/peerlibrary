@@ -48,6 +48,7 @@ SHA256Worker =
     @worker.setOnDone(onDone)
     #@addRandomizedChunks()
     @worker.finalize()
+    @_chunks = false # reset chunks flag
 
   initWorker: (params) ->
     if !@disableWorker && typeof window != "undefined" && window.Worker
