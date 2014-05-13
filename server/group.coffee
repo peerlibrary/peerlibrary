@@ -169,13 +169,21 @@ Meteor.publish 'my-groups', ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'groups', ->
-  # TODO: Return a subset of groups with pagination and provide extra methods for server side group searching. See https://github.com/peerlibrary/peerlibrary/issues/363
+Meteor.publish 'groups', (limit, filter) ->
+  check limit, PositiveNumber
+  check filter, Optional String
+
+  findQuery = {}
+  findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter
+
   @related (person) ->
-    Group.documents.find Group.requireReadAccessSelector(person,
-      {}
-    ),
-      Group.PUBLISH_LISTING_FIELDS()
+    restrictedFindQuery = Group.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'groups', filter,
+      cursor: Group.documents.find(restrictedFindQuery,
+        limit: limit
+        fields: Group.PUBLISH_LISTING_FIELDS().fields
+      )
   ,
     Person.documents.find
       _id: @personId

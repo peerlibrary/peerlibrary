@@ -1,5 +1,11 @@
-Template.baseFooter.searchActive = ->
-  Session.get 'searchActive'
+Template.baseFooter.infiniteScroll = ->
+  for variable in [
+    'searchActive'
+    'groupsActive'
+  ]
+    return true if Session.get variable
+
+  false
 
 Template.footer.indexFooter = ->
   'index-footer' if Session.get('indexActive') and not Session.get('searchActive')

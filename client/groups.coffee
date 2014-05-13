@@ -1,37 +1,24 @@
+Catalog.create 'groups', Group,
+  main: Template.groups
+  count: Template.groupsCount
+  empty: Template.noGroups
+  loading: Template.groupsLoading
+,
+  active: 'groupsActive'
+  ready: 'currentGroupsReady'
+  loading: 'currentGroupsLoading'
+  count: 'currentGroupsCount'
+  filter: 'currentGroupsFilter'
+  limit: 'currentGroupsLimit'
+
 Deps.autorun ->
   if Session.equals 'groupsActive', true
-    Meteor.subscribe 'groups'
-
-groupSearchQuery = null
-groupSearchQueryDependency = new Deps.Dependency()
-
-Template.groups.searchQuery = ->
-  groupSearchQuery
-
-Template.groups.groups = ->
-  groupSearchQueryDependency.depend()
-
-  selector = {}
-
-  # TODO: Move filtering of the groups to server, escape query
-  if groupSearchQuery
-    selector =
-      name:
-        $regex: ".*#{groupSearchQuery}.*"
-        $options: "i"
-
-  Group.documents.find selector,
-    sort: [
-      ['membersCount', 'desc']
-      ['name', 'asc']
-    ]
+    Meteor.subscribe 'my-groups'
 
 Template.groups.events
   'keyup .groups-directory .search-input': (e, template) ->
-    val = $(template.findAll '.groups-directory .search-input').val()
-
-    groupSearchQuery = val
-    groupSearchQueryDependency.changed()
+    filter = $(template.findAll '.groups-directory .search-input').val()
+    Session.set 'currentGroupsFilter', filter
 
     return # Make sure CoffeeScript does not return anything
 

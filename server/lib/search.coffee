@@ -31,6 +31,7 @@
 
   initializing = results.length
 
+  order = 0
   counts = []
   resultsHandles = []
   countsHandles = []
@@ -43,7 +44,7 @@
           fields.searchResult =
             _id: queryId
             # TODO: Implement
-            order: 1
+            order: ++order
 
           fields = result.added id, fields if result.added
 
@@ -103,3 +104,17 @@
     for handle, i in countsHandles
       handle?.stop()
       countsHandles[i] = null
+
+@createQueryCriteria = (query, field) ->
+  queryCriteria =
+    $and: []
+
+  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
+
+  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
+  for keyword in keywords when keyword
+    fieldCriteria = {}
+    fieldCriteria[field] = new RegExp keyword, 'i'
+    queryCriteria.$and.push fieldCriteria
+
+  queryCriteria

@@ -1,4 +1,5 @@
 @INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
+@INITIAL_CATALOG_LIMIT = INITIAL_CATALOG_LIMIT = 10
 
 setSession = (session) ->
   session = _.defaults session or {},
@@ -27,6 +28,11 @@ setSession = (session) ->
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
+    currentGroupsFilter: null
+    currentGroupsCount: 0
+    currentGroupsLoading: false
+    currentGroupsReady: false
+    currentGroupsLimit: INITIAL_CATALOG_LIMIT
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null

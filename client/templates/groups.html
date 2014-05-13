@@ -2,7 +2,6 @@
   <h1>Groups</h1>
   <div class="row">
     <div class="col12 groups-directory">
-      <h2 class="directory-title">Directory</h2>
       <div class="search-bar">
         <form id="groups-search">
           <span class="search-button">
@@ -11,31 +10,53 @@
           <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Filter groups" autofocus="autofocus">
         </form>
       </div>
-      {{#if groups.count}}
-      <ul class="groups-list">
-        {{#each groups}}
-          {{> groupListing}}
-        {{/each}}
-      </ul>
-      {{else}}
-      <p class="no-groups">
-        {{#if searchQuery}}
-          The filter matches no groups.
-        {{else}}
-          There are no groups yet.
-            {{#if currentPersonId}}
-              Create the first using the form on the right.
-            {{else}}
-              Sing in and create the first.
-            {{/if}}
-        {{/if}}
-      </p>
+      {{> noGroups}}
+      {{#if entities}}
+        <ol class="groups-list">
+          {{#each entities}}
+            {{> groupListing}}
+          {{/each}}
+        </ol>
       {{/if}}
+      {{> groupsLoading}}
     </div>
     {{#if currentPersonId}}
       {{> myGroups}}
     {{/if}}
   </div>
+</template>
+
+<template name="groupsCount">
+  {{#if entitiesCount}}
+    <p class="groups-count">{{entitiesCount}} groups:</p>
+  {{/if}}
+</template>
+
+<template name="noGroups">
+  {{#if noEntities}}
+    <p class="no-groups">
+      {{#if entitiesFilter}}
+        The filter matches no groups.
+      {{else}}
+        There are no groups yet.
+        {{#if currentPersonId}}
+          Create the first using the form on the right.
+        {{else}}
+          Sing in and create the first.
+        {{/if}}
+      {{/if}}
+    </p>
+  {{/if}}
+</template>
+
+<template name="groupsLoading">
+  {{#if entitiesLoading}}
+    <p class="groups-loading">Loading …</p>
+  {{else}}
+    {{#if moreEntities}}
+      <div class="groups-load-more"><button class="load-more">Load more</button></div>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="groupListing">
@@ -65,5 +86,6 @@
       <button type="submit" class="add">Create</button>
       <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
     </form>
+    {{> footer}}
   </div>
 </template>
