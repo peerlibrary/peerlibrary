@@ -1,6 +1,3 @@
-# Used for global variable assignments in local scopes
-root = @
-
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->

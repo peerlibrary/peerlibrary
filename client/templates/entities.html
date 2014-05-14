@@ -33,6 +33,7 @@ Used for display of entities in lists in the main context (big block with main i
     {{#if currentPersonId}}
       {{> publicationLibraryMenu}}
     {{/if}}
+
     <div class="article-summary">
       <div class="article-summary-data">
         <h2 class="title">
@@ -40,7 +41,7 @@ Used for display of entities in lists in the main context (big block with main i
         </h2>
         <div class="clearfix"></div>
         {{#if authors.length}}
-          <span class="authors">
+          <span class="authors actionable">
             {{#each authors}}
               <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
             {{/each}}
@@ -49,7 +50,7 @@ Used for display of entities in lists in the main context (big block with main i
         {{/if}}
         <span class="date">{{createdDay}}</span>
         <br/>
-        <span class="actions">
+        <span class="actions actionable">
           {{#if hasAbstract}}
             <a href="#" class="preview-link">Abstract</a> &middot;
           {{else}}
@@ -61,7 +62,7 @@ Used for display of entities in lists in the main context (big block with main i
         </span>
       </div>
       {{#if thumbnailUrls.length}}
-        <div class="article-thumbnail">
+        <div class="article-thumbnail actionable">
           <ul class="scrubber">
             {{#each thumbnailUrls}}
               {{> publicationListingThumbnail}}
@@ -76,13 +77,14 @@ Used for display of entities in lists in the main context (big block with main i
         </div>
       {{/if}}
     </div>
+    <a class="link" href="{{publicationPathFromId _id slug}}"></a>
   </li>
 </template>
 
 <template name="publicationListingTitle">
   <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
     {{#spaceless}}
-      <a href="{{publicationPathFromId _id slug}}">
+      <a class="actionable" href="{{publicationPathFromId _id slug}}">
         {{#if title}}
           {{title}}
         {{else}}
@@ -105,8 +107,9 @@ Used for display of entities in lists in the main context (big block with main i
 <!-- Group -->
 <template name="groupListing">
   <li class="listing group">
-    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
+    <h2><a href="{{groupPathFromId _id slug}}" class="group-name actionable">{{name}}</a></h2>
     <span class="group-count">{{countDescription}}</span>
+    <a class="link" href="{{groupPathFromId _id slug}}"></a>
   </li>
 </template>
 
@@ -114,11 +117,12 @@ Used for display of entities in lists in the main context (big block with main i
 <template name="collectionListing">
   <li class="listing collection" data-collection-id="{{_id}}">
     <h3 class="collection-name">
-      <a href="{{collectionPathFromId _id slug}}">
+      <a href="{{collectionPathFromId _id slug}}" class="actionable">
         {{name}}
       </a>
     </h3>
     <span class="publications-count">{{countDescription}}</span>
+    <a class="link" href="{{collectionPathFromId _id slug}}"></a>
   </li>
 </template>
 

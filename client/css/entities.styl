@@ -81,10 +81,30 @@
     box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
 
+    .link
+      display block
+      position absolute
+      left 0
+      right 0
+      top 0
+      bottom 0
+
+    .actionable
+      position relative
+      z-index 1
+
+    .edit
+      display inline-block
+      visibility hidden
+      opacity 0
+
     &:hover
-      .edit, .library-menu
+      .edit
         visibility visible
         opacity 1
+
+  .editable-control
+    width 100%
 
   .ui-draggable.listing:hover
   .ui-sortable-handle.listing:hover
@@ -92,18 +112,8 @@
 
 /* Publication */
 .publication.listing
-  .article-thumbnail
-    cursor pointer
-
-  .edit, .library-menu
-    display inline-block
-    visibility hidden
-    opacity 0
-
-  .editable-control
-    width 100%
-
   .library-menu
+    display inline-block
     position absolute
     right 10px
     top 0
@@ -113,6 +123,8 @@
     border-radius 0 0 2px 2px
     min-height 0
     transition all 0.2s
+    visibility hidden
+    opacity 0
 
     .library-menu-button:first-of-type
       margin-top 5px
@@ -121,11 +133,16 @@
       float right
       font-size 16px
 
-  .library-menu:hover
-    border-radius 2px
-    width 300px
-    padding 10px
-    right 0
+    &:hover
+      border-radius 2px
+      width 300px
+      padding 10px
+      right 0
+
+  &:hover
+    .library-menu
+      visibility visible
+      opacity 1
 
   .abstract
     display none
@@ -154,6 +171,9 @@
       width 90px
       height auto
       float right
+
+  .article-thumbnail
+    cursor pointer
 
   ul.scrubber
     margin 0

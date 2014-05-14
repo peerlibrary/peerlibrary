@@ -489,14 +489,7 @@ Template.publication.notfound = ->
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
-Editable.template Template.publicationMetaMenuTitle, ->
-  @data.hasMaintainerAccess Meteor.person()
-,
-  (title) ->
-    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
-      return Notify.meteorError error, true if error
-,
-  "Enter publication title"
+Template.publicationMetaMenuTitle[method] = Template.publicationListingTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->

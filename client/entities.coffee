@@ -1,3 +1,6 @@
+# Used for global variable assignments in local scopes
+root = @
+
 # ENTITIES
 
 Template.personEntity.avatar = ->
@@ -35,7 +38,14 @@ Template.publicationListing.destroyed = ->
   @_publicationHandle?.stop()
   @_publicationHandle = null
 
-Template.publicationListingTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
+Editable.template Template.publicationListingTitle, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(title) ->
+  Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter publication title"
 
 Template.publicationListingThumbnail.events
   'click li': (e, template) ->
