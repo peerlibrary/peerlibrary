@@ -20,6 +20,13 @@ Template.groups.catalogSettings = ->
   settings =
     collection: "groups"
     sorting: [
+        name: 'last active'
+        sort: [
+          ['updatedAt', 'desc']
+          ['membersCount', 'desc']
+          ['name', 'asc']
+        ]
+      ,
         name: 'members'
         sort: [
           ['membersCount', 'desc']
@@ -28,13 +35,6 @@ Template.groups.catalogSettings = ->
       ,
         name: 'name'
         sort: [
-          ['name', 'asc']
-        ]
-      ,
-        name: 'last active'
-        sort: [
-          ['updatedAt', 'desc']
-          ['membersCount', 'desc']
           ['name', 'asc']
         ]
     ]
