@@ -1,58 +1,78 @@
 testRoot = '/packages/sha256'
 pdfFilename = 'tracemonkey.pdf'
+pdfHash = '3662ff519e485810520552bf301d8c3b2b917fd2f83303f4965d7abed367e113'
 chunkSize = 1024 * 2 # bytes
 
 Tinytest.addAsync 'sha256worker test by vjeko', (test, onComplete) ->
   isDefined = false
   try
-    SHA256Worker
+    hash = new Crypto.SHA256
     isDefined = true
 
+  # ----------- testchunks ----------------
   testChunks = (pdf) ->
     sendChunk = () ->
       chunkEnd = chunkStart + chunkSize
       chunkData = pdf.slice(chunkStart, chunkEnd)
 
-      SHA256Worker.addChunk
-        chunk: chunkData
+      hash.update
+        data: chunkData
       chunkStart += chunkSize
 
     chunkStart = 0
     streamLength = pdf.length
 
     sendChunk() while chunkStart < streamLength
-    SHA256Worker.finalize(
-      (sha256) ->
+    hash.finalize
+      onDone: (sha256) ->
+        test.equal sha256, pdfHash
         onComplete()
-    )
+  # ----------------------------------------
 
-  test.isTrue isDefined, "SHA256Worker is not defined"
-  test.isTrue Package['sha256'].SHA256Worker, "Package.sha256.SHA256Worker is not defined"
+  test.isTrue isDefined, "Crypto.SHA256 is not defined"
+  test.isTrue Package['sha256'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
 
   if Meteor.isClient
     # Random query parameter to prevent caching
     pdfPath = "#{ testRoot }/#{ pdfFilename }?#{ Random.id() }"
     pdf = null
 
+    # test whole file
+    oReq = new XMLHttpRequest()
+    hash = new Crypto.SHA256
+    oReq.open "GET", pdfPath, true
+    oReq.onload = ->
+      hash.update
+        data: oReq.response
+      hash.finalize
+        onDone: (sha256) ->
+          test.equal sha256, pdfHash
+    oReq.responseType = 'arraybuffer'
+    oReq.send null
+
+    # test chunks
     oReq = new XMLHttpRequest()
     oReq.open "GET", pdfPath, true
-    oReq.responseType = 'buffer'
-
     oReq.onload = ->
       testChunks (oReq.response)
-
+    oReq.responseType = 'buffer'
     oReq.send null
   else
     bin = Assets.getBinary pdfFilename
     pdf = new Buffer new Uint8Array bin.buffer
-    testChunks(pdf)
+
+    # testing chunks on server
+    #testChunks(pdf)
+    #onComplete()
+
+    # import file as blob
+    console.log "Importing file"
+    hash = new Crypto.SHA256
+    hash.update
+      data: pdf
+    sha256 = hash.finalize()
+
+    test.equal sha256, pdfHash
     onComplete()
-
-
-  # import file as blob
-  #SHA256Worker.fromFile
-  #  file: pdf
-  #  onDone: (sha256) ->
-  #    return
 
 

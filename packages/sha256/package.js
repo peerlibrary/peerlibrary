@@ -5,19 +5,15 @@ Package.describe({
 Package.on_use(function (api) {
   api.use(['coffeescript', 'logging'], ['client', 'server']);
 
-  api.export('SHA256Worker');
-
   api.add_files([
     'lib/crypto.coffee'
   ], ['client', 'server']);
 
   api.add_files([
     'server/crypto.coffee',
-    'server/worker.coffee'
   ], 'server' );
   api.add_files([
     'client/crypto.coffee',
-    'client/worker.coffee'
   ], 'client' );
 
 	api.add_files([

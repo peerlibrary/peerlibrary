@@ -5,8 +5,8 @@ crypto = Npm.require 'crypto'
     constructor: ->
       @_hash = crypto.createHash 'sha256'
 
-    update: (data) =>
-      @_hash.update data
+    update: (params) =>
+      @_hash.update params.data
 
     finalize: =>
       @_hash.digest 'hex'

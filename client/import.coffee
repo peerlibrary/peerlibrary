@@ -72,71 +72,51 @@ importFile = (file) ->
     testPDF file, fileContent, ->
       # TODO: Compute SHA in chunks
       # TODO: Compute SHA in a web worker?
-      hash = new Crypto.SHA256()
-      hash.update fileContent
-      sha256 = hash.finalize()
-      console.log sha256
-      chunkSize = 1024 * 2 # bytes
 
-      sendChunk = () ->
-        chunkEnd = chunkStart + chunkSize
-        chunkData = fileContent.slice(chunkStart, chunkEnd)
-        SHA256Worker.addChunk
-          chunk: chunkData
-        chunkStart += chunkSize
-
-      chunkStart = 0
-      chunkEnd = 0
-      streamLength = fileContent.byteLength
-      
-      try
-        sendChunk() while chunkStart < streamLength
-        SHA256Worker.finalize () ->
+      hash = new Crypto.SHA256
+        disableWorker: false
+      hash.update
+        data: fileContent
+        onProgress: (progress) ->
+          console.log progress
+      hash.finalize
+        onDone: (sha256) ->
           console.log sha256
-      catch error
-        console.error error
-
-      #SHA256Worker.fromFile
-      #  file: file
-      #  onProgress: (progress) ->
-      #    console.log progress
-      #  onDone: (sha256) ->
-      #    console.log sha256
           
-      alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
-      if alreadyImporting
-        ImportingFile.documents.update file._id,
-          $set:
-            finished: true
-            status: "File is already importing"
-            # publicationId might not yet be available, but let's try
-            publicationId: alreadyImporting.publicationId
-        return
+          alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
+          if alreadyImporting
+            ImportingFile.documents.update file._id,
+              $set:
+                finished: true
+                status: "File is already importing"
+                # publicationId might not yet be available, but let's try
+                publicationId: alreadyImporting.publicationId
+            return
 
-      ImportingFile.documents.update file._id,
-        $set:
-          sha256: sha256
-
-      Meteor.call 'create-publication', file.name, sha256, (error, result) ->
-        if error
           ImportingFile.documents.update file._id,
             $set:
-              errored: true
-              status: error.toString()
-          return
+              sha256: sha256
 
-        if result.already
-          ImportingFile.documents.update file._id,
-            $set:
-              finished: true
-              status: "File already imported"
-              publicationId: result.publicationId
-          return
+          Meteor.call 'create-publication', file.name, sha256, (error, result) ->
+            if error
+              ImportingFile.documents.update file._id,
+                $set:
+                  errored: true
+                  status: error.toString()
+              return
 
-        if result.verify
-          verifyFile file, fileContent, result.publicationId, result.samples
-        else
-          uploadFile file, result.publicationId
+            if result.already
+              ImportingFile.documents.update file._id,
+                $set:
+                  finished: true
+                  status: "File already imported"
+                  publicationId: result.publicationId
+              return
+
+            if result.verify
+              verifyFile file, fileContent, result.publicationId, result.samples
+            else
+              uploadFile file, result.publicationId
 
   ImportingFile.documents.insert
     name: file.name

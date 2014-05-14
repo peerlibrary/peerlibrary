@@ -15,6 +15,7 @@ var ActionHandler = {
     chunkBuffer[ eventData.chunkNumber ] = eventData.chunk;
     // flushing buffer
     flushBuffer();
+    MessageHandler.progress(eventData.chunkNumber, eventData.chunk.length, 100);
   },
   finalize: function SHA256WebWorkerActionHandler_finalizeChunks (eventData) {
     // flushing buffer before finalizing
