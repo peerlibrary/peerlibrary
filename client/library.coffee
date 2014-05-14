@@ -18,7 +18,7 @@ Template.libraryPublications.myPublications = ->
       $in: _.pluck person.library, '_id'
 
 Template.libraryPublications.rendered = ->
-  $(@findAll '.result-item').draggable
+  $(@findAll '.listing').draggable
     opacity: 0.5
     revert: true
     revertDuration: 0
@@ -62,8 +62,8 @@ Template.addNewCollection.events
     return # Make sure CoffeeScript does not return anything
 
 Template.collections.rendered = ->
-  $(@findAll '.collection-listing').droppable
-    accept: '.result-item'
+  $(@findAll '.listing').droppable
+    accept: '.publication.listing'
     activeClass: 'droppable-active'
     hoverClass: 'droppable-hover'
     tolerance: 'pointer'
@@ -75,6 +75,3 @@ Template.collections.rendered = ->
         return Notify.meteorError error, true if error
 
         Notify.success "Publication added to collection." if count
-
-Template.collectionListing.countDescription = ->
-  if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

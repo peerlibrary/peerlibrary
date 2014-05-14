@@ -5,9 +5,9 @@
       {{> resultsSearchInvitation}}
       {{> noResults}}
       {{#if publications}}
-        <ol class="item-list">
+        <ol class="entity-list">
           {{#each publications}}
-            {{> publicationSearchResult}}
+            {{> publicationListing}}
           {{/each}}
         </ol>
       {{/if}}
@@ -109,82 +109,4 @@
     </form>
     {{> footer}}
   </div>
-</template>
-
-<template name="publicationSearchResult">
-  <li class="result-item" data-publication-id="{{_id}}">
-    {{#if currentPersonId}}
-      {{> publicationLibraryMenu}}
-    {{/if}}
-    <div class="article-summary">
-      <div class="article-summary-data">
-        <h2 class="title">
-          {{> publicationSearchResultTitle}}
-        </h2>
-        <div class="clearfix"></div>
-        {{#if authors.length}}
-          <span class="authors">
-            {{#each authors}}
-              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
-            {{/each}}
-          </span>
-          <br/>
-        {{/if}}
-        <span class="date">{{createdDay}}</span>
-        <br/>
-        <span class="actions">
-          {{#if hasAbstract}}
-            <a href="#" class="preview-link">Abstract</a> &middot;
-          {{else}}
-            {{#if abstract}}
-              <a href="#" class="preview-link">Abstract</a> &middot;
-            {{/if}}
-          {{/if}}
-          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
-        </span>
-      </div>
-      {{#if thumbnailUrls.length}}
-        <div class="article-thumbnail">
-          <ul class="scrubber">
-            {{#each thumbnailUrls}}
-              {{> publicationSearchResultThumbnail}}
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
-      <div class="clearfix"></div>
-      {{#if abstract}}
-        <div class="abstract">
-          <p class="abstract-content">{{abstract}}</p>
-        </div>
-      {{/if}}
-    </div>
-  </li>
-</template>
-
-<template name="publicationSearchResultTitle">
-  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
-    {{#spaceless}}
-      <a href="{{publicationPathFromId _id slug}}">
-        {{#if title}}
-          {{title}}
-        {{else}}
-          {{#if importing.0.filename}}
-          {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
-            {{importing.0.filename}}
-          {{else}}
-            <i>title metadata missing</i>
-          {{/if}}
-        {{/if}}
-      </a>
-    {{/spaceless}}
-  </span>
-</template>
-
-<template name="accessIcon">
-  <i class="{{iconName}}"></i>
-</template>
-
-<template name="publicationSearchResultThumbnail">
-  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
 </template>

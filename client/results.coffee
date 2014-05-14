@@ -103,39 +103,6 @@ Template.resultsLoad.events =
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
-Template.publicationSearchResult.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
-
-    if template._publicationHandle
-      # We ignore the click if handle is not yet ready
-      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
-    else
-      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
-        Deps.afterFlush =>
-          $(template.findAll '.abstract').slideToggle('fast')
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.publicationSearchResult.created = ->
-  @_publicationHandle = null
-
-Template.publicationSearchResult.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
-Template.publicationSearchResult.destroyed = ->
-  @_publicationHandle?.stop()
-  @_publicationHandle = null
-
-Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
-
-Template.publicationSearchResultThumbnail.events
-  'click li': (e, template) ->
-    root.startViewerOnPage = @page
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication = @publication
-    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
-
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null
   @_dateRangeHandle = null

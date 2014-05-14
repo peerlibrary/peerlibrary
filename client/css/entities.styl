@@ -64,6 +64,130 @@
   .avatar
     min-width 1.5em
 
+/* Listings
+=========== */
+
+.entity-list
+  list-style none
+  padding 0 5px
+  margin 0
+
+  .listing
+    position relative
+    background white
+    padding 20px
+    margin 10px 0
+    border-radius 2px
+    box-shadow 0 0 0 1px box-shadow-border
+    transition box-shadow 0.2s
+
+    &:hover
+      .edit, .library-menu
+        visibility visible
+        opacity 1
+
+  .ui-draggable.listing:hover
+  .ui-sortable-handle.listing:hover
+    box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+
+/* Publication */
+.publication.listing
+  .article-thumbnail
+    cursor pointer
+
+  .edit, .library-menu
+    display inline-block
+    visibility hidden
+    opacity 0
+
+  .editable-control
+    width 100%
+
+  .library-menu
+    position absolute
+    right 10px
+    top 0
+    left auto
+    width 22px
+    padding 10px 0
+    border-radius 0 0 2px 2px
+    min-height 0
+    transition all 0.2s
+
+    .library-menu-button:first-of-type
+      margin-top 5px
+
+    .icon
+      float right
+      font-size 16px
+
+  .library-menu:hover
+    border-radius 2px
+    width 300px
+    padding 10px
+    right 0
+
+  .abstract
+    display none
+
+  .article-summary
+    .article-summary-data
+      display inline-block
+      float left
+      width 85%
+
+      .authors span::after
+        content ","
+
+      .authors span:last-child::after
+        content ""
+
+  .article-summary
+    .article-thumbnail
+      float right
+      display inline-block
+      width 95px
+      border 1px solid #c9d0dc
+      border-radius 2px
+
+    .article-thumbnail > img
+      width 90px
+      height auto
+      float right
+
+  ul.scrubber
+    margin 0
+    width 95px
+    height 125px
+
+    li
+      display none
+
+/* Group */
+.group.listing
+  padding 10px 15px
+
+  h2
+    margin: 0 0 0.2em 0
+
+/* Collection */
+.collection.listing
+  background white
+  padding 10px 15px
+  margin 10px 0 10px 1px
+  border-radius 2px
+  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
+  transition 0.2s
+
+  h3
+    margin 0 0 0.2em 0
+
+.collection.listing.droppable-active
+  box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)
+
+.collection.listing.droppable-hover
+  background blue
+
 /* Members
 ========== */
 

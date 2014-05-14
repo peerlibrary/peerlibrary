@@ -1,5 +1,5 @@
-<!-- ENTITIES
-Used for generalized displays of entities -->
+<!-- INLINE ENTITIES
+Used for generalized display of entities in inline context (icon + name of the entity only) -->
 
 <template name="personEntity">
   {{#spaceless}}
@@ -19,9 +19,111 @@ Used for generalized displays of entities -->
   </a>
 </template>
 
+<!-- ENTITY LISTINGS
+Used for display of entities in lists in the main context (big block with main information) -->
+
+<!-- Common elements -->
+<template name="accessIcon">
+  <i class="{{iconName}}"></i>
+</template>
+
+<!-- Publication -->
+<template name="publicationListing">
+  <li class="listing publication" data-publication-id="{{_id}}">
+    {{#if currentPersonId}}
+      {{> publicationLibraryMenu}}
+    {{/if}}
+    <div class="article-summary">
+      <div class="article-summary-data">
+        <h2 class="title">
+          {{> publicationListingTitle}}
+        </h2>
+        <div class="clearfix"></div>
+        {{#if authors.length}}
+          <span class="authors">
+            {{#each authors}}
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+            {{/each}}
+          </span>
+          <br/>
+        {{/if}}
+        <span class="date">{{createdDay}}</span>
+        <br/>
+        <span class="actions">
+          {{#if hasAbstract}}
+            <a href="#" class="preview-link">Abstract</a> &middot;
+          {{else}}
+            {{#if abstract}}
+              <a href="#" class="preview-link">Abstract</a> &middot;
+            {{/if}}
+          {{/if}}
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
+        </span>
+      </div>
+      {{#if thumbnailUrls.length}}
+        <div class="article-thumbnail">
+          <ul class="scrubber">
+            {{#each thumbnailUrls}}
+              {{> publicationListingThumbnail}}
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+      <div class="clearfix"></div>
+      {{#if abstract}}
+        <div class="abstract">
+          <p class="abstract-content">{{abstract}}</p>
+        </div>
+      {{/if}}
+    </div>
+  </li>
+</template>
+
+<template name="publicationListingTitle">
+  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+    {{#spaceless}}
+      <a href="{{publicationPathFromId _id slug}}">
+        {{#if title}}
+          {{title}}
+        {{else}}
+          {{#if importing.0.filename}}
+            {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+            {{importing.0.filename}}
+          {{else}}
+            <i>title metadata missing</i>
+          {{/if}}
+        {{/if}}
+      </a>
+    {{/spaceless}}
+  </span>
+</template>
+
+<template name="publicationListingThumbnail">
+  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
+</template>
+
+<!-- Group -->
+<template name="groupListing">
+  <li class="listing group">
+    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
+    <span class="group-count">{{countDescription}}</span>
+  </li>
+</template>
+
+<!-- Collection -->
+<template name="collectionListing">
+  <li class="listing collection" data-collection-id="{{_id}}">
+    <h3 class="collection-name">
+      <a href="{{collectionPathFromId _id slug}}">
+        {{name}}
+      </a>
+    </h3>
+    <span class="publications-count">{{countDescription}}</span>
+  </li>
+</template>
 
 <!-- MEMBERS
-Used when entities appear in contexts of lists and need add/remove controls -->
+Used when inline entities appear in contexts of lists and need add/remove controls -->
 
 <template name="member">
   <li class="member">

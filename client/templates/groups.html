@@ -19,7 +19,7 @@
 
 <template name="groupsList">
   {{#if this}}
-    <ol class="groups-list">
+    <ol class="entity-list">
       {{#each this}}
         {{> groupListing}}
       {{/each}}
@@ -54,19 +54,12 @@
   {{/if}}
 </template>
 
-<template name="groupListing">
-  <li class="group-listing">
-    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
-    <span class="group-count">{{countDescription}}</span>
-  </li>
-</template>
-
 <template name="myGroups">
   {{#if currentPersonId}}
     <div class="col4 push12 sidebar my-groups">
       <h2>My Groups</h2>
       {{#if myGroups.count}}
-        <ul class="groups-list">
+        <ul class="entity-list">
           {{#each myGroups}}
             {{> groupListing}}
           {{/each}}

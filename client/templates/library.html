@@ -16,9 +16,9 @@
   <div class="col12">
     <h1>Library</h1>
     {{#if myPublications.count}}
-      <ol class="library-publications item-list">
+      <ol class="library-publications entity-list">
         {{#each myPublications}}
-          {{> publicationSearchResult}}
+          {{> publicationListing}}
         {{/each}}
       </ol>
     {{else}}
@@ -32,7 +32,7 @@
     <div class="col4 push12 sidebar library-collections">
       <h2>My Collections</h2>
       {{#if myCollections.count}}
-        <ol class="collections-list">
+        <ol class="entity-list">
           {{#each myCollections}}
             {{> collectionListing}}
           {{/each}}
@@ -46,17 +46,6 @@
       {{> addNewCollection}}
     </div>
   </div>
-</template>
-
-<template name="collectionListing">
-  <li class="collection-listing" data-collection-id="{{_id}}">
-    <h3 class="collection-name">
-      <a href="{{collectionPathFromId _id slug}}">
-        {{name}}
-      </a>
-    </h3>
-    <span class="publications-count">{{countDescription}}</span>
-  </li>
 </template>
 
 <template name="noCollections">
