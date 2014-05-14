@@ -17,9 +17,9 @@
           Crypto.chunkSize = params.chunkSize
 
       if !@disableWorker && typeof window != "undefined" && window.Worker
-        @worker = new WebWorker params
+        @worker = new WebWorker
       else
-        @worker = new WorkerFallback params
+        @worker = new WorkerFallback
 
     update: (params) ->
       if params.onProgress?
@@ -61,7 +61,6 @@ class WebWorker extends BaseWorker
     super params
     @worker = new Worker Crypto.workerSrc
     self = @
-    @_onDone = params.onDone
     @worker.onmessage = (oEvent) ->
       data = oEvent.data.data
       message = oEvent.data.message
