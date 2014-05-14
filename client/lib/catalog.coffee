@@ -1,10 +1,37 @@
+Template.catalogControls.created = ->
+  # Set initial sorting to the first passed-in option
+  Session.set @data.variables.sortName, @data.sorting[0].name
+  Session.set @data.variables.sort, @data.sorting[0].sort
+
 Template.catalogFilter.collection = ->
   @collection
 
 Template.catalogSort.field = ->
-  Session.set @variables.sortName, @sorting[0].name
-  Session.set @variables.sort, @sorting[0].sort
-  @sorting[0].name
+  Session.get @variables.sortName
+
+Template.catalogSort.events
+  'click .dropdown-trigger': (e, template) ->
+    # Make sure only the trigger toggles the dropdown
+    return if $(e.target).closest('.dropdown-anchor').length
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.catalogSortSelection.options = ->
+  # Modify the data with parent variables
+  # TODO: Change when meteor allows to access parent context
+  _.map @sorting, (sorting) =>
+    sorting._parent = @
+    sorting
+
+Template.catalogSortOption.events
+  'click button': (e, template) ->
+    Session.set @_parent.variables.sortName, @name
+    Session.set @_parent.variables.sort, @sort
+    $(template.firstNode).closest('.dropdown-anchor').hide()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.catalogFilter.events
   'keyup .filter input': (e, template) ->
@@ -24,13 +51,13 @@ class @Catalog
       # Every time filter is changed, we reset counts
       # (We don't want to reset counts on currentLimit change)
       Session.get variables.filter
-      #Session.set variables.count, 0
+      Session.set variables.count, 0
       Session.set variables.limit, INITIAL_CATALOG_LIMIT
       limitIncreasing = false
 
     Deps.autorun ->
       Session.set variables.ready, false
-      if  Session.get(variables.active) and Session.get(variables.limit)
+      if Session.get(variables.active) and Session.get(variables.limit)
         Session.set variables.loading, true
         Meteor.subscribe subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
           onReady: ->
@@ -62,13 +89,13 @@ class @Catalog
       $(window).off '.directory'
 
     templates.main.entities = ->
-      return if not Session.get(variables.limit)
+      return unless Session.get(variables.limit) and Session.get(variables.ready)
 
       searchResult = SearchResult.documents.findOne
         name: subscription
         query: Session.get variables.filter
 
-      return if not searchResult
+      return unless searchResult
 
       Session.set variables.count, searchResult["count#{entityClass.name}s"]
 
@@ -95,7 +122,7 @@ class @Catalog
     templates.loading.moreEntities = ->
       Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
 
-    templates.loading.events =
+    templates.loading.events
       'click .load-more': (e, template) ->
         e.preventDefault()
         limitIncreasing = false # We want to force loading more in every case

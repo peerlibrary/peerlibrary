@@ -15,6 +15,23 @@
 <template name="catalogSort">
   <div class="sort control">
     <i class="icon-sort"></i>
-    <span>Sort by {{field}}</span>
+    <span class="dropdown-trigger">
+      Sort by {{field}}
+      {{> catalogSortSelection}}
+    </span>
   </div>
+</template>
+
+<template name="catalogSortSelection">
+  <div class="dropdown-anchor">
+    <ul class="dropdown">
+      {{#each options}}
+        {{> catalogSortOption}}
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="catalogSortOption">
+  <li class="menu-item"><button>{{name}}</button></li>
 </template>

@@ -219,45 +219,28 @@ span.cursor
     color blue-accent
 
 header.logged-in
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
+
+    .dropdown-anchor
+      display block
+      bottom -2px
+
+    .dropdown-anchor::after
+    .dropdown-anchor::before
+      left auto
+      right 24px
+
   #login-dropdown-list
-    background white 
-    border-color rgb(210,210,210)
-    border-style solid
-    border-width 1px
-    border-radius 3px
     position  absolute
+    border-radius 3px
     width 180px
-    padding 5px 0
-    top 55px
     right 10px
+    left auto
     font-size 14px
     line-height 20px
-
-  #login-dropdown-list:after
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px
-    border-color #FFFFFF transparent
-    display block
-    width 0
-    z-index 1
-    margin-left -10px
-    top -8px
-    left 161px
-
-  #login-dropdown-list:before
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px;
-    border-color rgb(210,210,210) transparent
-    display block
-    width 0
-    z-index 0
-    margin-left -10px
-    top -9px
-    left 161px
 
   .menu-item
     padding 5px 0
@@ -277,15 +260,10 @@ header.logged-in
       color white
       a
         color white
-  
+
   .menu-item a:hover
     color white
     background blue-accent
-
-  .login-link-and-dropdown-list
-    cursor pointer
-    a
-      cursor pointer
 
 header.index-header.logged-in
   #login-dropdown-list
