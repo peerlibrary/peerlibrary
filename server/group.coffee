@@ -23,6 +23,13 @@ class @Group extends Group
       slug: 1
       name: 1
       membersCount: 1
+      access: 1
+      readPersons: 1
+      readGroups: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+      adminPersons: 1
+      adminGroups: 1
 
 registerForAccess Group
 

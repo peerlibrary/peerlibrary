@@ -23,7 +23,7 @@ Template.libraryPublications.rendered = ->
     revert: true
     revertDuration: 0
     cursor: 'move'
-    zIndex: 1
+    zIndex: 2
     start: (e, ui) ->
       collections = $('.library-collections-wrapper')
       # When we start to drag a publication, we display collections fixed so they are in view, ready to be dropped onto.

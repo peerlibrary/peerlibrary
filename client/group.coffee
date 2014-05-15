@@ -40,16 +40,7 @@ Template.group.notfound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person()
-,
-  (name) ->
-    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-      return Notify.meteorError error, true if error
-,
-  "Enter group name"
-,
-  true
+Template.groupName[method] = Template.groupListingName[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person()

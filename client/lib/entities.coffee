@@ -56,10 +56,35 @@ Template.publicationListingThumbnail.events
 
 # Group
 
+Editable.template Template.groupListingName, ->
+  console.log @data.name
+  console.log @data.hasMaintainerAccess Meteor.person()
+  console.log @data
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
 Template.groupListing.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
 # Collection
+
+Editable.template Template.collectionListingName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter collection name"
+,
+  true
 
 Template.collectionListing.countDescription = ->
   if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

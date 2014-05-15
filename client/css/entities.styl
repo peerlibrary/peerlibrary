@@ -75,11 +75,14 @@
   .listing
     position relative
     background white
-    padding 20px
+    padding 10px 15px
     margin 10px 0
     border-radius 2px
     box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
+
+    h2
+      margin 0 0 0.2em 0
 
     .link
       display block
@@ -110,8 +113,19 @@
   .ui-sortable-handle.listing:hover
     box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
+  .droppable-active
+    box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)
+
+  .droppable-hover
+    background blue
+
 /* Publication */
 .publication.listing
+  padding 20px
+
+  h2
+    margin-bottom .83em
+
   .library-menu
     display inline-block
     position absolute
@@ -182,31 +196,6 @@
 
     li
       display none
-
-/* Group */
-.group.listing
-  padding 10px 15px
-
-  h2
-    margin: 0 0 0.2em 0
-
-/* Collection */
-.collection.listing
-  background white
-  padding 10px 15px
-  margin 10px 0 10px 1px
-  border-radius 2px
-  box-shadow 0 0 0 1px rgba(14,41,57,0.12)
-  transition 0.2s
-
-  h3
-    margin 0 0 0.2em 0
-
-.collection.listing.droppable-active
-  box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)
-
-.collection.listing.droppable-hover
-  background blue
 
 /* Members
 ========== */
