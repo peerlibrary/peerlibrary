@@ -107,7 +107,7 @@ class @Catalog
         ]
         limit: Session.get variables.limit
 
-    templates.count.entitiesCount = ->
+    templates.count?.entitiesCount = ->
       Session.get variables.count
 
     templates.empty.noEntities = ->

@@ -1,11 +1,11 @@
 <template name="publication">
   {{#if loading}}
-    <div class="simple loading">
+    <div class="loading">
       <h2>Loading</h2>
     </div>
   {{else}}
-    {{#if notfound}}
-      <div class="simple notfound">
+    {{#if notFound}}
+      <div class="not-found">
         <h2>404 Not found</h2>
         <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>

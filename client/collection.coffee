@@ -34,7 +34,7 @@ Template.collection.loading = ->
   collectionSubscribing() # To register dependency
   not collectionHandle?.ready()
 
-Template.collection.notfound = ->
+Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 

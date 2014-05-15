@@ -10,8 +10,10 @@
 <template name="indexStatistics">
   <ul class="statistics">
     <li>
-      <span class="value">{{publications}}</span>
-      <span class="label">Publications</span>
+      <a href="{{publicationsPath}}">
+        <span class="value">{{publications}}</span>
+        <span class="label">Publications</span>
+      </a>
     </li>
     <li>
       <span class="value">{{persons}}</span>

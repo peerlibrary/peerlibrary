@@ -57,9 +57,6 @@ Template.publicationListingThumbnail.events
 # Group
 
 Editable.template Template.groupListingName, ->
-  console.log @data.name
-  console.log @data.hasMaintainerAccess Meteor.person()
-  console.log @data
   @data.hasMaintainerAccess Meteor.person()
 ,
 (name) ->

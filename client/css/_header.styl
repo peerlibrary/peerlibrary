@@ -266,9 +266,13 @@ header.logged-in
     background blue-accent
 
 header.index-header.logged-in
-  #login-dropdown-list
-    top 56px
-    right 24px
+  .login-link-and-dropdown-list
+    .dropdown-anchor
+      right 14px
+
+      &::after
+      &::before
+        right 34px
 
   #login-dropdown-list:after
     left 149px

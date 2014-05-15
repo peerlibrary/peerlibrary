@@ -27,6 +27,14 @@ setSession = (session) ->
     currentTagSlug: null
     currentGroupId: null
     currentGroupSlug: null
+    publicationsActive: false
+    currentPublicationsFilter: null
+    currentPublicationsCount: 0
+    currentPublicationsLoading: false
+    currentPublicationsReady: false
+    currentPublicationsLimit: INITIAL_CATALOG_LIMIT
+    currentPublicationsSortName: null
+    currentPublicationsSort: null
     groupsActive: false
     currentGroupsFilter: null
     currentGroupsCount: 0
@@ -166,6 +174,13 @@ else
           currentPublicationId: publicationId
           currentPublicationSlug: publicationSlug
         'publication'
+
+    '/p':
+      as: 'publications'
+      to: ->
+        setSession
+          publicationsActive: true
+        'publications'
 
     '/t/:tagId/:tagSlug?':
       as: 'tag'

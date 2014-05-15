@@ -1,22 +1,27 @@
 @import 'variables.import'
 
-.catalog-controls
-  .control
-    display inline-block
-    margin-left 2em
+.catalog
+  .controls
+    .control
+      display inline-block
+      margin-left 2em
 
-    &:first-child
-      margin-left 0
+      &:first-child
+        margin-left 0
 
-  .filter
-    input
-      border none
-      background none
+    .filter
+      input
+        border none
+        background none
+        font-weight 300
+
+    .sort
       font-weight 300
 
-  .sort
-    font-weight 300
+      .dropdown
+        box-sizing border-box
+        min-width 100%
 
-    .dropdown
-      box-sizing border-box
-      min-width 100%
+  .status
+    font-size 16px
+    font-weight 300

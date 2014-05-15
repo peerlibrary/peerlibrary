@@ -33,7 +33,7 @@ Template.group.loading = ->
   groupSubscribing() # To register dependency
   not groupHandle?.ready()
 
-Template.group.notfound = ->
+Template.group.notFound = ->
   groupSubscribing() # To register dependency
   groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 

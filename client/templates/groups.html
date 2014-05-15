@@ -1,7 +1,7 @@
 <template name="groups">
   <h1>Groups</h1>
   <div class="row">
-    <div class="col12 groups-directory">
+    <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
       {{> noGroups}}
       {{> groupsList entities}}
@@ -9,12 +9,6 @@
     </div>
     {{> myGroups}}
   </div>
-</template>
-
-<template name="groupsCount">
-  {{#if entitiesCount}}
-    <p class="groups-count">{{entitiesCount}} groups:</p>
-  {{/if}}
 </template>
 
 <template name="groupsList">
@@ -29,7 +23,7 @@
 
 <template name="noGroups">
   {{#if noEntities}}
-    <p class="no-groups">
+    <p class="status">
       {{#if entitiesFilter}}
         The filter matches no groups.
       {{else}}
@@ -37,7 +31,7 @@
         {{#if currentPersonId}}
           Create the first using the form on the right.
         {{else}}
-          Sing in and create the first.
+          Sign in and create the first.
         {{/if}}
       {{/if}}
     </p>
@@ -46,10 +40,10 @@
 
 <template name="groupsLoading">
   {{#if entitiesLoading}}
-    <p class="groups-loading">Loading …</p>
+    <p class="status">Loading …</p>
   {{else}}
     {{#if moreEntities}}
-      <div class="groups-load-more"><button class="load-more">Load more</button></div>
+      <button class="load-more">Load more</button>
     {{/if}}
   {{/if}}
 </template>

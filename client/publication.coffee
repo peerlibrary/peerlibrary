@@ -482,7 +482,7 @@ Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
 
-Template.publication.notfound = ->
+Template.publication.notFound = ->
   publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
@@ -1392,7 +1392,7 @@ Template.contextMenuGroupListing.workingInside = ->
   _.contains getAnnotationDefaults().groups, @_id
 
 Template.footer.publicationDisplayed = ->
-  'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
+  'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
 
 # TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
 addParsedLinkReactiveVariable = (data) ->
