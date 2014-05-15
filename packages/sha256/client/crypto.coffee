@@ -22,9 +22,11 @@
         @worker = new WorkerFallback
 
     update: (params) ->
+      console.log typeof params.data
       if params.onProgress?
         @worker.setOnProgress(params.onProgress)
       @_chunks = true
+      console.log "Crypto sending chunk to worker"
       @worker.sendChunk
         chunk: params.data
         chunkNumber: @_chunkNumber++
@@ -41,11 +43,13 @@ class BaseWorker
   constructor: (params) ->
     self = @
     @_onProgress = ->
+    @_onProgressExternal = ->
     @_onDone = ->
   
     @_handler =
       progress: (data) ->
         self._onProgress data
+        self._nextChunk()
       done: (data) ->
         self._onDone data.sha256
 
@@ -57,6 +61,9 @@ class BaseWorker
     
 
 class WebWorker extends BaseWorker
+  _busy: false
+  _buffer: []
+
   constructor: (params) ->
     super params
     @worker = new Worker Crypto.workerSrc
@@ -66,14 +73,29 @@ class WebWorker extends BaseWorker
       message = oEvent.data.message
       self._handler[message] data
 
-  sendFile: (params) ->
-    @worker.postMessage message: 'file', file: params.file, chunkSize: Crypto.chunkSize
+  _nextChunk: () ->
+    console.log "Received chunk ack"
+    @_busy = false
+    @_flush()
 
-  sendChunk: (params) ->
-    @worker.postMessage message: 'chunk', chunk: params.chunk, chunkNumber: params.chunkNumber
+  _flush: () ->
+    console.log "Flushing"
+    if not @_busy and @_buffer.length > 0
+      chunk = @_buffer.shift()
+      @_busy = true
+      @worker.postMessage chunk
 
-  finalize: (params) ->
-    @worker.postMessage message: 'finalize'
+  sendChunk: (chunk) ->
+    console.log "Adding chunk to buffer"
+    chunk.message = 'chunk'
+    @_buffer.push chunk
+    @_flush()
+
+  finalize: () ->
+    console.log "Adding final chunk to buffer"
+    @_buffer.push
+      message: 'finalize'
+    @_flush()
 
 class WorkerFallback extends BaseWorker
   constructor: (params) ->
@@ -108,8 +130,8 @@ class WorkerFallback extends BaseWorker
       @_reader.readAsArrayBuffer blob
     return
 
-  sendChunk: (params) ->
-    @_hash.update params.chunk
+  sendChunk: (chunk) ->
+    @_hash.update chunk.data
 
   _bin2hex: (array) ->
     hexTab = '0123456789abcdef'
