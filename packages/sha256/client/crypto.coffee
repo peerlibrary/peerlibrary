@@ -22,14 +22,13 @@
         @worker = new WorkerFallback
 
     update: (params) ->
-      console.log typeof params.data
+      console.log "update called"
       if params.onProgress?
         @worker.setOnProgress(params.onProgress)
       @_chunks = true
       console.log "Crypto sending chunk to worker"
-      @worker.sendChunk
-        chunk: params.data
-        chunkNumber: @_chunkNumber++
+      @worker.update params.data
+      console.log "done"
 
     finalize: (params) ->
       if not @_chunks
@@ -45,11 +44,20 @@ class BaseWorker
     @_onProgress = ->
     @_onProgressExternal = ->
     @_onDone = ->
+    @_chunkStart = 0
+    @_fileSize = 0
   
     @_handler =
-      progress: (data) ->
-        self._onProgress data
-        self._nextChunk()
+      progress: (progress) ->
+        self._onProgress progress
+
+      chunkDone: ->
+        console.log "web worker callback"
+        if not self._chunkStart > 0
+          console.log "moving to next buff el"
+          # moving to next buffer element
+          self._nextBufferElement()
+        
       done: (data) ->
         self._onDone data.sha256
 
@@ -58,7 +66,31 @@ class BaseWorker
   
   setOnProgress: (onProgress) ->
     @_onProgress = onProgress
-    
+
+  _readNext: ->
+    self = @
+    start = @_chunkStart
+    end = start + Crypto.chunkSize
+    # check if all the chunks are read
+    if start >= @_fileSize
+      if @_autoFinalize
+        @finalize()
+    else
+      # increase chunkStart
+      @_chunkStart = end
+      blob = @_file.slice start, end
+      @_reader.readAsArrayBuffer blob
+
+  _sendFile: (file) ->
+    self = @
+    @_file = file
+    @_fileSize = @_file.size
+    @_reader = new FileReader()
+    @_reader.onload = ->
+      self._sendChunk @result
+      self._handler.progress Math.min(self._chunkStart, self._fileSize) / self._fileSize
+      self._readNext()
+    self._readNext()
 
 class WebWorker extends BaseWorker
   _busy: false
@@ -66,6 +98,7 @@ class WebWorker extends BaseWorker
 
   constructor: (params) ->
     super params
+    @_autoFinalize = false
     @worker = new Worker Crypto.workerSrc
     self = @
     @worker.onmessage = (oEvent) ->
@@ -73,25 +106,36 @@ class WebWorker extends BaseWorker
       message = oEvent.data.message
       self._handler[message] data
 
-  _nextChunk: () ->
-    console.log "Received chunk ack"
+  _nextBufferElement: ->
     @_busy = false
     @_flush()
 
-  _flush: () ->
-    console.log "Flushing"
+  _flush: ->
+    console.log @_buffer.length
     if not @_busy and @_buffer.length > 0
-      chunk = @_buffer.shift()
+      data = @_buffer.shift()
       @_busy = true
+      if data instanceof Blob or data.byteLength > 2 * Crypto.chunkSize
+        console.log "Next buffer element is blob or large chunk - sending file (chunkStart is " + @_chunkStart + ")"
+        @_sendFile data
+      else
+        console.log "Next buffer element is small chunk"
+        @_sendChunk data
       @worker.postMessage chunk
 
-  sendChunk: (chunk) ->
-    console.log "Adding chunk to buffer"
-    chunk.message = 'chunk'
-    @_buffer.push chunk
+  _sendChunk: (data) ->
+    console.log "Sending chunk to web worker"
+    @worker.postMessage
+      chunk: data,
+      message: 'chunk',
+      chunkNumber: null
+
+  update: (data) ->
+    console.log "Buffering received data"
+    @_buffer.push data
     @_flush()
 
-  finalize: () ->
+  finalize: ->
     console.log "Adding final chunk to buffer"
     @_buffer.push
       message: 'finalize'
@@ -100,38 +144,10 @@ class WebWorker extends BaseWorker
 class WorkerFallback extends BaseWorker
   constructor: (params) ->
     super params
-
-    @_chunkSize = Crypto.chunkSize
-    @_chunkStart = 0
     @_hash = new Digest.SHA256()
 
-  sendFile: (params) ->
-    self = @
-    @_file = params.file
-    @_fileSize = @_file.size
-    @_reader = new FileReader()
-    @_reader.onload = ->
-      self._hash.update @result
-      self._handler.progress chunkNumber: @_chunkStart / @_chunkSize, progress: Math.min(@_chunkStart, @_fileSize) / @_fileSize
-      self.readNext()
-    self.readNext()
-
-  readNext: ->
-    self = @
-    start = @_chunkStart
-    end = start + @_chunkSize
-    # check if all the chunks are read
-    if start >= @_fileSize
-      @finalize()
-    else
-      # increase chunkStart
-      @_chunkStart = end
-      blob = @_file.slice start, end
-      @_reader.readAsArrayBuffer blob
-    return
-
-  sendChunk: (chunk) ->
-    @_hash.update chunk.data
+  update: (data) ->
+    @_hash.update data
 
   _bin2hex: (array) ->
     hexTab = '0123456789abcdef'

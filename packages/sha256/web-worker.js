@@ -34,11 +34,12 @@ var ActionHandler = {
 var MessageHandler = {
   progress: function SHA256WebWorkerMessageHandler_sendChunkInfo (chunkNumber, chunkSize, fileSize){
     postMessage({
-      message: 'progress',
-      data: {
-        chunkNumber: chunkNumber,
+      message: 'chunkDone',
+      /*data: {
+        //chunkNumber: chunkNumber,
+        chunkNumber: -1
         progress: Math.min(chunkSize * (chunkNumber + 1), fileSize) / fileSize
-      }
+      }*/
     });
   },
   done: function SHA256WebWorkerMessageHandler_sendSHA256 (sha256){
@@ -63,6 +64,7 @@ function SHA256WebWorker_getFinalHashString (hash) {
 }
 
 // calculates hash from File/Blob object but in chunks to reduce memory footprint
+// this function is obsolete
 function SHA256WebWorker_getSHA256FromFile (file, chunkSize){
   var fileSize = file.size;
   var reader = new FileReaderSync();

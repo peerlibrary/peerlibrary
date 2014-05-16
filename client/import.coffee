@@ -73,16 +73,51 @@ importFile = (file) ->
       # TODO: Compute SHA in chunks
       # TODO: Compute SHA in a web worker?
 
+
+
+      chunkStart = 0
+      chunkEnd = 0
+      chunkSize = 1024 * 32 #bytes
+      streamLength = fileContent.byteLength
       hash = new Crypto.SHA256
-        disableWorker: false
-      hash.update
-        data: fileContent
-        onProgress: (progress) ->
-          console.log progress
+
+
+      sendChunk = () ->
+        console.log "Sending chunk"
+        chunkEnd = chunkStart + chunkSize
+        chunkData = fileContent.slice(chunkStart, chunkEnd)
+        console.log "Updating hash"
+        hash.update
+          data: chunkData,
+          onProgress: (progress) ->
+            console.log progress
+        console.log "Updated"
+        chunkStart += chunkSize
+
+      console.log "Sending chunks... (length=" + streamLength + ")"
+      sendChunk() while chunkStart < streamLength
+      console.log "Chunks sent, finalizing"
       hash.finalize
         onDone: (sha256) ->
           console.log sha256
-          
+
+
+
+
+
+#      console.log "Creating crypto"
+#      hash = new Crypto.SHA256
+#        disableWorker: false
+#      console.log "Sending file"
+#      hash.update
+#        data: file
+#        onProgress: (progress) ->
+#          console.log progress
+#      console.log "Finalizing"
+#      hash.finalize
+#        onDone: (sha256) ->
+#          console.log sha256
+#              
           alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
           if alreadyImporting
             ImportingFile.documents.update file._id,
