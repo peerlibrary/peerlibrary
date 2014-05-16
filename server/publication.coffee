@@ -415,6 +415,29 @@ Meteor.methods
         updatedAt: moment.utc().toDate()
         title: title
 
+Meteor.publish 'publications', (limit, filter, sort) ->
+  check limit, PositiveNumber
+  check filter, Optional String
+  check sort, Optional [[String]]
+
+  findQuery = {}
+  findQuery = _.extend findQuery, createQueryCriteria(filter, 'fullText') if filter
+
+  @related (person) ->
+    restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'publications', searchQueryDescriptor(filter, sort),
+      cursor: Publication.documents.find(restrictedFindQuery,
+        limit: limit
+        fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
+        sort: sort
+      )
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Group.readAccessPersonFields()
+
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, NonEmptyString
 

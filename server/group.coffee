@@ -187,7 +187,7 @@ Meteor.publish 'groups', (limit, filter, sort) ->
   @related (person) ->
     restrictedFindQuery = Group.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'groups', filter,
+    searchPublish @, 'groups', searchQueryDescriptor(filter, sort),
       cursor: Group.documents.find(restrictedFindQuery,
         limit: limit
         fields: Group.PUBLISH_LISTING_FIELDS().fields

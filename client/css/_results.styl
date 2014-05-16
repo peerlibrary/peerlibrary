@@ -18,9 +18,16 @@ section.index
     font-size 20px
     font-weight 300
 
-  /* Elements appearing below search results should be centered instead of left-aligned */
-  .results-load-more, .entity-list + .results-loading
+  .results-loading
     text-align center
+
+    /* If loading is the first element, show it left-aligned instead of centered */
+    &:first-child
+      text-align left
+
+  .load-more
+    display block
+    margin 0 auto
 
   .under-development
     opacity 0.5

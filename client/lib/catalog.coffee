@@ -48,9 +48,10 @@ class @Catalog
     limitIncreasing = false
 
     Deps.autorun ->
-      # Every time filter is changed, we reset counts
+      # Every time filter or sort is changed, we reset counts
       # (We don't want to reset counts on currentLimit change)
       Session.get variables.filter
+      Session.get variables.sortName
       Session.set variables.count, 0
       Session.set variables.limit, INITIAL_CATALOG_LIMIT
       limitIncreasing = false
@@ -89,11 +90,11 @@ class @Catalog
       $(window).off '.directory'
 
     templates.main.entities = ->
-      return unless Session.get(variables.limit) and Session.get(variables.ready)
+      return unless Session.get(variables.limit)
 
       searchResult = SearchResult.documents.findOne
         name: subscription
-        query: Session.get variables.filter
+        query: searchQueryDescriptor Session.get(variables.filter), Session.get(variables.sort)
 
       return unless searchResult
 
