@@ -8,6 +8,8 @@ onmessage = function (oEvent){
 
 // handles messages received from main thread
 var ActionHandler = {
+  test: function SHA256WebWorkerActionHandler_test (data){
+  },
   update: function SHA256WebWorkerActionHandler_updateChunk (eventData) {
     hash.update(eventData.chunk);
     MessageHandler.progress();

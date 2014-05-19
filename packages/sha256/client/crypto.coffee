@@ -6,18 +6,35 @@
     chunkSize: 1024 * 32 # bytes
 
     constructor: (params) ->
-      if params?
-        if params.disableWorker?
+      if params
+        if params.disableWorker
           @disableWorker = params.disableWorker
-        if params.workerSrc?
+        if params.workerSrc
           @workerSrc = params.workerSrc
-        if params.chunkSize?
+        if params.chunkSize
           @chunkSize = params.chunkSize
 
+      testArray = new ArrayBuffer(8)
+
+      #test if ArrayBuffers can be sliced, see:
+      # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
+
+      try
+        testArray.slice(0, 4)
+        disableSlicing = false
+      catch e
+        disableSlicing = true
+
+      @worker = null
       if !@disableWorker and typeof window != "undefined" and window.Worker
-        @worker = new WebWorker @
-      else
+        try
+          # if WebWorker constructor fails, it will use Fallback
+          @worker = new WebWorker @, testArray
+
+      if not @worker
         @worker = new WorkerFallback @
+
+      @worker.disableSlicing = disableSlicing
 
     update: (params) ->
       params.message = 'update'
@@ -25,6 +42,8 @@
         params.type = 'blob'
       else
         params.type = 'array'
+      if not params.transfer
+        params.transfer = false
       @worker.queue params
 
     finalize: (params) ->
@@ -93,11 +112,16 @@ class BaseWorker
     if end > @totalSize
       end = @totalSize
     @chunkStart = end
-    chunk = @current.data.slice start, end
+    if @disableSlicing
+      chunk = @current.data
+      transfer = @current.transfer
+    else
+      chunk = @current.data.slice start, end
+      transfer = true
     if @current.type == 'blob'
       @reader.readAsArrayBuffer chunk
     else
-      @processChunk chunk
+      @processChunk chunk: chunk, transfer: transfer
 
   processChunk: (chunk) ->
     throw new Error "Not implemented!"
@@ -106,16 +130,28 @@ class BaseWorker
     self = @
     @reader = new FileReader()
     @reader.onload = ->
-      self.processChunk @result
+      self.processChunk chunk: @result, transfer: true
       #self.handler.progress Math.min(self.chunkStart, self._fileSize) / self._fileSize
       #self._readNext()
     #self._readNext()
 
 class WebWorker extends BaseWorker
-  constructor: (instance) ->
+  constructor: (instance, testArray) ->
     super instance
-
     @worker = new Worker instance.workerSrc
+    try
+      @worker.postMessage
+        message: 'test'
+        data: testArray,
+          [testArray]
+      @transferrable = !testArray.byteLength
+    catch e
+      @transferrable = false
+      @worker.postMessage
+        message: 'test'
+        data: testArray
+
+    
     self = @
     @worker.onmessage = (oEvent) ->
       data = oEvent.data.data
@@ -123,9 +159,11 @@ class WebWorker extends BaseWorker
       self.handler[message] data
 
   processChunk: (data) ->
-    @worker.postMessage
-      chunk: data,
-      message: 'update'
+    message = chunk: data.chunk, message: 'update'
+    if @transferrable and data.transfer
+      @worker.postMessage message, [data.chunk]
+    else
+      @worker.postMessage message
 
   finalize: ->
     @worker.postMessage
@@ -149,7 +187,7 @@ class WorkerFallback extends BaseWorker
     str
 
   processChunk: (data) ->
-    @hash.update data
+    @hash.update data.chunk
     @handler.progress()
 
   finalize: ->
