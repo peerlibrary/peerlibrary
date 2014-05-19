@@ -3,6 +3,8 @@ Package.describe({
 });
 
 Package.on_use(function (api) {
+  api.export('Crypto');
+
   api.use(['coffeescript', 'logging'], ['client', 'server']);
 
   api.add_files([
@@ -16,10 +18,15 @@ Package.on_use(function (api) {
     'client/crypto.coffee',
   ], 'client' );
 
+  api.add_files([
+    'digest.js/digest.js'
+    ], 'client', {bare: true});
+
 	api.add_files([
 		'digest.js/digest.js',
 		'web-worker.js'
 	], 'client', {isAsset: true});
+
 });
 
 Package.on_test(function (api) {

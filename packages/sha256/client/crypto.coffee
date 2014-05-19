@@ -1,4 +1,4 @@
-@Crypto =
+Crypto =
   SHA256: class extends Crypto.SHA256
     # defaults
     disableWorker: false
