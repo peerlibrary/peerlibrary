@@ -12,6 +12,7 @@ Tinytest.addAsync 'sha256worker test by vjeko', (test, onComplete) ->
 
   # ----------- testchunks ----------------
   testChunks = (pdf) ->
+    hash = new Crypto.SHA256
     sendChunk = () ->
       chunkEnd = chunkStart + chunkSize
       chunkData = pdf.slice(chunkStart, chunkEnd)
@@ -21,7 +22,7 @@ Tinytest.addAsync 'sha256worker test by vjeko', (test, onComplete) ->
       chunkStart += chunkSize
 
     chunkStart = 0
-    streamLength = pdf.length
+    streamLength = pdf.length || pdf.byteLength
 
     sendChunk() while chunkStart < streamLength
     hash.finalize
@@ -41,27 +42,30 @@ Tinytest.addAsync 'sha256worker test by vjeko', (test, onComplete) ->
 
     # test whole file
     console.log "Getting " + pdfPath
-    HTTP.get pdfPath, (error, result) ->
-      test.equal result.statusCode, 200
-      test.equal "ByteLength " + result.content.length, "ByteLength " + pdfByteLength
+    oReq = new XMLHttpRequest
+    oReq.open "GET", pdfPath, true
+    oReq.responseType = 'arraybuffer'
+    oReq.onload = (oEvent) ->
+      pdf = oReq.response
+      test.equal "ByteLength " + pdf.byteLength, "ByteLength " + pdfByteLength
       hash = new Crypto.SHA256
       hash.update
-        data: result.content
+        data: pdf
       hash.finalize
         onDone: (sha256) ->
           console.log sha256
           test.equal "whole " + sha256, "whole " + pdfHash
           onComplete()
+      testChunks pdf
 
-    # test chunks
-    HTTP.get pdfPath, (error, result) ->
-      testChunks (result.content)
+    oReq.send null
+
   else
     bin = Assets.getBinary pdfFilename
     pdf = new Buffer new Uint8Array bin.buffer
 
     # testing chunks on server
-    #testChunks(pdf)
+    testChunks(pdf)
     #onComplete()
 
     # import file as blob
