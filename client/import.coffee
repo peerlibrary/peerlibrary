@@ -77,22 +77,23 @@ importFile = (file) ->
 
       chunkStart = 0
       chunkEnd = 0
-      chunkSize = 1024 * 32 #bytes
+      chunkSize = 1024 * 32 * 5 #bytes
       streamLength = fileContent.byteLength
       hash = new Crypto.SHA256
 
 
       sendChunk = () ->
-        console.log "Sending chunk"
-        chunkEnd = chunkStart + chunkSize
-        chunkData = fileContent.slice(chunkStart, chunkEnd)
-        console.log "Updating hash"
-        hash.update
-          data: chunkData,
-          onProgress: (progress) ->
-            console.log progress
-        console.log "Updated"
-        chunkStart += chunkSize
+        try
+          console.log 'sending chunk'
+          chunkEnd = chunkStart + chunkSize
+          chunkData = fileContent.slice(chunkStart, chunkEnd)
+          hash.update
+            data: chunkData,
+            onProgress: (progress) ->
+              console.log progress
+          chunkStart += chunkSize
+        catch e
+          console.error e
 
       console.log "Sending chunks... (length=" + streamLength + ")"
       sendChunk() while chunkStart < streamLength
