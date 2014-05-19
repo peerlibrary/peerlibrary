@@ -7,6 +7,7 @@ draggingViewport = false
 currentPublication = null
 publicationHandle = null
 publicationCacheHandle = null
+myGroupsHandle = null
 
 # We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
@@ -34,15 +35,33 @@ Meteor.startup ->
   Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
 getAnnotationDefaults = ->
-  _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+  defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+  groups = Group.documents.find(
+    _id:
+      $in: defaults.groups
+  ,
+    fields:
+      _id: 1
+  ).fetch()
+  defaults.group = _.pluck groups, '_id'
+  defaults
 
 # Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
 
 Deps.autorun ->
+  person = Meteor.person()
+
+  unless person
+    # If user is not logged in or logs out, reset to defaults
+    Session.set 'annotationDefaults', ANNOTATION_DEFAULTS
+    return
+
   # We have to keep list of default groups updated if user is removed from a group
-  Group.documents.find(_id: $in: _.pluck Meteor.person()?.inGroups, '_id').observeChanges
+  Group.documents.find(_id: $in: _.pluck person.inGroups, '_id').observeChanges
     removed: (id) ->
+      return unless myGroupsHandle?.ready()
+
       defaults = getAnnotationDefaults()
       defaults.groups = _.without defaults.groups, id
       Session.set 'annotationDefaults', defaults
@@ -423,11 +442,14 @@ Deps.autorun ->
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
-    Meteor.subscribe 'my-groups'
+    myGroupsHandle = Meteor.subscribe 'my-groups', ->
+      # Make sure we start with the list of groups user is in
+      Session.set 'annotationDefaults', getAnnotationDefaults()
   else
     publicationSubscribing.set false
     publicationHandle = null
     publicationCacheHandle = null
+    myGroupsHandle = null
 
 Deps.autorun ->
   if publicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
@@ -546,9 +568,9 @@ Template.publicationLibraryMenu.destroyed = ->
   libraryMenuSubscriptionCounter--
 
   unless libraryMenuSubscriptionCounter
-    libraryMenuSubscriptionPersonHandle.stop() if libraryMenuSubscriptionPersonHandle
+    libraryMenuSubscriptionPersonHandle?.stop()
     libraryMenuSubscriptionPersonHandle = null
-    libraryMenuSubscriptionCollectionsHandle.stop() if libraryMenuSubscriptionCollectionsHandle
+    libraryMenuSubscriptionCollectionsHandle?.stop()
     libraryMenuSubscriptionCollectionsHandle = null
 
 Template.publicationLibraryMenu.events
@@ -609,9 +631,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'add-to-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
       return Notify.meteorError error, true if error
 
@@ -622,9 +642,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .remove-from-collection': (e, template) ->
     return unless Meteor.personId()
 
-    collection = template.data
-
-    Meteor.call 'remove-from-library', @_parent._id, collection._id, (error, count) =>
+    Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
       Notify.success "Publication removed from the collection." if count
@@ -662,7 +680,7 @@ Template.publicationDisplay.rendered = ->
       Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
-  @_displayHandle.stop() if @_displayHandle
+  @_displayHandle?.stop()
   @_displayHandle = null
   @_displayRendered = false
 
@@ -1015,7 +1033,7 @@ Template.publicationAnnotationsItem.events
   'click .edit-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
@@ -1024,7 +1042,7 @@ Template.publicationAnnotationsItem.events
   'click .cancel-button': (e, template) ->
     e.preventDefault()
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $unset:
         editing: ''
 
@@ -1096,6 +1114,14 @@ Template.annotationEditor.created = ->
 Template.annotationEditor.rendered = ->
   @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
+  # If editor got collapsed, close any open dialog (we do not
+  # really collapse when user is actively editing (like having
+  # a dialog open), but for every case, if it happens, we want
+  # to cleanup)
+  unless @data.editing
+    @_destroyDialog?()
+    @_destroyDialog = null
+
   ###
   TODO: Temporary disabled, not yet finalized code
 
@@ -1113,29 +1139,41 @@ Template.annotationEditor.destroyed = ->
 
 Template.annotationEditor.events
   'focus .annotation-content-editor': (e, template) ->
-    return if template.data.editing
+    return if @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
     # Expand
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         editing: true
 
     return # Make sure CoffeeScript does not return anything
 
+  # We collapse a local editor if there was no change to the content
+  # and user is not activelly editing it (like having a dialog open)
   'blur .annotation-content-editor': (e, template) ->
-    return unless template.data.editing
+    # We do nothing if editor is already collapsed
+    return unless @editing
 
     # We set editing based on the focus only for local annotations
-    return unless template.data.local
+    return unless @local
 
+    # Do nothing if content was changed, and content is not empty
     $editor = $(e.currentTarget)
-    return if template.data.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If focus moved somewhere else in the editor (like
+    # click on a toolbar button), we do not do anything
+    $annotation = $editor.closest('.annotation')
+    return if $annotation.is(e.relatedTarget) or $annotation.has(e.relatedTarget).length
+
+    # If dialog is open, we do not do anything
+    return if template._destroyDialog
 
     # Collapse
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.AUTOMATIC
       $unset:
@@ -1145,9 +1183,9 @@ Template.annotationEditor.events
 
   # TODO: Should we detect changes with some other event as well?
   'input .annotation-content-editor': (e, template) ->
-    return unless template.data.local is LocalAnnotation.LOCAL.AUTOMATIC
+    return unless @local is LocalAnnotation.LOCAL.AUTOMATIC
 
-    LocalAnnotation.documents.update template.data._id,
+    LocalAnnotation.documents.update @_id,
       $set:
         local: LocalAnnotation.LOCAL.CHANGED
 
@@ -1243,7 +1281,7 @@ Template.annotationCommentEditor.rendered = ->
   $wrapper = $(@findAll '.comment-editor')
   $editor = $(@findAll '.comment-content-editor')
 
-  if $editor.text().trim() or $editor.is ':focus'
+  if $editor.text().trim() or $editor.is(':focus') or @_destroyDialog
     $wrapper.addClass 'active'
   else
     $wrapper.removeClass 'active'
@@ -1264,7 +1302,7 @@ Template.annotationCommentEditor.events
   'blur .comment-content-editor': (e, template) ->
     $editor = $(e.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
-    $wrapper.removeClass 'active' unless $editor.text().trim()
+    $wrapper.removeClass 'active' unless $editor.text().trim() or template._destroyDialog
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1284,7 +1322,7 @@ Template.annotationCommentEditor.events
 
     body = $editor.html().trim()
 
-    Meteor.call 'create-comment', template.data._id, body, (error, commentId) =>
+    Meteor.call 'create-comment', @_id, body, (error, commentId) =>
       return Notify.meteorError error, true if error
 
       # Reset editor

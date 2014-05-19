@@ -14,6 +14,10 @@ class @Person extends AccessDocument
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not
+  # invited:
+  #   by: a person who invited this person
+  #     _id
+  #   message: optional message for invitation email
   # inGroups: list of
   #   _id: id of a group the person is in
   # publications: list of
@@ -38,18 +42,27 @@ class @Person extends AccessDocument
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
+      invited:
+        by: @ReferenceField 'self', [], false
 
-  displayName: =>
+  displayName: (dontRefetch) =>
+    # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
+    dontRefetch = false unless _.isBoolean dontRefetch
     if @givenName and @familyName
-      "#{ @givenName } #{ @familyName }"
+      return "#{ @givenName } #{ @familyName }"
     else if @givenName
-      @givenName
+      return @givenName
     else if @user?.username
-      @user.username
+      return @user.username
     else if @email()
-      @email()
-    else
-      @slug
+      return @email()
+    else if not dontRefetch # To prevent infinite loop
+      # Maybe we have access to a person document with more fields
+      person = @constructor.documents.findOne @_id
+      person.slug = @slug unless not person or person.slug
+      return person.displayName true if person
+
+    @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification

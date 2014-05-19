@@ -39,6 +39,7 @@
     "cheerio": {},
     "isolate-value": {},
     "apm": {},
-    "stacktrace": {}
+    "stacktrace": {},
+    "related": {}
   }
 }

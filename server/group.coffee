@@ -11,7 +11,7 @@ class @Group extends Group
         else
           [fields._id, '']
       fields.membersCount.generator = (fields) ->
-        [fields._id, fields.members.length]
+        [fields._id, fields.members?.length or 0]
 
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
@@ -45,6 +45,22 @@ Meteor.methods
     group = Group.applyDefaultAccess person._id, group
 
     Group.documents.insert group
+
+  # TODO: Use this code on the client side as well
+  'remove-group': (groupId) ->
+    check groupId, DocumentId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
+
+    Group.documents.remove Group.requireRemoveAccessSelector(person,
+      _id: group._id
+    )
 
   # TODO: Use this code on the client side as well
   'add-to-group': (groupId, memberId) ->

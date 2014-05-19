@@ -98,8 +98,8 @@
 
   publish.onStop ->
     for handle, i in resultsHandles
-      handle.stop() if handle
+      handle?.stop()
       resultsHandles[i] = null
     for handle, i in countsHandles
-      handle.stop() if handle
+      handle?.stop()
       countsHandles[i] = null

@@ -20,7 +20,8 @@ class @Person extends Person
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
     fields:
-      user: 1
+      'user._id': 1
+      'user.username': 1
       slug: 1
       gravatarHash: 1
       givenName: 1
@@ -34,15 +35,19 @@ class @Person extends Person
 
   # A subset of public fields used for automatic publishing
   @PUBLISH_AUTO_FIELDS: ->
-    fields: _.pick @PUBLISH_FIELDS().fields, [
-      'user'
+    fields: _.extend _.pick(@PUBLISH_FIELDS().fields, [
+      'user._id'
+      'user.username'
       'slug'
       'gravatarHash'
       'givenName'
       'familyName'
       'isAdmin'
       'inGroups'
-    ]
+    ]),
+      # Additionally, provide email address so that displayName can
+      # display something meaningful for users who have been invited
+      'user.emails': 1
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, NonEmptyString
@@ -50,12 +55,32 @@ Meteor.publish 'persons-by-id-or-slug', (slug) ->
   # No need for requireReadAccessSelector because persons are public
   Person.documents.find
     $or: [
-        slug: slug
-      ,
-        _id: slug
-      ]
+      slug: slug
     ,
-      Person.PUBLISH_FIELDS()
+      _id: slug
+    ]
+  ,
+    Person.PUBLISH_FIELDS()
+
+# TODO: Should we really publish whole person documents, because this publish endpoint exists just to get access to email address to display it in lists to which user was added when invited?
+Meteor.publish 'persons-invited', ->
+  @related (person) ->
+    return unless person?._id
+
+    # No need for requireReadAccessSelector because persons are public
+    Person.documents.find
+      "invited.by":
+        _id: person._id
+    ,
+      fields: _.extend Person.PUBLISH_FIELDS().fields,
+        # User who invited should have access to email address so that
+        # we can display it in lists to which user was added when invited
+        'user.emails': 1
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'my-person-library', ->
   return unless @personId
