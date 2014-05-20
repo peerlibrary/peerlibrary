@@ -52,7 +52,7 @@ Editable.template Template.groupName, ->
   true
 
 Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person()
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'

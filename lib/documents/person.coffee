@@ -180,14 +180,21 @@ class @Person extends AccessDocument
 
     document
 
-Meteor.person = (userId) ->
+Meteor.person = (userId, fields) ->
+  if not fields and _.isObject userId
+    fields = userId
+    userId = null
+
   # Meteor.userId is reactive
   userId ?= Meteor.userId()
+  fields ?= {}
 
   return null unless userId
 
   Person.documents.findOne
     'user._id': userId
+  ,
+    fields: fields
 
 Meteor.personId = (userId) ->
   # Meteor.userId is reactive
@@ -198,6 +205,7 @@ Meteor.personId = (userId) ->
   person = Person.documents.findOne
     'user._id': userId
   ,
-    _id: 1
+    fields:
+      _id: 1
 
   person?._id or null
