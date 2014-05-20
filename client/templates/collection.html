@@ -35,27 +35,38 @@
 
 <template name="collectionDetails">
   <div class="col4 push12 sidebar collection-details">
-    <h2>Collection by</h2>
-    <div class="member person">
-      <img src="{{authorPerson.avatar}}" class="avatar" />
-      <h4 class="member-name"><a href="{{personPathFromId authorPerson._id authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
+    <div class="section">
+      <h2>Collection by</h2>
+      {{> personEntity authorPerson}}
     </div>
-    {{#if canModify}}
-      <h3>Tools</h3>
+    {{> collectionTools}}
+    <div class="section to-my-library">
+      <a href="{{libraryPath}}">To My Library</a>
+    </div>
+  </div>
+</template>
+
+<template name="collectionTools">
+  {{#if canModify}}
+    <div class="section">
+      <h2>Tools</h2>
       {{#if canRemove}}
-        <p>
+        <div class="section">
           <button class="delete-collection">Delete collection</button>
           {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
           {{! TODO: Remove all publications from collection }}
           {{! TODO: Add confirmation or undo for this action }}
-        </p>
+        </div>
       {{/if}}
-      <p class="hint">
+      <div class="hint section">
         You can reorder publications in a collection by dragging them.
-      </p>
-      <p class="to-my-library">
-        <a href="{{libraryPath}}">To My Library</a>
-      </p>
-    {{/if}}
-  </div>
+      </div>
+      {{#if canModifyAccess}}
+        <div class="section">
+          <h3>Privacy</h3>
+          {{> accessControl}}
+        </div>
+      {{/if}}
+    </div>
+  {{/if}}
 </template>

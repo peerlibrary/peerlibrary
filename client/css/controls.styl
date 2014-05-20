@@ -174,14 +174,15 @@ h1
     font-size 0.9em
     font-weight 300
 
-  input, button, select, .add-control
+  input, button, select, .control
     display block
     width 235px
     box-sizing border-box
 
-  .input-and-buttons
-    width 100%
+  .section
+    margin-bottom 20px
 
+  .input-and-buttons
     button
       width auto
 
@@ -193,6 +194,8 @@ h1
 
   .add-control
     border 1px solid box-shadow-border
+    background white
+    color black
 
     input, input:focus
       width 233px
@@ -201,6 +204,24 @@ h1
 
     .add-button:hover
       background-color box-shadow-border
+
+    .member
+      display block
+      width 100%
+
+      .add-button
+        display block
+        width 100%
+
+    .member:last-of-type
+      margin-bottom 0
+
+  .add-control-results
+    padding 10px
+    margin 0
+
+  .group-member-results
+    padding 0
 
 /* Meta menus and jQuery UI widgets
 =================================== */

@@ -42,9 +42,6 @@ Template.group.group = ->
 
 Template.groupName[method] = Template.groupListingName[method] for method in ['created', 'rendered', 'destroyed']
 
-Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person()
-
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
 
@@ -52,7 +49,8 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+Template.groupMembersList.canModifyMembership = ->
+  @hasAdminAccess Meteor.person()
 
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->
@@ -63,6 +61,8 @@ Template.groupMembersList.events
       Notify.success "Member removed." if count
 
     return # Make sure CoffeeScript does not return anything
+
+Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->
@@ -203,13 +203,16 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupDetails.canModify = ->
+Template.groupTools.canModify = ->
   @hasMaintainerAccess Meteor.person()
 
-Template.groupDetails.canRemove = ->
+Template.groupTools.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
+
+Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person()
 
-Template.groupDetails.events
+Template.groupTools.events
   'click .delete-group': (e, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
       Notify.meteorError error, true if error

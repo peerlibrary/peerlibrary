@@ -1,67 +1,114 @@
 @import 'variables.import'
 
 .access-menu
-  background-color rgba(120,120,120,0.9)
-  border-radius 2px
-
-  .selections
-    display table
-    border-collapse separate
-    border-spacing 10px
-    width 100%
-
-    input
-      display none
-
-    .selection
-      display table-cell
-      width 33%
-      padding 10px
-      background none
-      text-align center
-      cursor pointer
-      transition 0.2s
-      border-radius 2px
-
-      .access-icon
-        display block
-        margin-bottom 10px
-        cursor pointer
-        font-size 24px
-
-    .selection:hover, .selection.selected
-      background-color rgba(200,200,200,0.7)
-
-  .description
-    padding 0 10px 10px
-    text-align center
-    display none
-
-  .displayed.description
-    display block
-
   .private-access-control
-    padding 10px
+    .member
+      display inline-block
+      width auto
+
+    .add-control .member
+      display block
+      width 100%
 
     .private-access-control-members
       .access-list
         display inline
 
-        button:hover
-          color white
+.meta-menu
+  .access-menu
+    .selections
+      display table
+      border-collapse separate
+      border-spacing 10px
+      width 100%
 
-      .member
-        display block
+      .selection
+        display table-cell
+        width 33%
+        padding 10px
+        background none
+        text-align center
+        cursor pointer
+        transition 0.2s
+        border-radius 2px
+
+        input
+          display none
+
+        .access-icon
+          display block
+          margin-bottom 10px
+          cursor pointer
+          font-size 24px
+
+        &::before
+          display none
+
+        &:hover, &.selected
+          background-color rgba(200,200,200,0.7)
+
+    .description
+      padding 0 10px 10px
+      text-align center
+      display none
+
+    .displayed.description
+      display block
+
+    .private-access-control
+      padding 10px
+
+      .private-access-control-members
+        .access-list
+          button:hover
+            color white
+
+        .member
+          .remove-button:hover
+            color #ccc
+
+.sidebar
+  .access-menu
+    padding-left 10px
+
+    .selections
+      margin 0 0 10px -10px
+
+      .selection
+        position relative
+        border 1px solid transparent
+        margin 0
+        padding 3px 3px 3px 25px
+        cursor pointer
+
+        &::before
+          position absolute
+          left 7px
+          top 8px
+
+        input
+          display none
+
+        .access-icon
+          cursor pointer
+          font-size 18px
+          vertical-align middle
+
+        &:hover
+          border 1px solid box-shadow-border
+          background white
+
+    .description
+      font-weight 300
+      margin-bottom 10px
+      display none
+
+    .displayed.description
+      display block
+
+    .private-access-control
+      .add-control.control
         width 100%
 
-        .remove-button:hover
-          color #ccc
-
-.meta-menu .access-menu .private-access-control
-  .member
-    display inline-block
-    width auto
-
-  .add-control .member
-    display block
-    width 100%
+        input
+          width 100%

@@ -75,13 +75,16 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.meteorError error, true if error
 
-Template.collectionDetails.canModify = ->
+Template.collectionTools.canModify = ->
   @hasMaintainerAccess Meteor.person()
 
-Template.collectionDetails.canRemove = ->
+Template.collectionTools.canModifyAccess = ->
+  @hasAdminAccess Meteor.person()
+
+Template.collectionTools.canRemove = ->
   @hasRemoveAccess Meteor.person()
 
-Template.collectionDetails.events
+Template.collectionTools.events
   'click .delete-collection': (e, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
       Notify.meteorError error, true if error

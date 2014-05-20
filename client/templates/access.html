@@ -1,14 +1,14 @@
 <template name="accessControl">
-  <div class="access-menu">
+  <div class="access-menu control">
     <form class="access {{documentName}}-access">
       <div class="selections">
 
-        <label class="selection {{#if public}}selected{{/if}}">
+        <label class="selection {{#if public}}selected icon-check{{/if}}">
           <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
           <i class="access-icon icon-public"></i> Public
         </label>
 
-        <label class="selection {{#if private}}selected{{/if}}">
+        <label class="selection {{#if private}}selected icon-check{{/if}}">
           <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
           <i class="access-icon icon-private"></i> Private
         </label>
@@ -46,7 +46,7 @@
 </template>
 
 <template name="privateAccessControlAdd">
-  <div class="add-control">
+  <div class="add-control control">
     <input type="text" class="add-access" placeholder="Add users or groups" />
     {{> privateAccessControlNoResults}}
     {{> privateAccessControlResults}}
