@@ -175,6 +175,12 @@ class @Person extends AccessDocument
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
 
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
+
   @applyDefaultAccess: (personId, document) ->
     # We need to know _id to be able to add it to adminPersons
     assert document._id

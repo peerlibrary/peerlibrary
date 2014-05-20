@@ -88,7 +88,7 @@ Template.collectionDetails.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.collectionDetails.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionDetails.events
   'click .delete-collection': (e, template) ->

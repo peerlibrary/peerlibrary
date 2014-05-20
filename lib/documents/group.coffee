@@ -120,6 +120,12 @@ class @Group extends ReadAccessDocument
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
 
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
+
   @applyDefaultAccess: (personId, document) ->
     document = super
 

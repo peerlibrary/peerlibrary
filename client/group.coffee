@@ -216,7 +216,7 @@ Template.groupDetails.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.groupDetails.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupDetails.events
   'click .delete-group': (e, template) ->

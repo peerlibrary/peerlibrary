@@ -163,6 +163,12 @@ class @AccessDocument extends Document
     # Default is same as maintainer access
     @requireMaintainerAccessSelector person, selector
 
+  @removeAccessPersonFields: ->
+    @maintainerAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @maintainerAccessSelfFields()
+
   @applyDefaultAccess: (personId, document) ->
     document
 

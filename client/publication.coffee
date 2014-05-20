@@ -830,7 +830,7 @@ Template.publicationScroller.events
     return # Make sure CoffeeScript does not return anything
 
 Template.highlightsControl.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.highlightsControl.events
   'click .remove-button': (e, template) ->
@@ -1259,7 +1259,7 @@ Template.annotationCommentsListItem.selected = ->
   'selected' if @_id is Session.get 'currentCommentId'
 
 Template.annotationCommentsListItem.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.annotationCommentsListItem.events
   'click .remove-button': (e, template) ->
@@ -1345,7 +1345,7 @@ Template.annotationMetaMenu.events
 Template.annotationMetaMenu.events addAccessEvents
 
 Template.annotationMetaMenu.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
