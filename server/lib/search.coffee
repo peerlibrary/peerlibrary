@@ -113,7 +113,9 @@
           else
             beforeIndex = orderMap[before]
 
-            if idIndex < beforeIndex # Moved after current position
+            if idIndex is beforeIndex - 1 # Moved to the same position
+              assert false
+            else if idIndex < beforeIndex # Moved after current position
               # Remove from the current position
               orderList.splice idIndex, 1
               delete orderMap[id]
@@ -161,8 +163,8 @@
                     _id: queryId
                     order: orderIndex
 
-            else
-              assert false # Moved to the same position?
+            else # Moved to the same position
+              assert false
 
           assertOrder()
 
