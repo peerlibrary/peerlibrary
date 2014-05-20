@@ -138,6 +138,8 @@ class BaseWorker
       end = @totalSize
     @chunkStart = end
     if @disableSlicing
+      # move chunkStart to the end because we send the whole chunk at once
+      @chunkStart = @totalSize
       chunk = @current.data
       transfer = @current.transfer
     else
