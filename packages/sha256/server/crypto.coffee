@@ -1,6 +1,6 @@
 crypto = Npm.require 'crypto'
 
-@Crypto =
+Crypto =
   SHA256: class extends Crypto.SHA256
     constructor: ->
       @_hash = crypto.createHash 'sha256'

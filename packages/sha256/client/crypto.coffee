@@ -69,7 +69,8 @@ class BaseWorker
         # progress is undefined
         progress = self.chunkStart / self.totalSize
         self.current?.onProgress? progress
-        self.flush(true)
+        self.busy = false
+        self.flush()
         
       done: (sha256) ->
         self.current?.onDone? sha256
@@ -80,11 +81,11 @@ class BaseWorker
 
   queue: (params) ->
     @buffer.push params
-    @flush(false)
+    @flush()
 
-  flush: (progress) ->
-    # return if worker is busy and isn't called by onProgress
-    return if not progress and @busy
+  flush: () ->
+    # return if worker is busy
+    return if @busy
     @busy = true
     # if current chunk is processed completely
     if @chunkStart >= @totalSize
