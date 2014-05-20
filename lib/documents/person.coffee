@@ -64,9 +64,19 @@ class @Person extends AccessDocument
 
     @slug
 
+  @displayNameFields: ->
+    _.extend @emailFields(),
+      givenName: 1
+      familyName: 1
+      'user.username': 1
+      slug: 1
+
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.emails?[0]?.address
+
+  @emailFields: ->
+    'user.emails': 1
 
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)

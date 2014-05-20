@@ -41,7 +41,7 @@ Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
 Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
     Meteor.call 'group-set-name', @data._id, name, (error, count) ->
@@ -213,7 +213,7 @@ Template.groupMembersAddControlResultsItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.groupDetails.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.groupDetails.canRemove = ->
   @hasRemoveAccess Meteor.person()

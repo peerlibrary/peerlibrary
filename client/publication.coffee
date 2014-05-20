@@ -50,7 +50,7 @@ getAnnotationDefaults = ->
 @startViewerOnPage = null
 
 Deps.autorun ->
-  person = Meteor.person()
+  person = Meteor.person inGroups: 1
 
   unless person
     # If user is not logged in or logs out, reset to defaults
@@ -512,7 +512,7 @@ Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
 Editable.template Template.publicationMetaMenuTitle, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
   (title) ->
     Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
@@ -537,7 +537,7 @@ addAccessEvents =
 Template.publicationMetaMenu.events addAccessEvents
 
 Template.publicationMetaMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person()
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.publicationAccessControl.open = ->
   @access is Publication.ACCESS.OPEN
@@ -600,7 +600,7 @@ Template.publicationLibraryMenuButtons.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationLibraryMenuButtons.inLibrary = ->
-  person = Meteor.person()
+  person = Meteor.person library: 1
   return false unless person and @_id
 
   _.contains _.pluck(person.library, '_id'), @_id
@@ -1091,7 +1091,7 @@ Template.publicationAnnotationsItem.rendered = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.publicationAnnotationsItem.selected = ->
   'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
@@ -1348,7 +1348,7 @@ Template.annotationMetaMenu.canRemove = ->
   @hasRemoveAccess Meteor.person()
 
 Template.annotationMetaMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person()
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.contextMenu.events
   'change .access input:radio': (e, template) ->

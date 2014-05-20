@@ -4,7 +4,7 @@ Deps.autorun ->
     Meteor.subscribe 'logged-errors'
 
 Template.adminCheck.isAdmin = ->
-  Meteor.person()?.isAdmin
+  Meteor.person(isAdmin: 1)?.isAdmin
 
 Template.adminDevelopment.events
   'click button.sample-data': (e, template) ->
