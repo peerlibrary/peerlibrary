@@ -125,6 +125,9 @@ class CanvasTextHighlight extends Annotator.Highlight
       highlight = Highlight.documents.findOne @annotation?._id
       Template.highlightsControl highlight if highlight
 
+    # Workaround for https://github.com/peerlibrary/peerlibrary/issues/390
+    $control.wrap('<div/>').unwrap()
+
     $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
 

@@ -7,6 +7,7 @@ draggingViewport = false
 currentPublication = null
 publicationHandle = null
 publicationCacheHandle = null
+myGroupsHandle = null
 
 # We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
@@ -34,15 +35,33 @@ Meteor.startup ->
   Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
 getAnnotationDefaults = ->
-  _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+  defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+  groups = Group.documents.find(
+    _id:
+      $in: defaults.groups
+  ,
+    fields:
+      _id: 1
+  ).fetch()
+  defaults.group = _.pluck groups, '_id'
+  defaults
 
 # Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
 
 Deps.autorun ->
+  person = Meteor.person()
+
+  unless person
+    # If user is not logged in or logs out, reset to defaults
+    Session.set 'annotationDefaults', ANNOTATION_DEFAULTS
+    return
+
   # We have to keep list of default groups updated if user is removed from a group
-  Group.documents.find(_id: $in: _.pluck Meteor.person()?.inGroups, '_id').observeChanges
+  Group.documents.find(_id: $in: _.pluck person.inGroups, '_id').observeChanges
     removed: (id) ->
+      return unless myGroupsHandle?.ready()
+
       defaults = getAnnotationDefaults()
       defaults.groups = _.without defaults.groups, id
       Session.set 'annotationDefaults', defaults
@@ -423,11 +442,14 @@ Deps.autorun ->
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
-    Meteor.subscribe 'my-groups'
+    myGroupsHandle = Meteor.subscribe 'my-groups', ->
+      # Make sure we start with the list of groups user is in
+      Session.set 'annotationDefaults', getAnnotationDefaults()
   else
     publicationSubscribing.set false
     publicationHandle = null
     publicationCacheHandle = null
+    myGroupsHandle = null
 
 Deps.autorun ->
   if publicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
