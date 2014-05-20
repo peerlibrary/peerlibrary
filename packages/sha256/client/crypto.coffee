@@ -6,6 +6,14 @@ Crypto =
     chunkSize: 1024 * 32 # bytes
 
     constructor: (params) ->
+      # params:
+      #       disableWorker -> boolean (optional)
+      #       workerSrc -> string (optional)
+      #                    override default location of script to be opened in worker thread 
+      #       chunkSize -> integer (optional)
+      #                    override default chunk size in bytes
+      #                    chunks are sent to Worker one by one
+      #                    smaller chunks result with less memory allocation
       if params
         if params.disableWorker
           @disableWorker = params.disableWorker
@@ -25,18 +33,29 @@ Crypto =
       catch e
         disableSlicing = true
 
-      @worker = null
+      worker = null
       if !@disableWorker and typeof window != "undefined" and window.Worker
         try
           # if WebWorker constructor fails, it will use Fallback
-          @worker = new WebWorker @, testArray
+          worker = new WebWorker @workerSrc, @chunkSize, testArray
 
-      if not @worker
-        @worker = new WorkerFallback @
+      if not worker
+        worker = new WorkerFallback @chunkSize
 
-      @worker.disableSlicing = disableSlicing
+      worker.disableSlicing = disableSlicing
+      @worker = worker
 
     update: (params) ->
+      # params:
+      #       data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
+      #       transfer -> boolean (optional)
+      #                   whether chunks should be transferred to Worker (if supported) or not
+      #                   transferring is faster and doesn't allocate memory
+      #                   once transferred, data is lost in the main thread
+      #                   set to `true` if you don't need the data after hash calculation
+      #       onProgress -> callback function (optional)
+      #                     arguments:
+      #                              progress -> float, between 0 and 1 (inclusive)
       params.message = 'update'
       if params.data instanceof Blob
         params.type = 'blob'
@@ -47,14 +66,25 @@ Crypto =
       @worker.queue params
 
     finalize: (params) ->
+      # params:
+      #       onDone -> callback function (required)
+      #                 arguments:
+      #                          sha256 -> string, sha256 hash computed from data chunks
       params.message = 'finalize'
+      if not params.onDone
+        throw new Error 'onDone callback not given!'
       @worker.queue params
 
-    _destroy: ->
+    destroy: ->
+      # terminates the worker to free up resources
+      # do not use this (Crypto.SHA256) instance once this method is invoked, if will fail
+      # if you really need to, invoke instance.constructor() to start worker again
+      # NOTE, this method terminates the worker immediately, make sure it has done all the work
+      @worker.destroy()
       delete @worker
 
 class BaseWorker
-  constructor: (instance) ->
+  constructor: (@chunkSize) ->
     self = @
     @chunkStart = 0
     @totalSize = 0
@@ -62,7 +92,6 @@ class BaseWorker
     @buffer = []
     @current = null
     @reader = null
-    @instance = instance
 
     @handler =
       progress: (progress) ->
@@ -74,20 +103,16 @@ class BaseWorker
         
       done: (sha256) ->
         self.current?.onDone? sha256
-        self.destroy()
-
-  destroy: ->
-    @instance._destroy()
 
   queue: (params) ->
     @buffer.push params
     @flush()
 
   flush: () ->
-    # return if worker is busy
     return if @busy
     @busy = true
-    # if current chunk is processed completely
+    
+    # check if current chunk is processed completely
     if @chunkStart >= @totalSize
       @chunkStart = 0
       @totalSize = 0
@@ -102,14 +127,13 @@ class BaseWorker
         else
           @totalSize = @current.data.byteLength
     
-    # check if it's finalize command
     if @current.message == 'finalize'
       @finalize()
       return
 
-    # flush next chunk
+    # read next chunk (or part of chunk)
     start = @chunkStart
-    end = start + @instance.chunkSize
+    end = start + @chunkSize
     if end > @totalSize
       end = @totalSize
     @chunkStart = end
@@ -124,22 +148,25 @@ class BaseWorker
     else
       @processChunk chunk: chunk, transfer: transfer
 
-  processChunk: (chunk) ->
-    throw new Error "Not implemented!"
-
   setupFileReader: ->
     self = @
     @reader = new FileReader()
     @reader.onload = ->
       self.processChunk chunk: @result, transfer: true
-      #self.handler.progress Math.min(self.chunkStart, self._fileSize) / self._fileSize
-      #self._readNext()
-    #self._readNext()
+
+  processChunk: (chunk) ->
+    throw new Error "Not implemented!"
+
+  finalize: (params) ->
+    throw new Error "Not implemented!"
+
+  destroy: ->
+    throw new Error "Not implemented!"
 
 class WebWorker extends BaseWorker
-  constructor: (instance, testArray) ->
-    super instance
-    @worker = new Worker instance.workerSrc
+  constructor: (workerSrc, chunkSize, testArray) ->
+    super chunkSize
+    @worker = new Worker workerSrc
     try
       @worker.postMessage
         message: 'test'
@@ -172,12 +199,11 @@ class WebWorker extends BaseWorker
 
   destroy: ->
     @worker.terminate()
-    super
 
 
 class WorkerFallback extends BaseWorker
-  constructor: (instance) ->
-    super instance
+  constructor: (chunkSize) ->
+    super chunkSize
     @hash = new Digest.SHA256
 
   _bin2hex: (array) ->
@@ -198,4 +224,3 @@ class WorkerFallback extends BaseWorker
     @handler.done sha256
 
   destroy: ->
-    super
