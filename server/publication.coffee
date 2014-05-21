@@ -87,7 +87,7 @@ class @Publication extends Publication
 
     if not @sha256
       pdfContent = Storage.open @cachedFilename()
-      hash = new Crypto.SHA256
+      hash = new Crypto.SHA256()
       hash.update pdfContent
       @sha256 = hash.finalize
 
@@ -333,7 +333,7 @@ Meteor.methods
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
       pdf = Storage.open publication._importingFilename()
 
-      hash = new Crypto.SHA256
+      hash = new Crypto.SHA256()
       hash.update
         data: pdf
       sha256 = hash.finalize()

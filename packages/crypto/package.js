@@ -1,5 +1,5 @@
 Package.describe({
-  summary: "SHA256 worker package"
+  summary: "Crypto package"
 });
 
 Package.on_use(function (api) {
@@ -30,7 +30,7 @@ Package.on_use(function (api) {
 });
 
 Package.on_test(function (api) {
-  api.use(['sha256', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
+  api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
   api.use(['jquery'], ['client'])
 
   api.add_files(['lib/tests.coffee'], ['client', 'server']);

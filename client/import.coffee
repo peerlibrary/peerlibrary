@@ -79,10 +79,10 @@ importFile = (file) ->
       chunkEnd = 0
       chunkSize = 1024 * 32 * 5 #bytes
       streamLength = fileContent.byteLength
-      hash = new Crypto.SHA256
+      hash = new Crypto.SHA256()
 
 
-      sendChunk = () ->
+      sendChunk = ->
         try
           console.log 'sending chunk'
           chunkEnd = chunkStart + chunkSize
@@ -118,7 +118,7 @@ importFile = (file) ->
 #      hash.finalize
 #        onDone: (sha256) ->
 #          console.log sha256
-#              
+
           alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
           if alreadyImporting
             ImportingFile.documents.update file._id,

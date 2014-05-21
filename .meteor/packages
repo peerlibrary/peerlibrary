@@ -44,5 +44,5 @@ isolate-value
 apm
 url-utils
 stacktrace
-sha256
+crypto
 related

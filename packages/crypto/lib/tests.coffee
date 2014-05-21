@@ -1,4 +1,4 @@
-@testRoot = '/packages/sha256'
+@testRoot = '/packages/crypto'
 @pdfFilename = 'test.pdf'
 @pdfHash = '750cb3269e8222c05548184a2814b8f4b102e9157fe5fd498cfcaeb237fbd38f'
 @pdfByteLength = 13069

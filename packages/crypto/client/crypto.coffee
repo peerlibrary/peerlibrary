@@ -2,7 +2,7 @@ Crypto =
   SHA256: class extends Crypto.SHA256
     # defaults
     disableWorker: false
-    workerSrc: '/packages/sha256/web-worker.js'
+    workerSrc: '/packages/crypto/web-worker.js'
     chunkSize: 1024 * 32 # bytes
 
     constructor: (params) ->
