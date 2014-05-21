@@ -25,9 +25,9 @@
 
 <template name="collectionPublications">
   <div class="col12">
-    <ol class="collection-publications entity-list">
+    <ol class="collection-publications item-list">
       {{#each publications}}
-        {{> publicationListing}}
+        {{> publicationCatalogItem}}
       {{/each}}
     </ol>
   </div>
@@ -36,10 +36,7 @@
 <template name="collectionDetails">
   <div class="col4 push12 sidebar collection-details">
     <h2>Collection by</h2>
-    <div class="member person">
-      <img src="{{authorPerson.avatar}}" class="avatar" />
-      <h4 class="member-name"><a href="{{personPathFromId authorPerson._id authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
-    </div>
+    {{> personInlineItem authorPerson}}
     {{#if canModify}}
       <h3>Tools</h3>
       {{#if canRemove}}
@@ -58,4 +55,20 @@
       </p>
     {{/if}}
   </div>
+</template>
+
+<template name="collectionCatalogItem">
+  <li class="catalog-item collection" data-collection-id="{{_id}}">
+    {{> collectionCatalogItemName}}
+    <span class="publications-count">{{countDescription}}</span>
+    <a class="link" href="{{collectionPathFromId _id slug}}"></a>
+  </li>
+</template>
+
+<template name="collectionCatalogItemName">
+  <h2>
+    <a href="{{collectionPathFromId _id slug}}" class="actionable">
+      {{name}}
+    </a>
+  </h2>
 </template>

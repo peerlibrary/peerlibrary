@@ -13,9 +13,9 @@
 
 <template name="groupsList">
   {{#if this}}
-    <ol class="entity-list">
+    <ol class="item-list">
       {{#each this}}
-        {{> groupListing}}
+        {{> groupCatalogItem}}
       {{/each}}
     </ol>
   {{/if}}
@@ -53,9 +53,9 @@
     {{#if currentPersonId}}
       <h2>My Groups</h2>
       {{#if myGroups.count}}
-        <ul class="entity-list">
+        <ul class="item-list">
           {{#each myGroups}}
-            {{> groupListing}}
+            {{> groupCatalogItem}}
           {{/each}}
         </ul>
       {{else}}

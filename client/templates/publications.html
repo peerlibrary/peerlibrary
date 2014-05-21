@@ -13,9 +13,9 @@
 
 <template name="publicationsList">
   {{#if this}}
-    <ol class="entity-list">
+    <ol class="item-list">
       {{#each this}}
-        {{> publicationListing}}
+        {{> publicationCatalogItem}}
       {{/each}}
     </ol>
   {{/if}}

@@ -1,9 +1,9 @@
 @import 'variables.import'
 
-/* Entities
-=========== */
+/* Inline items
+=============== */
 
-.entity
+.inline-item
   position relative
   display inline-block
   box-sizing border-box
@@ -46,33 +46,21 @@
   .name
     font-weight bold
 
-.entity:hover
+.inline-item:hover
   text-decoration none
 
   .name
     text-decoration underline
 
-.person.entity.no-user
-  .avatar
-    opacity 0.3
+/* Catalog items
+================ */
 
-.person.entity
-  .avatar
-    min-width 1.1em
-
-.group.entity
-  .avatar
-    min-width 1.5em
-
-/* Listings
-=========== */
-
-.entity-list
+.item-list
   list-style none
   padding 0 5px
   margin 0
 
-  .listing
+  .catalog-item
     position relative
     background white
     padding 10px 15px
@@ -109,8 +97,8 @@
   .editable-control
     width 100%
 
-  .ui-draggable.listing:hover
-  .ui-sortable-handle.listing:hover
+  .ui-draggable.catalog-item:hover
+  .ui-sortable-handle.catalog-item:hover
     box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
 
   .droppable-active
@@ -118,84 +106,6 @@
 
   .droppable-hover
     background blue
-
-/* Publication */
-.publication.listing
-  padding 20px
-
-  h2
-    margin-bottom .83em
-
-  .library-menu
-    display inline-block
-    position absolute
-    right 10px
-    top 0
-    left auto
-    width 22px
-    padding 10px 0
-    border-radius 0 0 2px 2px
-    min-height 0
-    transition all 0.2s
-    visibility hidden
-    opacity 0
-
-    .library-menu-button:first-of-type
-      margin-top 5px
-
-    .icon
-      float right
-      font-size 16px
-
-    &:hover
-      border-radius 2px
-      width 300px
-      padding 10px
-      right 0
-
-  &:hover
-    .library-menu
-      visibility visible
-      opacity 1
-
-  .abstract
-    display none
-
-  .article-summary
-    .article-summary-data
-      display inline-block
-      float left
-      width 85%
-
-      .authors span::after
-        content ","
-
-      .authors span:last-child::after
-        content ""
-
-  .article-summary
-    .article-thumbnail
-      float right
-      display inline-block
-      width 95px
-      border 1px solid #c9d0dc
-      border-radius 2px
-
-    .article-thumbnail > img
-      width 90px
-      height auto
-      float right
-
-  .article-thumbnail
-    cursor pointer
-
-  ul.scrubber
-    margin 0
-    width 95px
-    height 125px
-
-    li
-      display none
 
 /* Members
 ========== */
@@ -210,7 +120,7 @@
     max-width 100%
     margin 0 10px 10px 0
 
-    .entity
+    .inline-item
       padding-right 24px
 
     .remove-button
@@ -225,13 +135,13 @@
       background none
       font-size 14px
 
-    .remove-button:hover
-      color blue-accent
-      background none
+      &:hover
+        color blue-accent
+        background none
 
 .read-only.member-list
   .member
-    .entity
+    .inline-item
       padding-right 0
 
     .remove-button

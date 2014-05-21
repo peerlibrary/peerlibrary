@@ -14,9 +14,9 @@
   <div class="col12">
     <h1>Library</h1>
     {{#if myPublications.count}}
-      <ol class="library-publications entity-list">
+      <ol class="library-publications item-list">
         {{#each myPublications}}
-          {{> publicationListing}}
+          {{> publicationCatalogItem}}
         {{/each}}
       </ol>
     {{else}}
@@ -30,9 +30,9 @@
     <div class="col4 push12 sidebar library-collections">
       <h2>My Collections</h2>
       {{#if myCollections.count}}
-        <ol class="entity-list">
+        <ol class="item-list">
           {{#each myCollections}}
-            {{> collectionListing}}
+            {{> collectionCatalogItem}}
           {{/each}}
         </ol>
         <p class="drag-publications-hint hint">

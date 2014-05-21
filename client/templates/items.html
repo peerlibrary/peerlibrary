@@ -1,0 +1,26 @@
+<!-- Common for all items
+Individual items found in files under their respective name -->
+
+<template name="accessIcon">
+  <i class="{{iconName}}"></i>
+</template>
+
+<!-- MEMBERS
+Used when inline items appear in contexts of lists and need add/remove controls -->
+
+<template name="member">
+  <li class="member">
+    {{#if entityIsPerson}}{{> personInlineItem}}{{/if}}
+    {{#if entityIsGroup}}{{> groupInlineItem}}{{/if}}
+    <button class="remove-button icon-cancel"></button>
+  </li>
+</template>
+
+<template name="memberAdd">
+  <li class="member">
+    <button class="add-button">
+      {{#if entityIsPerson}}{{> personInlineItem noLinkEntity}}{{/if}}
+      {{#if entityIsGroup}}{{> groupInlineItem noLinkEntity}}{{/if}}
+    </button>
+  </li>
+</template>

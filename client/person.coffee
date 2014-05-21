@@ -84,3 +84,6 @@ Handlebars.registerHelper 'personReference', (personId, person, options) ->
   else
     _id: personId # TODO: Remove when we will be able to access parent template context
     text: "@#{ personId }"
+
+Template.personInlineItem.status = ->
+  if @user then "Registered User" else "Unregistered Author"

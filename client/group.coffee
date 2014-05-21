@@ -40,7 +40,7 @@ Template.group.notFound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Template.groupName[method] = Template.groupListingName[method] for method in ['created', 'rendered', 'destroyed']
+Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person()
@@ -237,3 +237,17 @@ Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
   _id: groupId # TODO: Remove when we will be able to access parent template context
   text: "g:#{ groupId }"
   title: group?.name or group?.slug
+
+Editable.template Template.groupCatalogItemName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

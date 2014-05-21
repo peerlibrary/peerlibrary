@@ -38,7 +38,7 @@ Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
-Template.collectionName[method] = Template.collectionListingName[method] for method in ['created', 'rendered', 'destroyed']
+Template.collectionName[method] = Template.collectionCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.collection.collection = ->
   Collection.documents.findOne Session.get('currentCollectionId')
@@ -134,3 +134,17 @@ Handlebars.registerHelper 'collectionReference', (collectionId, collection, opti
   _id: collectionId # TODO: Remove when we will be able to access parent template context
   text: "c:#{ collectionId }"
   title: collection?.name or collection?.slug
+
+Editable.template Template.collectionCatalogItemName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter collection name"
+,
+  true
+
+Template.collectionCatalogItem.countDescription = ->
+  if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

@@ -18,7 +18,7 @@ Template.libraryPublications.myPublications = ->
       $in: _.pluck person.library, '_id'
 
 Template.libraryPublications.rendered = ->
-  $(@findAll '.listing').draggable
+  $(@findAll '.catalog-item').draggable
     opacity: 0.5
     revert: true
     revertDuration: 0
@@ -62,8 +62,8 @@ Template.addNewCollection.events
     return # Make sure CoffeeScript does not return anything
 
 Template.collections.rendered = ->
-  $(@findAll '.listing').droppable
-    accept: '.publication.listing'
+  $(@findAll '.catalog-item').droppable
+    accept: '.publication.catalog-item'
     activeClass: 'droppable-active'
     hoverClass: 'droppable-hover'
     tolerance: 'pointer'
