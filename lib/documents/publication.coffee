@@ -68,6 +68,25 @@ class @Publication extends ReadAccessDocument
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
 
+  @ACCESS:
+    PRIVATE: ACCESS.PRIVATE
+    CLOSED: 1
+    OPEN: 2
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+        ['title', 'asc']
+      ]
+    ,
+      name: "title"
+      sort: [
+        ['title', 'asc']
+      ]
+    ]
+
   @_filenamePrefix: ->
     'publication' + Storage._path.sep
 
@@ -97,11 +116,6 @@ class @Publication extends ReadAccessDocument
 
   createdDay: =>
     moment(@createdAt).format 'MMMM Do YYYY'
-
-  @ACCESS:
-    PRIVATE: ACCESS.PRIVATE
-    CLOSED: 1
-    OPEN: 2
 
   hasReadAccess: (person, cache=false) =>
     return false unless @cached

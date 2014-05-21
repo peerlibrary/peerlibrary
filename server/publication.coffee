@@ -415,18 +415,20 @@ Meteor.methods
         updatedAt: moment.utc().toDate()
         title: title
 
-Meteor.publish 'publications', (limit, filter, sort) ->
+Meteor.publish 'publications', (limit, filter, sortIndex) ->
   check limit, PositiveNumber
-  check filter, Optional String
-  check sort, Optional [[String]]
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'fullText') if filter
+  findQuery = _.extend findQuery, createQueryCriteria(filter, 'title') if filter
+
+  sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'publications', searchQueryDescriptor(filter, sort),
+    searchPublish @, 'publications', [filter, sortIndex],
       cursor: Publication.documents.find(restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields

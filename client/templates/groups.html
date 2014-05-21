@@ -49,8 +49,8 @@
 </template>
 
 <template name="myGroups">
-  {{#if currentPersonId}}
-    <div class="col4 push12 sidebar my-groups">
+  <div class="col4 push12 sidebar my-groups">
+    {{#if currentPersonId}}
       <h2>My Groups</h2>
       {{#if myGroups.count}}
         <ul class="entity-list">
@@ -69,7 +69,7 @@
         <button type="submit" class="add">Create</button>
         <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
       </form>
-      {{> footer}}
-    </div>
-  {{/if}}
+    {{/if}}
+    {{> footer}}
+  </div>
 </template>

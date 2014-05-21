@@ -1,5 +1,5 @@
 # Local (client-only) document of importing files
-class ImportingFile extends Document
+class ImportingFile extends BaseDocument
   # name: user's file name
   # readProgress: progress of reading from file, in %
   # uploadProgress: progress of uploading file, in %

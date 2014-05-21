@@ -1,5 +1,5 @@
-@INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
-@INITIAL_CATALOG_LIMIT = INITIAL_CATALOG_LIMIT = 10
+@INITIAL_SEARCH_LIMIT = 5
+@INITIAL_CATALOG_LIMIT = 10
 
 setSession = (session) ->
   session = _.defaults session or {},
@@ -33,16 +33,14 @@ setSession = (session) ->
     currentPublicationsLoading: false
     currentPublicationsReady: false
     currentPublicationsLimit: INITIAL_CATALOG_LIMIT
-    currentPublicationsSortName: null
-    currentPublicationsSort: null
+    currentPublicationsSort: 0
     groupsActive: false
     currentGroupsFilter: null
     currentGroupsCount: 0
     currentGroupsLoading: false
     currentGroupsReady: false
     currentGroupsLimit: INITIAL_CATALOG_LIMIT
-    currentGroupsSortName: null
-    currentGroupsSort: null
+    currentGroupsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null

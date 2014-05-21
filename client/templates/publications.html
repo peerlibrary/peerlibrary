@@ -1,12 +1,13 @@
 <template name="publications">
   <h1>Publications</h1>
   <div class="row">
-    <div class="catalog">
+    <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
       {{> noPublications}}
       {{> publicationsList entities}}
       {{> publicationsLoading}}
     </div>
+    {{> myPublications}}
   </div>
 </template>
 
@@ -45,4 +46,13 @@
       <button class="load-more">Load more</button>
     {{/if}}
   {{/if}}
+</template>
+
+<template name="myPublications">
+  <div class="col4 push12 sidebar my-groups">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's publications}}
+    {{/if}}
+    {{> footer}}
+  </div>
 </template>

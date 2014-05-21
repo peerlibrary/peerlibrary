@@ -5,7 +5,7 @@ Used for generalized display of entities in inline context (icon + name of the e
   {{#spaceless}}
     <a class="entity person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
       <i class="avatar icon-person" title="{{status}}">
-        <img src="{{avatar}}"/>
+        <img src="{{avatar avatarSize}}"/>
       </i>
       <span class="name" title="{{displayName}}">{{displayName}}</span>
     </a>

@@ -1,4 +1,4 @@
-class @Url extends Document
+class @Url extends BaseDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # url: URL where document is pointing at

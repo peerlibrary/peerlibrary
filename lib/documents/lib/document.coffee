@@ -2,7 +2,17 @@
   PRIVATE: 0
   PUBLIC: 1
 
-class @AccessDocument extends Document
+class @BaseDocument extends Document
+  @Meta
+    abstract: true
+
+  @verboseName: ->
+    @Meta._name.toLowerCase()
+
+  @verboseNamePlural: ->
+    "#{ @verboseName() }s"
+
+class @AccessDocument extends BaseDocument
   @Meta
     abstract: true
 

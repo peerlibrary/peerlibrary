@@ -1,4 +1,4 @@
-class @Statistics extends Document
+class @Statistics extends BaseDocument
   # countPublications: number of publications in the database
   # countPersons: number of people in the database
   # minPublicationDate: date of the earliest publication in the database

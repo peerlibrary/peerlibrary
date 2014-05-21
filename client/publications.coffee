@@ -17,22 +17,9 @@ Deps.autorun ->
 
 Template.publications.catalogSettings = ->
   settings =
-    collection: "publications"
-    sorting: [
-      name: 'last active'
-      sort: [
-        ['updatedAt', 'desc']
-        ['title', 'asc']
-      ]
-    ,
-      name: 'title'
-      sort: [
-        ['title', 'asc']
-      ]
-    ]
+    entityClass: Publication
     variables:
       filter: 'currentPublicationsFilter'
       sort: 'currentPublicationsSort'
-      sortName: 'currentPublicationsSortName'
 
   settings

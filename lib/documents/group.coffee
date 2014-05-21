@@ -29,6 +29,27 @@ class @Group extends ReadAccessDocument
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
 
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "members count"
+      sort: [
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "name"
+      sort: [
+        ['name', 'asc']
+      ]
+    ]
+
   _hasReadAccess: (person) =>
     access = super
     return access if access is true or access is false

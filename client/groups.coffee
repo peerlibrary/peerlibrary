@@ -17,30 +17,10 @@ Deps.autorun ->
 
 Template.groups.catalogSettings = ->
   settings =
-    collection: "groups"
-    sorting: [
-        name: 'last active'
-        sort: [
-          ['updatedAt', 'desc']
-          ['membersCount', 'desc']
-          ['name', 'asc']
-        ]
-      ,
-        name: 'members'
-        sort: [
-          ['membersCount', 'desc']
-          ['name', 'asc']
-        ]
-      ,
-        name: 'name'
-        sort: [
-          ['name', 'asc']
-        ]
-    ]
+    entityClass: Group
     variables:
       filter: 'currentGroupsFilter'
       sort: 'currentGroupsSort'
-      sortName: 'currentGroupsSortName'
 
   settings
 

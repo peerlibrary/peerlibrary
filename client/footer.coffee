@@ -1,10 +1,5 @@
 Template.baseFooter.infiniteScroll = ->
-  for variable in [
-    'searchActive'
-    'groupsActive'
-  ]
-    return true if Session.get variable
-
+  return true if Session.get variable for variable in _.union ['searchActive'], Catalog.catalogActiveVariables
   false
 
 Template.footer.indexFooter = ->

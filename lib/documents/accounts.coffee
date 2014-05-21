@@ -1,4 +1,4 @@
-class @User extends Document
+class @User extends BaseDocument
   # createdAt: time of creation
   # username: user's username
   # emails: list of
