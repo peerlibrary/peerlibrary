@@ -31,9 +31,10 @@ Package.on_use(function (api) {
 
 Package.on_test(function (api) {
   api.use(['sha256', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
+  api.use(['jquery'], ['client'])
 
   api.add_files(['lib/tests.coffee'], ['client', 'server']);
   api.add_files(['client/tests.coffee'], ['client']);
   api.add_files(['server/tests.coffee'], ['server']);
-  api.add_files(['tracemonkey.pdf'], ['client', 'server'], {isAsset: true});
+  api.add_files(['test.pdf'], ['client', 'server'], {isAsset: true});
 });
