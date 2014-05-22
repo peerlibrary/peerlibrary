@@ -91,6 +91,19 @@ class @Annotation extends ReadAccessDocument
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
 
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "author"
+      sort: [
+        ['author', 'asc']
+      ]
+    ]
+
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
     return unless person?._id

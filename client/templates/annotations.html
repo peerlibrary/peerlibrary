@@ -1,0 +1,77 @@
+<template name="annotations">
+  <h1>Annotations</h1>
+
+  <div class="row">
+    <div class="col12 catalog">
+      {{> catalogControls catalogSettings}}
+      {{> noAnnotations}}
+      {{> annotationsList entities}}
+      {{> annotationsLoading}}
+    </div>
+    {{> myAnnotations}}
+  </div>
+</template>
+
+<template name="annotationsList">
+  {{#if this}}
+  <ol class="item-list">
+    {{#each this}}
+      {{> annotationCatalogItem}}
+    {{/each}}
+  </ol>
+  {{/if}}
+</template>
+
+<template name="noAnnotations">
+  {{#if noEntities}}
+  <p class="status">
+    {{#if entitiesFilter}}
+      The filter matches no annotations.
+    {{else}}
+      There are no annotations yet.
+      {{#if currentPersonId}}
+        Write the first by commenting on one of the publications.
+      {{else}}
+        Sign in and write the first.
+      {{/if}}
+    {{/if}}
+  </p>
+  {{/if}}
+</template>
+
+<template name="annotationsLoading">
+  {{#if entitiesLoading}}
+    <p class="status">Loading …</p>
+  {{else}}
+    {{#if moreEntities}}
+      <button class="load-more">Load more</button>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="myAnnotations">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's annotations? }}
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="annotationInlineItem">
+  <a class="inline-item annotation" {{#unless noLink}}href="{{annotationIdPath _id}}"{{/unless}}>
+    <i class="avatar only-icon icon-annotation" title="Annotation"></i>
+    <span class="name" title="{{_id}}">a:{{_id}}</span>
+  </a>
+</template>
+
+<template name="annotationCatalogItem">
+  <li class="catalog-item annotation">
+    <h2>
+      <a href="{{annotationIdPath _id}}" class="actionable">
+        a:{{_id}}
+      </a>
+    </h2>
+    <a class="full-item-link" href="{{annotationIdPath _id}}"></a>
+  </li>
+</template>

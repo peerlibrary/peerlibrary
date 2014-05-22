@@ -11,10 +11,6 @@ Catalog.create 'publications', Publication,
   limit: 'currentPublicationsLimit'
   sort: 'currentPublicationsSort'
 
-Deps.autorun ->
-  if Session.equals 'publicationsActive', true
-    Meteor.subscribe 'my-publications'
-
 Template.publications.catalogSettings = ->
   settings =
     entityClass: Publication

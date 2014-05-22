@@ -41,6 +41,13 @@ setSession = (session) ->
     currentGroupsReady: false
     currentGroupsLimit: INITIAL_CATALOG_LIMIT
     currentGroupsSort: 0
+    annotationsActive: false
+    currentAnnotationsFilter: null
+    currentAnnotationsCount: 0
+    currentAnnotationsLoading: false
+    currentAnnotationsReady: false
+    currentAnnotationsLimit: INITIAL_CATALOG_LIMIT
+    currentAnnotationsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null
@@ -250,6 +257,13 @@ else
         setSession()
         redirectAnnotationId annotationId
         'redirecting'
+
+    '/a':
+      as: 'annotations'
+      to: ->
+        setSession
+          annotationsActive: true
+        'annotations'
 
     '/m/:commentId':
       as: 'commentId'

@@ -178,3 +178,28 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
       _id: publicationId
     ,
       fields: Publication.readAccessSelfFields()
+
+Meteor.publish 'annotations', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+
+  findQuery = {}
+  findQuery = _.extend findQuery, createQueryCriteria(filter, 'body') if filter
+
+  sort = if _.isNumber sortIndex then Annotation.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Annotation.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'annotations', [filter, sortIndex],
+      cursor: Annotation.documents.find(restrictedFindQuery,
+        limit: limit
+        fields: Annotation.PUBLISH_FIELDS().fields
+        sort: sort
+      )
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Group.readAccessPersonFields()
