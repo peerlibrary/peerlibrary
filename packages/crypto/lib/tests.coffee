@@ -17,10 +17,11 @@
 
 @isDefined = false
 @hash = null
-@createHash = () ->
+@createHash = (onProgress) ->
   @isDefined = true
   try
     @hash = new Crypto.SHA256
       chunkSize: @chunkSize
+      onProgress: onProgress
     @isDefined = true
 
