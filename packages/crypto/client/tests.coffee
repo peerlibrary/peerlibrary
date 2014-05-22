@@ -22,9 +22,10 @@ Tinytest.addAsync 'Sending complete file as ArrayBuffer, checking hash', (test, 
     globals.hash.update
       data: globals.pdf   # Send complete file to Crypto
     globals.hash.finalize
-      onDone: (sha256) ->
-        console.log sha256
-        test.equal sha256, pdfHash
+      onDone: (error, result) ->
+        console.log result
+        test.equal error, 0
+        test.equal result, pdfHash
         onComplete()
   processQueue()
 
@@ -35,8 +36,9 @@ Tinytest.addAsync 'Sending complete file as Blob, checking hash', (test, onCompl
     globals.hash.update
       data: blob
     globals.hash.finalize
-      onDone: (sha256) ->
-        test.equal sha256, pdfHash
+      onDone: (error, result) ->
+        test.equal error, 0
+        test.equal result, pdfHash
         onComplete()
   processQueue()
 
@@ -47,8 +49,9 @@ Tinytest.addAsync 'Sending file in regular chunks, checking hash', (test, onComp
     while globals.chunkStart < pdf.byteLength
       globals.sendChunk()
     globals.hash.finalize
-      onDone: (sha256) ->
-        test.equal sha256, pdfHash
+      onDone: (error, result) ->
+        test.equal error, 0
+        test.equal result, pdfHash
         onComplete()
   processQueue()
 
@@ -59,8 +62,9 @@ Tinytest.addAsync 'Sending file in irregular chunks, check hashing', (test, onCo
     while globals.chunkStart < globals.pdf.byteLength
       globals.sendChunk true # true is for random
     globals.hash.finalize
-      onDone: (sha256) ->
-        test.equal sha256, pdfHash
+      onDone: (error, result) ->
+        test.equal error, 0
+        test.equal result, pdfHash
         onComplete()
   processQueue()
 
@@ -68,18 +72,19 @@ Tinytest.addAsync 'Checking progress callback', (test, onComplete) ->
   round = (number) ->
     Math.round(number, "e+5")
   queue.push () ->
-    globals.createHash()
+    globals.createHash (progress) ->
+      expectedProgress += progressStep
+      expectedProgress = 1 if expectedProgress > 1
+      test.equal round(progress), round(expectedProgress)
     chunkCount = globals.pdf.byteLength / globals.chunkSize
     progressStep = 1 / chunkCount
     expectedProgress = 0
     globals.hash.update
       data: globals.pdf
-      onProgress: (progress) ->
-        expectedProgress += progressStep
-        expectedProgress = 1 if expectedProgress > 1
-        test.equal round(progress), round(expectedProgress)
+      onDone: (error, result) ->
+        console.log error + " " + result
     globals.hash.finalize
-      onDone: (sha256) ->
+      onDone: (error, result) ->
         onComplete()
   processQueue()
 

@@ -79,23 +79,29 @@ class @Publication extends Publication
         pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
           timeout: 10000 # ms
           encoding: null # PDFs are binary data
-
+  
         Storage.save @foreignFilename(), pdf.content
         assert Storage.exists @foreignFilename()
         Storage.link @foreignFilename(), @cachedFilename()
         assert Storage.exists @cachedFilename()
+
+    cache = (error, result) ->
+      console.log "Inside cache " + result
+      @sha256 = result
+      @cached = moment.utc().toDate()
+      Publication.documents.update @_id,
+        $set:
+          cached: @cached
+          sha256: @sha256
 
     if not @sha256
       pdfContent = Storage.open @cachedFilename()
       hash = new Crypto.SHA256()
       hash.update pdfContent
       @sha256 = hash.finalize
-
-    @cached = moment.utc().toDate()
-    Publication.documents.update @_id,
-      $set:
-        cached: @cached
-        sha256: @sha256
+        onDone: cache
+    else
+      cache(null, @sha256)
 
   process: =>
     switch @mediaType
@@ -336,31 +342,33 @@ Meteor.methods
       hash = new Crypto.SHA256()
       hash.update
         data: pdf
-      sha256 = hash.finalize()
-      console.log sha256
+      hash.finalize
+        onDone: (error, result)->
+          sha256 = result
+          console.log sha256
 
-      unless sha256 == publication.sha256
-        throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
+          unless sha256 == publication.sha256
+            throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
 
-      unless publication.cached
-        # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._importingFilename(), publication.cachedFilename()
-        Publication.documents.update
-          _id: publication._id
-        ,
-          $set:
-            cached: moment.utc().toDate()
-            size: file.size
+          unless publication.cached
+            # Upload is being finished for the first time, so move it to permanent location
+            Storage.rename publication._importingFilename(), publication.cachedFilename()
+            Publication.documents.update
+              _id: publication._id
+            ,
+              $set:
+                cached: moment.utc().toDate()
+                size: file.size
 
-      # Hash was verified, so add it to uploader's library
-      Person.documents.update
-        _id: person._id
-        'library._id':
-          $ne: publication._id
-      ,
-        $addToSet:
-          library:
-            _id: publication._id
+          # Hash was verified, so add it to uploader's library
+          Person.documents.update
+            _id: person._id
+            'library._id':
+              $ne: publication._id
+          ,
+            $addToSet:
+              library:
+                _id: publication._id
 
   'verify-publication': (publicationId, samplesData) ->
     check publicationId, DocumentId

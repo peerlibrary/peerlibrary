@@ -1,4 +1,4 @@
-importScripts('digest.js/digest.js');
+importScripts('../digest.js/digest.js');
 hash = Digest.SHA256(),
 
 onmessage = function (oEvent){
@@ -30,7 +30,10 @@ var MessageHandler = {
   done: function SHA256WebWorkerMessageHandler_sendSHA256 (sha256){
     postMessage({
       message: 'done',
-      data: sha256
+      data: {
+        error: null,
+        result: sha256
+      }
       });
   }
 }
