@@ -5,7 +5,7 @@ globals.pdf = new Buffer new Uint8Array bin.buffer
 Tinytest.add 'Checking package visibility', (test) ->
   globals.createHash()
   test.isTrue globals.isDefined, "Crypto.SHA256 is not defined"
-  test.isTrue Package['sha256'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
+  test.isTrue Package['crypto'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
 
 Tinytest.add 'Checking file size', (test) ->
   test.equal globals.pdf.length, pdfByteLength

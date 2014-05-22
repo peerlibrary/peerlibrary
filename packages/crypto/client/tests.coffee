@@ -6,7 +6,7 @@ Tinytest.addAsync 'Checking package visibility', (test, onComplete) ->
   queue.push () ->
     globals.createHash()
     test.isTrue globals.isDefined, "Crypto.SHA256 is not defined"
-    test.isTrue Package['sha256'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
+    test.isTrue Package['crypto'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
     onComplete()
   processQueue()
 
