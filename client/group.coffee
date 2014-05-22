@@ -40,8 +40,6 @@ Template.group.notFound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
-
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person()
 
@@ -248,6 +246,8 @@ Editable.template Template.groupCatalogItemName, ->
   "Enter group name"
 ,
   true
+
+Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.groupCatalogItem.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

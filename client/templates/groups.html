@@ -4,7 +4,7 @@
     <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
       {{> noGroups}}
-      {{> groupsList entities}}
+      {{> groupsList documents}}
       {{> groupsLoading}}
     </div>
     {{> myGroups}}
@@ -22,9 +22,9 @@
 </template>
 
 <template name="noGroups">
-  {{#if noEntities}}
+  {{#if noDocuments}}
     <p class="status">
-      {{#if entitiesFilter}}
+      {{#if documentsFilter}}
         The filter matches no groups.
       {{else}}
         There are no groups yet.
@@ -39,10 +39,10 @@
 </template>
 
 <template name="groupsLoading">
-  {{#if entitiesLoading}}
+  {{#if documentsLoading}}
     <p class="status">Loading …</p>
   {{else}}
-    {{#if moreEntities}}
+    {{#if moreDocuments}}
       <button class="load-more">Load more</button>
     {{/if}}
   {{/if}}

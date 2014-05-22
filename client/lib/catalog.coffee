@@ -1,9 +1,9 @@
-Template.catalogFilter.entitiesName = ->
-  @entityClass.verboseNamePlural()
+Template.catalogFilter.documentsName = ->
+  @documentClass.verboseNamePlural()
 
 Template.catalogSort.field = ->
   index = Session.get @variables.sort
-  @entityClass.PUBLISH_CATALOG_SORT[index].name
+  @documentClass.PUBLISH_CATALOG_SORT[index].name
 
 Template.catalogSort.events
   'click .dropdown-trigger': (e, template) ->
@@ -18,7 +18,7 @@ Template.catalogSortSelection.options = ->
   # Modify the data with parent variables
   # TODO: Change when meteor allows to access parent context
   index = 0
-  _.map @entityClass.PUBLISH_CATALOG_SORT, (sorting) =>
+  _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
     sorting._parent = @
     sorting._index = index++
     sorting
@@ -39,11 +39,11 @@ Template.catalogFilter.events
 
 LIMIT_INCREASE_STEP = 10
 
-# Helper that enables a list of entities with infinite scrolling and filtering
+# Helper that enables a list of documents with infinite scrolling and filtering
 class @Catalog
   @catalogActiveVariables = []
 
-  @create: (subscription, entityClass, templates, variables) ->
+  @create: (subscription, documentClass, templates, variables) ->
     limitIncreasing = false
 
     @catalogActiveVariables.push variables.active
@@ -90,7 +90,7 @@ class @Catalog
     templates.main.destroyed = ->
       $(window).off '.directory'
 
-    templates.main.entities = ->
+    templates.main.documents = ->
       return unless Session.get(variables.limit)
 
       searchResult = SearchResult.documents.findOne
@@ -99,9 +99,9 @@ class @Catalog
 
       return unless searchResult
 
-      Session.set variables.count, searchResult["count#{entityClass.name}s"]
+      Session.set variables.count, searchResult["count#{documentClass.name}s"]
 
-      entityClass.documents.find
+      documentClass.documents.find
         'searchResult._id': searchResult._id
       ,
         sort: [
@@ -109,19 +109,19 @@ class @Catalog
         ]
         limit: Session.get variables.limit
 
-    templates.count?.entitiesCount = ->
+    templates.count?.documentsCount = ->
       Session.get variables.count
 
-    templates.empty.noEntities = ->
+    templates.empty.noDocuments = ->
       Session.get(variables.ready) and not Session.get(variables.count)
 
-    templates.empty.entitiesFilter = ->
+    templates.empty.documentsFilter = ->
       Session.get(variables.filter)
 
-    templates.loading.entitiesLoading = ->
+    templates.loading.documentsLoading = ->
       Session.get(variables.loading)
 
-    templates.loading.moreEntities = ->
+    templates.loading.moreDocuments = ->
       Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
 
     templates.loading.events

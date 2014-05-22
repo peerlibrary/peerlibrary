@@ -12,10 +12,7 @@ Catalog.create 'publications', Publication,
   sort: 'currentPublicationsSort'
 
 Template.publications.catalogSettings = ->
-  settings =
-    entityClass: Publication
-    variables:
-      filter: 'currentPublicationsFilter'
-      sort: 'currentPublicationsSort'
-
-  settings
+  documentClass: Publication
+  variables:
+    filter: 'currentPublicationsFilter'
+    sort: 'currentPublicationsSort'

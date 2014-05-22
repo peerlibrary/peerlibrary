@@ -38,8 +38,6 @@ Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
-Template.collectionName[method] = Template.collectionCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
-
 Template.collection.collection = ->
   Collection.documents.findOne Session.get('currentCollectionId')
 
@@ -145,6 +143,8 @@ Editable.template Template.collectionCatalogItemName, ->
   "Enter collection name"
 ,
   true
+
+Template.collectionName[method] = Template.collectionCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.collectionCatalogItem.countDescription = ->
   if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

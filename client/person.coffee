@@ -86,4 +86,4 @@ Handlebars.registerHelper 'personReference', (personId, person, options) ->
     text: "@#{ personId }"
 
 Template.personInlineItem.status = ->
-  if @user then "Registered User" else "Unregistered Author"
+  if @user then "Registered User" else "Unregistered Person"

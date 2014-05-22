@@ -173,6 +173,8 @@ Meteor.publish 'groups', (limit, filter, sortIndex) ->
   check limit, PositiveNumber
   check filter, OptionalOrNull String
   check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Group.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
   findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter

@@ -511,8 +511,6 @@ Template.publication.notFound = ->
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
-Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
-
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->
     # A special case to prevent defocus after click on the input box
@@ -1529,6 +1527,8 @@ Editable.template Template.publicationCatalogItemTitle, ->
     return Notify.meteorError error, true if error
 ,
   "Enter publication title"
+
+Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.publicationCatalogItemThumbnail.events
   'click li': (e, template) ->

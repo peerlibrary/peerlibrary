@@ -5,7 +5,7 @@
     <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
       {{> noAnnotations}}
-      {{> annotationsList entities}}
+      {{> annotationsList documents}}
       {{> annotationsLoading}}
     </div>
     {{> myAnnotations}}
@@ -23,9 +23,9 @@
 </template>
 
 <template name="noAnnotations">
-  {{#if noEntities}}
+  {{#if noDocuments}}
   <p class="status">
-    {{#if entitiesFilter}}
+    {{#if documentsFilter}}
       The filter matches no annotations.
     {{else}}
       There are no annotations yet.
@@ -40,10 +40,10 @@
 </template>
 
 <template name="annotationsLoading">
-  {{#if entitiesLoading}}
+  {{#if documentsLoading}}
     <p class="status">Loading …</p>
   {{else}}
-    {{#if moreEntities}}
+    {{#if moreDocuments}}
       <button class="load-more">Load more</button>
     {{/if}}
   {{/if}}

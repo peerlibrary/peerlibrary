@@ -16,13 +16,10 @@ Deps.autorun ->
     Meteor.subscribe 'my-groups'
 
 Template.groups.catalogSettings = ->
-  settings =
-    entityClass: Group
-    variables:
-      filter: 'currentGroupsFilter'
-      sort: 'currentGroupsSort'
-
-  settings
+  documentClass: Group
+  variables:
+    filter: 'currentGroupsFilter'
+    sort: 'currentGroupsSort'
 
 Template.groups.events
   'submit .add-group': (e, template) ->

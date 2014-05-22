@@ -4,7 +4,7 @@
     <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
       {{> noPublications}}
-      {{> publicationsList entities}}
+      {{> publicationsList documents}}
       {{> publicationsLoading}}
     </div>
     {{> myPublications}}
@@ -22,9 +22,9 @@
 </template>
 
 <template name="noPublications">
-  {{#if noEntities}}
+  {{#if noDocuments}}
   <p class="status">
-    {{#if entitiesFilter}}
+    {{#if documentsFilter}}
       The filter matches no publications.
     {{else}}
       There are no publications yet.
@@ -39,10 +39,10 @@
 </template>
 
 <template name="publicationsLoading">
-  {{#if entitiesLoading}}
+  {{#if documentsLoading}}
     <p class="status">Loading …</p>
   {{else}}
-    {{#if moreEntities}}
+    {{#if moreDocuments}}
       <button class="load-more">Load more</button>
     {{/if}}
   {{/if}}

@@ -12,10 +12,7 @@ Catalog.create 'annotations', Annotation,
   sort: 'currentAnnotationsSort'
 
 Template.annotations.catalogSettings = ->
-  settings =
-    entityClass: Annotation
-    variables:
-      filter: 'currentAnnotationsFilter'
-      sort: 'currentAnnotationsSort'
-
-  settings
+  documentClass: Annotation
+  variables:
+    filter: 'currentAnnotationsFilter'
+    sort: 'currentAnnotationsSort'

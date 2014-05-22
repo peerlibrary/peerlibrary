@@ -1,16 +1,14 @@
-
-Template.member.entityIsPerson = ->
+Template.member.documentIsPerson = ->
   @ instanceof Person
 
-Template.member.entityIsGroup = ->
+Template.member.documentIsGroup = ->
   @ instanceof Group
 
-Template.memberAdd.entityIsPerson = Template.member.entityIsPerson
-Template.memberAdd.entityIsGroup = Template.member.entityIsGroup
+Template.memberAdd.documentIsPerson = Template.member.documentIsPerson
+Template.memberAdd.documentIsGroup = Template.member.documentIsGroup
 
-Template.memberAdd.noLinkEntity = ->
+Template.memberAdd.noLinkDocument = ->
   # Because we cannot access parent templates we're modifying the data with an extra parameter
   # TODO: Change when Meteor allows accessing parent context
   @noLink = true
   @
-
