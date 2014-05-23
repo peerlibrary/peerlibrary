@@ -48,6 +48,13 @@ setSession = (session) ->
     currentAnnotationsReady: false
     currentAnnotationsLimit: INITIAL_CATALOG_LIMIT
     currentAnnotationsSort: 0
+    highlightsActive: false
+    currentHighlightsFilter: null
+    currentHighlightsCount: 0
+    currentHighlightsLoading: false
+    currentHighlightsReady: false
+    currentHighlightsLimit: INITIAL_CATALOG_LIMIT
+    currentHighlightsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null
@@ -248,6 +255,13 @@ else
         setSession()
         redirectHighlightId highlightId
         'redirecting'
+
+    '/h':
+      as: 'highlights'
+      to: ->
+        setSession
+          highlightsActive: true
+        'highlights'
 
     '/a/:annotationId':
       as: 'annotationId'

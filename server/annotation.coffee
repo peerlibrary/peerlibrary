@@ -204,4 +204,4 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
     Person.documents.find
       _id: @personId
     ,
-      fields: _.extend Group.readAccessPersonFields()
+      fields: _.extend Annotation.readAccessPersonFields()

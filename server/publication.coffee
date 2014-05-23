@@ -440,7 +440,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     Person.documents.find
       _id: @personId
     ,
-      fields: _.extend Group.readAccessPersonFields()
+      fields: _.extend Publication.readAccessPersonFields()
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, NonEmptyString

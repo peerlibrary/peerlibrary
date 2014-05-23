@@ -15,12 +15,28 @@ class @Highlight extends AccessDocument
   # target: open annotation standard compatible target information
   # referencingAnnotations: list of (reverse field from Annotation.references.highlights)
   #   _id: annotation id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Highlight'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "author"
+      sort: [
+        ['author', 'asc']
+      ]
+    ]
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"
