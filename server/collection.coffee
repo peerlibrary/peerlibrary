@@ -253,3 +253,31 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
+
+Meteor.publish 'collections', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Collection.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter
+
+  sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Collection.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'collections', [filter, sortIndex],
+      cursor: Collection.documents.find(restrictedFindQuery,
+        limit: limit
+        fields: Collection.PUBLISH_FIELDS().fields
+        sort: sort
+      )
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Collection.readAccessPersonFields()
+ 

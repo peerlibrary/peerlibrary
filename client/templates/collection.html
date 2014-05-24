@@ -56,19 +56,3 @@
     {{/if}}
   </div>
 </template>
-
-<template name="collectionCatalogItem">
-  <li class="catalog-item collection" data-collection-id="{{_id}}">
-    {{> collectionCatalogItemName}}
-    <span class="publications-count">{{countDescription}}</span>
-    <a class="full-item-link" href="{{collectionPathFromId _id slug}}"></a>
-  </li>
-</template>
-
-<template name="collectionCatalogItemName">
-  <h2>
-    <a href="{{collectionPathFromId _id slug}}" class="actionable">
-      {{name}}
-    </a>
-  </h2>
-</template>

@@ -34,34 +34,9 @@ Template.libraryPublications.rendered = ->
     stop: (e, ui) ->
       $('.library-collections-wrapper').removeClass('fixed')
 
-Template.collections.myCollections = ->
-  return unless Meteor.personId()
+Template.libraryMyCollections.myCollections = Template.myCollections.myCollections
 
-  Collection.documents.find
-    'authorPerson._id': Meteor.personId()
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
-
-Template.addNewCollection.events
-  'submit .add-collection': (e, template) ->
-    e.preventDefault()
-
-    name = $(template.findAll '.name').val().trim()
-    return unless name
-
-    Meteor.call 'create-collection', name, (error, collectionId) =>
-      return Notify.meteorError error, true if error
-
-      # Clear the collection name from the form
-      $(template.findAll '.name').val('')
-
-      Notify.success "Collection created."
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.collections.rendered = ->
+Template.libraryMyCollections.rendered = ->
   $(@findAll '.catalog-item').droppable
     accept: '.publication.catalog-item'
     activeClass: 'droppable-active'

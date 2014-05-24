@@ -34,6 +34,13 @@ setSession = (session) ->
     currentPublicationsReady: false
     currentPublicationsLimit: INITIAL_CATALOG_LIMIT
     currentPublicationsSort: 0
+    collectionsActive: false
+    currentCollectionsFilter: null
+    currentCollectionsCount: 0
+    currentCollectionsLoading: false
+    currentCollectionsReady: false
+    currentCollectionsLimit: INITIAL_CATALOG_LIMIT
+    currentCollectionsSort: 0
     groupsActive: false
     currentGroupsFilter: null
     currentGroupsCount: 0
@@ -309,6 +316,13 @@ else
           currentCollectionId: collectionId
           currentCollectionSlug: collectionSlug
         'collection'
+
+    '/c':
+      as: 'collections'
+      to: ->
+        setSession
+          collectionsActive: true
+        'collections'
 
     '/admin':
       as: 'admin'

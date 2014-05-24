@@ -5,7 +5,7 @@
   {{else}}
     <div class="row">
       {{> libraryPublications}}
-      {{> collections}}
+      {{> libraryMyCollections}}
     </div>
   {{/unless}}
 </template>
@@ -25,7 +25,7 @@
   </div>
 </template>
 
-<template name="collections">
+<template name="libraryMyCollections">
   <div class="library-collections-wrapper">
     <div class="col4 push12 sidebar library-collections">
       <h2>My Collections</h2>
@@ -44,16 +44,4 @@
       {{> addNewCollection}}
     </div>
   </div>
-</template>
-
-<template name="noCollections">
-  <p class="no-collections hint">You don't have any collections. Create one below.</p>
-</template>
-
-<template name="addNewCollection">
-  <h3>Create a new collection</h3>
-  <form class="add-collection input-and-buttons">
-    <button type="submit" class="add">Create</button>
-    <div class="input"><input type="text" class="name" placeholder="Collection name" /></div>
-  </form>
 </template>

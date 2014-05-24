@@ -16,6 +16,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> collectionsButton}}
           {{> groupsButton}}
           {{> importButton}}
           {{!
@@ -79,5 +80,11 @@
 <template name="groupsButton">
   <li class="pull-right">
     <a href="{{groupsPath}}">Groups</a>
+  </li>
+</template>
+
+<template name="collectionsButton">
+  <li class="pull-right">
+    <a href="{{collectionsPath}}">Collections</a>
   </li>
 </template>
