@@ -34,6 +34,13 @@ setSession = (session) ->
     currentPublicationsReady: false
     currentPublicationsLimit: INITIAL_CATALOG_LIMIT
     currentPublicationsSort: 0
+    personsActive: false
+    currentPersonsFilter: null
+    currentPersonsCount: 0
+    currentPersonsLoading: false
+    currentPersonsReady: false
+    currentPersonsLimit: INITIAL_CATALOG_LIMIT
+    currentPersonsSort: 0
     collectionsActive: false
     currentCollectionsFilter: null
     currentCollectionsCount: 0
@@ -253,6 +260,13 @@ else
         setSession
           currentPersonSlug: personSlug
         'person'
+
+    '/u':
+      as: 'persons'
+      to: ->
+        setSession
+          personsActive: true
+        'persons'
 
     '/h/:highlightId':
       as: 'highlightId'

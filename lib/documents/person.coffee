@@ -45,6 +45,41 @@ class @Person extends AccessDocument
       invited:
         by: @ReferenceField 'self', [], false
 
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "join date (newest first)"
+      sort: [
+        ['createdAt', 'desc']
+      ]
+    ,
+      name: "join date (oldest first)"
+      sort: [
+        ['createdAt', 'asc']
+      ]
+    ,
+      name: "given name"
+      sort: [
+        ['givenName', 'asc']
+        ['familyName', 'asc']
+      ]
+    ,
+      name: "family name"
+      sort: [
+        ['familyName', 'asc']
+        ['givenName', 'asc']
+      ]
+    ,
+      name: "username"
+      sort: [
+        ['user.username', 'asc']
+      ]
+    ]
+
   displayName: (dontRefetch) =>
     # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
     dontRefetch = false unless _.isBoolean dontRefetch

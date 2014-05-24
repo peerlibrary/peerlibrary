@@ -1,0 +1,79 @@
+<template name="persons">
+  <h1>People</h1>
+
+  <div class="row">
+    <div class="col12 catalog">
+      {{> catalogControls catalogSettings}}
+      {{> noPersons}}
+      {{> personsList documents}}
+      {{> personsLoading}}
+    </div>
+    {{> personsSidebar}}
+  </div>
+</template>
+
+<template name="personsList">
+  {{#if this}}
+  <ol class="item-list">
+    {{#each this}}
+      {{> personCatalogItem}}
+    {{/each}}
+  </ol>
+  {{/if}}
+</template>
+
+<template name="noPersons">
+  {{#if noDocuments}}
+  <p class="status">
+    {{#if documentsFilter}}
+      The filter matches no people.
+    {{else}}
+      There are no people yet. Sign up and become the first.
+    {{/if}}
+  </p>
+  {{/if}}
+</template>
+
+<template name="personsLoading">
+  {{#if documentsLoading}}
+    <p class="status">Loading …</p>
+  {{else}}
+    {{#if moreDocuments}}
+      <button class="load-more">Load more</button>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="personsSidebar">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      <h2>My Profile</h2>
+      <ol class="item-list">
+        {{> personCatalogItem currentPerson}}
+      </ol>
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="personInlineItem">
+  {{#spaceless}}
+    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
+      <i class="avatar icon-person" title="{{status}}">
+        <img src="{{avatar avatarSize}}"/>
+      </i>
+      <span class="name" title="{{displayName}}">{{displayName}}</span>
+    </a>
+  {{/spaceless}}
+</template>
+
+<template name="personCatalogItem">
+  <li class="catalog-item person">
+    <h2>
+      <a href="{{personPathFromId _id slug}}" class="actionable">
+        {{displayName}}
+      </a>
+    </h2>
+    <a class="full-item-link" href="{{personPathFromId _id slug}}"></a>
+  </li>
+</template>
