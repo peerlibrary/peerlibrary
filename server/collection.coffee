@@ -280,4 +280,3 @@ Meteor.publish 'collections', (limit, filter, sortIndex) ->
       _id: @personId
     ,
       fields: _.extend Collection.readAccessPersonFields()
- 
