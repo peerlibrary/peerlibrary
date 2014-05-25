@@ -115,8 +115,7 @@ Crypto =
         params.size = params.data.byteLength
       if not params.transfer
         params.transfer = false
-      if not params.onDone
-        params.onDone = ->
+      params.onDone = callback
       @worker.queue params
 
     finalize: (callback) ->
@@ -133,6 +132,7 @@ Crypto =
       params = 
         message: 'finalize'
         onDone: callback
+        size: 0
       @worker.queue params
 
     destroy: ->
@@ -151,7 +151,7 @@ class BaseWorker
 
     @handler =
       progress: ->
-        progress = @totalSizeProcessed / (@totalSize or @totalSizeQueued)
+        progress = self.totalSizeProcessed / (self.totalSize or self.totalSizeQueued)
         self.onProgress? progress
         self.busy = false
         self.flush()
