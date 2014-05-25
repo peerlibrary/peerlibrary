@@ -24,7 +24,7 @@ Package.on_use(function (api) {
 
 	api.add_files([
 		'digest.js/digest.js',
-		'client/web-worker.js'
+		'assets/web-worker.js'
 	], 'client', {isAsset: true});
 
 });
@@ -36,5 +36,5 @@ Package.on_test(function (api) {
   api.add_files(['lib/tests.coffee'], ['client', 'server']);
   api.add_files(['client/tests.coffee'], ['client']);
   api.add_files(['server/tests.coffee'], ['server']);
-  api.add_files(['test.pdf'], ['client', 'server'], {isAsset: true});
+  api.add_files(['assets/test.pdf'], ['client', 'server'], {isAsset: true});
 });

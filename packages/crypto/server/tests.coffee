@@ -12,29 +12,25 @@ Tinytest.add 'Checking file size', (test) ->
 
 Tinytest.add 'Sending complete file as Buffer, checking hash', (test) ->
   globals.createHash()
-  globals.hash.update
-    data: globals.pdf
-  globals.hash.finalize
-    onDone: (error, result) ->
-      test.equal error, null
-      test.equal result, pdfHash
+  globals.hash.update globals.pdf
+  globals.hash.finalize (error, result) ->
+    test.equal error, null
+    test.equal result, pdfHash
 
 Tinytest.add 'Sending file in regular chunks, checking hash', (test) ->
   globals.createHash()
   globals.chunkStart = 0
   while globals.chunkStart < globals.pdf.length
     globals.sendChunk()
-  globals.hash.finalize
-    onDone: (error, result) ->
-      test.equal error, null
-      test.equal result, pdfHash
+  globals.hash.finalize (error, result) ->
+    test.equal error, null
+    test.equal result, pdfHash
 
 Tinytest.add 'Sending file in irregular chunks, checking hash', (test) ->
   globals.createHash()
   globals.chunkStart = 0
   while globals.chunkStart < globals.pdf.length
     globals.sendChunk true # true is for random
-  globals.hash.finalize
-    onDone: (error, result) ->
-      test.equal error, null
-      test.equal result, pdfHash
+  globals.hash.finalize (error, result) ->
+    test.equal error, null
+    test.equal result, pdfHash

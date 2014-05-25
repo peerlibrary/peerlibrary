@@ -1,9 +1,12 @@
 Crypto =
+  browserSupport: null
   SHA256: class extends Crypto.SHA256
     # defaults
     disableWorker: false
-    workerSrc: '/packages/crypto/client/web-worker.js'
+    workerSrc: '/packages/crypto/assets/web-worker.js'
     chunkSize: 1024 * 32 # bytes
+    transfer: true
+    size: null
 
     constructor: (params) ->
       # params:
@@ -18,120 +21,146 @@ Crypto =
       #                     arguments:
       #                              progress -> float, between 0 and 1 (inclusive)
       #       size -> complete file size (optional)
+      #       transfer -> boolean (optional), defaults to true
+      #                   set to false if you wish to disable tranferring object to web worker
       if params
         if params.disableWorker
           @disableWorker = params.disableWorker
+
         if params.workerSrc
           @workerSrc = params.workerSrc
+
         if params.chunkSize
           @chunkSize = params.chunkSize
-        if params.onProgress
-          @onProgress = params.onProgress
+
+        @onProgress = params.onProgress or ->
+
         if params.size
-          @size = params.size
+          size = params.size
 
-      testArray = new ArrayBuffer(8)
+        if params.transfer
+          @transfer = params.transfer
 
-      #test if ArrayBuffers can be sliced, see:
-      # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
+      if not Crypto.browserSupport
+        testArray = new ArrayBuffer(8)
 
-      try
-        testArray.slice(0, 4)
-        disableSlicing = false
-      catch e
-        disableSlicing = true
+        #test if ArrayBuffers can be sliced, see:
+        # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
 
-      worker = null
-      if !@disableWorker and typeof window != "undefined" and window.Worker
         try
-          # if WebWorker constructor fails, it will use Fallback
-          worker = new WebWorker \
-            @size, \
-            (@onProgress or ->), \
-            @workerSrc, \
-            @chunkSize, \
-            testArray
-      if not worker
-        worker = new WorkerFallback \
-          @size, \
-          (@onProgress or ->), \
-          @chunkSize
+          testArray.slice 0, 4
+          disableSlicing = false
+        catch e
+          disableSlicing = true
 
-      worker.disableSlicing = disableSlicing
+        worker = null
+        transferrable = false
+
+        if !@disableWorker and typeof window != "undefined" and window.Worker
+          try
+            worker = new WebWorker @, size, @onProgress, @workerSrc,
+                                   @chunkSize
+            try
+              worker.worker.postMessage
+                message: 'test'
+                data: testArray,
+                  [testArray]
+              transferrable = !testArray.byteLength
+            catch e
+              transferrable = false
+              worker.worker.postMessage
+                message: 'test'
+                data: testArray
+
+        useWorker = !!worker
+        if not worker
+          worker = new WorkerFallback @, size, @onProgress, @chunkSize
+        Crypto.browserSupport = 
+          useWorker: useWorker
+          transferrable: transferrable
+          disableSlicing: disableSlicing
+      else
+        if Crypto.browserSupport.useWorker
+          worker = new WebWorker @, size, @onProgress, @workerSrc,
+                                 @chunkSize
+        else
+          worker = new WorkerFallback @, size, @onProgress, @chunkSize
+
+      worker.disableSlicing = Crypto.browserSupport.disableSlicing
+      worker.transfer = @transfer
+      worker.transferrable = Crypto.browserSupport.transferrable
+
       @worker = worker
 
-    update: (params) ->
-      # params:
-      #       data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
-      #       transfer -> boolean (optional)
-      #                   whether chunks should be transferred to Worker (if supported) or not
-      #                   transferring is faster and doesn't allocate memory
-      #                   once transferred, data is lost in the main thread
-      #                   set to `true` if you don't need the data after hash calculation
-      #       onDone -> callback function (optional)
-      #                 arguments:
-      #                         error -> Error instance or null if there is no error
-      #                         result -> Integer, 0 if everything is ok, -1 if not
-      params.message = 'update'
+    update: (data, callback) ->
+      # data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
+      # callback -> callback function (optional) to be called after data is processed
+      #     arguments:
+      #             error -> Error instance or null if there is no error
+      #             result -> returns null
+      if not data
+        throw new Error "No data given"
+      if not @worker
+        throw new Error "Worker is destroyed"
+
+      params = 
+        message: 'update'
+        data: data
+        onDone: callback or ->
       if params.data instanceof Blob
         params.type = 'blob'
-      else
+        params.size = params.data.size
+       else
         params.type = 'array'
+        params.size = params.data.byteLength
       if not params.transfer
         params.transfer = false
       if not params.onDone
         params.onDone = ->
       @worker.queue params
 
-    finalize: (params) ->
-      # params:
-      #       onDone -> callback function (required)
-      #                 arguments:
-      #                          error -> Error instance or null if there is no error
-      #                          result -> string, sha256 hash computed from data chunks
-      params.message = 'finalize'
-      if not params.onDone
-        throw new Error 'onDone callback not given!'
+    finalize: (callback) ->
+      # callback -> callback function (required)
+      #  arguments:
+      #           error -> Error instance or null if there is no error
+      #           result -> string, sha256 hash computed from data chunks
+      #                     or null if error is raised
+      if not callback
+        throw new Error "callback not given!"
+      if not @worker
+        throw new Error "Worker is destroyed"
+
+      params = 
+        message: 'finalize'
+        onDone: callback
       @worker.queue params
 
     destroy: ->
-      # terminates the worker to free up resources
-      # do not use this (Crypto.SHA256) instance once this method is invoked, if will fail
-      # if you really need to, invoke instance.constructor() to start worker again
-      # NOTE, this method terminates the worker immediately, make sure it has done all the work
-      @worker.destroy()
       delete @worker
 
 class BaseWorker
-  constructor: (@globalSize, @onProgress, @chunkSize) ->
+  constructor: (@instance, @totalSize, @onProgress, @chunkSize) ->
     self = @
     @chunkStart = 0
-    @globalChunkStart = 0
-    @totalSize = 0
     @busy = false
     @buffer = []
     @current = null
     @reader = null
-    @globalSizeSet = @globalSize?
+    @totalSizeQueued = 0
+    @totalSizeProcessed = 0
 
     @handler =
-      progress: (params) ->
-        # progress is undefined
-        progress = (self.globalChunkStart + self.chunkStart) / self.globalSize
-        progress = 0 if isNaN progress
-        self.onProgress? progress # not current.onProgress because onProgress is global
+      progress: ->
+        progress = @totalSizeProcessed / (@totalSize or @totalSizeQueued)
+        self.onProgress? progress
         self.busy = false
         self.flush()
         
       done: (params) ->
-        self.globalChunkStart += self.totalSize
         self.current?.onDone? params.error, params.result
 
   queue: (params) ->
-    # if global size is not given, calculate it on the fly
-    if not @globalSizeSet and params.data
-      @globalSize = (@globalSize or 0) + (params.data.size or params.data.byteLength)
-      
+    @totalSizeQueued += params.size
     @buffer.push params
     @flush()
 
@@ -140,24 +169,20 @@ class BaseWorker
     @busy = true
 
     # check if current chunk is processed completely
-    if @chunkStart >= @totalSize
-      # calling callback function if current chunk is processed
+    if @current and (@chunkStart >= @current.size)
       @handler.done
         error: null,
-        result: 1
+        result: null
+      @current = null
 
+    if not @current
       @chunkStart = 0
-      @totalSize = 0
-      @current = @buffer.shift()
-      if !@current
+      @current = @buffer.shift() or null
+      if not @current
         return @busy = false
-      if @current.message == 'update'
-        if @current.type == 'blob'
-          @totalSize = @current.data.size
-          if not @reader
-            @setupFileReader()
-        else
-          @totalSize = @current.data.byteLength
+
+    if @current.message == 'update' and @current.type == 'blob' and not @reader
+        @setupFileReader()
     
     if @current.message == 'finalize'
       @finalize()
@@ -166,17 +191,18 @@ class BaseWorker
     # read next chunk (or part of chunk)
     start = @chunkStart
     end = start + @chunkSize
-    if end > @totalSize
-      end = @totalSize
+    if end > @current.size
+      end = @current.size
     @chunkStart = end
     if @disableSlicing
-      # move chunkStart to the end because we send the whole chunk at once
-      @chunkStart = @totalSize
+      # set chunkStart to the end because slicing is not allowed
+      @chunkStart = @current.size
       chunk = @current.data
-      transfer = @current.transfer
+      transfer = @transfer
     else
       chunk = @current.data.slice start, end
       transfer = true
+    @totalSizeProcessed += end - start
     if @current.type == 'blob'
       @reader.readAsArrayBuffer chunk
     else
@@ -198,26 +224,19 @@ class BaseWorker
     throw new Error "Not implemented!"
 
 class WebWorker extends BaseWorker
-  constructor: (size, onProgress, workerSrc, chunkSize, testArray) ->
-    super size, onProgress, chunkSize
+  constructor: (instance, size, onProgress, workerSrc, chunkSize) ->
+    super instance, size, onProgress, chunkSize
     @worker = new Worker workerSrc
-    try
-      @worker.postMessage
-        message: 'test'
-        data: testArray,
-          [testArray]
-      @transferrable = !testArray.byteLength
-    catch e
-      @transferrable = false
-      @worker.postMessage
-        message: 'test'
-        data: testArray
     
     self = @
     @worker.onmessage = (oEvent) ->
       data = oEvent.data.data
       message = oEvent.data.message
       self.handler[message] data
+
+    @worker.onerror = (error) ->
+      self.handler.done error, null
+      self.destroy()
 
   processChunk: (data) ->
     message = chunk: data.chunk, message: 'update'
@@ -232,11 +251,12 @@ class WebWorker extends BaseWorker
 
   destroy: ->
     @worker.terminate()
+    @instance.destroy()
 
 
 class WorkerFallback extends BaseWorker
-  constructor: (size, onProgress, chunkSize) ->
-    super size, onProgress, chunkSize
+  constructor: (instance, size, onProgress, chunkSize) ->
+    super instance, size, onProgress, chunkSize
     @hash = new Digest.SHA256
 
   _bin2hex: (array) ->
@@ -247,16 +267,26 @@ class WorkerFallback extends BaseWorker
     str
 
   processChunk: (data) ->
-    @hash.update data.chunk
+    try
+      @hash.update data.chunk
+    catch e
+      @handler.done e, null
+      @destroy()
     @handler.progress()
-    @handler.done(null, 0)
 
   finalize: ->
-    binaryData = @hash.finalize()
-    fin = new Uint8Array binaryData
-    sha256 = @_bin2hex fin
+    error = null
+    sha256 = null
+    try
+      binaryData = @hash.finalize()
+      fin = new Uint8Array binaryData
+      sha256 = @_bin2hex fin
+    catch e
+      error = e
+    
     @handler.done
-      error: null,
+      error: error,
       result: sha256
 
   destroy: ->
+    @instance.destroy()

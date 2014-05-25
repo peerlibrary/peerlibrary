@@ -12,27 +12,37 @@ Crypto =
       @size = params?.size # this is unused
       @_hash = crypto.createHash 'sha256'
 
-    update: (params) =>
-      # params:
-      #       onDone -> callback function (optional)
-      #                 arguments:
-      #                         error -> Error instance or null if there is no error
-      #                         result -> Integer, 0 if everything is ok, -1 if not
-      onDone = params.onDone or ->
-      @_hash.update params.data
+    update: (data, callback) =>
+      # data -> Buffer (required)
+      # callback -> callback function (optional)
+      #     arguments:
+      #             error -> Error instance or null if there is no error
+      #             result -> Integer, 0 if everything is ok, -1 if not
+      onDone = callback or ->
+      error = null
+      try
+        @_hash.update data
+      catch e
+        error = e
+      
       @onProgress 1
-      onDone null, 0
+      onDone error, null
 
-    finalize: (params) =>
-      # params:
-      #       onDone -> callback function (required)
-      #                 arguments:
-      #                         error -> Error instance or null if there is no error
-      #                         result -> Integer, 0 if everything is ok, -1 if not
-      if not params.onDone
-        throw new Error 'onDone callback not given!'
-      result = @_hash.digest 'hex'
-      params.onDone null, result
+    finalize: (callback) =>
+      # callback -> callback function (required)
+      #     arguments:
+      #             error -> Error instance or null if there is no error
+      #             result -> Integer, 0 if everything is ok, -1 if not
+      if not callback
+        throw new Error 'callback not given!'
+      error = null
+      result = null
+      try
+        result = @_hash.digest 'hex'
+      catch e
+        error = e
+      
+      callback null, result
 
 if Meteor.settings.secretKey
   Crypto.SECRET_KEY = Meteor.settings.secretKey

@@ -1,5 +1,5 @@
 @testRoot = '/packages/crypto'
-@pdfFilename = 'test.pdf'
+@pdfFilename = 'assets/test.pdf'
 @pdfHash = '750cb3269e8222c05548184a2814b8f4b102e9157fe5fd498cfcaeb237fbd38f'
 @pdfByteLength = 13069
 @chunkSize = 1024 * 1 # bytes
@@ -11,8 +11,7 @@
   currentChunkSize = chunkSize * ( 1 + Math.random() * 2 * random )
   chunkEnd = chunkStart + currentChunkSize
   chunkData = pdf.slice(chunkStart, chunkEnd)
-  hash.update
-    data: chunkData
+  hash.update chunkData
   chunkStart += currentChunkSize
 
 @isDefined = false
