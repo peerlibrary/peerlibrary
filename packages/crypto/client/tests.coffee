@@ -84,7 +84,8 @@ processQueue = () ->
   return if not fileLoaded
   test() while test = queue.shift()
 
-# Download file
+# Download file using XMLHttpRequest
+# not using jQuery or HTTP package because they don't support arraybuffer response
 pdfPath = "#{ testRoot }/#{ pdfFilename }?" + Math.random()
 oReq = new XMLHttpRequest
 oReq.open "GET", pdfPath, true

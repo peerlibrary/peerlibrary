@@ -75,7 +75,7 @@ Crypto =
         useWorker = !!worker
         if not worker
           worker = new WorkerFallback @, size, @onProgress, @chunkSize
-        Crypto.browserSupport = 
+        Crypto.browserSupport =
           useWorker: useWorker
           transferrable: transferrable
           disableSlicing: disableSlicing
@@ -103,7 +103,7 @@ Crypto =
       if not @worker
         throw new Error "Worker is destroyed"
 
-      params = 
+      params =
         message: 'update'
         data: data
         onDone: callback or ->
@@ -116,7 +116,7 @@ Crypto =
       if not params.transfer
         params.transfer = false
       params.onDone = callback
-      @worker.queue params
+      @worker.enqueue params
 
     finalize: (callback) ->
       # callback -> callback function (required)
@@ -129,11 +129,11 @@ Crypto =
       if not @worker
         throw new Error "Worker is destroyed"
 
-      params = 
+      params =
         message: 'finalize'
         onDone: callback
         size: 0
-      @worker.queue params
+      @worker.enqueue params
 
     destroy: ->
       delete @worker
@@ -143,7 +143,7 @@ class BaseWorker
     self = @
     @chunkStart = 0
     @busy = false
-    @buffer = []
+    @queue = []
     @current = null
     @reader = null
     @totalSizeQueued = 0
@@ -159,9 +159,9 @@ class BaseWorker
       done: (params) ->
         self.current?.onDone? params.error, params.result
 
-  queue: (params) ->
+  enqueue: (params) ->
     @totalSizeQueued += params.size
-    @buffer.push params
+    @queue.push params
     @flush()
 
   flush: () ->
@@ -177,7 +177,7 @@ class BaseWorker
 
     if not @current
       @chunkStart = 0
-      @current = @buffer.shift() or null
+      @current = @queue.shift() or null
       if not @current
         return @busy = false
 
@@ -214,7 +214,7 @@ class BaseWorker
     @reader.onload = ->
       self.processChunk chunk: @result, transfer: true
 
-  processChunk: (chunk) ->
+  processChunk: (params) ->
     throw new Error "Not implemented!"
 
   finalize: (params) ->
@@ -238,10 +238,10 @@ class WebWorker extends BaseWorker
       self.handler.done error, null
       self.destroy()
 
-  processChunk: (data) ->
-    message = chunk: data.chunk, message: 'update'
-    if @transferrable and data.transfer
-      @worker.postMessage message, [data.chunk]
+  processChunk: (params) ->
+    message = chunk: params.chunk, message: 'update'
+    if @transferrable and params.transfer
+      @worker.postMessage message, [params.chunk]
     else
       @worker.postMessage message
 
@@ -266,9 +266,9 @@ class WorkerFallback extends BaseWorker
       str += hexTab.charAt((a >>> 4) & 0xF) + hexTab.charAt(a & 0xF)
     str
 
-  processChunk: (data) ->
+  processChunk: (params) ->
     try
-      @hash.update data.chunk
+      @hash.update params.chunk
     catch e
       @handler.done e, null
       @destroy()

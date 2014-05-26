@@ -79,7 +79,7 @@ class @Publication extends Publication
         pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
           timeout: 10000 # ms
           encoding: null # PDFs are binary data
-  
+
         Storage.save @foreignFilename(), pdf.content
         assert Storage.exists @foreignFilename()
         Storage.link @foreignFilename(), @cachedFilename()
