@@ -63,7 +63,7 @@ Tinytest.addAsync 'Sending file in irregular chunks, check hashing', (test, onCo
 
 Tinytest.addAsync 'Checking progress callback', (test, onComplete) ->
   round = (number) ->
-    Math.round(number, "e+5")
+    number.toPrecision 5
   queue.push () ->
     chunkCount = globals.pdf.byteLength / globals.chunkSize
     progressStep = 1 / chunkCount
