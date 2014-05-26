@@ -70,18 +70,14 @@ importFile = (file) ->
     fileContent = @result
 
     testPDF file, fileContent, ->
-      # TODO: Compute SHA in chunks
-      # TODO: Compute SHA in a web worker?
-
       hash = new Crypto.SHA256
         onProgress: (progress) ->
-          console.log progress
+          #TODO: update progressbar
       hash.update
         data: fileContent
       hash.finalize
         onDone: (error, result) ->
           sha256 = result
-          console.log sha256
 
           alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
           if alreadyImporting

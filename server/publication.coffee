@@ -86,7 +86,6 @@ class @Publication extends Publication
         assert Storage.exists @cachedFilename()
 
     cache = (error, result) ->
-      console.log "Inside cache " + result
       @sha256 = result
       @cached = moment.utc().toDate()
       Publication.documents.update @_id,
@@ -345,7 +344,6 @@ Meteor.methods
       hash.finalize
         onDone: (error, result)->
           sha256 = result
-          console.log sha256
 
           unless sha256 == publication.sha256
             throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
