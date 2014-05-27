@@ -3,7 +3,7 @@ globals = @
 # Must-pass tests
 # Don't care for worker type, just test to see if it works
 
-Tinytest.addAsync 'Any worker: Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
+Tinytest.addAsync 'Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     globals.createHash()
     globals.hash.update globals.pdf
@@ -14,7 +14,7 @@ Tinytest.addAsync 'Any worker: Sending complete file as ArrayBuffer, checking ha
 
   globals.processQueue()
 
-Tinytest.addAsync 'Any worker: Sending complete file as Blob, checking hash', (test, onComplete) ->
+Tinytest.addAsync 'Sending complete file as Blob, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     blob = new Blob [globals.pdf]
     globals.createHash()
@@ -25,7 +25,7 @@ Tinytest.addAsync 'Any worker: Sending complete file as Blob, checking hash', (t
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Any worker: Sending file in regular chunks, checking hash', (test, onComplete) ->
+Tinytest.addAsync 'Sending file in regular chunks, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     globals.createHash()
     globals.chunkStart = 0
@@ -37,7 +37,7 @@ Tinytest.addAsync 'Any worker: Sending file in regular chunks, checking hash', (
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Any worker: Sending file in irregular chunks, check hashing', (test, onComplete) ->
+Tinytest.addAsync 'Sending file in irregular chunks, check hashing', (test, onComplete) ->
   globals.queue.push () ->
     globals.createHash()
     globals.chunkStart = 0
@@ -49,7 +49,7 @@ Tinytest.addAsync 'Any worker: Sending file in irregular chunks, check hashing',
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Any worker: Checking progress callback', (test, onComplete) ->
+Tinytest.addAsync 'Checking progress callback', (test, onComplete) ->
   round = (number) ->
     number.toPrecision 5
   globals.queue.push () ->

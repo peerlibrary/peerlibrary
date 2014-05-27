@@ -5,7 +5,8 @@ Package.describe({
 Package.on_use(function (api) {
   api.export('Crypto');
 
-  api.use(['coffeescript', 'logging'], ['client', 'server']);
+  api.use(['coffeescript'], ['client', 'server']);
+  api.use(['blob'], ['client']);
 
   api.add_files([
     'lib/crypto.coffee'
@@ -31,7 +32,7 @@ Package.on_use(function (api) {
 
 Package.on_test(function (api) {
   api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
-  api.use(['jquery'], ['client'])
+  api.use(['jquery'], ['client']);
 
   api.add_files(['lib/tests.coffee'], ['client', 'server']);
   api.add_files([

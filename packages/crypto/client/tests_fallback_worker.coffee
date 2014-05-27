@@ -2,7 +2,7 @@ globals = @
 
 # Fallback Worker tests
 
-Tinytest.addAsync 'Forcing fallback worker: Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
+Tinytest.addAsync '[WorkerFallback] Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     try
       globals.createHash
@@ -18,7 +18,7 @@ Tinytest.addAsync 'Forcing fallback worker: Sending complete file as ArrayBuffer
 
   globals.processQueue()
 
-Tinytest.addAsync 'Forcing fallback worker: Sending complete file as Blob, checking hash', (test, onComplete) ->
+Tinytest.addAsync '[WorkerFallback] Sending complete file as Blob, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     try
       blob = new Blob [globals.pdf]
@@ -34,7 +34,7 @@ Tinytest.addAsync 'Forcing fallback worker: Sending complete file as Blob, check
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Forcing fallback worker: Sending file in regular chunks, checking hash', (test, onComplete) ->
+Tinytest.addAsync '[WorkerFallback] Sending file in regular chunks, checking hash', (test, onComplete) ->
   globals.queue.push () ->
     globals.createHash
       disableWorker: true
@@ -47,7 +47,7 @@ Tinytest.addAsync 'Forcing fallback worker: Sending file in regular chunks, chec
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Forcing fallback worker: Sending file in irregular chunks, check hashing', (test, onComplete) ->
+Tinytest.addAsync '[WorkerFallback] Sending file in irregular chunks, check hashing', (test, onComplete) ->
   globals.queue.push () ->
     globals.createHash
       disableWorker: true
@@ -60,7 +60,7 @@ Tinytest.addAsync 'Forcing fallback worker: Sending file in irregular chunks, ch
       onComplete()
   globals.processQueue()
 
-Tinytest.addAsync 'Forcing fallback worker: Checking progress callback', (test, onComplete) ->
+Tinytest.addAsync '[WorkerFallback] Checking progress callback', (test, onComplete) ->
   round = (number) ->
     number.toPrecision 5
   globals.queue.push () ->
