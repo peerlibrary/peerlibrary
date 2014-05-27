@@ -33,10 +33,7 @@ var MessageHandler = {
   done: function SHA256WebWorkerMessageHandler_sendSHA256 (sha256){
     postMessage({
       message: 'done',
-      data: ({
-        error: null,
-        result: sha256
-      })
+      data: sha256
     })
   },
   pong: function SHA256WebWorkerMessageHandler_pong (data) {

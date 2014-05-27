@@ -18,11 +18,18 @@
 
 @isDefined = false
 @hash = null
-@createHash = (onProgress) ->
+@createHash = (params) ->
+  if not params
+    params =
+      disableWorker: null
+      onProgress: null
+      size: null
   @isDefined = true
   try
     @hash = new Crypto.SHA256
       chunkSize: @chunkSize
-      onProgress: onProgress
+      disableWorker: params.disableWorker or false
+      onProgress: params.onProgress or ->
+      size: params.size
     @isDefined = true
 

@@ -34,7 +34,13 @@ Package.on_test(function (api) {
   api.use(['jquery'], ['client'])
 
   api.add_files(['lib/tests.coffee'], ['client', 'server']);
-  api.add_files(['client/tests.coffee'], ['client']);
+  api.add_files([
+    'client/tests_generic.coffee',
+    'client/tests_any_worker.coffee',
+    'client/tests_web_worker.coffee',
+    'client/tests_fallback_worker.coffee',
+    'client/tests_run.coffee'
+  ], ['client']);
   api.add_files(['server/tests.coffee'], ['server']);
   api.add_files(['assets/test.pdf'], ['client', 'server'], {isAsset: true});
 });

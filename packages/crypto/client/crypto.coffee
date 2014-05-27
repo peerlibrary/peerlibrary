@@ -41,7 +41,8 @@ Crypto =
         if params.transfer
           @transfer = params.transfer
 
-      if not Crypto.browserSupport
+
+      if @disableWorker or not Crypto.browserSupport
         testArray = new ArrayBuffer(8)
 
         #test if ArrayBuffers can be sliced, see:
@@ -56,7 +57,7 @@ Crypto =
         worker = null
         transferrable = false
 
-        if !@disableWorker and typeof window != "undefined" and window.Worker
+        if not @disableWorker and typeof window != "undefined" and window.Worker
           try
             worker = new WebWorker @, size, @onProgress, @workerSrc,
                                    @chunkSize
@@ -65,7 +66,7 @@ Crypto =
                 message: 'test'
                 data: testArray,
                   [testArray]
-              transferrable = !testArray.byteLength
+              transferrable = not testArray.byteLength
             catch e
               transferrable = false
               worker.enqueue
@@ -174,8 +175,11 @@ class BaseWorker
         self.busy = false
         self.flush()
         
-      done: (params) ->
-        self.current?.onDone? params.error, params.result
+      done: (result) ->
+        self.current?.onDone? null, result
+
+      error: (error) ->
+        self.current?.onDone? error, null
 
       pong: (params) ->
         if params.data instanceof ArrayBuffer
@@ -274,7 +278,7 @@ class WebWorker extends BaseWorker
       self.handler[message] data
 
     @worker.onerror = (error) ->
-      self.handler.done error, null
+      self.handler.error error
       self.destroy()
 
   processChunk: (params) ->
@@ -320,12 +324,10 @@ class WorkerFallback extends BaseWorker
       binaryData = @hash.finalize()
       fin = new Uint8Array binaryData
       sha256 = @_bin2hex fin
+      @handler.done sha256
     catch e
       error = e
+      @handler.error error
     
-    @handler.done
-      error: error,
-      result: sha256
-
   destroy: ->
     @instance.destroy()

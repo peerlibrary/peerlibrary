@@ -73,8 +73,14 @@ importFile = (file) ->
       hash = new Crypto.SHA256
         onProgress: (progress) ->
           #TODO: update progressbar
-      hash.update fileContent
+      hash.update fileContent, (error, result) ->
+        #TODO: handle errors
+        if error
+          console.log "Import error: " + error.message
       hash.finalize (error, result) ->
+        #TODO: handle errors
+        if error
+          console.log "Import error: " + error.message
         sha256 = result
 
         alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
