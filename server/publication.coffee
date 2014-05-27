@@ -97,8 +97,7 @@ class @Publication extends Publication
       pdfContent = Storage.open @cachedFilename()
       hash = new Crypto.SHA256()
       hash.update pdfContent
-      @sha256 = hash.finalize
-        onDone: cache
+      @sha256 = hash.finalize cache
     else
       cache(null, @sha256)
 
@@ -339,34 +338,32 @@ Meteor.methods
       pdf = Storage.open publication._importingFilename()
 
       hash = new Crypto.SHA256()
-      hash.update
-        data: pdf
-      hash.finalize
-        onDone: (error, result)->
-          sha256 = result
+      hash.update pdf
+      hash.finalize (error, result)->
+        sha256 = result
 
-          unless sha256 == publication.sha256
-            throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
+        unless sha256 == publication.sha256
+          throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
 
-          unless publication.cached
-            # Upload is being finished for the first time, so move it to permanent location
-            Storage.rename publication._importingFilename(), publication.cachedFilename()
-            Publication.documents.update
-              _id: publication._id
-            ,
-              $set:
-                cached: moment.utc().toDate()
-                size: file.size
-
-          # Hash was verified, so add it to uploader's library
-          Person.documents.update
-            _id: person._id
-            'library._id':
-              $ne: publication._id
+        unless publication.cached
+          # Upload is being finished for the first time, so move it to permanent location
+          Storage.rename publication._importingFilename(), publication.cachedFilename()
+          Publication.documents.update
+            _id: publication._id
           ,
-            $addToSet:
-              library:
-                _id: publication._id
+            $set:
+              cached: moment.utc().toDate()
+              size: file.size
+
+        # Hash was verified, so add it to uploader's library
+        Person.documents.update
+          _id: person._id
+          'library._id':
+            $ne: publication._id
+        ,
+          $addToSet:
+            library:
+              _id: publication._id
 
   'verify-publication': (publicationId, samplesData) ->
     check publicationId, DocumentId

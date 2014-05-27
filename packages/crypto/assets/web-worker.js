@@ -8,7 +8,10 @@ onmessage = function (oEvent){
 
 // handles messages received from main thread
 var ActionHandler = {
-  test: function SHA256WebWorkerActionHandler_test (data){
+  test: function SHA256WebWorkerActionHandler_test (data) {
+  },
+  ping: function SHA256WebWorkerActionHandler_ping (data) {
+    MessageHandler.pong(data); // send data back (pong)
   },
   update: function SHA256WebWorkerActionHandler_updateChunk (eventData) {
     hash.update(eventData.chunk);
@@ -22,7 +25,7 @@ var ActionHandler = {
 
 // structures and sends messages to main thread
 var MessageHandler = {
-  progress: function SHA256WebWorkerMessageHandler_sendChunkInfo (){
+  progress: function SHA256WebWorkerMessageHandler_sendChunkInfo () {
     postMessage({
       message: 'progress'
     });
@@ -30,11 +33,23 @@ var MessageHandler = {
   done: function SHA256WebWorkerMessageHandler_sendSHA256 (sha256){
     postMessage({
       message: 'done',
-      data: {
+      data: ({
         error: null,
         result: sha256
-      }
-      });
+      })
+    })
+  },
+  pong: function SHA256WebWorkerMessageHandler_pong (data) {
+    postMessage({
+      message: 'pong',
+      data: data
+    })
+  },
+  print: function debugPrint (message) {
+    postMessage({
+      message: 'print',
+      data: message
+    });
   }
 }
 

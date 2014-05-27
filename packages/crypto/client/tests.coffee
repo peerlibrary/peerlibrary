@@ -18,31 +18,41 @@ Tinytest.addAsync 'Checking file size', (test, onComplete) ->
 
 Tinytest.addAsync 'Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
   queue.push () ->
-    globals.createHash()
-    globals.hash.update globals.pdf   # Send complete file to Crypto
-    globals.hash.finalize (error, result) ->
-      test.equal error, null
-      test.equal result, pdfHash
+    try
+      globals.createHash()
+      globals.hash.update globals.pdf   # Send complete file to Crypto
+      globals.hash.finalize (error, result) ->
+        test.equal error, null
+        test.equal result, pdfHash
+        onComplete()
+    catch error
+      test.fail(error)
       onComplete()
+
   processQueue()
 
 Tinytest.addAsync 'Sending complete file as Blob, checking hash', (test, onComplete) ->
   queue.push () ->
-    blob = new Blob [globals.pdf]
-    globals.createHash()
-    globals.hash.update blob
-    globals.hash.finalize (error, result) ->
-      test.equal error, null
-      test.equal result, pdfHash
+    try
+      blob = new Blob [globals.pdf]
+      globals.createHash()
+      globals.hash.update blob
+      globals.hash.finalize (error, result) ->
+        test.equal error, null
+        test.equal result, pdfHash
+        onComplete()
+    catch error
+      test.fail(error)
       onComplete()
   processQueue()
 
 Tinytest.addAsync 'Sending file in regular chunks, checking hash', (test, onComplete) ->
   queue.push () ->
     globals.createHash()
+
     globals.chunkStart = 0
-    while globals.chunkStart < pdf.byteLength
-      globals.sendChunk()
+    globals.sendChunk() while globals.chunkStart < pdf.byteLength
+
     globals.hash.finalize (error, result) ->
       test.equal error, null
       test.equal result, pdfHash

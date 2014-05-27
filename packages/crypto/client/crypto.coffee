@@ -49,9 +49,9 @@ Crypto =
 
         try
           testArray.slice 0, 4
-          disableSlicing = false
+          @disableSlicing = false
         catch e
-          disableSlicing = true
+          @disableSlicing = true
 
         worker = null
         transferrable = false
@@ -68,17 +68,19 @@ Crypto =
               transferrable = !testArray.byteLength
             catch e
               transferrable = false
-              worker.worker.postMessage
-                message: 'test'
+              worker.enqueue
+                type: 'array'
+                size: 0
                 data: testArray
+                message: 'ping'
+                transferrable: transferrable
 
         useWorker = !!worker
         if not worker
           worker = new WorkerFallback @, size, @onProgress, @chunkSize
-        Crypto.browserSupport =
-          useWorker: useWorker
-          transferrable: transferrable
-          disableSlicing: disableSlicing
+        else if transferrable
+          @setBrowserSupport useWorker, transferrable
+
       else
         if Crypto.browserSupport.useWorker
           worker = new WebWorker @, size, @onProgress, @workerSrc,
@@ -86,11 +88,17 @@ Crypto =
         else
           worker = new WorkerFallback @, size, @onProgress, @chunkSize
 
-      worker.disableSlicing = Crypto.browserSupport.disableSlicing
+      worker.disableSlicing = @disableSlicing #Crypto.browserSupport.disableSlicing
       worker.transfer = @transfer
-      worker.transferrable = Crypto.browserSupport.transferrable
+      worker.transferrable = transferrable #Crypto.browserSupport.transferrable
 
       @worker = worker
+
+    setBrowserSupport: (useWorker, transferrable) ->
+      Crypto.browserSupport =
+        useWorker: useWorker
+        transferrable: transferrable
+        disableSlicing: @disableSlicing
 
     update: (data, callback) ->
       # data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
@@ -138,6 +146,16 @@ Crypto =
     destroy: ->
       delete @worker
 
+    switchWorker: ->
+      # Switches from web worker to fallback worker
+      fallbackWorker = new WorkerFallback @, @worker.totalsize,
+                                          @onProgress, @chunkSize
+      fallbackWorker.enqueue @worker.queue
+      delete @worker
+      @worker = fallbackWorker
+                    #useWorker, transferrable
+      @setBrowserSupport false, false
+
 class BaseWorker
   constructor: (@instance, @totalSize, @onProgress, @chunkSize) ->
     self = @
@@ -159,9 +177,24 @@ class BaseWorker
       done: (params) ->
         self.current?.onDone? params.error, params.result
 
+      pong: (params) ->
+        if params.data instanceof ArrayBuffer
+                                       #worker, transferrable
+          self.instance.setBrowserSupport true, false
+          self.busy = false
+          self.flush()
+        else
+          self.instance.switchWorker()
+
+      print: (params) ->
+        console.log "Web Worker output: " + params
+
   enqueue: (params) ->
-    @totalSizeQueued += params.size
-    @queue.push params
+    if params instanceof Array
+      @enqueue item for item in params
+    else
+      @totalSizeQueued += params.size
+      @queue.push params
     @flush()
 
   flush: () ->
@@ -186,6 +219,12 @@ class BaseWorker
     
     if @current.message == 'finalize'
       @finalize()
+      return
+
+    if @current.message == 'ping'
+      @worker.postMessage
+        message: 'ping'
+        data: @current.data
       return
 
     # read next chunk (or part of chunk)
