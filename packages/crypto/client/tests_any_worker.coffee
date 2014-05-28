@@ -3,56 +3,67 @@ globals = @
 # Must-pass tests
 # Don't care for worker type, just test to see if it works
 
-Tinytest.addAsync 'Sending complete file as ArrayBuffer, checking hash', (test, onComplete) ->
-  globals.queue.push () ->
+testAsyncMulti "Sending complete file as ArrayBuffer, checking hash", [
+  (test, expect) ->
+    globals.downloadPdf expect globals.downloadComplete
+,
+  (test, expect) ->
     globals.createHash()
     globals.hash.update globals.pdf
-    globals.hash.finalize (error, result) ->
+    globals.hash.finalize expect (error, result) ->
       test.equal error, null
       test.equal result, pdfHash
-      onComplete()
+]
 
-  globals.processQueue()
-
-Tinytest.addAsync 'Sending complete file as Blob, checking hash', (test, onComplete) ->
-  globals.queue.push () ->
+testAsyncMulti "Sending complete file as Blob, checking hash", [
+  (test, expect) ->
+    globals.downloadPdf expect globals.downloadComplete
+,
+  (test, expect) ->
     blob = new Blob [globals.pdf]
     globals.createHash()
     globals.hash.update blob
-    globals.hash.finalize (error, result) ->
+    globals.hash.finalize expect (error, result) ->
       test.equal error, null
       test.equal result, pdfHash
-      onComplete()
-  globals.processQueue()
+]
 
-Tinytest.addAsync 'Sending file in regular chunks, checking hash', (test, onComplete) ->
-  globals.queue.push () ->
+testAsyncMulti "Sending file in regular chunks, checking hash", [
+  (test, expect) ->
+    globals.downloadPdf expect globals.downloadComplete
+,
+  (test, expect) ->
     globals.createHash()
     globals.chunkStart = 0
     globals.sendChunk() while globals.chunkStart < pdf.byteLength
 
-    globals.hash.finalize (error, result) ->
+    globals.hash.finalize expect (error, result) ->
       test.equal error, null
       test.equal result, pdfHash
-      onComplete()
-  globals.processQueue()
+]
 
-Tinytest.addAsync 'Sending file in irregular chunks, check hashing', (test, onComplete) ->
-  globals.queue.push () ->
+testAsyncMulti "Sending file in irregular chunks, checking hash", [
+  (test, expect) ->
+    globals.downloadPdf expect globals.downloadComplete
+,
+  (test, expect) ->
     globals.createHash()
     globals.chunkStart = 0
     while globals.chunkStart < globals.pdf.byteLength
       globals.sendChunk true # true is for random
-    globals.hash.finalize (error, result) ->
+    globals.hash.finalize expect (error, result) ->
       test.equal error, null
       test.equal result, pdfHash
-      onComplete()
-  globals.processQueue()
+]
 
-Tinytest.addAsync 'Checking progress callback', (test, onComplete) ->
-  round = (number) ->
-    number.toPrecision 5
-  globals.queue.push () ->
+testAsyncMulti "Checking progress callback", [
+  (test, expect) ->
+    globals.downloadPdf expect globals.downloadComplete
+,
+  (test, expect) ->
+    round = (number) ->
+      number.toPrecision 5
+
     chunkCount = globals.pdf.byteLength / globals.chunkSize
     progressStep = 1 / chunkCount
     expectedProgress = 0
@@ -65,6 +76,5 @@ Tinytest.addAsync 'Checking progress callback', (test, onComplete) ->
         test.equal round(progress), round(expectedProgress)
 
     globals.hash.update globals.pdf
-    globals.hash.finalize (error, result) ->
-      onComplete()
-  globals.processQueue()
+    globals.hash.finalize expect ->
+]

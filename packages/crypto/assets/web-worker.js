@@ -41,12 +41,6 @@ var MessageHandler = {
       message: 'pong',
       data: data
     })
-  },
-  print: function debugPrint (message) {
-    postMessage({
-      message: 'print',
-      data: message
-    });
   }
 }
 

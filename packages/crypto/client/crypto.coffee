@@ -190,9 +190,6 @@ class BaseWorker
         else
           self.instance.switchWorker()
 
-      print: (params) ->
-        console.log "Web Worker output: " + params
-
   enqueue: (params) ->
     if params instanceof Array
       @enqueue item for item in params
@@ -218,9 +215,6 @@ class BaseWorker
       if not @current
         return @busy = false
 
-    if @current.message == 'update' and @current.type == 'blob' and not @reader
-        @setupFileReader()
-    
     if @current.message == 'finalize'
       @finalize()
       return
@@ -247,6 +241,7 @@ class BaseWorker
       transfer = true
     @totalSizeProcessed += end - start
     if @current.type == 'blob'
+      @setupFileReader()
       @reader.readAsArrayBuffer chunk
     else
       @processChunk chunk: chunk, transfer: transfer

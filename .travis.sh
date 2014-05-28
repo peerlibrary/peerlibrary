@@ -11,8 +11,8 @@ while read package; do
     continue
   fi
   echo "Testing $package"
-  if [[ "$package" == "meteor-file" ]]; then
-    # A special case for meteor-file which requires Blob polyfill on PhantomJS
+  if [[ "$package" == "meteor-file" || "$package" == "crypto" ]]; then
+    # A special case for meteor-file and crypto which requires Blob polyfill on PhantomJS
     PACKAGES="blob;$package" make test
     exit_code=$?
   else
