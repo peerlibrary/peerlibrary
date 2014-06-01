@@ -1,7 +1,7 @@
 globals = @
 
-# Must-pass tests
-# Don't care for worker type, just test to see if it works
+# Testing normal use
+# If web worker is not available, it should use fallback instead.
 
 testAsyncMulti "Sending complete file as ArrayBuffer, checking hash", [
   (test, expect) ->

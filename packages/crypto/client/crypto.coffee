@@ -1,5 +1,8 @@
 Crypto =
-  browserSupport: null
+  browserSupport:
+    useWorker: null
+    transferrable: null
+
   SHA256: class extends Crypto.SHA256
     # defaults
     disableWorker: false
@@ -7,12 +10,11 @@ Crypto =
     chunkSize: 1024 * 32 # bytes
     transfer: true
     size: null
-
     constructor: (params) ->
       # params:
       #       disableWorker -> boolean (optional)
       #       workerSrc -> string (optional)
-      #                    override default location of script to be opened in worker thread 
+      #                    override default location of script to be opened in worker thread
       #       chunkSize -> integer (optional)
       #                    override default chunk size in bytes
       #                    chunks are sent to Worker one by one
@@ -21,43 +23,38 @@ Crypto =
       #                     arguments:
       #                              progress -> float, between 0 and 1 (inclusive)
       #       size -> complete file size (optional)
-      #       transfer -> boolean (optional), defaults to true
-      #                   set to false if you wish to disable tranferring object to web worker
       if params
         if params.disableWorker
           @disableWorker = params.disableWorker
-
         if params.workerSrc
           @workerSrc = params.workerSrc
-
         if params.chunkSize
           @chunkSize = params.chunkSize
-
         @onProgress = params.onProgress or ->
-
         if params.size
           size = params.size
 
-        if params.transfer
-          @transfer = params.transfer
+      bs = Crypto.browserSupport
+      testArray = null
+      # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
+      # http://stackoverflow.com/a/10101213
+      if not ArrayBuffer.prototype.slice
+        ArrayBuffer.prototype.slice = (start, end) ->
+          that = new UInt8Array this
+          if typeof end == "undefined"
+            end = that.length
+          result = new ArrayBuffer end - start
+          resultArray = new UInt8Array result
+          for i in [0..resultArray.length]
+            resultArray[i] = that[i+start]
+          result
 
-
-      if @disableWorker or not Crypto.browserSupport
-        testArray = new ArrayBuffer(8)
-
-        #test if ArrayBuffers can be sliced, see:
-        # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
-
-        try
-          testArray.slice 0, 4
-          @disableSlicing = false
-        catch e
-          @disableSlicing = true
-
+      if not @disableWorker and bs.useWorker == null
+        testArray = testArray or new ArrayBuffer 8
         worker = null
         transferrable = false
 
-        if not @disableWorker and typeof window != "undefined" and window.Worker
+        if typeof window != "undefined" and window.Worker
           try
             worker = new WebWorker @, size, @onProgress, @workerSrc,
                                    @chunkSize
@@ -76,30 +73,26 @@ Crypto =
                 message: 'ping'
                 transferrable: transferrable
 
-        useWorker = !!worker
         if not worker
           worker = new WorkerFallback @, size, @onProgress, @chunkSize
+          bs.useWorker = false
+          bs.transferrable = false
+
         else if transferrable
-          @setBrowserSupport useWorker, transferrable
+          bs.useWorker = true
+          bs.transferrable = true
+        # if transferrable is false, even if Worker is set at this point
+        # we need to wait for 'pong' answer from Worker because
+        # structured copy may not work
 
       else
-        if Crypto.browserSupport.useWorker
+        if not @disableWorker and bs.useWorker == true
           worker = new WebWorker @, size, @onProgress, @workerSrc,
                                  @chunkSize
         else
           worker = new WorkerFallback @, size, @onProgress, @chunkSize
 
-      worker.disableSlicing = @disableSlicing #Crypto.browserSupport.disableSlicing
-      worker.transfer = @transfer
-      worker.transferrable = transferrable #Crypto.browserSupport.transferrable
-
       @worker = worker
-
-    setBrowserSupport: (useWorker, transferrable) ->
-      Crypto.browserSupport =
-        useWorker: useWorker
-        transferrable: transferrable
-        disableSlicing: @disableSlicing
 
     update: (data, callback) ->
       # data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
@@ -155,7 +148,6 @@ Crypto =
       delete @worker
       @worker = fallbackWorker
                     #useWorker, transferrable
-      @setBrowserSupport false, false
 
 class BaseWorker
   constructor: (@instance, @totalSize, @onProgress, @chunkSize) ->
@@ -164,7 +156,6 @@ class BaseWorker
     @busy = false
     @queue = []
     @current = null
-    @reader = null
     @totalSizeQueued = 0
     @totalSizeProcessed = 0
 
@@ -174,8 +165,8 @@ class BaseWorker
         self.onProgress? progress
         self.busy = false
         self.flush()
-        
-      done: (result) ->
+
+       done: (result) ->
         self.current?.onDone? null, result
 
       error: (error) ->
@@ -183,11 +174,11 @@ class BaseWorker
 
       pong: (params) ->
         if params.data instanceof ArrayBuffer
-                                       #worker, transferrable
-          self.instance.setBrowserSupport true, false
+          Crypto.browserSupport.useWorker = true
           self.busy = false
           self.flush()
         else
+          Crypto.browserSupport.useWorker = false
           self.instance.switchWorker()
 
   enqueue: (params) ->
@@ -231,28 +222,21 @@ class BaseWorker
     if end > @current.size
       end = @current.size
     @chunkStart = end
-    if @disableSlicing
-      # set chunkStart to the end because slicing is not allowed
-      @chunkStart = @current.size
-      chunk = @current.data
-      transfer = @transfer
-    else
-      chunk = @current.data.slice start, end
-      transfer = true
+    chunk = @current.data.slice start, end
     @totalSizeProcessed += end - start
     if @current.type == 'blob'
-      @setupFileReader()
-      @reader.readAsArrayBuffer chunk
+      @readBlob chunk
     else
-      @processChunk chunk: chunk, transfer: transfer
+      @processChunk chunk
 
-  setupFileReader: ->
+  readBlob: (blob) ->
     self = @
-    @reader = new FileReader()
-    @reader.onload = ->
-      self.processChunk chunk: @result, transfer: true
+    reader = new FileReader()
+    reader.onload = ->
+      self.processChunk @result
+    reader.readAsArrayBuffer blob
 
-  processChunk: (params) ->
+  processChunk: (chunk) ->
     throw new Error "Not implemented!"
 
   finalize: (params) ->
@@ -265,7 +249,7 @@ class WebWorker extends BaseWorker
   constructor: (instance, size, onProgress, workerSrc, chunkSize) ->
     super instance, size, onProgress, chunkSize
     @worker = new Worker workerSrc
-    
+
     self = @
     @worker.onmessage = (oEvent) ->
       data = oEvent.data.data
@@ -276,9 +260,9 @@ class WebWorker extends BaseWorker
       self.handler.error error
       self.destroy()
 
-  processChunk: (params) ->
-    message = chunk: params.chunk, message: 'update'
-    if @transferrable and params.transfer
+  processChunk: (chunk) ->
+    message = chunk: chunk, message: 'update'
+    if @transferrable
       @worker.postMessage message, [params.chunk]
     else
       @worker.postMessage message
@@ -304,9 +288,9 @@ class WorkerFallback extends BaseWorker
       str += hexTab.charAt((a >>> 4) & 0xF) + hexTab.charAt(a & 0xF)
     str
 
-  processChunk: (params) ->
+  processChunk: (chunk) ->
     try
-      @hash.update params.chunk
+      @hash.update chunk
     catch e
       @handler.done e, null
       @destroy()
@@ -323,6 +307,6 @@ class WorkerFallback extends BaseWorker
     catch e
       error = e
       @handler.error error
-    
+
   destroy: ->
     @instance.destroy()

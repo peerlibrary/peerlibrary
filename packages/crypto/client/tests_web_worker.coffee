@@ -10,6 +10,6 @@ testAsyncMulti "[WebWorker] Testing support", [
     globals.createHash()
     globals.hash.update globals.pdf, expect (error, result) ->
       test.equal error, null
-      test.equal globals.hash.worker.constructor.name, 'WebWorker',
+      test.isTrue Crypto.browserSupport.useWorker,
                  "Web worker is not supported!"
 ]
