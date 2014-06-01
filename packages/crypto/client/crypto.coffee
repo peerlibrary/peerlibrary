@@ -166,7 +166,7 @@ class BaseWorker
         self.busy = false
         self.flush()
 
-       done: (result) ->
+      done: (result) ->
         self.current?.onDone? null, result
 
       error: (error) ->
