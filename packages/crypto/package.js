@@ -5,7 +5,7 @@ Package.describe({
 Package.on_use(function (api) {
   api.export('Crypto');
 
-  api.use(['coffeescript'], ['client', 'server']);
+  api.use(['coffeescript', 'logging'], ['client', 'server']);
   api.use(['blob'], ['client']);
 
   api.add_files([
