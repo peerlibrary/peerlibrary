@@ -67,6 +67,10 @@ uploadFile = (file, publicationId) ->
           finished: true
           publicationId: publicationId
 
+  ImportingFile.documents.update file._id,
+    $set:
+      status: "In queue"
+
 
 testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
