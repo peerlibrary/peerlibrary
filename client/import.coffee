@@ -36,12 +36,22 @@ verifyFile = (file, fileContent, publicationId, samples) ->
         finished: true
         publicationId: publicationId
 
-uploadFile = (file, publicationId) ->
-  meteorFile = new MeteorFile file,
+
+uploadQueue = async.queue (params, callback) ->
+  meteorFile = new MeteorFile params.file,
     collection: ImportingFile.Meta.collection
 
-  meteorFile.upload file, 'upload-publication',
+  meteorFile.upload params.file, 'upload-publication',
     size: UPLOAD_CHUNK_SIZE,
+    publicationId: params.publicationId
+  ,
+    callback
+,
+  1 # simultaneous upload(s)
+
+uploadFile = (file, publicationId) ->
+  uploadQueue.push
+    file: file
     publicationId: publicationId
   ,
     (error) ->
@@ -56,6 +66,7 @@ uploadFile = (file, publicationId) ->
         $set:
           finished: true
           publicationId: publicationId
+
 
 testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
