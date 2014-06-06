@@ -1,10 +1,9 @@
-@SearchResults = new Meteor.Collection 'SearchResults', transform: (doc) => new @SearchResult doc
-
 class @SearchResult extends Document
-  # query: query object or string as provided by the client
-  # countPublications: number of publications in the results for the query
-  # countPersons: number of people in the results for the query
+  # name: name of the search
+  # query: query string as provided by the client
+  # count*: number of search results for the given cursor in the query (for each cursor there will be one field)
 
-  # Should be a function so that we can possible resolve circual references
-  @Meta =>
-    collection: SearchResults
+  @Meta
+    name: 'SearchResult'
+    # We use local collection on the server side because we do not really want to store this into the database
+    collection: if Meteor.isServer then null else 'SearchResults'

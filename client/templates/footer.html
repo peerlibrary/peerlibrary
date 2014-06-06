@@ -1,5 +1,5 @@
 <template name="footer">
-  <footer class="{{indexFooter}} {{noIndexFooter}} {{currentPage}}">
+  <footer class="{{indexFooter}} {{noIndexFooter}} {{currentPage}} {{publicationDisplayed}}">
     <ul class="subpages">
       <li><a href="{{aboutPath}}">About</a></li>
       <li><a href="{{helpPath}}">Help</a></li>
@@ -14,7 +14,6 @@
       <li><a href="http://lists.peerlibrary.org/lists/info/news" class="newsletter">Newsletter</a></li>
       <li><a href="mailto:hello@peerlibrary.org">Contact</a></li>
     </ul>
-    {{> newsletter}}
   </footer>
 </template>
 
@@ -22,20 +21,4 @@
   {{#unless searchActive}}
     {{> footer}}
   {{/unless}}
-</template>
-
-<template name="newsletter">
-  <div class="newsletter-dialog {{newsletterActive}} {{newsletterSubscribing}}">
-    <div class="description">
-      Subscribe to PeerLibrary announcements, news, and important things. Low traffic.
-    </div>
-    <div class="email-label-and-input">
-      <label class="email-label" for="newsletter-dialog-email">Email</label>
-      <input id="newsletter-dialog-email" type="text" {{#if newsletterSubscribing}}disabled="disabled"{{/if}} />
-    </div>
-    {{#if newsletterError}}
-      <div class="message error-message">{{newsletterError}}</div>
-    {{/if}}
-    <div class="subscribe-form-submit">Subscribe</div>
-  </div>
 </template>

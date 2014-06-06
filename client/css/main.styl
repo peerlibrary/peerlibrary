@@ -1,6 +1,42 @@
-@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600")
-//@import url("http://fonts.googleapis.com/css?family=Signika+Negative:300,400,600")
-@import variables
+@import 'variables.import'
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Regular.eot')
+  src url('/fonts/FiraSans-Regular.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/FiraSans-Regular.woff') format('woff'),
+  url('/fonts/FiraSans-Regular.ttf') format('truetype')
+  font-weight normal
+  font-style normal
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Italic.eot')
+  src url('/fonts/FiraSans-Italic.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/FiraSans-Italic.woff') format('woff'),
+  url('/fonts/FiraSans-Italic.ttf') format('truetype')
+  font-weight normal
+  font-style italic
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Bold.eot')
+  src url('/fonts/FiraSans-Bold.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/FiraSans-Bold.woff') format('woff'),
+  url('/fonts/FiraSans-Bold.ttf') format('truetype')
+  font-weight bold
+  font-style normal
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Light.eot')
+  src url('/fonts/FiraSans-Light.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/FiraSans-Light.woff') format('woff'),
+  url('/fonts/FiraSans-Light.ttf') format('truetype')
+  font-weight 300
+  font-style normal
+
+
 
 /* General
 ========== */
@@ -9,7 +45,7 @@ html, button, input, select, textarea
   color #22
 
 body
-  font 14px "Source Sans Pro", sans-serif
+  font 14px "Fira Sans", sans-serif
   line-height default-line-height
   margin 0 auto
   background light-grey
@@ -21,6 +57,12 @@ body
 ::selection
   background selection-color
   text-shadow none
+
+:focus 
+  outline none
+
+::-moz-focus-inner 
+  border 0
 
 hr
   display block
@@ -38,9 +80,13 @@ fieldset
   margin 0
   padding 0
 
+button
+  font-family "Fira Sans", sans-serif
+
 textarea
   resize vertical
 
+  font-weight: normal;
 .chromeframe
   margin 0.2em 0
   background #dee7e9
@@ -65,8 +111,55 @@ h2
   margin-top 0
 
 input
-  font-family "Source Sans Pro", sans-serif
+  font-family "Fira Sans", sans-serif
   outline none
+
+.balance-text
+  text-align center
+
+blockquote
+  border-left 4px solid #ddd
+  padding 0 15px
+  margin-left 0
+  margin-right 0
+
+/* Buttons
+========== */
+
+.btn
+  height 32px
+  font-size 14px
+  line-height 24px
+  padding 0 11px
+  color #444
+  background white
+  border 1px solid #ccc
+  border-radius 2px
+  font-weight normal
+  cursor pointer 
+
+.btn:hover
+  background #e3e3e3
+
+.btn.blue
+  background bg-blue
+  border 1px solid border-blue
+  color white
+  
+.btn.blue:hover
+  background hover-blue
+
+/* UI dropdown
+============== */
+.ui-dropdown
+  padding 6px 10px
+  border 1px solid transparent
+  color icon-gray
+  cursor pointer
+
+.ui-dropdown:hover
+  border-color #e3e3e3
+  color icon-gray-hover
 
 /* Helper classes
 ================= */
@@ -112,8 +205,12 @@ input
   position static
   width auto
 
-.simple
-  margin-top 75px
+section
+  .simple
+    margin-top simple-margin-top
+
+  .simple.loading
+    text-align center
 
 .invisible
   visibility hidden
@@ -127,3 +224,27 @@ input
 
 .clearfix
   *zoom 1
+
+/* Hints
+======== */
+.hint
+  font-style italic
+  opacity 0.7
+
+/* Grid correction
+================== */
+
+/* Current grid implementation uses the overflow:auto trick to resize the container (row) to all its floated
+   children (cols). This is a problem for overlays (popups) that need to expand beyond the content.
+
+   The overflow:auto trick was designed to overcome explorer's lack of pseudo-elements. Since this is not an issue for us,
+   we correct the grid behavior to use an ::after element that clears the floats and resizes the container. */
+
+.row
+  overflow visible
+
+.row::after
+  content ""
+  display block
+  clear both
+

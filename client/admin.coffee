@@ -4,7 +4,7 @@ Deps.autorun ->
     Meteor.subscribe 'logged-errors'
 
 Template.adminCheck.isAdmin = ->
-  Meteor.person()?.isAdmin
+  Meteor.person(isAdmin: 1)?.isAdmin
 
 Template.adminDevelopment.events
   'click button.sample-data': (e, template) ->
@@ -20,6 +20,20 @@ Template.adminPublications.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.adminPublications.events
+  'click button.reprocess-pdfs': (e, template) ->
+    Meteor.call 'reprocess-pdfs', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.adminDatabase.events
+  'click button.update-all': (e, template) ->
+    Meteor.call 'database-update-all', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminErrors.events
   'click button.dummy-error': (e, template) ->
     # Throws a dummy error on button click, which should be logged
@@ -27,7 +41,7 @@ Template.adminErrors.events
     throw new Error "Dummy error"
 
 Template.adminErrors.errors = ->
-  LoggedErrors.find {}
+  LoggedError.documents.find {}
 
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (e, template) ->
@@ -50,8 +64,21 @@ Template.adminArXiv.events
     return # Make sure CoffeeScript does not return anything
 
 Template.adminArXiv.PDFs = ->
-  ArXivPDFs.find {},
+  ArXivPDF.documents.find {},
     sort: [
       ['processingStart', 'desc']
     ]
     limit: 5
+
+Template.adminFSM.events
+  'click button.sync-fsm-cache': (e, template) ->
+    Meteor.call 'sync-fsm-cache', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click button.sync-fsm-metadata': (e, template) ->
+    Meteor.call 'sync-fsm-metadata', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything

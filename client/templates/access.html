@@ -1,0 +1,88 @@
+<template name="accessControl">
+  <div class="access-menu">
+    <form class="access {{documentName}}-access">
+      <div class="selections">
+
+        <label class="selection {{#if public}}selected{{/if}}">
+          <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+          <i class="access-icon icon-public"></i> Public
+        </label>
+
+        <label class="selection {{#if private}}selected{{/if}}">
+          <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+          <i class="access-icon icon-private"></i> Private
+        </label>
+
+      </div>
+      <div class="description public {{#if public}}displayed{{/if}}">Everyone can see the {{documentName}}.</div>
+      <div class="description private {{#if private}}displayed{{/if}}">Only the users listed can see the {{documentName}}.</div>
+    </form>
+    {{#if private}}
+      {{> privateAccessControl}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="privateAccessControl">
+  <div class="private-access-control">
+    {{> privateAccessControlList}}
+    {{> privateAccessControlAdd}}
+  </div>
+</template>
+
+<template name="privateAccessControlList">
+  <div class="private-access-control-members">
+    <ol class="access-list access-list-users member-list">
+      {{#each readPersonsList}}
+        {{>personMember}}
+      {{/each}}
+    </ol>
+    <ol class="access-list access-list-groups member-list">
+      {{#each readGroupsList}}
+        {{>groupMember}}
+      {{/each}}
+    </ol>
+  </div>
+</template>
+
+<template name="privateAccessControlAdd">
+  <div class="add-control">
+    <input type="text" class="add-access" placeholder="Add users or groups" />
+    {{> privateAccessControlNoResults}}
+    {{> privateAccessControlResults}}
+    {{> privateAccessControlLoading}}
+  </div>
+</template>
+
+<template name="privateAccessControlNoResults">
+  {{#if noResults}}
+    <div class="no-results add-control-results">
+      No people or groups found
+      {{> addControlInviteByEmail email}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="privateAccessControlResults">
+  {{#if results.length}}
+    <ul class="access-results add-control-results member-list">
+      {{#each results}}
+        {{> privateAccessControlResultsItem}}
+      {{/each}}
+     </ul>
+  {{/if}}
+</template>
+
+<template name="privateAccessControlResultsItem">
+  {{#ifPerson}}
+    {{> personMemberAdd}}
+  {{else}}
+    {{> groupMemberAdd}}
+  {{/ifPerson}}
+</template>
+
+<template name="privateAccessControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading...</div>
+  {{/if}}
+</template>

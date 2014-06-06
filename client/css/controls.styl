@@ -1,0 +1,275 @@
+@import 'variables.import'
+
+
+/* General form controls
+======================== */
+
+input, button
+  display inline-block
+  padding 5px
+  font-size 13px
+  border 1px solid box-shadow-border
+  transition all 0.2s
+
+input
+  min-width 10em
+
+input:focus, button:focus
+  border 1px solid #a1b3c2
+  box-shadow 0 0 2px #a1b3c2
+
+button
+  background-color box-shadow-background
+
+button:hover
+  background-color box-shadow-border
+
+button.default
+  background-color box-shadow-background-default
+
+button.default:hover
+  background-color box-shadow-border
+
+/* Edit button
+============== */
+
+.edit, .meta-menu .edit
+  display none
+  vertical-align middle
+  background none
+  /* For focused style */
+  padding 4px
+  border 1px solid transparent
+  border-radius 5px
+
+.edit:hover, .meta-menu .edit:hover
+  background none
+  color blue-accent
+
+.editable:hover
+  .edit
+    display inline-block
+
+h1
+  .edit
+    margin-top -5px
+
+/* Search bar
+============= */
+.search-bar
+  input
+    border none
+    background none
+    font-weight 300
+
+/* Sidebar
+========== */
+.sidebar
+  position relative
+  padding 10px
+  padding-bottom 30px
+  border-left 1px solid #dee7e9
+
+  h3
+    font-weight 300
+
+  label
+    display block
+    margin-bottom 10px
+    font-size 0.9em
+    font-weight 300
+
+  input, button, select
+    display block
+    width 235px
+    box-sizing border-box
+
+  .input-and-buttons
+    width 100%
+
+    button
+      width auto
+
+    input
+      border-right-width 0
+
+    input:focus
+      border-right-width 1px
+
+/* Meta menus and jQuery UI widgets
+=================================== */
+
+.meta-menu, .ui-widget
+  input, button
+    display block
+    padding 8px 12px
+    border none
+    box-sizing border-box
+    font-weight 300
+    font-size 13px
+    transition all 0.2s
+    border-radius 2px
+
+  input
+    width 100%
+    padding 7px
+    background-color white
+
+  button
+    color white
+    background-color rgba(120,120,120,0.9)
+
+  button:hover
+    background-color rgba(80,80,80,0.9)
+
+  button.default
+    background-color rgba(110, 110, 110, 0.9)
+
+  button.default:hover
+    background-color rgba(80, 80, 80, 0.9)
+
+  button:focus
+    box-shadow 0 0 0 2px rgba(255, 255, 255, 0.4)
+
+  .input-and-buttons
+    width 100%
+
+    input, button
+      border-radius 0
+
+    input
+      border-radius 2px 0 0 2px
+
+    button:first-child
+      border-radius 0 2px 2px 0
+
+  .toggle-list
+    list-style none
+    padding 10px
+    background-color rgba(120,120,120,0.9)
+    border-radius 2px
+
+  .toggle-list-item
+    button
+      background none
+      border none
+      border-radius 2px
+      color white
+      width 100%
+      text-align left
+      padding 10px 10px 10px 30px
+      position relative
+
+    button:hover
+      background overlay-translucent
+
+    .icon-check::before
+      position absolute
+      left 7px
+      top 11px
+
+  .edit:hover
+    color #ccc
+
+/* jQuery UI widgets
+==================== */
+
+.ui-widget
+  border none
+  border-radius 2px
+  padding 0
+  background overlay-translucent
+  color white
+  font-family "Source Sans Pro", sans-serif
+  font-size 14px
+
+  .ui-widget-header
+    border 0
+    border-radius 2px 2px 0 0
+    padding 8px 10px
+    background overlay-translucent
+    color white
+    font-size 1.17em
+    font-weight bold
+
+    .ui-state-default
+      background transparent
+
+    .ui-state-hover
+      color #ccc
+
+  .ui-widget-content
+    padding 10px
+    margin 0
+    color white
+    background none
+
+    a
+      color white
+
+  .ui-state-default
+    border none
+    color white
+    background rgba(120,120,120,0.9)
+
+  .ui-state-hover
+    background rgba(80,80,80,0.9)
+
+  input, button.ui-widget
+    font-family "Source Sans Pro", sans-serif
+    font-size 13px
+
+  .ui-button-text
+    padding 0
+
+  .ui-icon
+    background none
+    text-indent 0
+
+  .ui-icon-closethick:before
+    font-size 14px
+    font-family "glyph"
+    content '\e803'
+
+
+.ui-dialog
+  .ui-dialog-titlebar
+    .ui-dialog-title
+      margin 0
+
+  .ui-dialog-buttonpane
+    padding-top 0
+    border none
+
+    button
+      display inline-block
+      margin 0 0 0 10px
+
+    button.alternative
+      position absolute
+      left 0
+
+.ui-slider .ui-widget-header
+  padding 0
+
+/* Layouts
+========== */
+
+.input-and-buttons
+  font-size 13px
+  min-width 15em
+
+  input, button
+    box-sizing border-box
+
+  button
+    float right
+
+  .input
+    overflow hidden
+
+    input
+      width 100%
+      min-width auto
+
+

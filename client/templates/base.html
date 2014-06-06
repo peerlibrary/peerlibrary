@@ -1,13 +1,12 @@
 <head>
-  <title>PeerLibrary</title>
-  <link rel="shortcut icon" href="img/favicon.png" />
+  <link rel="shortcut icon" href="/img/favicon.png" />
 </head>
 
 <body>
   {{#unless INSTALL}}
     {{> header}}
   {{/unless}}
-  <section class="{{currentPage}}">
+  <section class="{{currentPage}} {{#if currentPersonId}}logged-in{{else}}logged-out{{/if}}">
     <div class="container">
       {{renderPage}}
     </div>
@@ -17,5 +16,6 @@
     {{> importOverlay}}
     {{> signInOverlay}}
   {{/unless}}
+  {{> dialogs}}
   {{> notificationsOverlay}}
 </body>

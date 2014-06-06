@@ -1,5 +1,3 @@
-# We are redefining documents on client and server, so we have to update metadata with new
-# document defintions. This takes care of possible recursive references as well. For this
-# to work, all metadata should be provided as functions and not directly.
+# We have to call defineAll last to take care of possible recursive references as well.
 
-Document.redefineAll()
+Document.defineAll()

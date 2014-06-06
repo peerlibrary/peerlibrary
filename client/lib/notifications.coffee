@@ -1,13 +1,15 @@
-# Local (client-only) collection with notifications
-# Fields:
-#   type: type of the notification (debug, warn, error)
-#   timestamp: timestamp when was notification inserted
-#   message: message of the notification
-@Notifications = new Meteor.Collection null
+# Local (client-only) document for notifications
+class @Notify extends Document
+  # type: type of the notification (debug, warn, error)
+  # timestamp: timestamp when was notification inserted
+  # message: message of the notification
 
-class @Notify
+  @Meta
+    name: 'Notify'
+    collection: null
+
   @_insert: (type, message, additional) =>
-    Notifications.insert
+    @documents.insert
       type: type
       timestamp: moment.utc().toDate()
       message: message
@@ -48,39 +50,41 @@ class @Notify
   @error: (message, additional, log, stack) =>
     additional = '' unless additional
 
-    unless stack
-      stack = new Error().stack
-      # We skip first two lines as they are useless
-      # (the first is "Error" and the second is location of this error function)
-      stack = stack.split('\n')[2..].join('\n') if stack
+    stack = StackTrace.printStackTrace() unless stack
 
     notificationAdditional = additional
 
     if stack
-      notificationAdditional += "<div class=\"stack\">#{ _.escape(stack) }</div>"
+      displayStack = if _.isArray stack then stack.join('\n') else stack
+      notificationAdditional += "<textarea class=\"stack\" name=\"stack\" rows=\"10\" cols=\"30\">#{ _.escape(displayStack) }</textarea>"
+
+    afterLogging = (error, loggedErrorId) =>
+      # Ignoring error
+
+      notificationAdditional += "<div class=\"error-logged\">This error has been logged as #{ loggedErrorId }.</div>" if loggedErrorId
+
+      notificationId = @_insert 'error', message, notificationAdditional
+
+      if loggedErrorId
+        logged = "<logged as #{ loggedErrorId }>"
+      else
+        logged = '<not logged>'
+
+      if additional
+        console.error message, additional, logged, stack
+      else
+        console.error message, logged, stack
+
+      notificationId
 
     if log
-      caller = Log._getCallerDetails(/client\/lib\/notifications(?:\/|(?::tests)?\.(?:js|coffee))/)
-
-      loggedErrorId = @_logError [message, additional].join('\n'), caller.file, caller.line, stack
-
-      notificationAdditional += "<div class=\"error-logged\">This error has been logged as #{ loggedErrorId }.</div>"
-
-    notificationId = @_insert 'error', message, notificationAdditional
-
-    if loggedErrorId
-      logged = "<logged as #{ loggedErrorId }>"
+      caller = StackTrace.getCaller()
+      match = caller.match /@(.*\/.+\.(?:coffee|js).*?)(?::(\d+))?(?::(\d+))?$/ if caller
+      @_logError [message, additional].join('\n'), (match?[1] or null), (match?[2] or match?[3] or null), stack, afterLogging
     else
-      logged = '<not logged>'
+      afterLogging null, null
 
-    if additional
-      console.error message, additional, logged, stack
-    else
-      console.error message, logged, stack
-
-    notificationId
-
-  @_logError: (errorMsg, url, lineNumber, stack) =>
+  @_logError: (errorMsg, url, lineNumber, stack, callback) =>
     session = {}
     for key, value of Session.keys
       # Dots are forbidden in MongoDB fields
@@ -88,7 +92,7 @@ class @Notify
       # Values are EJSON encoded, let's decode them
       session[key] = EJSON.parse(value)
 
-    LoggedErrors.insert
+    Meteor.call 'log-error',
       errorMsg: errorMsg
       url: url
       lineNumber: lineNumber
@@ -109,3 +113,5 @@ class @Notify
       release: Meteor.release
       version: VERSION
       PDFJS: _.pick PDFJS, 'maxImageSize', 'disableFontFace', 'disableWorker', 'disableRange', 'disableAutoFetch', 'pdfBug', 'postMessageTransfers', 'disableCreateObjectURL', 'verbosity'
+    ,
+      callback or ->

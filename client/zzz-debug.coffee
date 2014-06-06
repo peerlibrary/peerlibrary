@@ -18,9 +18,6 @@ pulseNode = (i, node) ->
       node.style.cssText = prePulseCss
   ).dequeue 'pulseQueue'
 
-pulse = (template) ->
-  $(template.firstNode).nextUntil(template.lastNode).addBack().add(template.lastNode).each pulseNode
-
 if Meteor.settings?.public?.debug?.rendering
   _.each Template, (template, name) ->
     oldRendered = template.rendered
@@ -29,4 +26,4 @@ if Meteor.settings?.public?.debug?.rendering
     template.rendered = (args...) ->
       Notify.debug name, "render count: #{ ++counter }"
       oldRendered.apply @, args if oldRendered
-      pulse @
+      $(@findAll '> *').each pulseNode

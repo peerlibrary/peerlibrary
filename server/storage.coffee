@@ -1,6 +1,7 @@
+fs = Npm.require 'fs'
 path = Npm.require 'path'
 
-class @Storage extends @Storage
+class @Storage extends Storage
   @_assurePath: (path) ->
     path = path.split @_path.sep
     for segment, i in path[1...path.length-1]
@@ -8,30 +9,41 @@ class @Storage extends @Storage
       if !fs.existsSync p
         fs.mkdirSync p
 
+  @_fullPath: (filename) ->
+    assert filename
+    @_storageDirectory + @_path.sep + filename
+
   @save: (filename, data) ->
-    filename = @_storageDirectory + @_path.sep + filename
-    @_assurePath filename
-    fs.writeFileSync filename, data
+    path = @_fullPath filename
+    @_assurePath path
+    fs.writeFileSync path, data
 
   @saveMeteorFile: (meteorFile, filename) ->
-    throw new Meteor.Error 403, "Null filename." unless filename
-
-    path = @_storageDirectory + @_path.sep + filename
+    path = @_fullPath filename
     directory = path.split('/').slice(0, -1).join('/')
     meteorFile.name = filename.split('/').slice(-1)[0]
     @_assurePath path
     meteorFile.save directory, {}
 
   @exists: (filename) ->
-    fs.existsSync @_storageDirectory + @_path.sep + filename
+    fs.existsSync @_fullPath filename
 
   @open: (filename) ->
-    fs.readFileSync @_storageDirectory + @_path.sep + filename
+    fs.readFileSync @_fullPath filename
 
   @rename: (oldFilename, newFilename) ->
-    newFilename = @_storageDirectory + @_path.sep + newFilename
-    @_assurePath newFilename
-    fs.renameSync @_storageDirectory + @_path.sep + oldFilename, newFilename
+    newPath = @_fullPath newFilename
+    @_assurePath newPath
+    fs.renameSync @_fullPath(oldFilename), newPath
+
+  @link: (existingFilename, newFilename) ->
+    newPath = @_fullPath newFilename
+    @_assurePath newPath
+    existingPath = @_fullPath existingFilename
+    fs.symlinkSync @_path.relative(@_path.dirname(newPath), existingPath), newPath
+
+  @remove: (filename) ->
+    fs.unlinkSync @_fullPath filename
 
 # Find .meteor directory
 directoryPath = process.mainModule.filename.split path.sep

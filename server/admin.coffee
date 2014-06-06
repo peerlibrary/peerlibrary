@@ -5,6 +5,12 @@ if Meteor.settings.AWS
 else
   Log.warn "AWS settings missing, syncing arXiv PDF cache will not work"
 
+if Meteor.settings.FSM
+  FSMAppId = Meteor.settings.FSM.appId
+  FSMAppKey = Meteor.settings.FSM.appKey
+else
+  Log.warn "FSM settings missing, syncing FSM archive will not work"
+
 # It seems there are no subject classes
 ARXIV_OLD_ID_REGEX = /(?:\/|\\)([a-z-]+)(\d+)\.pdf$/i
 # It seems there are no versions in PDF filenames
@@ -24,9 +30,13 @@ ARXIV_ACCENTS =
   '''{\\AA}''': 'Å', '''{\\aa}''': 'å', '''{\\ae}''': 'æ', '''{\\AE}''': 'Æ', '''{\\L}''': 'Ł', '''{\\l}''': 'ł'
   '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
-class @ArXivPDF extends @ArXivPDF
+class @ArXivPDF extends ArXivPDF
+  @Meta
+    name: 'ArXivPDF'
+    replaceParent: true
+
   # A set of fields which are public and can be published to the client
-  @PUBLIC_FIELDS: ->
+  @PUBLISH_FIELDS: ->
     fields: {} # All, only admins have access
 
 randomTimestamp = ->
@@ -34,13 +44,60 @@ randomTimestamp = ->
 
 Meteor.methods
   'sample-data': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
     Meteor.call 'sync-arxiv-metadata'
     Meteor.call 'sync-local-pdf-cache'
-    Meteor.call 'process-pdfs'
+
+  'process-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    # To force reprocessing, we first set processError to true everywhere to assure there will be
+    # change afterwards when we unset it. We set to true so that value is still true and processing
+    # is not already triggered (but only when we unset the field).
+    Publication.documents.update
+      processed:
+        $exists: false
+    ,
+      $set:
+        processError: true
+    ,
+      multi: true
+    Publication.documents.update
+      processed:
+        $exists: false
+      processError: true
+    ,
+      $unset:
+        processError: ''
+    ,
+      multi: true
+
+  'reprocess-pdfs': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    # To force reprocessing, we first set processError to true everywhere to assure there will be
+    # change afterwards when we unset it. We set to true so that value is still true and processing
+    # is not already triggered (but only when we unset the field).
+    Publication.documents.update {},
+      $set:
+        processError: true
+    ,
+      multi: true
+    Publication.documents.update {},
+      $unset:
+        processed: ''
+        processError: ''
+    ,
+      multi: true
+
+  'database-update-all': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    Document.updateAll()
 
   'sync-arxiv-pdf-cache': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
@@ -72,7 +129,7 @@ Meteor.methods
         eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
         size: file.Size
 
-      if ArXivPDFs.find(fileObj, limit: 1).count() != 0
+      if ArXivPDF.documents.find(fileObj, limit: 1).count() != 0
         continue
 
       processPDF = (fun, props, pdf) ->
@@ -87,7 +144,7 @@ Meteor.methods
             Log.error "Invalid filename #{ props.path }"
             throw new Meteor.Error 500, "Invalid filename #{ props.path }"
 
-        ArXivPDFs.update fileObj._id,
+        ArXivPDF.documents.update fileObj._id,
           $addToSet:
             PDFs:
               id: id
@@ -97,7 +154,7 @@ Meteor.methods
         fun id, pdf
 
       finishPDF = ->
-        ArXivPDFs.update fileObj._id, $set: processingEnd: moment.utc().toDate()
+        ArXivPDF.documents.update fileObj._id, $set: processingEnd: moment.utc().toDate()
 
       Meteor.bindEnvironment processPDF, ((e) -> throw e), @
       Meteor.bindEnvironment finishPDF, ((e) -> throw e), @
@@ -120,7 +177,7 @@ Meteor.methods
         Log.info "Processing tar: #{ key }"
 
         fileObj.processingStart = moment.utc().toDate()
-        fileObj._id = ArXivPDFs.insert fileObj
+        fileObj._id = ArXivPDF.documents.insert fileObj
 
         s3.getObject(
           Bucket: 'arxiv'
@@ -158,7 +215,8 @@ Meteor.methods
     Log.info "Done"
 
   'sync-arxiv-metadata': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -168,17 +226,14 @@ Meteor.methods
     # TODO: Traverse result pages
     # TODO: Store last fetch timestamp
 
-    page = HTTP.get 'http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw',
-      timeout: 60000 # ms
+    try
+      page = HTTP.get 'http://export.arxiv.org/oai2?verb=ListRecords&from=2007-05-23&until=2007-05-24&metadataPrefix=arXivRaw',
+        timeout: 60000 # ms
+    catch error
+      Log.error error
+      throw error
 
-    if page.statusCode and page.statusCode != 200
-      Log.error "Downloading arXiv metadata failed: #{ page.statusCode }: #{ page.content }"
-      throw new Meteor.Error 500, "Downloading arXiv metadata failed: #{ page.statusCode }: #{ page.content }"
-    else if page.error
-      Log.error page.error
-      throw page.error
-
-    page = blocking(xml2js.parseString) page.content
+    page = xml2js.parseStringSync page.content
 
     count = 0
 
@@ -191,8 +246,8 @@ Meteor.methods
         continue
 
       # TODO: Really process versions
-      created = moment.utc(record.version[0].date[0]).toDate()
-      updated = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
+      createdAt = moment.utc(record.version[0].date[0]).toDate()
+      updatedAt = moment.utc(record.version[record.version.length - 1].date[0]).toDate()
 
       authors = record.authors[0]
 
@@ -246,25 +301,29 @@ Meteor.methods
         Log.warn "Empty authors list, skipping #{ util.inspect record, false, null }"
         continue
 
-      for author in authors
-        # TODO: We could just define id ourselves, we do not have to do two queries
-        id = Persons.insert
-          user: null
+      authors = for author in authors
+        # TODO: Use findAndModify
+        existingAuthor = Person.documents.findOne
           givenName: author.givenName
           familyName: author.familyName
-          work: []
-          education: []
-          publications: []
-        Persons.update id,
-          $set:
-            slug: id
-        author._id = id
-        author.slug = id
+        ,
+          fields:
+            # _id field is implicitly added
+            givenName: 1
+            familyName: 1
+        if existingAuthor
+          existingAuthor
+        else
+          author._id = Random.id()
+          Person.documents.insert Person.applyDefaultAccess null, _.extend author,
+            slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
+            user: null
+            publications: []
+          author
 
       publication =
-        slug: Publication.Meta.fields.slug.generator(title: record.title[0])[1]
-        created: created
-        updated: updated
+        createdAt: createdAt
+        updatedAt: updatedAt
         authors: authors
         authorsRaw: record.authors[0]
         title: record.title[0]
@@ -281,27 +340,26 @@ Meteor.methods
         foreignCategories: record.categories[0].split /\s+/
         foreignJournalReference: record['journal-ref']?[0]
         source: 'arXiv'
+        license: record.license?[0] or 'arXiv'
+        cachedId: Random.id()
+        mediaType: 'pdf'
 
       # TODO: Deal with this
       #if publication.msc2010?
       # We check if we really converted without "(primary)" and similar strings
       #assert.equal (cls for cls in publication.msc2010 when cls.match(/[()]/)).length, 0, "#{ publication.foreignId }: #{ publication.msc2010 }"
 
-      # TODO: Upsert would be better
-      if Publications.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
-        id = Publications.insert publication
-        for author in publication.authors
-          Persons.update author._id,
-            $addToSet:
-              publications:
-                _id: id # TODO: Entity resolution
+      # TODO: Use findAndModify
+      if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+        id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         Log.info "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         count++
 
-    Log.info "Done"
+    Log.info "Done (#{ count })"
 
   'sync-local-pdf-cache': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    # If @connection is not set this means method is called from the server (eg., from auto installation)
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -309,122 +367,223 @@ Meteor.methods
 
     count = 0
 
-    Publications.find(cached: {$exists: false}).forEach (publication) ->
+    Publication.documents.find(cached: {$exists: false}).forEach (publication) ->
       try
         publication.checkCache()
         count++ if publication.cached
       catch error
-        Log.error "#{ error }"
+        Log.error "For publication #{ publication._id }: #{ error }"
 
-    Log.info "Done"
+    Log.info "Done (#{ count })"
 
-  'process-pdfs': ->
+  'sync-fsm-metadata': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
     @unblock()
 
-    Log.info "Processing pending PDFs"
+    if not Meteor.settings.FSM
+      Log.error "FSM settings missing"
+      throw new Meteor.Error 500, "FSM settings missing"
 
-    Publications.find(cached: {$exists: true}, processed: {$ne: true}, processError: {$exists: false}).forEach (publication) ->
-      initCallback = (numberOfPages) ->
-        publication.numberOfPages = numberOfPages
+    Log.info "Syncing FSM metadata"
 
-      textCallback = (pageNumber, segment) ->
+    try
+      page = HTTP.get "https://apis.berkeley.edu/solr/fsm/select?q=-fsmImageUrl:*&wt=json&indent=on&rows=1000&app_id=#{ FSMAppId }&app_key=#{ FSMAppKey }",
+        timeout: 60000 # ms
+    catch error
+      Log.error error
+      throw error
 
-      pageImageCallback = (pageNumber, canvasElement) ->
-        thumbnailCanvas = new PDFJS.canvas 95, 125
-        thumbnailContext = thumbnailCanvas.getContext '2d'
+    # TODO: Implement pagination
+    assert page.data.response.docs.length, page.data.response.numFound
 
-        # TODO: Do better image resizing, antialias doesn't really help
-        thumbnailContext.antialias = 'subpixel'
+    count = 0
 
-        thumbnailContext.drawImage canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height
+    for document in page.data.response.docs
+      dateCreated = document.fsmDateCreated?[0]
 
-        Storage.save publication.thumbnail(pageNumber), thumbnailCanvas.toBuffer()
+      if dateCreated
+        # Some dates are wrapped in [], or contain [] around months, remove all that
+        dateCreated = dateCreated.replace /\[|\]/g, ''
 
+      createdAt = moment.utc dateCreated
+
+      unless createdAt.isValid()
+        # Using inspect because documents can be heavily nested
+        # TODO: What to do in this case?
+        Log.warn "Could not parse created date, setting to current date '#{ dateCreated }', #{ util.inspect document, false, null }"
+        createdAt = moment.utc()
+
+      createdAt = createdAt.toDate()
+      updatedAt = createdAt
+
+      # Normalizing whitespace
+      authors = document.fsmCreator?[0].replace(/\s+/g, ' ') or ''
+
+      # To clean nested parentheses
+      while true
+        authorsCleaned = authors.replace /\([^()]*?\)/g, '' # For now, remove all comments/notes
+        if authorsCleaned == authors
+          break
+        else
+          authors = authorsCleaned
+
+      # We split at : too, so that staff information is seen as a separate author (see examples below)
+      authors = for author in authors.split /^\s*|\s*[;:]\s*|\s*$/i when author and not /^(staff|et al|chairman|emergency executive committee|prepared by a fact-finding committee of graduate political scientists|berkeley division of the academic senate)$/i.test author
+        segments = (segment for segment in author.split /,\s*/ when segment)
+
+        continue unless segments.length
+
+        if segments.length > 1
+          segments = (segment for segment in segments when not /committee/i.test segment)
+
+        # Names with spaces in-between instead of commas
+        if segments.length is 1 and /Truman|Letewka|Muscatine|Schachman|Searle|Sellers|Selznick|Stampp|Broek|Wolin|Zelnik|Douglas|Leonard|Iiyama|Mellin|Novick|Weinberg|Weller|Bressler|Cheit|Schorske|Sherry|Williams|Jennings|Ross/.test segments[0]
+          segments = segments[0].split /\s+/
+          segments = [segments[segments.length - 1], segments[0..segments.length - 2].join ' ']
+
+        if segments.length is 1
+          if segments[0] is "Lawyer's Committee"
+            # Fixing discrepancy
+            givenName: "Lawyers' Committee"
+          else
+            givenName: segments[0]
+        else if segments.length is 2
+          if /SLATE/.test segments[1]
+            # Fixing special case
+            givenName: 'SLATE'
+          else if /Certain Faculty Members/.test segments[0]
+            # Fixing special case
+            givenName: 'Certain Faculty Members of the University of California, Berkeley'
+          else if /Congress of Racial Equality/.test segments[0]
+            # Fixing special case
+            givenName: 'Congress of Racial Equality, Berkeley Campus Chapter'
+          else if segments[1] is 'Inc.'
+            givenName: "#{ segments[0] }, #{ segments[1] }"
+          else
+            givenName: segments[1]
+            familyName: segments[0]
+        else if segments[2] is 'Jr.'
+          givenName: "#{ segments[1] } #{ segments[2] }"
+          familyName: segments[0]
+        else
+          # Otherwise we simply ignore the rest (affiliation, birth dates, etc.)
+          givenName: segments[1]
+          familyName: segments[0]
+
+      authors = for author in authors
+        # TODO: Use findAndModify
+        existingAuthor = Person.documents.findOne
+          givenName: author.givenName
+          familyName: author.familyName
+        ,
+          fields:
+            # _id field is implicitly added
+            givenName: 1
+            familyName: 1
+        if existingAuthor
+          existingAuthor
+        else
+          author._id = Random.id()
+          Person.documents.insert Person.applyDefaultAccess null, _.extend author,
+            slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
+            user: null
+            publications: []
+          author
+
+      publication =
+        createdAt: createdAt
+        updatedAt: updatedAt
+        authors: authors
+        title: document.fsmTitle[0]
+        foreignId: document.id
+        foreignUrl: document.fsmTeiUrl[0]
+        # TODO: Put foreign categories into tags?
+        foreignCategories: document.fsmTypeOfResource
+        source: 'FSM'
+        license: 'https://creativecommons.org/licenses/by-nc-sa/3.0/us/'
+        cachedId: Random.id()
+        mediaType: 'tei'
+
+      if document.fsmDateCreated?[0]
+        publication.createdRaw = document.fsmDateCreated[0]
+
+      if document.fsmCreator?[0]
+        publication.authorsRaw = document.fsmCreator[0]
+
+      if document.fsmRelatedTitle?.length
+        publication.comments = document.fsmRelatedTitle.join '\n'
+
+      # TODO: Use findAndModify
+      if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+        id = Publication.documents.insert Publication.applyDefaultAccess null, publication
+        Log.info "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+        count++
+
+    Log.info "Done (#{ count })"
+
+  'sync-fsm-cache': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    @unblock()
+
+    if not Meteor.settings.FSM
+      Log.error "FSM settings missing"
+      throw new Meteor.Error 500, "FSM settings missing"
+
+    Log.info "Syncing FSM cache"
+
+    count = 0
+
+    Publication.documents.find(source: 'FSM', cached: {$exists: false}).forEach (publication) ->
       try
-        publication.process null, initCallback, textCallback, pageImageCallback
-        Publications.update publication._id, $set: numberOfPages: publication.numberOfPages
-      catch error
-        Publications.update publication._id,
+        if not Storage.exists publication.cachedFilename()
+          Log.info "Caching file for #{ publication._id }: #{ publication.foreignFilename() } -> #{ publication.cachedFilename() }"
+
+          tei = HTTP.get publication.foreignUrl,
+            timeout: 10000 # ms
+            encoding: null # PDFs are binary data
+
+          Storage.save publication.foreignFilename(), tei.content
+          assert Storage.exists publication.foreignFilename()
+          Storage.link publication.foreignFilename(), publication.cachedFilename()
+          assert Storage.exists publication.cachedFilename()
+
+        if not publication.sha256
+          pdfContent = Storage.open publication.cachedFilename()
+          hash = new Crypto.SHA256()
+          hash.update pdfContent
+          publication.sha256 = hash.finalize()
+
+        publication.cached = moment.utc().toDate()
+        Publication.documents.update publication._id,
           $set:
-            processError:
-              error: "#{ error.toString?() or error }"
-              stack: error.stack
+            cached: publication.cached
+            sha256: publication.sha256
 
-        Log.error "Error processing PDF: #{ error.stack or error.toString?() or error }"
+        count++
 
-    Log.info "Done"
+      catch error
+        Log.error "#{ error }"
+
+    Log.info "Done (#{ count })"
 
 Meteor.publish 'arxiv-pdfs', ->
-  currentArXivPDFs = {}
-  currentPersonId = null # Just for asserts
-  handleArXivPDFs = null
+  return unless @personId
 
-  removeArXivPDFs = =>
-    for id of currentArXivPDFs
-      delete currentArXivPDFs[id]
-      @removed 'ArXivPDFs', id
+  @related (person) ->
+    return unless person?.isAdmin
 
-  publishArXivPDFs = =>
-    oldHandleArXivPDFs = handleArXivPDFs
-    handleArXivPDFs = ArXivPDFs.find(
-      {}
-    ,
-      fields: ArXivPDF.PUBLIC_FIELDS().fields
+    ArXivPDF.documents.find {},
+      fields: ArXivPDF.PUBLISH_FIELDS().fields
       sort: [
         ['processingStart', 'desc']
       ]
       limit: 5
-    ).observeChanges
-      added: (id, fields) =>
-        return if currentArXivPDFs[id]
-        currentArXivPDFs[id] = true
-
-        @added 'ArXivPDFs', id, fields
-
-      changed: (id, fields) =>
-        return if not currentArXivPDFs[id]
-
-        @changed 'ArXivPDFs', id, fields
-
-      removed: (id) =>
-        return if not currentArXivPDFs[id]
-        delete currentArXivPDFs[id]
-
-        @removed 'ArXivPDFs', id
-
-    # We stop the handle after we established the new handle,
-    # so that any possible changes hapenning in the meantime
-    # were still processed by the old handle
-    oldHandleArXivPDFs.stop() if oldHandleArXivPDFs
-
-  handlePersons = Persons.find(
-    _id: @personId
-    isAdmin: true
   ,
-    fields:
-      _id: 1 # We want only id
-  ).observeChanges
-    added: (id, fields) =>
-      # There should be only one person with the id at every given moment
-      assert.equal currentPersonId, null
-
-      currentPersonId = id
-      publishArXivPDFs()
-
-    removed: (id) =>
-      # We cannot remove the person if we never added the person before
-      assert.notEqual currentPersonId, null
-
-      handleArXivPDFs.stop() if handleArXivPDFs
-      handleArXivPDFs = null
-
-      currentPersonId = null
-      removeArXivPDFs()
-
-  @ready()
-
-  @onStop =>
-    handlePersons.stop() if handlePersons
-    handleArXivPDFs.stop() if handleArXivPDFs
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1

@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "b78ffbbd082f6f46aef852a2d975781757e58049"
+    "commit": "fa144073e08dc0f7f60538d536e470ed7b0c4fc8"
   },
   "dependencies": {
     "basePackages": {
@@ -28,13 +28,27 @@
       },
       "digest": {},
       "peerdb": {},
-      "useragent": {}
+      "useragent": {},
+      "define": {
+        "git": "https://github.com/peerlibrary/require.git",
+        "branch": "peerlibrary"
+      },
+      "variable": {
+        "git": "https://github.com/peerlibrary/meteor-variable.git",
+        "branch": "peerlibrary"
+      },
+      "async": {},
+      "cheerio": {},
+      "isolate-value": {},
+      "apm": {},
+      "stacktrace": {},
+      "related": {}
     },
     "packages": {
       "router": {
         "git": "https://github.com/peerlibrary/meteor-router.git",
         "branch": "peerlibrary",
-        "commit": "8ccba83d0e52135e6237bc8eb7bd08ad08c1815b"
+        "commit": "ea58b18ec91e93d1f8293021a7eb1cc8611d715b"
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
@@ -63,13 +77,13 @@
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
-        "tag": "v2.5.1",
-        "commit": "8c9bc5d3fc96705057737cb9743d555417f6e551"
+        "tag": "v2.6.0",
+        "commit": "26156df681750fd6e6ed77043eef32b6653ebbdf"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
-        "tag": "v0.2.8.4",
-        "commit": "98ba391239dd79901a7718593b48c1a7e6b0f7b2"
+        "tag": "v0.4.1-1",
+        "commit": "18aeb92fbbcdf916c66fb87a8617c4b86f376f91"
       },
       "util": {
         "git": "https://github.com/peerlibrary/meteor-util.git",
@@ -108,13 +122,53 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.3.8",
-        "commit": "952d877e6ef615f9d8fe5ac57969d35e506233af"
+        "tag": "v0.8.5",
+        "commit": "3fc8d0604f549d727f88b3341dfbbb8f52e9ecb4"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
         "tag": "v0.0.2",
         "commit": "8737222105a50cfe484ccd09728bdfa7c35288a2"
+      },
+      "define": {
+        "git": "https://github.com/peerlibrary/require.git",
+        "branch": "peerlibrary",
+        "commit": "16f68fedfbc152255b094736c9595bd12ac5ae27"
+      },
+      "variable": {
+        "git": "https://github.com/peerlibrary/meteor-variable.git",
+        "branch": "peerlibrary",
+        "commit": "ffe9875c0983bf2cb369f51da468f7d7307c5da3"
+      },
+      "async": {
+        "git": "https://github.com/peerlibrary/meteor-async.git",
+        "tag": "v0.2.9.3",
+        "commit": "e95ab2eadd39c78261db3f8ef96bcb9e0b36bd81"
+      },
+      "cheerio": {
+        "git": "https://github.com/andreioprisan/meteor-cheerio.git",
+        "tag": "v0.3.2",
+        "commit": "f7b7b8c4ad4dbac7e9b34a4b110150cd5ec95bae"
+      },
+      "isolate-value": {
+        "git": "https://github.com/awwx/meteor-isolate-value.git",
+        "tag": "v2.0.2",
+        "commit": "6b8600b29190073fa3785b48b028f113edfdffc2"
+      },
+      "apm": {
+        "git": "https://github.com/arunoda/meteor-apm-client.git",
+        "tag": "v1.2.6",
+        "commit": "426e3c3c33457736ec64d8af17c765d477d1476b"
+      },
+      "stacktrace": {
+        "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
+        "tag": "v0.1.1",
+        "commit": "9eaacd4755852a3d40940c17d7a32facb9931b33"
+      },
+      "related": {
+        "git": "https://github.com/peerlibrary/meteor-related.git",
+        "tag": "v0.1.1",
+        "commit": "7a4148fd0b7b9fa48ee93b75693a99993853b57e"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

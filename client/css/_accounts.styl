@@ -1,4 +1,4 @@
-@import variables
+@import 'variables.import'
 
 .hide-background
   position fixed
@@ -16,19 +16,23 @@
   font-weight 300
   margin-top -150px !important
 
-  #reset-password-new-password-label, .reset-password-new-password-wrapper
+  #reset-password-new-password-label, .reset-password-new-password-wrapper, #enroll-account-password-label, .enroll-account-password-wrapper
     margin 0 20px
 
-  #login-buttons-reset-password-button
+  #login-buttons-reset-password-button, #login-buttons-enroll-account-button
     padding 0
 
+  #reset-password-new-password-label, #enroll-account-password-label
+    margin-bottom 20px
+
   /* Hacks to get "Cancel" instead of "x" */
-  #login-buttons-cancel-reset-password
+  #login-buttons-cancel-reset-password, #login-buttons-cancel-enroll-account
     visibility hidden
     display block
+    height 10px
 
-  #login-buttons-cancel-reset-password:after
+  #login-buttons-cancel-reset-password:after, #login-buttons-cancel-enroll-account:after
     display block
     visibility visible
     content 'Cancel'
-    margin-top -36px
+    margin-top -20px

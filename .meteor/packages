@@ -22,7 +22,6 @@ random
 dimsum
 connect
 stylus
-fs
 urlify2
 accounts-ui-unstyled
 HTML5-History-API
@@ -35,5 +34,15 @@ audit-argument-checks
 useragent
 dom-text-mapper
 annotator
-medium-editor
 segfault-handler
+blob
+facts
+scribe
+variable
+async
+cheerio
+isolate-value
+apm
+url-utils
+stacktrace
+related

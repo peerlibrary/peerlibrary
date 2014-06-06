@@ -17,9 +17,9 @@ If you have found a bug in PeerLibrary, file a bug report in [our issue tracker]
 PeerLibrary has many moving parts, and it is often difficult to reproduce a bug based on a vague description. If you want somebody to be able to fix a bug (or verify a fix that you have contributed), the best way is:
 * Find minimal and exact steps needed to reproduce the bug.
 * Describe what you expected to happen and what happened instead.
-* Specify what version of PeerLibrary you are using (your own local development version, beta version, public version). Check the PeerLibrary footer for exact version information.
+* Specify what version of PeerLibrary you are using (your own local development version, beta/stage version, public version). Check the PeerLibrary footer for exact version information.
 * Provide as much as you can about the environment you are using (operating system, browser, are you behind any proxy, are you on campus or off campus).
-* Make and attach a screenshot or screenshots relevant to the bug you are reporting. Do not forget to obfuscate any possibly sensitive or private information visible there.
+* Make and attach a screenshot or screenshots relevant to the bug you are reporting. You can use [LICEcap](http://www.cockos.com/licecap/) to create a live capture of the bug as a GIF file and attach it to the issue. Do not forget to obfuscate any possibly sensitive or private information visible there.
 
 By making it as easy as possible for others to reproduce your bug, you make it easier for your bug to be fixed. We are not always able to tackle issues opened without a reproduction recipe. In those cases we will close them with a pointer to this wiki section and a request for more information.
 
@@ -37,7 +37,7 @@ If you would like to start contributing code and are searching for some ideas:
 We are using GitHub and pull requests for development. If pull requests are new to you, see [this tutorial](https://help.github.com/articles/fork-a-repo) to find out how to fork and contribute to our repository.
 
 Before submitting a pull request, make sure that it follows these guidelines:
-* Make sure that your branch is based off of the `development` branch. The `development` branch is where active development happens. We cannot merge non-trivial patches off `master` branch. See [PeerLibrary development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) for more details. (`development` branch not yet available)
+* Make sure that your branch is based off of the `development` branch. The `development` branch is where active development happens. Development in `master` branch is done only for bugfixes and smaller features which do not change data and APIs. We cannot merge non-trivial patches off `master` branch. See [PeerLibrary development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) for more details.
 * Sign the contributor's agreement. (not yet available)
 * Follow the PeerLibrary [code style guide](https://github.com/peerlibrary/peerlibrary/wiki/Code-Style).
 * Get familiar with our [code internals](https://github.com/peerlibrary/peerlibrary/wiki/Code-Internals) and [principles](https://github.com/peerlibrary/peerlibrary/wiki/Principles).

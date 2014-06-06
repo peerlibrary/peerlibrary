@@ -1,4 +1,4 @@
-@import variables
+@import 'variables.import'
 
 /* Header
 ========= */
@@ -24,7 +24,7 @@ header
     text-decoration none
     line-height 45px
     font-size 22px
-    font-family "Source Sans Pro", sans-serif
+    font-family "Fira Sans", sans-serif
     background transparent
     display inline-block
     padding 0 20px
@@ -62,7 +62,7 @@ ul.top-menu
       right -10px
 
   .search-wrapper
-    padding 0 20px
+    padding 0 30px 0 20px
     width 400px
     transition 0.2s
 
@@ -76,6 +76,9 @@ ul.top-menu
         font-size 18px
         width 575px
         display inline
+
+      input:focus
+        box-shadow none
 
   .search-wrapper.search-focused
     width 600px
@@ -205,102 +208,15 @@ span.cursor
   text-align center
   margin 0
 
-/*
-Sign in buttons
-=============== */
+/* Sign in buttons
+================== */
 
 #login-buttons
   display inline-block
   float right
 
   a.additional-link
-    color blue-accent 
-
-/*
-Authentication menu and newsletter dialog (for footer)
-====================================================== */
-
-header.not-logged-in #login-dropdown-list, .newsletter-dialog, .accounts-centered-dialog
-  color black
-  background white
-  border-color rgb(210,210,210)
-  border-radius 5px
-  border-style solid
-  border-width 1px
-  position fixed
-  top 50%
-  left 50%
-  margin-left -151px
-  margin-top -220px
-  padding 20px 0
-  width 300px
-  right 0px
-  font-size 14px
-  line-height 36px
-  /* Higher than header but below importing overlay */
-  z-index 5500
-
-  label
-    display block
-    font-weight bold
-    padding-top 16px
-
-  input
-    position relative
-    min-height 20px
-    width 242px
-    padding 7px 8px
-    outline medium none
-    color rgb(51,51,51)
-    background-color rgb(255,255,255)
-    background-repeat no-repeat
-    background-position right center
-    border 1px solid rgb(204,204,204)
-    border-radius 3px 3px 3px 3px
-    box-shadow 0px 1px 2px rgba(0,0,0,0.075) inset
-    -moz-box-sizing border-box
-    transition all 0.15s ease-in 0s
-    vertical-align middle
-
-  input:focus
-    border-color rgb(81,167,232)
-    box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
-
-  .login-button, .subscribe-form-submit
-    width 258px
-    height 40px
-    position relative
-    margin 0 auto 10px auto
-    padding 0
-    background #4695C5
-    border 1px solid #2B729C
-    border-radius 3px
-    text-align center
-    font-weight bold
-    color white
-    cursor pointer
-    transition all 0.15s ease-in 0s
-
-  .login-button-form-submit, .subscribe-form-submit
-    margin-top 20px
-
-  .login-button:hover, .subscribe-form-submit:hover
-    background #327CA8
-
-  .additional-link, .accounts-close
-    background transparent
     color blue-accent
-    text-align center
-
-  .loading
-    display none
-
-  .description
-    text-align center
-
-  .message, .description
-    line-height default-line-height
-    margin-top 10px
 
 header.logged-in
   #login-dropdown-list
@@ -344,7 +260,7 @@ header.logged-in
     left 161px
 
   .menu-item
-    padding 5px 20px
+    padding 5px 0
     background transparent
     text-align center
     font-weight bold
@@ -354,6 +270,7 @@ header.logged-in
 
     a
       color blue-accent
+      padding 0 5px
 
   .menu-item:hover
       background blue-accent
@@ -381,7 +298,7 @@ header.index-header.logged-in
   #login-dropdown-list:before
     left 149px
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button, .newsletter-dialog .email-label-and-input, .newsletter-dialog .description, .newsletter-dialog .message
+#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
   padding 0 20px
 
 .login-close-text
@@ -395,18 +312,16 @@ header.index-header.logged-in
 #login-buttons.login-buttons-dropdown-align-right .login-close-text
   float right
 
-/*
-Auth form buttons
-============ */
+/* Auth form buttons
+==================== */
 
-.user-icon
+.avatar
   width 24px
   height 24px
   margin-left 12px
 
-/*
-Import button
-============= */
+/* Import button
+================ */
 
 input.import-file-input
   display none
@@ -449,11 +364,11 @@ header.index-header
         background transparent
 
       input::-webkit-input-placeholder
-          font-family "Source Sans Pro", sans-serif
+          font-family "Fira Sans", sans-serif
           color rgba(20,20,20,0.8)
 
       input::-moz-placeholder
-          font-family "Source Sans Pro", sans-serif
+          font-family "Fira Sans", sans-serif
           color rgba(20,20,20,0.8)
 
   .search-wrapper:hover
@@ -472,25 +387,25 @@ header.index-header
 
     li > a, li a.login-link-text
       font-size 14px
-      font-weight 600
+      font-weight normal
       line-height 14px
       padding 8px 20px
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
-      background #4695c5
-      border 1px solid #2B729C
+      background bg-blue
+      border 1px solid border-blue
       border-radius 3px
       transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
-      background #327CA8
+      background hover-blue
 
     li a.login-link-text
       margin-right 25px
       color white
 
-  .user-icon
+  .avatar
     margin-top -5px
     margin-bottom -5px
     vertical-align top
@@ -502,7 +417,7 @@ header.no-index-header
 
   .container
     .progress-bar
-      background #0E6EB9
+      background #2dc7ff
       bottom -2px
       height 2px
       position absolute

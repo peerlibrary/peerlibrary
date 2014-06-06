@@ -10,7 +10,7 @@ Meteor.methods
       username: 'admin'
       password: password
 
-    Persons.update
+    Person.documents.update
       'user._id': adminId
     ,
       $set:

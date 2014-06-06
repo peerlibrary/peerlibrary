@@ -1,0 +1,135 @@
+@import 'variables.import'
+
+section.group
+  margin-top simple-margin-top
+
+.group-members-panel
+  .add-control
+    background white
+    color black
+
+    .member
+      display block
+      width 100%
+
+      .add-button
+        display block
+        width 100%
+
+    .member:last-of-type
+      margin-bottom 0
+
+  .add-control-results
+    padding 10px
+    margin 0
+
+.meta-menu
+  .add-control
+    border-radius 2px
+
+    input:focus
+      box-shadow none
+
+.sidebar
+  .add-control
+    width 235px
+    border 1px solid box-shadow-border
+
+    input, input:focus
+      border none
+      box-shadow none
+
+    .add-button
+      border none
+      width 100%
+      background-color transparent
+
+    .add-button:hover
+      background-color box-shadow-border
+
+  .add-control-results.member-list
+    padding 0
+
+.member
+  display inline-block
+  position relative
+  height 24px
+  max-width 100%
+  white-space nowrap
+
+  .avatar
+    display block
+    position absolute
+    left 0
+    top 0
+    width 24px
+    margin-left 0
+
+  .member-name
+    max-width 100%
+    padding 0 24px 0 34px
+    margin 0
+    font-size 13px
+    line-height 25px
+    font-weight bold
+    overflow hidden
+    text-overflow ellipsis
+
+  .remove-button
+    display block
+    position absolute
+    right 0
+    top 1px
+    vertical-align middle
+    text-align center
+    width 24px
+    height 24px
+    padding 0
+    border none
+    background none
+    font-size 14px
+
+  .remove-button:hover
+    color blue-accent
+    background none
+
+  .add-button
+    display inline-block
+    text-align left
+    height 24px
+    padding 0
+    border none
+    background none
+
+.member.group
+  .avatar
+    font-size 20px
+    left -2px
+    top 2px
+
+.add-control
+  .member
+    .member-name
+      padding-right 0
+
+  .add-and-invite
+    width 100%
+    margin-top 10px
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
+.member-list
+  padding 0
+  list-style none
+
+  .member
+    margin 0 10px 10px 0
+
+.read-only.member-list
+  .member
+    .member-name
+      padding-right 0
+
+    .remove-button
+      display none

@@ -1,0 +1,97 @@
+@import 'variables.import'
+
+.access-menu
+  background-color rgba(120,120,120,0.9)
+  border-radius 2px
+
+  .selections
+    display table
+    border-collapse separate
+    border-spacing 10px
+    width 100%
+
+    input
+      display none
+
+    .selection
+      display table-cell
+      width 33%
+      padding 10px
+      background none
+      text-align center
+      cursor pointer
+      transition 0.2s
+      border-radius 2px
+
+      .access-icon
+        display block
+        margin-bottom 10px
+        cursor pointer
+        font-size 24px
+
+    .selection:hover, .selection.selected
+      background-color rgba(200,200,200,0.7)
+
+  .description
+    padding 0 10px 10px
+    text-align center
+    display none
+
+  .displayed.description
+    display block
+
+  .private-access-control
+    padding 10px
+
+    .private-access-control-members
+      .access-list
+        display inline
+
+        button:hover
+          color white
+
+      .member
+        display block
+        width 100%
+
+        .remove-button:hover
+          color #ccc
+
+    .add-control
+      background white
+      color black
+
+      .add-button
+        display block
+        width 100%
+        color black
+        padding 5px
+        margin-bottom 0
+        background none
+        text-align left
+
+        .member
+          margin 0
+
+      button
+        background-color rgba(120,120,120,0.2)
+        color black
+
+      button:hover
+        background-color rgba(120,120,120,0.3)
+
+      .access-results
+        margin-bottom 0
+
+    .add-control-results
+      padding 0 10px 10px
+      font-weight 300
+
+.meta-menu .access-menu .private-access-control
+  .member
+    display inline-block
+    width auto
+
+  .add-control .member
+    display block
+    width 100%

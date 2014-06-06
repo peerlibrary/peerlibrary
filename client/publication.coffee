@@ -1,68 +1,76 @@
+# Used for global variable assignments in local scopes
+root = @
+
 @SCALE = 1.25
 
 draggingViewport = false
 currentPublication = null
+publicationHandle = null
+publicationCacheHandle = null
+myGroupsHandle = null
 
-# If set to an annotation id, focus on next render
-focusAnnotationId = null
-
-# Should not be used directly but through isPublicationDOMReady and setPublicationDOMReady
-_publicationDOMReady = false
-
-# We use our own dependency tracking for publicationDOMReady and not Session to
+# We use our own reactive variable for publicationDOMReady and not Session to
 # make sure it is not preserved when site autoreloads (because of a code change).
 # Otherwise publicationDOMReady stored in Session would be restored to true which
 # would be an invalid initial state. But on the other hand we want it to be
 # a reactive value so that we can combine code logic easy.
-publicationDOMReadyDependency = new Deps.Dependency()
+publicationDOMReady = new Variable false
 
-isPublicationDOMReady = ->
-  publicationDOMReadyDependency.depend()
-  _publicationDOMReady
+# Mostly used just to force reevaluation of publicationHandle and publicationCacheHandle
+publicationSubscribing = new Variable false
 
-setPublicationDOMReady = (ready) ->
-  return if _publicationDOMReady is ready
-
-  _publicationDOMReady = ready
-  publicationDOMReadyDependency.changed()
-
-# Should not be used directly but through getViewport and setViewport
-_viewport =
+# To be able to limit shown annotations only to those with highlights in the current viewport
+currentViewport = new Variable
   top: null
   bottom: null
 
-viewportDependency = new Deps.Dependency()
+# Variable containing currently realized (added to the DOM) highlights
+@currentHighlights = new KeysEqualityVariable {}
 
-getViewport = ->
-  viewportDependency.depend()
-  _viewport
+ANNOTATION_DEFAULTS =
+  access: Annotation.defaultAccess()
+  groups: []
 
-setViewport = (top, bottom) ->
-  return if _viewport.top is top and _viewport.bottom is bottom
+Meteor.startup ->
+  Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
 
-  _viewport =
-    top: top
-    bottom: bottom
-  viewportDependency.changed()
+getAnnotationDefaults = ->
+  defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+  groups = Group.documents.find(
+    _id:
+      $in: defaults.groups
+  ,
+    fields:
+      _id: 1
+  ).fetch()
+  defaults.group = _.pluck groups, '_id'
+  defaults
 
-# Should not be used directly but through getHighlights and setHighlights
-_highlights = {}
+# Set this variable if you want the viewer to display a specific page when displaying next publication
+@startViewerOnPage = null
 
-highlightsDependency = new Deps.Dependency()
+Deps.autorun ->
+  person = Meteor.person inGroups: 1
 
-@getHighlights = ->
-  highlightsDependency.depend()
-  _highlights
+  unless person
+    # If user is not logged in or logs out, reset to defaults
+    Session.set 'annotationDefaults', ANNOTATION_DEFAULTS
+    return
 
-@setHighlights = (highlights) ->
-  a = _.keys _highlights
-  b = _.keys highlights
-  return unless a.length isnt b.length or _.difference(a, b).length
+  # We have to keep list of default groups updated if user is removed from a group
+  Group.documents.find(_id: $in: _.pluck person.inGroups, '_id').observeChanges
+    removed: (id) ->
+      return unless myGroupsHandle?.ready()
 
-  _highlights = highlights
-  highlightsDependency.changed()
+      defaults = getAnnotationDefaults()
+      defaults.groups = _.without defaults.groups, id
+      Session.set 'annotationDefaults', defaults
 
-class @Publication extends @Publication
+class @Publication extends Publication
+  @Meta
+    name: 'Publication'
+    replaceParent: true
+
   constructor: (args...) ->
     super args...
 
@@ -87,13 +95,17 @@ class @Publication extends @Publication
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"
 
+    switch @mediaType
+      when 'pdf' then @showPDF()
+      when 'tei' then @showTEI()
+      else Notify.error "Unsupported media type: #{ @mediaType }", null, true
+
+  showPDF: =>
     assert.strictEqual @_pages, null
 
     @_pagesDone = 0
     @_pages = []
-    @_highlighter = new Highlighter @_$displayWrapper
-
-    focusAnnotationId = null
+    @_highlighter = new Highlighter @_$displayWrapper, true
 
     PDFJS.getDocument(@url(), null, null, @_progressCallback).then (@_pdf) =>
       # Maybe this instance has been destroyed in meantime
@@ -101,18 +113,20 @@ class @Publication extends @Publication
 
       # To make sure we are starting with empty slate
       @_$displayWrapper.empty()
-      setPublicationDOMReady false
-      setViewport null, null
-      setHighlights {}
+      publicationDOMReady.set false
+      currentViewport.set
+        top: null
+        bottom: null
+      currentHighlights.set {}
 
       @_highlighter.setNumPages @_pdf.numPages
 
       for pageNumber in [1..@_pdf.numPages]
-        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('display-canvas-loading').data('page-number', pageNumber)
+        $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('content-background').data('page-number', pageNumber)
         $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
         $highlightsLayer = $('<div/>').addClass('highlights-layer')
-        # We enable forwarding of mouse events from text layer to highlights layer
-        $textLayer = $('<div/>').addClass('text-layer').forwardMouseEvents()
+        # We enable forwarding of mouse events from selection layer to highlights layer
+        $selectionLayer = $('<div/>').addClass('text-layer').addClass('selection-layer').forwardMouseEvents()
         $highlightsControl = $('<div/>').addClass('highlights-control').append(
           $('<div/>').addClass('meta-menu').append(
             $('<i/>').addClass('icon-menu'),
@@ -123,13 +137,15 @@ class @Publication extends @Publication
 
         $('<div/>').addClass(
           'display-page'
+        ).addClass(
+          'display-page-loading'
         ).attr(
           id: "display-page-#{ pageNumber }"
         ).append(
           $displayCanvas,
           $highlightsCanvas,
           $highlightsLayer,
-          $textLayer,
+          $selectionLayer,
           $highlightsControl,
           $loading,
         ).appendTo(@_$displayWrapper)
@@ -144,9 +160,9 @@ class @Publication extends @Publication
             viewport = @_viewport
               pdfPage: pdfPage # Dummy page object
 
-            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper)
+            $displayPage = $("#display-page-#{ pdfPage.pageNumber }", @_$displayWrapper).removeClass('display-page-loading')
             $canvas = $displayPage.find('canvas') # Both display and highlights canvases
-            $canvas.removeClass('display-canvas-loading').attr
+            $canvas.attr
               height: viewport.height
               width: viewport.width
             $displayPage.css
@@ -155,17 +171,12 @@ class @Publication extends @Publication
 
             # TODO: We currently change this based on the width of the last page, but pages might not be of same width, what can we do then?
 
-            # We store current display wrapper width because we will later on
-            # reposition annotations for the ammount display wrapper width changes
-            displayWidth = @_$displayWrapper.width()
             # We remove all added CSS in publication destroy
             $('footer.publication').add(@_$displayWrapper).css
               width: viewport.width
-            # We reposition annotations if display wrapper width changed
-            $('.annotations-control, .annotations-list').css
-              left: "+=#{ viewport.width - displayWidth }"
+            resizeAnnotationsWidth()
 
-            $('.annotations-list .invite .body, .annotations-list .local .body').balanceText()
+            $('.annotations-list .invite .balance-text').balanceText()
 
             @_pages[pageNumber - 1] =
               pageNumber: pageNumber
@@ -182,7 +193,7 @@ class @Publication extends @Publication
             # Check if new page should be maybe rendered?
             @checkRender()
 
-            setPublicationDOMReady true if @_pagesDone is @_pdf.numPages
+            publicationDOMReady.set true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?)
@@ -268,7 +279,6 @@ class @Publication extends @Publication
     Notify.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
-    focusAnnotationId = null
 
     pages = @_pages or []
     @_pages = null # To remove references to pdf.js elements to allow cleanup, and as soon as possible as this disables other callbacks
@@ -296,9 +306,11 @@ class @Publication extends @Publication
 
     @_$displayWrapper = null
 
-    setPublicationDOMReady false
-    setViewport null, null
-    setHighlights {}
+    publicationDOMReady.set false
+    currentViewport.set
+      top: null
+      bottom: null
+    currentHighlights.set {}
 
   renderPage: (page) =>
     return if page.rendering
@@ -340,20 +352,111 @@ class @Publication extends @Publication
       # TODO: Handle errors better (call destroy?)
       Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
 
+  showTEI: =>
+    # To make sure we are starting with empty slate
+    @_$displayWrapper.empty()
+    publicationDOMReady.set false
+    currentViewport.set
+      top: null
+      bottom: null
+    currentHighlights.set {}
+
+    # TODO: Handle errors
+    $.ajax
+      url: @url()
+      dataType: 'xml'
+      success: (xml, textStatus, jqXHR) =>
+        $.ajax
+          url: '/tei/tei.xsl'
+          dataType: 'xml'
+          success: (xsl, textStatus, jqXHR) =>
+            xsltProcessor = new XSLTProcessor()
+            xsltProcessor.importStylesheet xsl
+            fragment = xsltProcessor.transformToFragment xml, document
+            try
+              # We append the fragment to DOM so that we can process it with jQuery.
+              # jQuery has some issues working on the fragment otherwise. It still
+              # throws an exception when appending, so we catch it and ignore it.
+              @_$displayWrapper.append(fragment)
+            catch error
+              # We ignore a jQuery exception while appending
+            # Now we remove it from DOM, temporary, cleaned and working for further processing
+            $teiWrapper = @_$displayWrapper.find('html').remove().find('#tei_wrapper')
+
+            # We remove teiheader element. We have to traverse the tree manually because jQuery selector does not find it.
+            # TODO: We should parse this on the server side and create an annotation
+            $teiWrapper.find('* > *').each (i, element) =>
+              $(element).remove() if element.tagName.toLowerCase() is 'teiheader'
+
+            # We enable highlighting on this layer and enable forwarding of mouse
+            # events from selection layer to highlights layer
+            $teiWrapper.addClass('selection-layer').forwardMouseEvents()
+
+            $contentBackground = $('<div/>').addClass('content-background')
+            $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
+            $highlightsLayer = $('<div/>').addClass('highlights-layer')
+            $highlightsControl = $('<div/>').addClass('highlights-control').append(
+              $('<div/>').addClass('meta-menu').append(
+                $('<i/>').addClass('icon-menu'),
+                $('<div/>').addClass('meta-content'),
+              )
+            )
+
+            $displayPage = $('<div/>').addClass(
+              'display-page'
+            ).append(
+              $contentBackground,
+              $highlightsCanvas,
+              $highlightsLayer,
+              $teiWrapper,
+              $highlightsControl
+            ).appendTo(@_$displayWrapper)
+
+            $displayPage.find('canvas').attr
+              height: $teiWrapper.height()
+              width: $teiWrapper.width()
+            $displayPage.css
+              height: $teiWrapper.height()
+              width: $teiWrapper.width()
+
+            # TODO: Update sizes as display page changes size (if user changes font size, for example)
+            # TODO: Allow modifying size of display page (update then all sizes as necessary)
+
+            @_highlighter = new Highlighter @_$displayWrapper, false
+            @_highlighter.setNumPages 0
+            @_highlighter._checkHighlighting()
+
+            publicationDOMReady.set true
+
   # Fields needed when displaying (rendering) the publication: those which are needed for PDF URL to be available
   @DISPLAY_FIELDS: ->
     fields:
-      foreignId: 1
-      source: 1
+      cachedId: 1
+      mediaType: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'
-    Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    publicationSubscribing.set true
+    publicationHandle = Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
+    Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
+    myGroupsHandle = Meteor.subscribe 'my-groups', ->
+      # Make sure we start with the list of groups user is in
+      Session.set 'annotationDefaults', getAnnotationDefaults()
+  else
+    publicationSubscribing.set false
+    publicationHandle = null
+    publicationCacheHandle = null
+    myGroupsHandle = null
 
 Deps.autorun ->
-  publication = Publications.findOne Session.get('currentPublicationId'),
+  if publicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
+    publicationSubscribing.set false
+
+Deps.autorun ->
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
       slug: 1
@@ -366,15 +469,191 @@ Deps.autorun ->
 
   highlightId = Session.get 'currentHighlightId'
   annotationId = Session.get 'currentAnnotationId'
+  commentId = Session.get 'currentCommentId'
   if highlightId
     Meteor.Router.toNew Meteor.Router.highlightPath publication._id, publication.slug, highlightId
   else if annotationId
     Meteor.Router.toNew Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+  else if commentId
+    Meteor.Router.toNew Meteor.Router.commentPath publication._id, publication.slug, commentId
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
-Template.publicationMetaMenu.publication = ->
-  Publications.findOne Session.get 'currentPublicationId'
+Deps.autorun ->
+  return unless Session.get 'currentPublicationId'
+
+  # Enough is to check if user is logged in. Check if user has
+  # read access to the publication is made on the server side.
+  return unless Meteor.personId()
+
+  localAnnotation = LocalAnnotation.documents.findOne
+    local:
+      $exists: true
+    'author._id': Meteor.personId()
+    'publication._id': Session.get 'currentPublicationId'
+
+  return if localAnnotation
+
+  # There should always be one local annotation (the editor)
+  annotation = createAnnotationDocument()
+  annotation.local = LocalAnnotation.LOCAL.AUTOMATIC
+
+  LocalAnnotation.documents.insert annotation
+
+Template.publication.loading = ->
+  publicationSubscribing() # To register dependency
+  not publicationHandle?.ready() or not publicationCacheHandle?.ready()
+
+Template.publication.notfound = ->
+  publicationSubscribing() # To register dependency
+  publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
+
+Template.publication.publication = ->
+  Publication.documents.findOne Session.get 'currentPublicationId'
+
+Editable.template Template.publicationMetaMenuTitle, ->
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+,
+  (title) ->
+    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter publication title"
+
+addAccessEvents =
+  'mousedown .add-access, mouseup .add-access': (e, template) ->
+    # A special case to prevent defocus after click on the input box
+    e.stopPropagation()
+    return # Make sure CoffeeScript does not return anything
+
+  'focus .add-access': (e, template) ->
+    $(template.findAll '.meta-menu').addClass('displayed')
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .add-access': (e, template) ->
+    $(template.findAll '.meta-menu').removeClass('displayed')
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationMetaMenu.events addAccessEvents
+
+Template.publicationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.publicationAccessControl.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.publicationAccessControl.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.publicationAccessControl.private = ->
+  @access is Publication.ACCESS.PRIVATE
+
+# We copy over event handlers from accessControl template (which are general enough to work)
+for spec, callbacks of Template.accessControl._tmpl_data.events
+  for callback in callbacks
+    eventMap = {}
+    eventMap[spec] = callback
+    Template.publicationAccessControl.events eventMap
+
+libraryMenuSubscriptionCounter = 0
+libraryMenuSubscriptionPersonHandle = null
+libraryMenuSubscriptionCollectionsHandle = null
+
+Template.publicationLibraryMenu.created = ->
+  libraryMenuSubscriptionCounter++
+  # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
+  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'my-person-library' unless libraryMenuSubscriptionPersonHandle
+
+Template.publicationLibraryMenu.destroyed = ->
+  libraryMenuSubscriptionCounter--
+
+  unless libraryMenuSubscriptionCounter
+    libraryMenuSubscriptionPersonHandle?.stop()
+    libraryMenuSubscriptionPersonHandle = null
+    libraryMenuSubscriptionCollectionsHandle?.stop()
+    libraryMenuSubscriptionCollectionsHandle = null
+
+Template.publicationLibraryMenu.events
+  'mouseenter .library-menu': (e, template) ->
+    # We only subscribe to person's collections on hover, because they are not immediately seen.
+    libraryMenuSubscriptionCollectionsHandle = Meteor.subscribe 'my-collections' unless libraryMenuSubscriptionCollectionsHandle
+
+Template.publicationLibraryMenuButtons.events
+  'click .add-to-library': (e, template) ->
+    return unless Meteor.personId()
+
+    Meteor.call 'add-to-library', @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication added to the library." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-from-library': (e, template) ->
+    return unless Meteor.personId()
+
+    Meteor.call 'remove-from-library', @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication removed from the library." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationLibraryMenuButtons.inLibrary = ->
+  person = Meteor.person library: 1
+  return false unless person and @_id
+
+  _.contains _.pluck(person.library, '_id'), @_id
+
+Template.publicationLibraryMenuCollections.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
+
+Template.publicationLibraryMenuCollections.myCollections = ->
+  return unless Meteor.personId()
+
+  collections = Collection.documents.find
+    'authorPerson._id': Meteor.personId()
+  ,
+    sort: [
+      ['slug', 'asc']
+    ]
+  .fetch()
+
+  # Because it is not possible to access parent data context from event handler, we map it
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  _.map collections, (collection) =>
+    collection._parent = @
+    collection
+
+Template.publicationLibraryMenuCollectionListing.inCollection = ->
+  _.contains _.pluck(@publications, '_id'), @_parent._id
+
+Template.publicationLibraryMenuCollectionListing.events
+  'click .add-to-collection': (e, template) ->
+    return unless Meteor.personId()
+
+    Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
+      # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication added to the collection." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-from-collection': (e, template) ->
+    return unless Meteor.personId()
+
+    Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Publication removed from the collection." if count
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionListing.countDescription
+
+Template.publicationDisplay.cached = ->
+  publicationSubscribing() # To register dependency
+  publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
@@ -386,7 +665,7 @@ Template.publicationDisplay.rendered = ->
 
   Deps.nonreactive =>
     @_displayHandle = Deps.autorun =>
-      publication = Publications.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+      publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
       return unless publication
 
@@ -394,14 +673,14 @@ Template.publicationDisplay.rendered = ->
       try
         unless publication.url()
           return
-      catch e
+      catch error
         return
 
       publication.show $(@findAll '.display-wrapper')
       Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
-  @_displayHandle.stop() if @_displayHandle
+  @_displayHandle?.stop()
   @_displayHandle = null
   @_displayRendered = false
 
@@ -414,12 +693,17 @@ makePercentage = (x) ->
 # When scrollTop is 100px, 100px less of display wrapper is visible.
 
 viewportTopPercentage = ->
-  makePercentage($(window).scrollTop() / $('.viewer .display-wrapper').height())
+  makePercentage($(window).scrollTop() / $('.viewer .display-wrapper').outerHeight(true))
 
 viewportBottomPercentage = ->
   availableHeight = $(window).height() - $('header .container').height()
   scrollBottom = $(window).scrollTop() + availableHeight
-  makePercentage(scrollBottom / $('.viewer .display-wrapper').height())
+  makePercentage(scrollBottom / $('.viewer .display-wrapper').outerHeight(true))
+
+debouncedSetCurrentViewport = _.throttle (viewport) ->
+  currentViewport.set viewport
+,
+  500
 
 setViewportPosition = ($viewport) ->
   top = viewportTopPercentage()
@@ -438,18 +722,20 @@ setViewportPosition = ($viewport) ->
     height: "#{ bottom - top }%"
 
   displayHeight = $('.viewer .display-wrapper').height()
-  setViewport top * displayHeight / 100, bottom * displayHeight / 100
+  debouncedSetCurrentViewport
+    top: top * displayHeight / 100
+    bottom: bottom * displayHeight / 100
 
 scrollToOffset = (offset) ->
   # We round ourselves to make sure we are rounding in the same way accross all browsers.
   # Otherwise there is a conflict between what scroll to and how is the viewport then
   # positioned in the scroll event handler and what is the position of the viewport as we
   # are dragging it. This makes movement of the viewport not smooth.
-  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').height())
+  $(window).scrollTop Math.round(offset * $('.viewer .display-wrapper').outerHeight(true))
 
 Template.publicationScroller.created = ->
   $(window).on 'scroll.publicationScroller resize.publicationScroller', (e) =>
-    return unless isPublicationDOMReady()
+    return unless publicationDOMReady()
 
     # We do not call setViewportPosition when dragging from scroll event
     # handler but directly from drag event handler because otherwise there
@@ -462,10 +748,10 @@ Template.publicationScroller.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationScroller.rendered = ->
-  # Dependency on isPublicationDOMReady value is registered because we
+  # Dependency on publicationDOMReady value is registered because we
   # are using it in sections helper as well, which means that rendered will
-  # be called multiple times as isPublicationDOMReady changes
-  return unless isPublicationDOMReady()
+  # be called multiple times as publicationDOMReady changes
+  return unless publicationDOMReady()
 
   $viewport = $(@findAll '.viewport')
 
@@ -503,11 +789,25 @@ Template.publicationScroller.rendered = ->
 
   setViewportPosition $viewport
 
+  if startViewerOnPage
+    $scroller = $(@findAll '.scroller')
+    $sections = $scroller.find('.section')
+
+    # Scroll browser viewport to display the desired publication page
+    viewportOffset = $sections.eq(startViewerOnPage - 1).offset().top - $scroller.offset().top
+    padding = $sections.eq(0).offset().top - $scroller.offset().top
+    scrollToOffset (viewportOffset - padding) / $scroller.height()
+
+    # Sync the position of the scroller viewport
+    setViewportPosition $viewport
+
+    root.startViewerOnPage = null
+
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
 Template.publicationScroller.sections = ->
-  return [] unless isPublicationDOMReady()
+  return [] unless publicationDOMReady()
 
   $displayWrapper = $('.viewer .display-wrapper')
   displayTop = $displayWrapper.outerOffset().top
@@ -529,61 +829,169 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.highlightsControl.canEdit = ->
-  # Only the author can edit for now
-  return @author._id is Meteor.personId()
+Template.highlightsControl.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.annotationsControl.events
-  'click .add': (e, template) ->
-    annotation = createAnnotationDocument()
-
-    annotationId = LocalAnnotations.insert annotation, (error, id) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
+Template.highlightsControl.events
+  'click .remove-button': (e, template) ->
+    Meteor.call 'remove-highlight', @_id, (error, count) =>
       Notify.meteorError error, true if error
-
-    focusAnnotationId = annotationId
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationAnnotations.annotations = ->
-  viewport = getViewport()
-  highlights = @getHighlights()
+resizeAnnotationsWidth = ($annotationsList) ->
+  padding = parseInt($('.annotations-control').css('right'))
+  displayWrapper = $('.display-wrapper')
+  left = displayWrapper.offset().left + displayWrapper.outerWidth() + padding
+  $('.annotations-control').css
+    left: left
 
-  insideViewport = (area) ->
-    viewport.top <= area.top + area.height and viewport.bottom >= area.top
+  # To not crop the shadow of annotations we move the left edge
+  # for 5px to the left and then add 5px (in fact 6px, so that
+  # it looks better with our 1px shadow border) left margin to each
+  # annotation. Same value is used in the _viewer.styl as well.
+  $('.annotations-list').add($annotationsList).css
+    left: left - 5
 
-  visibleHighlights = _.uniq(highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport)
+Template.annotationsControl.rendered = ->
+  resizeAnnotationsWidth()
 
-  LocalAnnotations.find
-    $or: [
-      # We display local annotations
-      local: true
-    ,
-      # We display all annotations which are not linked to any highlight
-      highlights:
-        $in: [null, []]
-    ,
-      # We display those which have a corresponding highlight visible
-      'highlights._id':
-        $in: visibleHighlights
+Template.annotationsControl.inside = ->
+  Group.documents.find
+    _id:
+      $in: getAnnotationDefaults().groups
+  ,
+    sort: [
+      ['slug', 'asc']
     ]
+
+###
+TODO: Temporary disabled, not yet finalized code
+
+Template.annotationsControl.events
+  # TODO: This should probably not create a stored annotation immediatelly, but just a local one?
+  'click .add': (e, template) ->
+    Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      return Notify.meteorError error, true if error
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationsControl.events
+  'click .add-button': (e, template) ->
+    e.preventDefault()
+
+    LocalAnnotation.documents.update
+      local: true
+      'publication._id': Session.get 'currentPublicationId'
+    ,
+      $set:
+        editing: true
+
+    focusEditor $('.annotation.local .annotation-content-editor')
+
+    # Scroll to new annotation editor and focus
+    # TODO: Set cursor to the end
+    $('.annotations-list').scrollTop 0
+
+    return # Make sure CoffeeScript does not return anything
+###
+
+Template.annotationInvite.highlights = ->
+  isolateValue ->
+    !!_.size(currentHighlights())
+
+viewportAnnotations = (local) ->
+  visibleHighlights = isolateValue ->
+    viewport = currentViewport()
+    highlights = currentHighlights()
+
+    insideViewport = (area) ->
+      viewport.top <= area.top + area.height and viewport.bottom >= area.top
+
+    _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
+
+  insideGroups = isolateValue ->
+    getAnnotationDefaults().groups
+
+  conditions = [
+    # We display all annotations which are not linked to any highlight
+    local:
+      $exists: false
+    'references.highlights':
+      $in: [null, []]
+  ,
+    # We display those which have a corresponding highlight visible
+    local:
+      $exists: false
+    'references.highlights._id':
+      $in: visibleHighlights
+  ,
+    # We display those which the user is editing (otherwise user could lose edited content)
+    local:
+      $exists: false
+    editing: true
+  ]
+
+  if local
+    conditions.push
+      # We display the annotation editor
+      local:
+        $exists: true
+      'author._id': Meteor.personId()
+
+  if insideGroups.length
+    conditions[0]['inside._id'] =
+      $in: insideGroups
+    conditions[1]['inside._id'] =
+      $in: insideGroups
+
+  LocalAnnotation.documents.find
+    $or: conditions
     'publication._id': Session.get 'currentPublicationId'
+  ,
+    sort: [
+      ['local', 'desc']
+      ['createdAt', 'asc']
+    ]
+
+Template.publicationAnnotations.annotations = ->
+  viewportAnnotations true
+
+Template.publicationAnnotations.realAnnotations = ->
+  isolateValue ->
+    !!viewportAnnotations(false).count()
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
-    # Left mouse button and mousedown happened on a target inside a display-page
-    if e.which is 1 and $(e.target).closest('.display-page').length and currentPublication?._highlighter?._annotator?._inAnyHighlight e.clientX, e.clientY
-      # If mousedown happened inside a highlight, we leave location unchanged
+    if Session.get 'currentHighlightId'
+      # Highlight is currently selected, so we do not update location and
+      # leave to Annotator.updateLocation to handle this. This allows making
+      # one highlight immediatelly after another, without having to go through
+      # a publication-only location after new highlight is created, befure
+      # location is updated to this new highlight location.
+      return
+
+    # Left mouse button and mouseup happened on a target inside a display-page
+    else if e.which is 1 and $(e.target).closest('.display-page').length and currentPublication?._highlighter?._annotator?._inAnyHighlight e.clientX, e.clientY
+      # If mouseup happened inside a highlight, we leave location unchanged
       # so that we update location to the highlight location without going
       # through a publication-only location
       return
 
-    # Left mouse button and mousedown happened on an annotation
+    # Left mouse button and mouseup happened on an annotation
     else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
-      # If mousedown happened inside an annotation, we leave location unchanged
+      # If mouseup happened inside an annotation, we leave location unchanged
       # so that we update location to the annotation location without going
+      # through a publication-only location
+      return
+
+    # Left mouse button and mouseup happened on a link prompt dialog
+    else if e.which is 1 and $(e.target).closest('.editor-link-prompt-dialog').length
+      # If mouseup happened on a link prompt dialog, we leave location unchanged
+      # so that we update location to the dialog parent location without going
       # through a publication-only location
       return
 
@@ -594,19 +1002,14 @@ Template.publicationAnnotations.created = ->
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotations.rendered = ->
-  $annotations = $(@findAll '.annotations-list')
+  $annotationsList = $(@findAll '.annotations-list')
 
-  $annotations.scrollLock()
+  $annotationsList.scrollLock()
 
   # We have to reset current left edge when re-rendering
-  $annotations.css
-    # To not crop the shadow of annotations we move the left edge
-    # for 5px to the left and then add 5px (in fact 6px, so that
-    # it looks better with our 1px shadow border) left margin to each
-    # annotation. Same value is used in the _viewer.styl as well.
-    left: $('.annotations-control').position().left - 5
+  resizeAnnotationsWidth $annotationsList
 
-  $annotations.find('.invite .body, .local .body').balanceText()
+  $annotationsList.find('.balance-text').balanceText()
 
   # If we leave z-index constant for all meta menu items
   # then because of the DOM order those later in the DOM
@@ -618,7 +1021,7 @@ Template.publicationAnnotations.rendered = ->
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   # We have to search for meta menus globally to have
   # access to other meta menus of other annotations
-  $metaMenus = $annotations.find('.meta-menu')
+  $metaMenus = $annotationsList.find('.meta-menu')
   $metaMenus.each (i, metaMenu) =>
     $(metaMenu).css
       zIndex: $metaMenus.length - i
@@ -626,69 +1029,42 @@ Template.publicationAnnotations.rendered = ->
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
 
-focusAnnotation = (body) ->
-  return unless body
-
-  if $(body).text().length > 0
-    currentPublication?._highlighter?._annotator?._deselectAllHighlights()
-
-    range = document.createRange()
-    selection = window.getSelection()
-    range.setStart body, 1
-    range.collapse true
-    selection.removeAllRanges()
-    selection.addRange range
-
-  body.focus()
-
 Template.publicationAnnotationsItem.events
-  # We do conversion of local annotation already in mousedown so that
-  # we are before mousedown on document which deselects highlights
-  'mousedown': (e, template) =>
-    return unless template.data.local
+  'click .edit-button': (e, template) ->
+    e.preventDefault()
 
-    LocalAnnotations.update template.data._id,
-      $unset:
-        local: ''
-
-    # TODO: Should this syncing be done automatically by PeerDB?
-    for highlight in template.data.highlights
-      Highlights.update highlight._id,
-        $addToSet:
-          annotations:
-            _id: template.data._id
-
-    Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
-
-    # Focus immediately after converting local annotation
-    # TODO: Improve this
-    Meteor.setTimeout ->
-      focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
-    , 100
-
-    # On click to convert local annotation we are for sure inside the annotation, so we can
-    # immediatelly send a mouse enter event to make sure related highlight has a hovered state
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [template.data._id]
+    LocalAnnotation.documents.update @_id,
+      $set:
+        editing: true
 
     return # Make sure CoffeeScript does not return anything
 
-  'click': (e, template) =>
-    # We do not select or even deselect an annotation on clicks inside a meta menu.
+  'click .cancel-button': (e, template) ->
+    e.preventDefault()
+
+    LocalAnnotation.documents.update @_id,
+      $unset:
+        editing: ''
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click': (e, template) ->
+    # We do not select and even deselect an annotation on clicks inside a meta menu.
     # We do the former so that when user click "delete" button, an annotation below
     # is not automatically selected. We do the latter so that behavior is the same
     # as it is for highlights.
     if $(e.target).closest('.annotations-list .annotation .meta-menu').length
+      return
+    else if $(e.target).closest('.annotations-list .annotation li.comment').length
+      Meteor.Router.toNew Meteor.Router.commentPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
+    # Local annotations are special and we de not set location when clicking on them.
+    # IDs are local to the client and we do not want to make user believe annotation
+    # is already saved and that ID is permanent, or even that user would link to that
+    # location.
+    else if @local
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
-      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), template.data._id
-
-    # Focus body no matter where the annotation was clicked
-    # TODO: Improve this
-    $target = $(e.target)
-    unless $target.hasClass('delete') or $target.is('[contenteditable=true]')
-      Meteor.setTimeout ->
-        focusAnnotation $(template?.findAll '.body[contenteditable=true]').get(0)
-      , 100
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     return # Make sure CoffeeScript does not return anything
 
@@ -699,88 +1075,425 @@ Template.publicationAnnotationsItem.rendered = ->
   $annotation.off '.publicationAnnotationsItem'
 
   $annotation.on 'highlightMouseenter.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.addClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.addClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'highlightMouseleave.publicationAnnotationsItem', (e, highlightId) =>
-    $annotation.removeClass('hovered') if highlightId in _.pluck @data.highlights, '_id'
+    $annotation.removeClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
   $annotation.on 'mouseenter.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseleave.publicationAnnotationsItem', (e, highlightId) =>
+  $annotation.on 'mouseleave.publicationAnnotationsItem', (e) =>
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-  if focusAnnotationId is @data._id
-    focusAnnotationId = null
-
-    focusAnnotation $(@findAll '.body[contenteditable=true]').get(0)
-
-Template.publicationAnnotationsItem.canEdit = Template.highlightsControl.canEdit
+Template.publicationAnnotationsItem.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.publicationAnnotationsItem.selected = ->
-  'selected' if @_id is Session.get 'currentAnnotationId'
+  'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
 
-Template.publicationAnnotationsItem.authorName = ->
-  return @author.slug unless @author.givenName? and @author.familyName?
-  @author.givenName + ' ' + @author.familyName
+Template.publicationAnnotationsItem.updatedFromNow = ->
+  moment(@updatedAt).fromNow()
 
-Template.publicationAnnotationsItem.authorIconUrl = ->
-  # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-  # TODO: gravatarHash does not appear
-  "https://secure.gravatar.com/avatar/#{ @author.gravatarHash }?s=24"
+Template.annotationTags.rendered = ->
+  # TODO: Make links work
+  ###
+  TODO: Temporary disabled, not yet finalized code
+
+  $(@findAll '.annotation-tags-list').tagit
+    readOnly: true
+  ###
 
 Template.annotationEditor.created = ->
-  @_rendered = false
+  @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  # Run for the first time only and if not a local annotation
-  return if @_rendered or @data.local
-  @_rendered = true
+  @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
 
-  $saved = $(@findAll '.saved')
+  # If editor got collapsed, close any open dialog (we do not
+  # really collapse when user is actively editing (like having
+  # a dialog open), but for every case, if it happens, we want
+  # to cleanup)
+  unless @data.editing
+    @_destroyDialog?()
+    @_destroyDialog = null
 
-  saveAnnotation = _.debounce (text) =>
-    LocalAnnotations.update @data._id,
-      $set:
-        body: text
-    ,
-      (error) ->
-        if error
-          Notify.meteorError error, true
-          return
+  ###
+  TODO: Temporary disabled, not yet finalized code
 
-        $saved.addClass('display')
-  , 1000
+  # Load tag-it
+  $(@findAll '.annotation-tags-editor').tagit()
 
-  # TODO: Improve cross-browser compatibility
-  # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/input
-  $(@findAll '.body[contenteditable=true]').on 'input', (e) =>
-    $saved.removeClass('display')
-    saveAnnotation $(e.target).text()
-
-    return # Make sure CoffeeScript does not return anything
+  # Create tags
+  _.each @data.tags, (item) =>
+    $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+  ###
 
 Template.annotationEditor.destroyed = ->
-  @_rendered = false
+  destroyEditor @
+  @_scribe = null
 
-Template.highlightInvite.rendered = ->
-  $(@findAll '.body').balanceText()
+Template.annotationEditor.events
+  'focus .annotation-content-editor': (e, template) ->
+    return if @editing
 
-Template.annotationInvite.rendered = ->
-  $(@findAll '.body').balanceText()
+    # We set editing based on the focus only for local annotations
+    return unless @local
 
-Template.annotationMetaMenu.events
-  'click .delete': (e, template) ->
-    LocalAnnotations.remove @_id, (error) =>
-      # Meteor triggers removal if insertion was unsuccessful, so we do not have to do anything
-      Notify.meteorError error, true if error
-
-    Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    # Expand
+    LocalAnnotation.documents.update @_id,
+      $set:
+        editing: true
 
     return # Make sure CoffeeScript does not return anything
 
-Template.annotationMetaMenu.canEdit = Template.highlightsControl.canEdit
+  # We collapse a local editor if there was no change to the content
+  # and user is not activelly editing it (like having a dialog open)
+  'blur .annotation-content-editor': (e, template) ->
+    # We do nothing if editor is already collapsed
+    return unless @editing
+
+    # We set editing based on the focus only for local annotations
+    return unless @local
+
+    # Do nothing if content was changed, and content is not empty
+    $editor = $(e.currentTarget)
+    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If focus moved somewhere else in the editor (like
+    # click on a toolbar button), we do not do anything
+    $annotation = $editor.closest('.annotation')
+    return if $annotation.is(e.relatedTarget) or $annotation.has(e.relatedTarget).length
+
+    # If dialog is open, we do not do anything
+    return if template._destroyDialog
+
+    # Collapse
+    LocalAnnotation.documents.update @_id,
+      $set:
+        local: LocalAnnotation.LOCAL.AUTOMATIC
+      $unset:
+        editing: ''
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
+  'input .annotation-content-editor': (e, template) ->
+    return unless @local is LocalAnnotation.LOCAL.AUTOMATIC
+
+    LocalAnnotation.documents.update @_id,
+      $set:
+        local: LocalAnnotation.LOCAL.CHANGED
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click button.save': (e, template) ->
+    $editor = $(template.findAll '.annotation-content-editor')
+
+    # Prevent empty annotations
+    return unless $editor.text().trim()
+
+    body = $editor.html().trim()
+
+    ###
+    TODO: Temporary disabled, not yet finalized code
+
+    $tags = $(template.findAll '.annotation-tags-editor')
+    tags = _.map $tags.tagit('assignedTags'), (name) ->
+      # TODO: Currently we have a race condition, use upsert
+      existingTag = Tag.documents.findOne
+        'name.en': name
+
+      if existingTag?
+        return tag: _.pick(existingTag, '_id')
+
+      tagId = Tag.documents.insert
+        name:
+          en: name
+
+      # return
+      tag:
+        _id: tagId
+    ###
+
+    if @local
+      Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
+        return Notify.meteorError error, true if error
+
+        LocalAnnotation.documents.remove @_id
+
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+    else
+      Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
+        return Notify.meteorError error, true if error
+
+        return unless count
+
+        LocalAnnotation.documents.update @_id,
+          $unset:
+            editing: ''
+
+        Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.visibilityMenu.public = ->
+  if @local
+    getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+  else
+    @access is Annotation.ACCESS.PUBLIC
+
+Template.annotationCommentsList.comments = ->
+  Comment.documents.find
+    'annotation._id': @_id
+  ,
+    sort: [
+      ['createdAt', 'asc']
+    ]
+
+Template.annotationCommentsListItem.selected = ->
+  'selected' if @_id is Session.get 'currentCommentId'
+
+Template.annotationCommentsListItem.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+
+Template.annotationCommentsListItem.events
+  'click .remove-button': (e, template) ->
+    annotationId = @annotation._id
+    Meteor.call 'remove-comment', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationCommentEditor.created = ->
+  @_scribe = null
+
+Template.annotationCommentEditor.rendered = ->
+  $wrapper = $(@findAll '.comment-editor')
+  $editor = $(@findAll '.comment-content-editor')
+
+  if $editor.text().trim() or $editor.is(':focus') or @_destroyDialog
+    $wrapper.addClass 'active'
+  else
+    $wrapper.removeClass 'active'
+
+  @_scribe = createEditor @, $editor, null, true unless @_scribe
+
+Template.annotationCommentEditor.destroyed = ->
+  destroyEditor @
+  @_scribe = null
+
+Template.annotationCommentEditor.events
+  'focus .comment-content-editor': (e, template) ->
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.addClass 'active'
+
+    return # Make sure CoffeeScript does not return anything
+
+  'blur .comment-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.removeClass 'active' unless $editor.text().trim() or template._destroyDialog
+
+    return # Make sure CoffeeScript does not return anything
+
+  # TODO: Should we detect changes with some other event as well?
+  'input .comment-content-editor': (e, template) ->
+    $editor = $(e.currentTarget)
+    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper.addClass 'active' if $editor.text().trim()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click button.comment': (e, template) ->
+    $editor = $(template.findAll '.comment-content-editor')
+
+    # Prevent empty comments
+    return unless $editor.text().trim()
+
+    body = $editor.html().trim()
+
+    Meteor.call 'create-comment', @_id, body, (error, commentId) =>
+      return Notify.meteorError error, true if error
+
+      # Reset editor
+      $editor.empty()
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationMetaMenu.events
+  'click .remove-button': (e, template) ->
+    Meteor.call 'remove-annotation', @_id, (error, count) =>
+      # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.annotationMetaMenu.events addAccessEvents
+
+Template.annotationMetaMenu.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+
+Template.annotationMetaMenu.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.contextMenu.events
+  'change .access input:radio': (e, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    defaults = getAnnotationDefaults()
+    defaults.access = access
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseenter .access .selection': (e, template) ->
+    accessHover = $(e.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (e, template) ->
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenu.public = ->
+  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+
+Template.contextMenu.private = ->
+  getAnnotationDefaults().access is Annotation.ACCESS.PRIVATE
+
+Template.contextMenu.selectedGroups = ->
+  getAnnotationDefaults().groups
+
+Template.contextMenu.myGroups = Template.myGroups.myGroups
+
+Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+
+Template.contextMenuGroups.private = Template.contextMenu.private
+
+Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
+
+Template.contextMenuGroups.selectedGroupsDescription = ->
+  defaults = getAnnotationDefaults()
+  return unless defaults
+  if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
+
+Template.contextMenuGroups.events
+  'click .add-to-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
+    defaults.groups = _.union defaults.groups, [@_id]
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-from-working-inside': (e, template) ->
+    defaults = getAnnotationDefaults()
+    defaults.groups = _.without defaults.groups, @_id
+    Session.set 'annotationDefaults', defaults
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.contextMenuGroupListing.workingInside = ->
+  _.contains getAnnotationDefaults().groups, @_id
+
+Template.footer.publicationDisplayed = ->
+  'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
+
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addParsedLinkReactiveVariable = (data) ->
+  data._parsedLink = new Variable parseURL data.link unless data._parsedLink
+
+Template.editorLinkPrompt.created = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.rendered = ->
+  addParsedLinkReactiveVariable @data
+
+Template.editorLinkPrompt.destroyed = ->
+  @data._parsedLink = null if @data._parsedLink
+
+Template.editorLinkPrompt.parsedLink = ->
+  addParsedLinkReactiveVariable @
+
+  parsedLink = @_parsedLink()
+
+  return parsedLink if parsedLink?.error
+
+  if parsedLink?.referenceName is 'external'
+    parsedLink.isExternal = true
+    return parsedLink
+
+  if parsedLink?.referenceName is 'internal'
+    parsedLink.isInternal = true
+    return parsedLink
+
+  # For an empty input we might not have an error, but also no reference name and ID
+  return unless parsedLink?.referenceName and parsedLink?.referenceId
+
+  # If we have a helper to help us resolve a path from the ID, let's
+  # use that. This will build a canonical URL if possible to help
+  # user verify their URL.
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
+    parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+
+  # If we have a helper to help us create text and title, let's use that.
+  if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
+    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
+
+  parsedLink
+
+Template.editorLinkPrompt.events
+  'keyup .editor-link-input, change .editor-link-input': (event, template) ->
+    href = $(event.target).val().trim()
+    parsedLink = parseURL href
+
+    if not parsedLink and href
+      parsedLink =
+        error: true
+
+    @_parsedLink.set parsedLink
+
+    return # Make sure CoffeeScript does not return anything
+
+  'submit .editor-link-form': (event, template) ->
+    event.preventDefault()
+
+    # On form submit click on a default button
+    $(template.findAll '.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
+
+    return # Make sure CoffeeScript does not return anything
+
+# We allow passing the publication slug if caller knows it
+Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options) ->
+  publication = Publication.documents.findOne publicationId
+
+  return Meteor.Router.publicationPath publication._id, publication.slug if publication
+
+  Meteor.Router.publicationPath publicationId, slug
+
+# Optional publication document
+Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
+  publication = Publication.documents.findOne publicationId unless publication
+  assert publicationId, publication._id if publication
+
+  _id: publicationId # TODO: Remove when we will be able to access parent template context
+  text: "p:#{ publicationId }"
+  title: publication?.title
