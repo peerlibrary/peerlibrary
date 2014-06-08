@@ -180,7 +180,7 @@ class @Background
   draw: (time) =>
     return unless @renderer
 
-    vector.update time for key, vector of @vectors
+    vector.update time for key, vector of @vectors unless Session.get 'backgroundPaused'
     triangle.draw() for key, triangle of @triangles
 
     @renderer.render @stage
