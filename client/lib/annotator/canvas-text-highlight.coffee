@@ -59,6 +59,15 @@ class CanvasTextHighlight extends Annotator.Highlight
     temp = []
     for segment in segments
       temp.push([_.clone(segment),true])
+
+
+    for segment in temp
+      segment.left = Math.round(segment.left)
+      segment.width = Math.round(segment.width)
+      segment.top = Math.round(segment.top)
+      segment.height = Math.round(segment.height)
+
+
     i = l-1
     while i>=0
       current = temp[i][0]
@@ -149,7 +158,7 @@ class CanvasTextHighlight extends Annotator.Highlight
           comparetop = compare.top
           comparebottom = compare.top+compare.height
           #group two rows if they are close to each other, set group number to be equal, i.e., change the group number for all elements in one group to the group number of the other group.
-          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=5)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=5))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) 
+          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=7)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=7))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) 
             t = _.clone(temp3[k][1])
             temp3[k][1] = temp3[j][1]
             m = 0
