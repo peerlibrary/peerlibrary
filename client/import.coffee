@@ -17,86 +17,124 @@ UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
 fileBuffer = []
 
+currentUploadDocument = null
+
+uploadFetchOne = ->
+  return currentUploadDocument if currentUploadDocument
+  document = ImportingFile.documents.findOne
+    finished: false
+    errored: false
+    sha256:
+      $exists: true
+  currentUploadDocument = document
+  return currentUploadDocument
+
+uploadMarkComplete = (params) ->
+  console.log "uploadMarkComplete called "
+  ImportingFile.documents.update currentUploadDocument._id,
+    $set: params
+  delete fileBuffer[currentUploadDocument._id]
+  currentUploadDocument = null
+
 # observing files with computed checksums
-checksummed = ImportingFile.documents.find
-  sha256:
-    $exists: true
-checksummed.observe
-  added: (document) ->
-    id = document._id
-    file = fileBuffer[id].file
-    fileContent = fileBuffer[id].fileContent
+Deps.autorun ->
+  return if currentUploadDocument
+  document = uploadFetchOne()
+  return unless document
 
-    console.log "Creating publication for file " + document.name
-    Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
-      if error
-        ImportingFile.documents.update id,
-          $set:
-            errored: true
-            status: error.toString()
-        return
+  console.log "Got into upload autorun " + document.name
 
-      if result.already
-        ImportingFile.documents.update id,
-          $set:
-            finished: true
-            status: "File already imported"
-            publicationId: result.publicationId
-        return
+  id = document._id
+  file = fileBuffer[id].file
+  fileContent = fileBuffer[id].fileContent
 
-      if result.verify
-        console.log "Verifying file " + document.name
-        verifyFile file, fileContent, result.publicationId, result.samples
-      else
-        console.log "Uploading file " + document.name
-        uploadFile file, result.publicationId
-     
-      # remove file from buffer 
-      delete fileBuffer[id]
+  console.log "Creating publication for file " + document.name
+  Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
+    if error
+      uploadMarkComplete
+        errored: true
+        status: error.toString()
+      return
 
-# observing files that are ready for checksum computation
-preprocessed = ImportingFile.documents.find
-  preprocessed:
-    $exists: true
-preprocessed.observe
-  added: (document) ->
-    id = document._id
-    fileContent = fileBuffer[id].fileContent
+    if result.already
+      uploadMarkComplete
+        finished: true
+        status: "File already imported"
+        publicationId: result.publicationId
+      return
 
-    console.log "Computing checksum for " + document.name
-    ImportingFile.documents.update id,
-      $set:
-        status: "Computing checksum"
+    if result.verify
+      console.log "Verifying file " + document.name
+      verifyFile file, fileContent, result.publicationId, result.samples
+    else
+      console.log "Uploading file " + document.name
+      uploadFile file, result.publicationId
+   
 
-    hash = new Crypto.SHA256
-      onProgress: (progress) ->
-        #TODO: update progressbar
-    hash.update fileContent, (error, result) ->
-      #TODO: handle errors
-      if error
-        console.log "Import error: " + error.message
-    hash.finalize (error, result) ->
-      #TODO: handle errors
-      if error
-        console.log "Import error: " + error.message
+currentChecksumDocument = null
 
-      alreadyImporting = ImportingFile.documents.findOne
-        sha256: result
+hashFetchOne = ->
+  document = ImportingFile.documents.findOne
+    preprocessed: true
+    sha256:
+      $exists: false
+  console.log document
+  currentChecksumDocument = document
+  return currentChecksumDocument
 
-      if alreadyImporting
-        ImportingFile.documents.update id,
-          $set:
-            finished: true
-            status: "File is already importing"
-            # publicationId might not yet be available, but let's try
-            publicationId: alreadyImporting.publicationId
-        return
+hashMarkComplete = (params) ->
+  console.log "Called hashMarkComplete"
+  # setting hash value in collection so that autorun can move on
+  ImportingFile.documents.update currentChecksumDocument._id,
+    $set: params
+  currentChecksumDocument = null
 
-      console.log "Setting sha256 value"
-      # so that observer can do it's work
-      ImportingFile.documents.update id,
-        $set:
-          sha256: result
+# observing documents ready for checksum computation
+Deps.autorun ->
+  return if currentChecksumDocument
+  document = hashFetchOne()
+  return unless document
+
+  console.log "Got into checksum computation autorun " + document.name
+  console.log document
+
+  id = document._id
+  currentId = id
+  fileContent = fileBuffer[id].fileContent
+
+  console.log "Computing checksum for " + document.name
+  ImportingFile.documents.update id,
+    $set:
+      status: "Computing checksum"
+
+  hash = new Crypto.SHA256
+    onProgress: (progress) ->
+      #TODO: update progressbar
+  hash.update fileContent, (error, result) ->
+    #TODO: handle errors
+    if error
+      console.log "Import error: " + error.message
+  hash.finalize (error, result) ->
+    #TODO: handle errors
+    if error
+      console.log "Import error: " + error.message
+
+    alreadyImporting = ImportingFile.documents.findOne
+      sha256: result
+
+    if alreadyImporting
+      hashMarkComplete
+        finished: true
+        status: "File is already importing"
+        # publicationId might not yet be available, but let's try
+        publicationId: alreadyImporting.publicationId
+      return
+
+    console.log "Setting sha256 value"
+    # so that observer can do it's work
+    hashMarkComplete
+      sha256: result
+      status: "Checksum computed"
 
 verifyFile = (file, fileContent, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -107,18 +145,19 @@ verifyFile = (file, fileContent, publicationId, samples) ->
     new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
-      ImportingFile.documents.update file._id,
-        $set:
-          errored: true
-          status: error.toString()
+      uploadMarkComplete
+        errored: true
+        status: error.toString()
       return
 
-    ImportingFile.documents.update file._id,
-      $set:
-        finished: true
-        publicationId: publicationId
+    uploadMarkComplete
+      finished: true
+      publicationId: publicationId
 
 uploadFile = (file, publicationId) ->
+  ImportingFile.documents.update file._id,
+    $set:
+      status: "Uploading file"
   meteorFile = new MeteorFile file,
     collection: ImportingFile.Meta.collection
 
@@ -128,16 +167,14 @@ uploadFile = (file, publicationId) ->
   ,
     (error) ->
       if error
-        ImportingFile.documents.update file._id,
-          $set:
-            errored: true
-            status: error.toString()
+        uploadMarkComplete
+          errored: true
+          status: error.toString()
         return
 
-      ImportingFile.documents.update file._id,
-        $set:
-          finished: true
-          publicationId: publicationId
+      uploadMarkComplete
+        finished: true
+        publicationId: publicationId
 
 testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
@@ -169,7 +206,6 @@ importFile = (file) ->
     uploadProgress: 0
     finished: false
     errored: false
-    file: file
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
