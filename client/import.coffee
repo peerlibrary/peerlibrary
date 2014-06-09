@@ -15,6 +15,88 @@ class ImportingFile extends Document
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
+fileBuffer = []
+
+# observing files with computed checksums
+checksummed = ImportingFile.documents.find
+  sha256:
+    $exists: true
+checksummed.observe
+  added: (document) ->
+    id = document._id
+    file = fileBuffer[id].file
+    fileContent = fileBuffer[id].fileContent
+
+    console.log "Creating publication for file " + document.name
+    Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
+      if error
+        ImportingFile.documents.update id,
+          $set:
+            errored: true
+            status: error.toString()
+        return
+
+      if result.already
+        ImportingFile.documents.update id,
+          $set:
+            finished: true
+            status: "File already imported"
+            publicationId: result.publicationId
+        return
+
+      if result.verify
+        console.log "Verifying file " + document.name
+        verifyFile file, fileContent, result.publicationId, result.samples
+      else
+        console.log "Uploading file " + document.name
+        uploadFile file, result.publicationId
+     
+      # remove file from buffer 
+      delete fileBuffer[id]
+
+# observing files that are ready for checksum computation
+preprocessed = ImportingFile.documents.find
+  preprocessed:
+    $exists: true
+preprocessed.observe
+  added: (document) ->
+    id = document._id
+    fileContent = fileBuffer[id].fileContent
+
+    console.log "Computing checksum for " + document.name
+    ImportingFile.documents.update id,
+      $set:
+        status: "Computing checksum"
+
+    hash = new Crypto.SHA256
+      onProgress: (progress) ->
+        #TODO: update progressbar
+    hash.update fileContent, (error, result) ->
+      #TODO: handle errors
+      if error
+        console.log "Import error: " + error.message
+    hash.finalize (error, result) ->
+      #TODO: handle errors
+      if error
+        console.log "Import error: " + error.message
+
+      alreadyImporting = ImportingFile.documents.findOne
+        sha256: result
+
+      if alreadyImporting
+        ImportingFile.documents.update id,
+          $set:
+            finished: true
+            status: "File is already importing"
+            # publicationId might not yet be available, but let's try
+            publicationId: alreadyImporting.publicationId
+        return
+
+      console.log "Setting sha256 value"
+      # so that observer can do it's work
+      ImportingFile.documents.update id,
+        $set:
+          sha256: result
 
 verifyFile = (file, fileContent, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -36,22 +118,12 @@ verifyFile = (file, fileContent, publicationId, samples) ->
         finished: true
         publicationId: publicationId
 
-
-uploadQueue = async.queue (params, callback) ->
-  meteorFile = new MeteorFile params.file,
+uploadFile = (file, publicationId) ->
+  meteorFile = new MeteorFile file,
     collection: ImportingFile.Meta.collection
 
-  meteorFile.upload params.file, 'upload-publication',
+  meteorFile.upload file, 'upload-publication',
     size: UPLOAD_CHUNK_SIZE,
-    publicationId: params.publicationId
-  ,
-    callback
-,
-  1 # simultaneous upload(s)
-
-uploadFile = (file, publicationId) ->
-  uploadQueue.push
-    file: file
     publicationId: publicationId
   ,
     (error) ->
@@ -67,11 +139,6 @@ uploadFile = (file, publicationId) ->
           finished: true
           publicationId: publicationId
 
-  ImportingFile.documents.update file._id,
-    $set:
-      status: "In queue"
-
-
 testPDF = (file, fileContent, callback) ->
   PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
@@ -80,59 +147,21 @@ testPDF = (file, fileContent, callback) ->
         status: "Invalid PDF file"
 
 importFile = (file) ->
+  console.log "Import file called"
   reader = new FileReader()
   reader.onload = ->
     fileContent = @result
-
     testPDF file, fileContent, ->
-      hash = new Crypto.SHA256
-        onProgress: (progress) ->
-          #TODO: update progressbar
-      hash.update fileContent, (error, result) ->
-        #TODO: handle errors
-        if error
-          console.log "Import error: " + error.message
-      hash.finalize (error, result) ->
-        #TODO: handle errors
-        if error
-          console.log "Import error: " + error.message
-        sha256 = result
+      fileBuffer[file._id] =
+        file: file
+        fileContent: fileContent
 
-        alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
-        if alreadyImporting
-          ImportingFile.documents.update file._id,
-            $set:
-              finished: true
-              status: "File is already importing"
-              # publicationId might not yet be available, but let's try
-              publicationId: alreadyImporting.publicationId
-          return
+      ImportingFile.documents.update file._id,
+        $set:
+          status: "In queue for checksum computation"
+          preprocessed: true
 
-        ImportingFile.documents.update file._id,
-          $set:
-            sha256: sha256
-
-        Meteor.call 'create-publication', file.name, sha256, (error, result) ->
-          if error
-            ImportingFile.documents.update file._id,
-              $set:
-                errored: true
-                status: error.toString()
-            return
-
-          if result.already
-            ImportingFile.documents.update file._id,
-              $set:
-                finished: true
-                status: "File already imported"
-                publicationId: result.publicationId
-            return
-
-          if result.verify
-            verifyFile file, fileContent, result.publicationId, result.samples
-          else
-            uploadFile file, result.publicationId
-
+  console.log "Inserting file into collection " + file.name
   ImportingFile.documents.insert
     name: file.name
     status: "Preprocessing file"
@@ -140,6 +169,7 @@ importFile = (file) ->
     uploadProgress: 0
     finished: false
     errored: false
+    file: file
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
