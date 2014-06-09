@@ -225,18 +225,20 @@ class @Publication extends ReadAccessDocument
     conditions
 
   @readAccessPersonFields: ->
-    # _id field is implicitly added
-    isAdmin: 1
-    inGroups: 1
-    library: 1
+    _.extend @adminAccessPersonFields(), @maintainerAccessPersonFields(),
+      # _id field is implicitly added
+      isAdmin: 1
+      inGroups: 1
+      library: 1
 
   @readAccessSelfFields: ->
-    # _id field is implicitly added
-    cached: 1
-    processed: 1
-    access: 1
-    readPersons: 1
-    readGroups: 1
+    _.extend @adminAccessSelfFields(), @maintainerAccessSelfFields(),
+      # _id field is implicitly added
+      cached: 1
+      processed: 1
+      access: 1
+      readPersons: 1
+      readGroups: 1
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
@@ -265,6 +267,18 @@ class @Publication extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      authors: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -287,6 +301,17 @@ class @Publication extends ReadAccessDocument
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
+
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
 
   @defaultAccess: ->
     @ACCESS.OPEN
