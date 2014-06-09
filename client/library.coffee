@@ -10,7 +10,7 @@ Deps.autorun ->
     Meteor.subscribe 'my-collections'
 
 Template.libraryPublications.myPublications = ->
-  person = Meteor.person()
+  person = Meteor.person library: 1
   return unless person
 
   Publication.documents.find

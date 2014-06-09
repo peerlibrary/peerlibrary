@@ -54,7 +54,7 @@ Template.groupListing.countDescription = ->
 Template.myGroups.myGroups = ->
   Group.documents.find
     _id:
-      $in: _.pluck Meteor.person()?.inGroups, '_id'
+      $in: _.pluck Meteor.person(inGroups: 1)?.inGroups, '_id'
   ,
     sort: [
       ['name', 'asc']
