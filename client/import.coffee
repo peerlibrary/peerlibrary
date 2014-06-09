@@ -71,6 +71,7 @@ Deps.autorun ->
       uploadFile file, result.publicationId
    
 
+
 currentChecksumDocument = null
 
 hashFetchOne = ->
