@@ -49,6 +49,14 @@ class @Highlight extends AccessDocument
       'author._id': person._id
     ]
 
+  @maintainerAccessPersonFields: ->
+    super
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      author: 1
+
   hasAdminAccess: (person) =>
     throw new Error "Not implemented"
 

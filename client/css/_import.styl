@@ -1,5 +1,22 @@
 @import 'variables.import'
 
+.imports-table
+  text-align left
+  margin auto
+  width 100%
+
+  .name-cell
+    width 50%
+
+  .progress-cell
+    width 25%
+
+  .status-cell
+    width 20%
+
+  .cancel-cell
+    width 5%
+
 .drop-overlay
   position fixed
   width 100%
@@ -12,7 +29,7 @@
 
   .content
     position relative
-    top 40%
+    top 30%
     width 50%
     margin auto
     text-align center
@@ -20,5 +37,11 @@
 
 .import-progress-bar
   background green
-  height 5px
-  margin-bottom 10px
+  height 8px
+  margin-bottom 3px
+
+.canceled
+  border-width 0
+
+  .cancel-white
+    color white 

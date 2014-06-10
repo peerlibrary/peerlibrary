@@ -6,6 +6,7 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
+  # canceled: true when user cancels import
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -14,6 +15,7 @@ class ImportingFile extends Document
     collection: null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
+
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
@@ -45,6 +47,11 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
+      # When the user presses cancel we update the cancel attribute to be true
+      # and throw a special error. This function captures that error and handles
+      # it as a special case.
+      return if error is 'Import Canceled'
+
       if error
         ImportingFile.documents.update file._id,
           $set:
@@ -116,6 +123,7 @@ importFile = (file) ->
     status: "Preprocessing file"
     readProgress: 0
     uploadProgress: 0
+    canceled: false
     finished: false
     errored: false
   ,
@@ -144,6 +152,8 @@ hideOverlay = ->
       finished: true
     ,
       errored: true
+    ,
+      canceled: true
     ]
   ).count()
 
@@ -213,6 +223,33 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
+Template.importingFilesItem.events =
+  'click .canceled': (e) ->
+    e.preventDefault()
+    # We stop event propagation to prevent the
+    # cancel from bubbling up to hide the overlay
+    e.stopPropagation()
+
+    ImportingFile.documents.update @_id,
+      $set:
+        canceled: true
+        status: 'Import Canceled'
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.importingFilesItem.truncateName = ->
+  width = 60 # Maxiumum width before truncation
+  subwidth = width / 2 - 2 # Width of substring chunks
+  filename = ImportingFile.documents.findOne(@_id)?.name
+  len = filename.length
+
+  return filename if len < width
+
+  filename.substring(0,subwidth) + '...' + filename.substring(len - subwidth, len)
+
+Template.importingFilesItem.hideCancel = ->
+  @finished or @canceled or @errored
+
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
     e.preventDefault()
@@ -280,6 +317,11 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
+    # We are stopping propagation in click on cancel
+    # button but it still propagates so we cancel here
+    # TODO: Check if this is still necessary in the new version of Meteor
+    return if e.isPropagationStopped()
+
     hideOverlay()
 
     return # Make sure CoffeeScript does not return anything
