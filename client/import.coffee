@@ -341,6 +341,13 @@ Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
 
 Deps.autorun ->
+  if Session.get('importOverlayActive') or Session.get('signInOverlayActive')
+    # We prevent scrolling of page content while overlay is visible
+    $('body').add('html').addClass 'overlay-active'
+  else
+    $('body').add('html').removeClass 'overlay-active'
+
+Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
