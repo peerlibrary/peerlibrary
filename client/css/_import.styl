@@ -1,9 +1,11 @@
 @import 'variables.import'
 
 .imports-table
-  text-align left
   margin auto
   width 100%
+
+  .imports-cell
+    padding 0 5px
 
   .name-cell
     width 50%
@@ -29,11 +31,24 @@
 
   .content
     position relative
-    top 30%
-    width 50%
+    top 40%
+    width 80%
     margin auto
     text-align center
     color white
+
+.imports-overlay
+  .content
+    top 20%
+
+  .imports
+    color white
+    position relative
+    top 25%
+    height 45%
+    width 80%
+    margin auto
+    overflow-y scroll
 
 .import-progress-bar
   background green

@@ -1,8 +1,11 @@
 <template name="importOverlay">
   {{#if importOverlayActive}}
-    <div class="drop-overlay">
+    <div class="drop-overlay imports-overlay">
       <div class="content">
-        <h1>Drop files here</h1>
+        <h1>Importing files</h1>
+        <p class="hint">Drop files to import them.</p>
+      </div>
+      <div class="imports">
         <table class="imports-table">
           {{#each importingFiles}}
             {{> importingFilesItem}}
@@ -15,7 +18,7 @@
 
 <template name="signInOverlay">
   {{#if signInOverlayActive}}
-    <div class="drop-overlay">
+    <div class="drop-overlay signin-overlay">
       <div class="content">
         <h1>Please sign in before importing</h1>
       </div>
