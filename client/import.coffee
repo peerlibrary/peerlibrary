@@ -15,7 +15,6 @@ class ImportingFile extends Document
     collection: null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
-
 DRAGGING_OVER_DOM = false
 
 verifyFile = (file, fileContent, publicationId, samples) ->
@@ -333,6 +332,10 @@ Template.importOverlay.rendered = ->
 
 Template.importOverlay.destroyed = ->
   $(document).off '.importOverlay'
+
+Template.signInOverlay.rendered = Template.importOverlay.rendered
+
+Template.signInOverlay.destroyed = Template.importOverlay.destroyed
 
 Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'
