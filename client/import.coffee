@@ -182,7 +182,7 @@ $(document).on 'dragenter', (e) ->
   DRAGGING_OVER_DOM = true
   Meteor.setTimeout ->
     DRAGGING_OVER_DOM = false
-  , 5
+  , 5 # ms
 
   if Meteor.personId()
     Session.set 'importOverlayActive', true

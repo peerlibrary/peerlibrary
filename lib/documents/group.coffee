@@ -41,9 +41,10 @@ class @Group extends ReadAccessDocument
     conditions = super
     return conditions unless _.isArray conditions
 
-    conditions.push
-      _id:
-        $in: _.pluck person.inGroups, '_id'
+    if person?._id
+      conditions.push
+        _id:
+          $in: _.pluck person.inGroups, '_id'
 
     conditions
 
@@ -70,6 +71,17 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -91,11 +103,28 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
+
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     document = super

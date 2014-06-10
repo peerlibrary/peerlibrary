@@ -27,9 +27,12 @@ setSession = (session) ->
     currentGroupId: null
     currentGroupSlug: null
     groupsActive: false
-    newsletterActive: false
-    newsletterSubscribing: false
-    newsletterError: null
+    inviteDialogActive: false
+    inviteDialogSubscribing: false
+    inviteDialogError: null
+    newsletterDialogActive: false
+    newsletterDialogSubscribing: false
+    newsletterDialogError: null
     installInProgress: false
     installRestarting: false
     installError: null
@@ -86,6 +89,8 @@ else
   # are using it in parsing HTML to extract all references. We extract
   # only those references for routes which have documentId set (and
   # have a place to store them in schema, eg. Annotation.references).
+  # With documentName you can override the name of a reference
+  # (otherwise route name is used).
 
   Meteor.Router.add
     '/':
@@ -103,6 +108,16 @@ else
         setSession
           indexActive: true
           resetPasswordToken: resetPasswordToken
+        'index'
+
+    '/enroll-account/:enrollAccountToken':
+      to: (enrollAccountToken) ->
+        # Make sure nobody is logged in, it would be confusing otherwise
+        # TODO: How to make it sure we do not log in in the first place? How could we set autoLoginEnabled in time? Because this logs out user in all tabs
+        Meteor.logout()
+        setSession
+          indexActive: true
+          enrollAccountToken: enrollAccountToken
         'index'
 
     '/p/:publicationId/:publicationSlug?/h/:highlightId':
@@ -199,6 +214,8 @@ else
 
     '/h/:highlightId':
       as: 'highlightId'
+      documentId: 'highlightId'
+      documentName: 'highlight'
       to: (highlightId) ->
         setSession()
         redirectHighlightId highlightId
@@ -206,6 +223,8 @@ else
 
     '/a/:annotationId':
       as: 'annotationId'
+      documentId: 'annotationId'
+      documentName: 'annotation'
       to: (annotationId) ->
         setSession()
         redirectAnnotationId annotationId
@@ -213,6 +232,8 @@ else
 
     '/m/:commentId':
       as: 'commentId'
+      documentId: 'commentId'
+      documentName: 'comment'
       to: (commentId) ->
         setSession()
         redirectCommentId commentId

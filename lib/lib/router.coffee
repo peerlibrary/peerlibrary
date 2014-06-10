@@ -4,6 +4,7 @@ if Meteor.isServer
   # We override Meteor.Router.add with our own function so that same code
   # which  we run on the client side we can reuse on the server side.
   # Code is based on the original Meteor.Router.add client-side code.
+  Meteor.Router.serverAdd = Meteor.Router.add
   Meteor.Router.add = (path, endpoint) ->
     if _.isObject(path) and not _.isRegExp(path)
       return _.each path, (endpoint, p) =>
@@ -21,6 +22,7 @@ if Meteor.isServer
 
     namedRoutes[endpoint.as] = new Meteor.Router.Route path
     namedRoutes[endpoint.as].documentId = endpoint.documentId
+    namedRoutes[endpoint.as].documentName = endpoint.documentName
 
 @routeResolve = (path) ->
   for name, route of (if Meteor.isServer then namedRoutes else Meteor.Router.namedRoutes)
@@ -42,7 +44,7 @@ localPath = (path) ->
   # TODO: Should we on the client check if the internal path is valid and give immediate feedback? We could simply check if path resolved? We should probably then assure that all our routes are named.
   return internal unless resolved?.route?.documentId
   # And name set
-  return internal unless resolved.name
+  return internal unless resolved.route.documentName or resolved.name
 
   if _.isFunction resolved.route.documentId
     # resolved.route.documentId should check params itself
@@ -57,7 +59,7 @@ localPath = (path) ->
 
   return unless referenceId
 
-  referenceName: resolved.name
+  referenceName: resolved.route.documentName or resolved.name
   referenceId: referenceId
 
 @parseURL = (href) ->

@@ -40,11 +40,8 @@ Template.group.notfound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Template.group.canModifyMembership = ->
-  Group.documents.findOne(Session.get('currentGroupId'))?.hasAdminAccess Meteor.person()
-
 Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
     Meteor.call 'group-set-name', @data._id, name, (error, count) ->
@@ -53,6 +50,28 @@ Editable.template Template.groupName, ->
   "Enter group name"
 ,
   true
+
+Template.groupMembers.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.groupMembersList.created = ->
+  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
+
+Template.groupMembersList.destroyed = ->
+  @_personsInvitedHandle?.stop()
+  @_personsInvitedHandle = null
+
+Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+
+Template.groupMembersList.events
+  'click .remove-button': (e, template) ->
+
+    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      Notify.success "Member removed." if count
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (e, template) ->
@@ -106,7 +125,7 @@ Template.groupMembersAddControl.rendered = ->
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->
-  @_searchHandle.stop() if @_searchHandle
+  @_searchHandle?.stop()
   @_searchHandle = null
 
   @data._query = null
@@ -128,6 +147,29 @@ Template.groupMembersAddControlNoResults.noResults = ->
   return unless searchResult
 
   not @_loading() and not (searchResult.countPersons or 0)
+
+Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+
+addMemberToGroup = (personId) ->
+  Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
+    return Notify.meteorError error, true if error
+
+    Notify.success "Member added." if count
+
+Template.groupMembersAddControlNoResults.events
+  'click .add-and-invite': (e, template) ->
+
+    # We get the email in @ (this), but it's a String object that also has
+    # the parent context attached so we first convert it to a normal string.
+    email = "#{ @ }"
+
+    return unless email?.match EMAIL_REGEX
+
+    inviteUser email, null, (newPersonId) =>
+      addMemberToGroup newPersonId
+      return true # Show success notification
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControlLoading.loading = ->
   addGroupMembersReactiveVariables @
@@ -159,18 +201,6 @@ Template.groupMembersAddControlResults.results = ->
     ]
     limit: personsLimit
 
-Template.groupMembersList.events
-  'click .remove-button': (e, template) ->
-
-    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
-
-      Notify.success "Member removed." if count
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.groupMembersList.canModifyMembership = Template.group.canModifyMembership
-
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (e, template) ->
 
@@ -178,10 +208,25 @@ Template.groupMembersAddControlResultsItem.events
 
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
-    Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+    addMemberToGroup @_id
 
-      Notify.success "Member added." if count
+    return # Make sure CoffeeScript does not return anything
+
+Template.groupDetails.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
+
+Template.groupDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+
+Template.groupDetails.events
+  'click .delete-group': (e, template) ->
+    Meteor.call 'remove-group', @_id, (error, count) =>
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      Notify.success "Group removed."
+      Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
 

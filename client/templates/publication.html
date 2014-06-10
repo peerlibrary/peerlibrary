@@ -211,7 +211,7 @@
           </div>
         {{/if}}
         <div class="annotation-footer">
-          <a href="{{personPathFromId author._id author.slug}}">
+          <a class="author-avatar" href="{{personPathFromId author._id author.slug}}">
             <img src="{{author.avatar 30}}" class="avatar" />
           </a>
           <h4 class="author-name"><a href="{{personPathFromId author._id author.slug}}">{{author.displayName}}</a></h4>
@@ -380,7 +380,7 @@
           {{#if currentPersonId}}
             Create the first above.
           {{else}}
-            Sing in to create the first.
+            Sign in to create the first.
           {{/if}}
         </p>
         <p class="hint balance-text">
@@ -389,7 +389,7 @@
             {{#if currentPersonId}}
               Select text in the publication to create one.
             {{else}}
-              Sing in to create one.
+              Sign in to create one.
             {{/if}}
           {{else}}
             {{#if currentPersonId}}
@@ -645,6 +645,6 @@
 
 <template name="highlightPromptInEditor">
   {{#with highlightReference _id}}
-    <p>In <a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a> ...</p>
+    <p>In <a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a> …</p>
   {{/with}}
 </template>

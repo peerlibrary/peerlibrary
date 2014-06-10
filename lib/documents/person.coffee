@@ -14,6 +14,10 @@ class @Person extends AccessDocument
   # givenName
   # familyName
   # isAdmin: boolean, is user an administrator or not
+  # invited:
+  #   by: a person who invited this person
+  #     _id
+  #   message: optional message for invitation email
   # inGroups: list of
   #   _id: id of a group the person is in
   # publications: list of
@@ -38,20 +42,41 @@ class @Person extends AccessDocument
       publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
+      invited:
+        by: @ReferenceField 'self', [], false
 
-  displayName: =>
+  displayName: (dontRefetch) =>
+    # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
+    dontRefetch = false unless _.isBoolean dontRefetch
     if @givenName and @familyName
-      "#{ @givenName } #{ @familyName }"
+      return "#{ @givenName } #{ @familyName }"
     else if @givenName
-      @givenName
+      return @givenName
     else if @user?.username
-      @user.username
-    else
-      @slug
+      return @user.username
+    else if @email()
+      return @email()
+    else if not dontRefetch # To prevent infinite loop
+      # Maybe we have access to a person document with more fields
+      person = @constructor.documents.findOne @_id
+      person.slug = @slug unless not person or person.slug
+      return person.displayName true if person
+
+    @slug
+
+  @displayNameFields: ->
+    _.extend @emailFields(),
+      givenName: 1
+      familyName: 1
+      'user.username': 1
+      slug: 1
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.emails?[0]?.address
+
+  @emailFields: ->
+    'user.emails': 1
 
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
@@ -99,6 +124,17 @@ class @Person extends AccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -122,11 +158,28 @@ class @Person extends AccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
+
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     # We need to know _id to be able to add it to adminPersons
@@ -143,14 +196,21 @@ class @Person extends AccessDocument
 
     document
 
-Meteor.person = (userId) ->
+Meteor.person = (userId, fields) ->
+  if not fields and _.isObject userId
+    fields = userId
+    userId = null
+
   # Meteor.userId is reactive
   userId ?= Meteor.userId()
+  fields ?= {}
 
   return null unless userId
 
   Person.documents.findOne
     'user._id': userId
+  ,
+    fields: fields
 
 Meteor.personId = (userId) ->
   # Meteor.userId is reactive
@@ -161,6 +221,7 @@ Meteor.personId = (userId) ->
   person = Person.documents.findOne
     'user._id': userId
   ,
-    _id: 1
+    fields:
+      _id: 1
 
   person?._id or null

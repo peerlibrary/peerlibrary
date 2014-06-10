@@ -89,13 +89,13 @@ Template.searchInput.rendered = ->
   if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get 'resetPasswordToken'
     $(@findAll '.search-input').focus()
 
-  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle?.stop()
   @_searchQueryHandle = Deps.autorun =>
     # Sync input field unless change happened because of this input field itself
     $(@findAll '.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
 
 Template.searchInput.destroyed = ->
-  @_searchQueryHandle.stop() if @_searchQueryHandle
+  @_searchQueryHandle?.stop()
   @_searchQueryHandle = null
 
 Template.searchInput.indexHeader = Template.header.indexHeader

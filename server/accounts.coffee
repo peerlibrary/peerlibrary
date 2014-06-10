@@ -5,23 +5,66 @@ USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 
 FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
+INVITE_SECRET = Random.id()
+
+Meteor.methods
+  'invite-user': (email, message) ->
+    check email, EMail
+    check message, Match.Optional String
+
+    # We require that user inviting is logged in
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    throw new Meteor.Error 400, "User is already a member." if User.documents.findOne 'emails.address': email
+
+    userId = Accounts.createUser
+      email: email
+      secret: INVITE_SECRET
+
+    invited = Person.documents.findOne
+      'user._id': userId
+
+    assert invited
+
+    Person.documents.update
+      _id: invited._id
+    ,
+      $set:
+        invited:
+          by:
+            _id: person._id
+          message: message?.trim() or null
+
+    console.log "Sending email"
+
+    Accounts.sendEnrollmentEmail userId
+
+    invited._id
+
 Accounts.onCreateUser (options, user) ->
-  try
-    if user.username is 'admin'
-      user._id = ADMIN_USER_ID
-      personId = ADMIN_PERSON_ID
-    else
+  # Idea is that only server side knows invite secret and we can
+  # based on that differentiate between onCreateUser checks because
+  # user is registering and checks because user has been invited
+  throw new Meteor.Error 400, "Invalid secret." if options.secret and options.secret isnt INVITE_SECRET
+
+  if user.username is 'admin'
+    user._id = ADMIN_USER_ID
+    personId = ADMIN_PERSON_ID
+  else
+    personId = Random.id()
+    # Person _id must not match any existing User username otherwise our queries for
+    # Person documents querying both _id and slug would return multiple documents
+    while User.documents.findOne(username: personId)
       personId = Random.id()
-      # Person _id must not match any existing User username otherwise our queries for
-      # Person documents querying both _id and slug would return multiple documents
-      while User.documents.findOne(username: personId)
-        personId = Random.id()
 
-    # We are verifying things here and not in a validateNewUser hook to prevent creation
-    # of a profile document and then failure later on when validating through validateNewUser
+  # We are verifying things here and not in a validateNewUser hook to prevent creation
+  # of a profile document and then failure later on when validating through validateNewUser
 
-    # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
+  # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
 
+  # Check username unless onCreateUser is called because user has been invited
+  unless options.secret
     throw new Meteor.Error 400, "Username must be at least 3 characters long." unless user.username and user.username.length >= 3
 
     throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
@@ -37,35 +80,35 @@ Accounts.onCreateUser (options, user) ->
     # Person documents querying both _id and slug would return multiple documents
     throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: user.username
 
-    throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
+  throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
-    throw new Meteor.Error 400, "Invalid email address." if user.emails?.length > 1
+  throw new Meteor.Error 400, "Invalid email address." if user.emails?.length > 1
 
-    # A race condition, but better than nothing. Otherwise it fails later on when creating an
-    # user document, but person document has already been created and is not cleaned up.
-    # We do not really care if users are reusing their email address, we just do not want errors
-    # later on when MongoDB unique index fails. So we are not checking here an email in a
-    # case insensitive manner, or normalize it in some other way (like removing Gmail +suffix).
-    throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
+  # A race condition, but better than nothing. Otherwise it fails later on when creating an
+  # user document, but person document has already been created and is not cleaned up.
+  # We do not really care if users are reusing their email address, we just do not want errors
+  # later on when MongoDB unique index fails. So we are not checking here an email in a
+  # case insensitive manner, or normalize it in some other way (like removing Gmail +suffix).
+  throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
 
-    user.person =
-      _id: personId
+  user.person =
+    _id: personId
 
-    person =
-      _id: personId
-      user:
-        # TODO: This sometimes throw a warning because we are creating a link before user document is really created, all this code should run after user document is created
-        _id: user._id
-        username: user.username
-      slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
-      gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
+  person =
+    _id: personId
+    user:
+      # TODO: This sometimes throw a warning because we are creating a link before user document is really created, all this code should run after user document is created
+      _id: user._id
+      username: user.username
+    slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
+    gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
 
-    _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
+  _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
-    person = Person.applyDefaultAccess null, person
+  person = Person.applyDefaultAccess null, person
 
+  try
     Person.documents.insert person
-
   catch error
     if error.name isnt 'MongoError'
       throw error
@@ -88,9 +131,10 @@ Meteor.publish null, ->
 
 MAX_LINE_LENGTH = 68
 
-wrap = (text) ->
+# Formats text into lines of MAX_LINE_LENGTH width for pretty emails
+wrap = (text, maxLength=MAX_LINE_LENGTH) ->
   lines = for line in text.split '\n'
-    if line.length <= MAX_LINE_LENGTH
+    if line.length <= maxLength
       line
     else
       words = line.split ' '
@@ -99,7 +143,7 @@ wrap = (text) ->
       else
         ls = [words.shift()]
         for word in words
-          if ls[ls.length - 1].length + word.length + 1 <= MAX_LINE_LENGTH
+          if ls[ls.length - 1].length + word.length + 1 <= maxLength
             ls[ls.length - 1] += ' ' + word
           else
             ls.push word
@@ -107,8 +151,23 @@ wrap = (text) ->
 
   lines.join '\n'
 
-Accounts.emailTemplates.siteName = Meteor.settings?.siteName or "PeerLibrary"
+indent = (text, amount) ->
+  assert amount >= 0
+  padding = (' ' for i in [0...amount]).join ''
+  lines = for line in text.split '\n'
+    padding + line
+  lines.join '\n'
+
+wrapWithIndent = (text, indentAmount=2, wrapLength=MAX_LINE_LENGTH) ->
+  # Wrap text to narrower width
+  text = wrap text, wrapLength - indentAmount
+
+  # Indent it to reach back to full width
+  indent text, indentAmount
+
+Accounts.emailTemplates.siteName = SITENAME
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
+
 Accounts.emailTemplates.resetPassword.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] Password reset"""
 Accounts.emailTemplates.resetPassword.text = (user, url) ->
@@ -116,22 +175,20 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
 
   person = Meteor.person user._id
 
-  # When MAIL_URL is not set e-mail is printed to the console, but without empty
-  # newlines. Do not worry, when sending e-mail for real empty newlines are there.
   wrap """
   Hello #{ person.displayName() }!
 
-  This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this e-mail.
+  This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this email.
 
   Please click the link below and choose a new password:
 
   #{ url }
 
-  Please also be careful to open a complete link. Your e-mail client might have broken it into several lines.
+  Please also be careful to open a complete link. Your email client might have broken it into several lines.
 
   Your username, in case you have forgotten: #{ user.username }
 
-  If you have any problems resetting your password or have any other questions just reply to this e-mail.
+  If you have any problems resetting your password or have any other questions just reply to this email.
 
   Yours,
 
@@ -139,3 +196,67 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   #{ Accounts.emailTemplates.siteName }
   #{ Meteor.absoluteUrl() }
   """
+
+Accounts.emailTemplates.enrollAccount.subject = (user) ->
+  """[#{ Accounts.emailTemplates.siteName }] An account has been created for you"""
+Accounts.emailTemplates.enrollAccount.text = (user, url) ->
+  url = url.replace '#/', ''
+
+  invited = Meteor.person user._id
+
+  assert invited.invited?.by._id
+
+  person = Person.documents.findOne
+    _id: invited.invited.by._id
+
+  assert person
+
+  # Construct email body
+  parts = []
+
+  parts.push """
+  Hello #{ invited.displayName() }!
+
+  #{ person.displayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName() } is inviting you to join the conversation with them
+  """
+
+  message = invited.invited.message
+  if message
+    parts.push """
+    :
+
+    #{ wrapWithIndent message }
+
+    To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+
+    """
+  else
+    parts.push """
+    . To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+
+    """
+
+  parts.push """
+
+  #{ Meteor.absoluteUrl() }
+
+  Please click the link below and choose your password:
+
+  #{ url }
+
+  If you have already done so or don't want to, you can safely ignore this email.
+
+  Please also be careful to open a complete link. Your email client might have broken it into several lines.
+
+  You will be able to choose your username after you set your password.
+
+  If you have any problems setting your password or have any other questions just reply to this email.
+
+  Yours,
+
+
+  #{ Accounts.emailTemplates.siteName }
+  #{ Meteor.absoluteUrl() }
+  """
+
+  wrap parts.join ''
