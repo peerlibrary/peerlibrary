@@ -1,5 +1,24 @@
 @import 'variables.import'
 
+.imports-table
+  margin auto
+  width 100%
+
+  .imports-cell
+    padding 0 5px
+
+  .name-cell
+    width 50%
+
+  .progress-cell
+    width 25%
+
+  .status-cell
+    width 20%
+
+  .cancel-cell
+    width 5%
+
 .drop-overlay
   position fixed
   width 100%
@@ -13,12 +32,35 @@
   .content
     position relative
     top 40%
-    width 50%
+    width 80%
     margin auto
     text-align center
     color white
 
+.imports-overlay
+  .content
+    top 20%
+
+  .imports
+    color white
+    position relative
+    top 25%
+    height 45%
+    width 80%
+    margin auto
+    overflow-y scroll
+
 .import-progress-bar
   background green
-  height 5px
-  margin-bottom 10px
+  height 8px
+  margin-bottom 3px
+
+.cancel-button
+  border-width 0
+
+  .cancel-white
+    color white 
+
+.overlay-active
+  /* We prevent scrolling of the page content while overlay is visible */
+  overflow hidden
