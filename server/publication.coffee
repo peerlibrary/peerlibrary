@@ -170,12 +170,10 @@ class @Publication extends Publication
     # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
     @fullText
 
-  _importingFilename: =>
-    # We assume that importing contains only this person, see comment in uploadPublication
-    assert @importing?[0]?.person?._id
-    assert.equal @importing[0].person._id, Meteor.personId()
+  _importingFilename: (index=0) =>
+    assert @importing?[index]?.importingId
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[index].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -360,6 +358,14 @@ Meteor.methods
           $set:
             cached: moment.utc().toDate()
             size: file.size
+
+      # Remove all other partially uploaded files, if there are any
+      for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
+        filename = publication._importingFilename i
+        try
+          Storage.remove filename
+        catch error
+          # We ignore any error when removing partially uploaded files
 
       # Hash was verified, so add it to uploader's library
       Person.documents.update
