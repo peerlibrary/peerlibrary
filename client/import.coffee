@@ -246,6 +246,8 @@ Template.importingFilesItem.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.importingFilesItem.hideCancel = ->
+  # We keep cancel shown even when canceled is set, until we get back
+  # in the file upload method callback and set finished as well
   @finished or @errored
 
 Template.searchInput.events =
