@@ -33,6 +33,8 @@ class @Publication extends ReadAccessDocument
   # sha256: SHA-256 hash of the file
   # size: size of the file (if cached)
   # importing: (temporary) list of
+  #   createdAt: timestamp when this instance of importing file was created
+  #   updatedAt: timestamp when this instance of importing file was last updated (the last file chunk received)
   #   person: person importing the document
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file

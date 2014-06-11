@@ -264,6 +264,8 @@ Meteor.methods
       ,
         $addToSet:
           importing:
+            createdAt: moment.utc().toDate()
+            updatedAt: moment.utc().toDate()
             person:
               _id: person._id
             filename: filename
@@ -281,6 +283,8 @@ Meteor.methods
         updatedAt: moment.utc().toDate()
         source: 'import'
         importing: [
+          createdAt: moment.utc().toDate()
+          updatedAt: moment.utc().toDate()
           person:
             _id: person._id
           filename: filename
@@ -328,6 +332,13 @@ Meteor.methods
     # TODO: Check if reported offset and size are reasonable, offset < size, and size must not be too large (we should have some max size limit)
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
     Storage.saveMeteorFile file, publication._importingFilename()
+
+    Publication.documents.update
+      _id: publication._id
+      'importing.person._id': person._id
+    ,
+      $set:
+        'importing.$.updatedAt': moment.utc().toDate()
 
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
