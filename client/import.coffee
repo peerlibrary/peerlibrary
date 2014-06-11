@@ -7,6 +7,7 @@ class ImportingFile extends Document
   # finished: true when importing has finished
   # errored: true when there was an error
   # canceled: true when user cancels import
+  # imported: true if file was successfully imported
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -35,7 +36,9 @@ verifyFile = (file, fileContent, publicationId, samples) ->
     ImportingFile.documents.update file._id,
       $set:
         finished: true
+        imported: true
         publicationId: publicationId
+        status: "File imported"
 
 uploadFile = (file, publicationId) ->
   meteorFile = new MeteorFile file,
@@ -46,10 +49,17 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
-      # When the user presses cancel we update the cancel attribute to be true
-      # and throw a special error. This function captures that error and handles
-      # it as a special case.
-      return if error is 'Import Canceled'
+      # When the user presses cancel we throw a special error. Here
+      # we capture that error and handle it as a special case.
+      if error is 'canceled'
+        ImportingFile.documents.update file._id,
+          $set:
+            # We got back from the chunk upload, so we can mark it as
+            # really canceled (that is, finished) and display to the
+            # user that cancelling has been successful
+            finished: true
+            status: "Import canceled"
+        return
 
       if error
         ImportingFile.documents.update file._id,
@@ -61,6 +71,7 @@ uploadFile = (file, publicationId) ->
       ImportingFile.documents.update file._id,
         $set:
           finished: true
+          imported: true
           publicationId: publicationId
 
 testPDF = (file, fileContent, callback) ->
@@ -122,9 +133,10 @@ importFile = (file) ->
     status: "Preprocessing file"
     readProgress: 0
     uploadProgress: 0
-    canceled: false
     finished: false
     errored: false
+    canceled: false
+    imported: false
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
@@ -151,8 +163,6 @@ hideOverlay = ->
       finished: true
     ,
       errored: true
-    ,
-      canceled: true
     ]
   ).count()
 
@@ -223,7 +233,7 @@ Template.importButton.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.importingFilesItem.events =
-  'click .canceled': (e) ->
+  'click .cancel-button': (e) ->
     e.preventDefault()
     # We stop event propagation to prevent the
     # cancel from bubbling up to hide the overlay
@@ -232,22 +242,11 @@ Template.importingFilesItem.events =
     ImportingFile.documents.update @_id,
       $set:
         canceled: true
-        status: 'Import Canceled'
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importingFilesItem.truncateName = ->
-  width = 60 # Maxiumum width before truncation
-  subwidth = width / 2 - 2 # Width of substring chunks
-  filename = ImportingFile.documents.findOne(@_id)?.name
-  len = filename.length
-
-  return filename if len < width
-
-  filename.substring(0,subwidth) + '...' + filename.substring(len - subwidth, len)
-
 Template.importingFilesItem.hideCancel = ->
-  @finished or @canceled or @errored
+  @finished or @errored
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
@@ -355,16 +354,21 @@ Deps.autorun ->
 
   return unless importingFilesCount
 
-  finishedImportingFiles = ImportingFile.documents.find(finished: true).fetch()
+  finishedFilesCount = ImportingFile.documents.find(finished: true).count()
 
-  return if importingFilesCount isnt finishedImportingFiles.length
+  # If there are any files still in progress or if there are any errors, do nothing
+  return if importingFilesCount isnt finishedFilesCount
 
-  if importingFilesCount is 1
-    assert finishedImportingFiles.length is 1
+  importedFilesCount = ImportingFile.documents.find(imported: true).count()
+
+  # If no file was really imported (all canceled?)
+  return unless importedFilesCount
+
+  if importedFilesCount is 1
     Notify.success "Imported the publication."
-    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    Meteor.Router.toNew Meteor.Router.publicationPath ImportingFile.documents.findOne(imported: true).publicationId
   else
-    Notify.success "Imported #{ finishedImportingFiles.length } publications."
+    Notify.success "Imported #{ importedFilesCount } publications."
     Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false
