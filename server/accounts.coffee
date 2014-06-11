@@ -36,8 +36,6 @@ Meteor.methods
             _id: person._id
           message: message?.trim() or null
 
-    console.log "Sending email"
-
     Accounts.sendEnrollmentEmail userId
 
     invited._id
