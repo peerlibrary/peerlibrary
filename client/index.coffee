@@ -14,6 +14,12 @@ Template.indexStatistics.highlights = ->
 Template.indexStatistics.annotations = ->
   Statistics.documents.findOne()?.countAnnotations or 0
 
+Template.indexStatistics.groups = ->
+  Statistics.documents.findOne()?.countGroups or 0
+
+Template.indexStatistics.collections = ->
+  Statistics.documents.findOne()?.countCollections or 0
+
 Template.index.searchActive = ->
   Session.get 'searchActive'
 
