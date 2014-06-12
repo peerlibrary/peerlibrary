@@ -10,6 +10,7 @@ class ImportingFile extends Document
   # imported: true if file was successfully imported
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
+  # buffered: true when file object is added to buffer
 
   @Meta
     name: 'ImportingFile'
@@ -17,108 +18,32 @@ class ImportingFile extends Document
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
-fileBuffer = []
-# current element of checksum and upload queue
-currentDocument =
-  checksum: null
-  upload: null
+importingFilesArrayBuffer = []
 
 # observes files that are processed and removes them from buffer
-processedFiles = ImportingFile.documents.find
-  $or: [
-    finished: true
-  ,
-    errored: true
-  ]
+processedFiles = ImportingFile.documents.find()
 processedFiles.observe
-  added: (document) ->
-    delete fileBuffer[document._id]
+  removed: (document) ->
+    console.log "Removing document from buffer " + document.name
+    delete importingFilesArrayBuffer[document._id]
 
-# verify or upload next file from queue
-Deps.autorun ->
-  document = ImportingFile.documents.findOne
-    finished: false
-    errored: false
-    sha256:
-      $exists: true
 
-  # document will be null the first time it runs
-  # also, autorun will get called when document status changes
-  # if document id is unchanged it can return
-  return if not document or currentDocument.upload and currentDocument.upload._id == document._id
-  currentDocument.upload = document
-
-  Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
-    if error
-      ImportingFile.documents.update document._id,
-        $set:
-          errored: true
-          status: error.toString()
-      return
-
-    if result.already
-      ImportingFile.documents.update document._id,
-        $set:
-          finished: true
-          status: "File already imported"
-          publicationId: result.publicationId
-      return
-
-    if result.verify
-      verifyFile fileBuffer[document._id].file, fileBuffer[document._id].fileContent, result.publicationId, result.samples
-    else
-      uploadFile fileBuffer[document._id].file, result.publicationId
-
-# calculate checksum for next file in queue
-Deps.autorun ->
-  document = ImportingFile.documents.findOne
-    preprocessed: true
-    sha256:
-      $exists: false
-
-  # document will be null the first time it runs
-  # also, autorun will get called when document status changes
-  # if document id is unchanged it can return
-  return if not document or currentDocument.checksum and currentDocument.checksum._id == document._id
-  currentDocument.checksum = document
-
-  ImportingFile.documents.update document._id,
-    $set:
-      status: "Computing checksum"
-
-  hash = new Crypto.SHA256
-    onProgress: (progress) ->
-      #TODO: update progressbar
-  hash.update fileBuffer[document._id].fileContent, (error, result) ->
-    #TODO: handle errors
-    if error
-      console.log "Import error: " + error.message
-  hash.finalize (error, result) ->
-    #TODO: handle errors
-    if error
-      console.log "Import error: " + error.message
-
-    ImportingFile.documents.update document._id,
-      $set:
-        sha256: result
-        status: "Checksum computed"
-
-verifyFile = (file, fileContent, publicationId, samples) ->
+verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,
     $set:
       status: "Verifying file"
 
   samplesData = _.map samples, (sample) ->
-    new Uint8Array fileContent.slice sample.offset, sample.offset + sample.size
+    new Uint8Array file.content.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
-      ImportingFile.document.update file._id,
+      ImportingFile.documents.update file._id,
         $set:
           errored: true
           status: error.toString()
       return
 
-    ImportingFile.document.update file._id,
+    ImportingFile.documents.update file._id,
       $set:
         finished: true
         imported: true
@@ -126,9 +51,6 @@ verifyFile = (file, fileContent, publicationId, samples) ->
         status: "File imported"
 
 uploadFile = (file, publicationId) ->
-  ImportingFile.documents.update file._id,
-    $set:
-      status: "Uploading file"
   meteorFile = new MeteorFile file,
     collection: ImportingFile.Meta.collection
 
@@ -162,30 +84,111 @@ uploadFile = (file, publicationId) ->
           imported: true
           publicationId: publicationId
 
-testPDF = (file, fileContent, callback) ->
-  PDFJS.getDocument(data: fileContent, password: '').then callback, (message, exception) ->
+# process next element from import queue
+Deps.autorun ->
+  # We exclude status and progress fields so that function
+  # doesn't get recalled on every status or progress change
+  document = ImportingFile.documents.findOne
+    finished: false
+    errored: false
+    sha256:
+      $exists: true
+  ,
+    fields:
+      status: 0
+      uploadProgress: 0
+      readProgress: 0
+  return unless document
+
+  console.log "Autorun called for import queue " + document.name
+
+  Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
+    if error
+      ImportingFile.documents.update document._id,
+        $set:
+          errored: true
+          status: error.toString()
+      return
+
+    if result.already
+      ImportingFile.documents.update document._id,
+        $set:
+          finished: true
+          status: "File already imported"
+          publicationId: result.publicationId
+      return
+
+    if result.verify
+      verifyFile importingFilesArrayBuffer[document._id], result.publicationId, result.samples
+    else
+      uploadFile importingFilesArrayBuffer[document._id], result.publicationId
+
+
+computeChecksum = (file, callback) ->
+  hash = new Crypto.SHA256
+    onProgress: (progress) ->
+      #TODO: update progressbar
+  hash.update file.content, (error, result) ->
+    if error
+      ImportingFile.documents.update file._id,
+        $set:
+          errored: true
+          status: error.toString()
+    return
+  hash.finalize callback
+
+testPDF = (file, callback) ->
+  PDFJS.getDocument(data: file.content, password: '').then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
       $set:
         errored: true
         status: "Invalid PDF file"
 
-importFile = (file) ->
+# process next element from preprocess queue
+Deps.autorun ->
+  # we exclude status field so that it doesn't get recalled on status change
+  document = ImportingFile.documents.findOne
+    sha256:
+      $exists: false
+    buffered: true
+  ,
+    fields:
+      status: 0
+  return unless document
+
+  ImportingFile.documents.update document._id,
+    $set:
+      status: "Preprocessing"
+
+  console.log "Called autorun for preprocessing queue " + document.name
+
   reader = new FileReader()
   reader.onload = ->
-    fileContent = @result
-    testPDF file, fileContent, ->
-      fileBuffer[file._id] =
-        file: file
-        fileContent: fileContent
+    importingFilesArrayBuffer[document._id].content = @result
+    console.log "Testing PDF with PDFJS"
+    testPDF importingFilesArrayBuffer[document._id], ->
+      console.log "Computing checksum"
+      computeChecksum importingFilesArrayBuffer[document._id], (error, result) ->
+        if error
+          ImportingFile.documents.update document._id,
+            $set:
+              errored: true
+              status: error.toString()
+          return
 
-      ImportingFile.documents.update file._id,
-        $set:
-          status: "In queue for checksum computation"
-          preprocessed: true
+        ImportingFile.documents.update document._id,
+          $set:
+            sha256: result
+            status: "In import queue"
 
+  #TODO: read file in chunks
+  reader.readAsArrayBuffer importingFilesArrayBuffer[document._id]
+
+
+importFile = (file) ->
   ImportingFile.documents.insert
     name: file.name
-    status: "Preprocessing file"
+    status: "In preprocessing queue"
     readProgress: 0
     uploadProgress: 0
     finished: false
@@ -199,17 +202,12 @@ importFile = (file) ->
 
       # So that meteor-file knows what to update
       file._id = id
+      importingFilesArrayBuffer[file._id] = file
 
-      # We make sure list of files is rendered before hashing
-      Deps.flush()
-
-      # TODO: Remove the following workaround for a bug
-      # Deps.flush does not seem to really do it, so we have to use Meteor.setTimeout to workaround
-      # See: https://github.com/meteor/meteor/issues/1619
-      Meteor.setTimeout ->
-        # TODO: We should read in chunks, not whole file
-        reader.readAsArrayBuffer file
-      , 5 # ms, 0 does not seem to work, 5 seems to work
+      # this will indicate that the file is ready for preprocessing
+      ImportingFile.documents.update id,
+        $set:
+          buffered: true
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
