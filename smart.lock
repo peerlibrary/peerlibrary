@@ -40,9 +40,9 @@
       "async": {},
       "cheerio": {},
       "isolate-value": {},
-      "apm": {},
       "stacktrace": {},
-      "related": {}
+      "related": {},
+      "kadira": {}
     },
     "packages": {
       "router": {
@@ -155,11 +155,6 @@
         "tag": "v2.0.2",
         "commit": "6b8600b29190073fa3785b48b028f113edfdffc2"
       },
-      "apm": {
-        "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.2.6",
-        "commit": "426e3c3c33457736ec64d8af17c765d477d1476b"
-      },
       "stacktrace": {
         "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
         "tag": "v0.1.1",
@@ -169,6 +164,11 @@
         "git": "https://github.com/peerlibrary/meteor-related.git",
         "tag": "v0.1.1",
         "commit": "7a4148fd0b7b9fa48ee93b75693a99993853b57e"
+      },
+      "kadira": {
+        "git": "https://github.com/meteorhacks/kadira.git",
+        "tag": "v2.2.0",
+        "commit": "0f0f6b90a80f2be3980154977fe19f84cc535cf8"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
