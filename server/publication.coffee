@@ -255,6 +255,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
+      createdAt = moment.utc().toDate()
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
@@ -262,8 +263,8 @@ Meteor.methods
       ,
         $addToSet:
           importing:
-            createdAt: moment.utc().toDate()
-            updatedAt: moment.utc().toDate()
+            createdAt: createdAt
+            updatedAt: createdAt
             person:
               _id: person._id
             filename: filename
@@ -276,13 +277,14 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
+      createdAt = moment.utc().toDate()
       id = Publication.documents.insert Publication.applyDefaultAccess person._id,
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
+        createdAt: createdAt
+        updatedAt: createdAt
         source: 'import'
         importing: [
-          createdAt: moment.utc().toDate()
-          updatedAt: moment.utc().toDate()
+          createdAt: createdAt
+          updatedAt: createdAt
           person:
             _id: person._id
           filename: filename
@@ -429,7 +431,6 @@ Meteor.methods
       _id: publication._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         title: title
 
 Meteor.publish 'publications-by-author-slug', (slug) ->

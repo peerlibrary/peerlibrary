@@ -7,3 +7,5 @@ class @Url extends Document
 
   @Meta
     name: 'Url'
+    fields: =>
+      updatedAt: UpdatedAtField 'self', ['url']

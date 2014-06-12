@@ -1,5 +1,6 @@
 class @User extends Document
   # createdAt: time of creation
+  # updatedAt: time of last change
   # username: user's username
   # emails: list of
   #   address: e-mail address
@@ -13,3 +14,4 @@ class @User extends Document
     collection: Meteor.users
     fields: =>
       person: @ReferenceField Person
+      updatedAt: UpdatedAtField 'self', ['username', 'emails', 'services', 'person._id']
