@@ -72,8 +72,6 @@ Meteor.methods
       'library._id':
         $ne: publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         library:
           _id: publication._id
@@ -91,8 +89,6 @@ Meteor.methods
       'publications._id':
         $ne: publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         publications:
           _id: publication._id
@@ -131,8 +127,6 @@ Meteor.methods
     result = Collection.documents.update Collection.requireMaintainerAccessSelector(person,
       collectionsQuery
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         publications:
           _id: publication._id
@@ -146,8 +140,6 @@ Meteor.methods
       '_id': person._id
       'library._id': publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         library:
           _id: publication._id
@@ -179,7 +171,6 @@ Meteor.methods
         $size: oldOrderIds.length
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         publications: publications
 
   # TODO: Use this code on the client side as well
@@ -199,7 +190,6 @@ Meteor.methods
         _id: collection._id
       ),
       $set:
-        updatedAt: moment.utc().toDate()
         name: name
 
 Meteor.publish 'collection-by-id', (collectionId) ->

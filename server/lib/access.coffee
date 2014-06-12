@@ -36,8 +36,6 @@ Meteor.methods
       'readPersons._id':
         $ne: personId
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         readPersons:
           _id: personId
@@ -65,8 +63,6 @@ Meteor.methods
       'readGroups._id':
         $ne: groupId
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         readGroups:
           _id: groupId
@@ -94,8 +90,6 @@ Meteor.methods
       _id: documentId
       'readPersons._id': personId
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         readPersons:
           _id: personId
@@ -122,8 +116,6 @@ Meteor.methods
       _id: documentId
       'readGroups._id': groupId
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         readGroups:
           _id: groupId

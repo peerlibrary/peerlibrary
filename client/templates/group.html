@@ -45,13 +45,14 @@
 </template>
 
 <template name="groupMembersAddControl">
-    <h3>Add a member</h3>
-    <div class="add-control">
-      <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
-      {{> groupMembersAddControlNoResults}}
-      {{> groupMembersAddControlResults}}
-      {{> groupMembersAddControlLoading}}
-    </div>
+  <h3>Add a member</h3>
+  <div class="add-control">
+    <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
+    {{> groupMembersAddControlNoResults}}
+    {{> groupMembersAddControlResults}}
+    {{> groupMembersAddControlLoading}}
+  </div>
+  <p class="hint">Enter an email to add and invite the user.</p>
 </template>
 
 <template name="groupMembersAddControlNoResults">
