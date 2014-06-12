@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "fa144073e08dc0f7f60538d536e470ed7b0c4fc8"
+    "commit": "9fafa13ca588c001111584631093e266d19fc8dc"
   },
   "dependencies": {
     "basePackages": {
@@ -40,9 +40,9 @@
       "async": {},
       "cheerio": {},
       "isolate-value": {},
-      "apm": {},
       "stacktrace": {},
-      "related": {}
+      "related": {},
+      "kadira": {}
     },
     "packages": {
       "router": {
@@ -122,8 +122,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.8.5",
-        "commit": "3fc8d0604f549d727f88b3341dfbbb8f52e9ecb4"
+        "tag": "v0.8.6",
+        "commit": "56c9799fd7b5335dcb2b42d972b6893e760b507d"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -155,11 +155,6 @@
         "tag": "v2.0.2",
         "commit": "6b8600b29190073fa3785b48b028f113edfdffc2"
       },
-      "apm": {
-        "git": "https://github.com/arunoda/meteor-apm-client.git",
-        "tag": "v1.2.6",
-        "commit": "426e3c3c33457736ec64d8af17c765d477d1476b"
-      },
       "stacktrace": {
         "git": "https://github.com/peerlibrary/meteor-stacktrace.git",
         "tag": "v0.1.1",
@@ -170,6 +165,11 @@
         "tag": "v0.1.1",
         "commit": "7a4148fd0b7b9fa48ee93b75693a99993853b57e"
       },
+      "kadira": {
+        "git": "https://github.com/meteorhacks/kadira.git",
+        "tag": "v2.2.0",
+        "commit": "0f0f6b90a80f2be3980154977fe19f84cc535cf8"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -177,8 +177,8 @@
       },
       "HTML5-History-API": {
         "git": "https://github.com/tmeasday/meteor-HTML5-History-API.git",
-        "tag": "v4.0.0",
-        "commit": "dc4965f1424cfca625ec3fbea17eace03f8e32c5"
+        "tag": "v4.1.2",
+        "commit": "b5fca79f9ae8936e5f748a04f475295f4fa1cc7a"
       }
     }
   }

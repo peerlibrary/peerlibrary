@@ -174,12 +174,10 @@ class @Publication extends Publication
     # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
     @fullText
 
-  _importingFilename: =>
-    # We assume that importing contains only this person, see comment in uploadPublication
-    assert @importing?[0]?.person?._id
-    assert.equal @importing[0].person._id, Meteor.personId()
+  _importingFilename: (index=0) =>
+    assert @importing?[index]?.importingId
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[index].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -261,6 +259,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
+      createdAt = moment.utc().toDate()
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
@@ -268,6 +267,8 @@ Meteor.methods
       ,
         $addToSet:
           importing:
+            createdAt: createdAt
+            updatedAt: createdAt
             person:
               _id: person._id
             filename: filename
@@ -280,11 +281,14 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
+      createdAt = moment.utc().toDate()
       id = Publication.documents.insert Publication.applyDefaultAccess person._id,
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
+        createdAt: createdAt
+        updatedAt: createdAt
         source: 'import'
         importing: [
+          createdAt: createdAt
+          updatedAt: createdAt
           person:
             _id: person._id
           filename: filename
@@ -333,6 +337,13 @@ Meteor.methods
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
     Storage.saveMeteorFile file, publication._importingFilename()
 
+    Publication.documents.update
+      _id: publication._id
+      'importing.person._id': person._id
+    ,
+      $set:
+        'importing.$.updatedAt': moment.utc().toDate()
+
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
       pdf = Storage.open publication._importingFilename()
@@ -354,6 +365,14 @@ Meteor.methods
             $set:
               cached: moment.utc().toDate()
               size: file.size
+
+        # Remove all other partially uploaded files, if there are any
+        for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
+          filename = publication._importingFilename i
+          try
+            Storage.remove filename
+          catch error
+            # We ignore any error when removing partially uploaded files
 
         # Hash was verified, so add it to uploader's library
         Person.documents.update
@@ -417,7 +436,6 @@ Meteor.methods
       _id: publication._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         title: title
 
 Meteor.publish 'publications-by-author-slug', (slug) ->

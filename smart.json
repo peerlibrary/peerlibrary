@@ -38,8 +38,8 @@
     "async": {},
     "cheerio": {},
     "isolate-value": {},
-    "apm": {},
     "stacktrace": {},
-    "related": {}
+    "related": {},
+    "kadira": {}
   }
 }

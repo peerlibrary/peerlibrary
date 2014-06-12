@@ -6,6 +6,8 @@ class ImportingFile extends Document
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
+  # canceled: true when user cancels import
+  # imported: true if file was successfully imported
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
 
@@ -119,7 +121,9 @@ verifyFile = (file, fileContent, publicationId, samples) ->
     ImportingFile.document.update file._id,
       $set:
         finished: true
+        imported: true
         publicationId: publicationId
+        status: "File imported"
 
 uploadFile = (file, publicationId) ->
   ImportingFile.documents.update file._id,
@@ -133,6 +137,18 @@ uploadFile = (file, publicationId) ->
     publicationId: publicationId
   ,
     (error) ->
+      # When the user presses cancel we throw a special error. Here
+      # we capture that error and handle it as a special case.
+      if error is 'canceled'
+        ImportingFile.documents.update file._id,
+          $set:
+            # We got back from the chunk upload, so we can mark it as
+            # really canceled (that is, finished) and display to the
+            # user that cancelling has been successful
+            finished: true
+            status: "Import canceled"
+        return
+
       if error
         ImportingFile.documents.update file._id,
           $set:
@@ -143,6 +159,7 @@ uploadFile = (file, publicationId) ->
       ImportingFile.documents.update file._id,
         $set:
           finished: true
+          imported: true
           publicationId: publicationId
 
 testPDF = (file, fileContent, callback) ->
@@ -173,6 +190,8 @@ importFile = (file) ->
     uploadProgress: 0
     finished: false
     errored: false
+    canceled: false
+    imported: false
   ,
     # We are using callback to make sure ImportingFiles really has the file now
     (error, id) ->
@@ -268,6 +287,24 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
+Template.importingFilesItem.events =
+  'click .cancel-button': (e) ->
+    e.preventDefault()
+    # We stop event propagation to prevent the
+    # cancel from bubbling up to hide the overlay
+    e.stopPropagation()
+
+    ImportingFile.documents.update @_id,
+      $set:
+        canceled: true
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.importingFilesItem.hideCancel = ->
+  # We keep cancel shown even when canceled is set, until we get back
+  # in the file upload method callback and set finished as well
+  @finished or @errored
+
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
     e.preventDefault()
@@ -335,6 +372,11 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (e, template) ->
+    # We are stopping propagation in click on cancel
+    # button but it still propagates so we cancel here
+    # TODO: Check if this is still necessary in the new version of Meteor
+    return if e.isPropagationStopped()
+
     hideOverlay()
 
     return # Make sure CoffeeScript does not return anything
@@ -347,6 +389,10 @@ Template.importOverlay.rendered = ->
 Template.importOverlay.destroyed = ->
   $(document).off '.importOverlay'
 
+Template.signInOverlay.rendered = Template.importOverlay.rendered
+
+Template.signInOverlay.destroyed = Template.importOverlay.destroyed
+
 Template.importOverlay.importOverlayActive = ->
   Session.get 'importOverlayActive'
 
@@ -354,20 +400,32 @@ Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
 
 Deps.autorun ->
+  if Session.get('importOverlayActive') or Session.get('signInOverlayActive')
+    # We prevent scrolling of page content while overlay is visible
+    $('body').add('html').addClass 'overlay-active'
+  else
+    $('body').add('html').removeClass 'overlay-active'
+
+Deps.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
 
-  finishedImportingFiles = ImportingFile.documents.find(finished: true).fetch()
+  finishedFilesCount = ImportingFile.documents.find(finished: true).count()
 
-  return if importingFilesCount isnt finishedImportingFiles.length
+  # If there are any files still in progress or if there are any errors, do nothing
+  return if importingFilesCount isnt finishedFilesCount
 
-  if importingFilesCount is 1
-    assert finishedImportingFiles.length is 1
+  importedFilesCount = ImportingFile.documents.find(imported: true).count()
+
+  # If no file was really imported (all canceled?)
+  return unless importedFilesCount
+
+  if importedFilesCount is 1
     Notify.success "Imported the publication."
-    Meteor.Router.toNew Meteor.Router.publicationPath finishedImportingFiles[0].publicationId
+    Meteor.Router.toNew Meteor.Router.publicationPath ImportingFile.documents.findOne(imported: true).publicationId
   else
-    Notify.success "Imported #{ finishedImportingFiles.length } publications."
+    Notify.success "Imported #{ importedFilesCount } publications."
     Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false

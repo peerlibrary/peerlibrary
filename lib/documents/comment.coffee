@@ -24,6 +24,7 @@ class @Comment extends AccessDocument
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       annotation: @ReferenceField Annotation
       publication: @ReferenceField Publication
+      updatedAt: UpdatedAtField 'self', ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

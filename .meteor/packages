@@ -41,8 +41,8 @@ variable
 async
 cheerio
 isolate-value
-apm
 url-utils
 stacktrace
 crypto
 related
+kadira

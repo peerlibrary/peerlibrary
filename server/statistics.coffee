@@ -7,10 +7,14 @@ Meteor.startup ->
   initializingPersons = true
   initializingHighlights = true
   initializingAnnotations = true
+  initializingGroups = true
+  initializingCollections = true
   countPublications = 0
   countPersons = 0
   countHighlights = 0
   countAnnotations = 0
+  countGroups = 0
+  countCollections = 0
   minPublicationDate = null
   maxPublicationDate = null
 
@@ -97,12 +101,38 @@ Meteor.startup ->
       countAnnotations--
       Statistics.documents.update statisticsDataId, $set: countAnnotations: countAnnotations if !initializingAnnotations
 
+  Group.documents.find({},
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id) =>
+      countGroups++
+      Statistics.documents.update statisticsDataId, $set: countGroups: countGroups if !initializingGroups
+
+    removed: (id) =>
+      countGroups--
+      Statistics.documents.update statisticsDataId, $set: countGroups: countGroups if !initializingGroups
+
+  Collection.documents.find({},
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id) =>
+      countCollections++
+      Statistics.documents.update statisticsDataId, $set: countCollections: countCollections if !initializingCollections
+
+    removed: (id) =>
+      countCollections--
+      Statistics.documents.update statisticsDataId, $set: countCollections: countCollections if !initializingCollections
+
   Statistics.documents.insert
     _id: statisticsDataId
     countPublications: countPublications
     countPersons: countPersons
     countHighlights: countHighlights
     countAnnotations: countAnnotations
+    countGroups: countGroups
+    countCollections: countCollections
     minPublicationDate: minPublicationDate?.toDate()
     maxPublicationDate: maxPublicationDate?.toDate()
 
@@ -110,6 +140,8 @@ Meteor.startup ->
   initializingPersons = false
   initializingHighlights = false
   initializingAnnotations = false
+  initializingGroups = false
+  initializingCollections = false
 
 # We map local collection to the collection clients use
 Meteor.publish 'statistics', ->

@@ -36,8 +36,6 @@ Meteor.methods
             _id: person._id
           message: message?.trim() or null
 
-    console.log "Sending email"
-
     Accounts.sendEnrollmentEmail userId
 
     invited._id
@@ -94,6 +92,7 @@ Accounts.onCreateUser (options, user) ->
   user.person =
     _id: personId
 
+  createdAt = moment.utc().toDate()
   person =
     _id: personId
     user:
@@ -102,6 +101,8 @@ Accounts.onCreateUser (options, user) ->
       username: user.username
     slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
     gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
+    createdAt: createdAt
+    updatedAt: createdAt
 
   _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
