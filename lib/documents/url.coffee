@@ -8,4 +8,4 @@ class @Url extends Document
   @Meta
     name: 'Url'
     triggers: =>
-      updatedAt: LastChangedTimestampTrigger ['url']
+      updatedAt: UpdatedAtTrigger ['url']

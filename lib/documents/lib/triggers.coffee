@@ -1,4 +1,4 @@
-class LastChangedTimestampTriggerClass extends Document._Trigger
+class UpdatedAtTriggerClass extends Document._Trigger
   constructor: (fields) ->
     if Meteor.isClient
       super fields
@@ -16,5 +16,5 @@ class LastChangedTimestampTriggerClass extends Document._Trigger
           $set:
             updatedAt: timestamp
 
-@LastChangedTimestampTrigger = (args...) ->
-  new LastChangedTimestampTriggerClass args...
+@UpdatedAtTrigger = (args...) ->
+  new UpdatedAtTriggerClass args...

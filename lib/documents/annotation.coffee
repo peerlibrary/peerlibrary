@@ -94,7 +94,7 @@ class @Annotation extends ReadAccessDocument
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
     triggers: =>
-      updatedAt: LastChangedTimestampTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
