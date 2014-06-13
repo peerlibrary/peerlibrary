@@ -8,7 +8,7 @@ class Migration extends Document.PatchMigration
       db.collection collectionName, (error, collection) =>
         return callback error if error
 
-        cursor = collection.find {_schema: currentSchema, $or: [{createdAt: {$exists: false}}, {updatedAt: {$exists: false}}]}, {'user._id': 1}
+        cursor = collection.find {_schema: currentSchema, $or: [{createdAt: {$exists: false}}, {updatedAt: {$exists: false}}]}, {'user._id': 1, createdAt: 1, updatedAt: 1}
         document = null
         async.doWhilst (callback) =>
           cursor.nextObject (error, doc) =>
