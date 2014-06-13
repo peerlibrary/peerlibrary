@@ -14,4 +14,5 @@ class @User extends Document
     collection: Meteor.users
     fields: =>
       person: @ReferenceField Person
-      updatedAt: UpdatedAtField 'self', ['username', 'emails', 'services', 'person._id']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['username', 'emails', 'services', 'person._id']
