@@ -13,4 +13,4 @@ class @Tag extends Document
     fields: =>
       slug: @GeneratedField 'self', ['name']
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['name']
+      updatedAt: LastChangedTimestampTrigger ['name']

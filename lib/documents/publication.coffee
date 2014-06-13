@@ -72,7 +72,7 @@ class @Publication extends ReadAccessDocument
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
+      updatedAt: LastChangedTimestampTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
 
   @_filenamePrefix: ->
     'publication' + Storage._path.sep

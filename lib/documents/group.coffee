@@ -29,7 +29,7 @@ class @Group extends ReadAccessDocument
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['name', 'members._id']
+      updatedAt: LastChangedTimestampTrigger ['name', 'members._id']
 
   _hasReadAccess: (person) =>
     access = super

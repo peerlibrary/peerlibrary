@@ -15,4 +15,4 @@ class @User extends Document
     fields: =>
       person: @ReferenceField Person
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['username', 'emails', 'services', 'person._id']
+      updatedAt: LastChangedTimestampTrigger ['username', 'emails', 'services', 'person._id']

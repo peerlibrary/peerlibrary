@@ -25,7 +25,7 @@ class @Comment extends AccessDocument
       annotation: @ReferenceField Annotation
       publication: @ReferenceField Publication
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
+      updatedAt: LastChangedTimestampTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"
