@@ -21,7 +21,8 @@ class @Highlight extends AccessDocument
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
-      updatedAt: UpdatedAtField 'self', ['author._id', 'publication._id', 'quote', 'target']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

@@ -27,7 +27,7 @@
   left 0
   /* Higher than header */
   z-index 6000
-  background black-translucent
+  background white-translucent
 
   .content
     position relative
@@ -35,14 +35,14 @@
     width 80%
     margin auto
     text-align center
-    color white
+    color black
 
 .imports-overlay
   .content
     top 20%
 
   .imports
-    color white
+    color black
     position relative
     top 25%
     height 45%
@@ -64,3 +64,11 @@
 .overlay-active
   /* We prevent scrolling of the page content while overlay is visible */
   overflow hidden
+
+  header, section, footer
+    /* WebKit only for now */
+    -webkit-filter blur(3px)
+    -moz-filter blur(3px)
+    -ms-filter blur(3px)
+    -o-filter blur(3px)
+    filter blur(3px)

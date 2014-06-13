@@ -5,4 +5,4 @@ MeteorFile::read = (file, options, callback) ->
   # Modify the read method. Disallow reading to continue if import is canceled.
   return callback 'canceled' if @collection.findOne(@_id)?.canceled
 
-  return parentRead.apply @, arguments
+  parentRead.apply @, arguments

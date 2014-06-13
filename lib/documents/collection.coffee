@@ -38,7 +38,8 @@ class @Collection extends ReadAccessDocument
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
-      updatedAt: UpdatedAtField 'self', ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
