@@ -1,7 +1,7 @@
 # Local (client-only) document of importing files
 class ImportingFile extends Document
   # name: user's file name
-  # preprocessingProgress: progress of reading from file, in %
+  # preprocessingProgress: progress of file preprocessing, in %
   # uploadProgress: progress of uploading file, in %
   # status: current status or error message
   # finished: true when importing has finished
