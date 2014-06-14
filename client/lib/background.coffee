@@ -160,29 +160,30 @@ class @Background
     columns = Math.ceil(width / deltaX)
     rows    = Math.ceil(height / deltaY)
 
-    @stage = new PIXI.Stage 0xFFFFFF
+    if not Session.get 'backgroundPaused'
+      @stage = new PIXI.Stage 0xFFFFFF
 
-    for i in [0...rows]
-      for j in [0...columns]
-        x = originX + j * deltaX
-        y = originY + i * deltaY
-        o = i % 2
-        e = 1 - i % 2
+      for i in [0...rows]
+        for j in [0...columns]
+          x = originX + j * deltaX
+          y = originY + i * deltaY
+          o = i % 2
+          e = 1 - i % 2
 
-        triangle = getTriangle x, y + deltaY * o, x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o
-        @stage.addChild triangle.graphics
+          triangle = getTriangle x, y + deltaY * o, x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o
+          @stage.addChild triangle.graphics
 
-        triangle = getTriangle x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o, x + 3 * deltaX / 2, y + deltaY * e
-        @stage.addChild triangle.graphics
+          triangle = getTriangle x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o, x + 3 * deltaX / 2, y + deltaY * e
+          @stage.addChild triangle.graphics
 
     return # To not have CoffeeScript return a result of for loop
 
   draw: (time) =>
     return unless @renderer
 
-    vector.update time for key, vector of @vectors unless Session.get 'backgroundPaused'
-    triangle.draw() for key, triangle of @triangles
-
-    @renderer.render @stage
+    if not Session.get 'backgroundPaused'
+      vector.update time for key, vector of @vectors
+      triangle.draw() for key, triangle of @triangles
+      @renderer.render @stage
 
     frame @draw

@@ -7,13 +7,13 @@ Template.footer.indexFooter = ->
 Template.footer.noIndexFooter = ->
   'no-index-footer' if not Template.footer.indexFooter()
 
-Session.setDefault 'backgroundPaused', 0
+Session.setDefault 'backgroundPaused', false
 
-Template.view.events
+Template.backgroundPauseButton.events
   'click': (e, template) ->
-    Session.set 'backgroundPaused', 1 - Session.get 'backgroundPaused'
-    return
+    Session.set 'backgroundPaused', not Session.get 'backgroundPaused'
+    return # Make sure CoffeeScript does not return anything
 
-Template.view.viewText = ->
-  return '   Basic View' unless Session.get 'backgroundPaused'
-  'Standard View'
+Template.backgroundPauseButton.backgroundPauseButtonText = ->
+  return "Pause Background" unless Session.get 'backgroundPaused'
+  "Start Background"
