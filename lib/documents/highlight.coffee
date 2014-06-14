@@ -24,6 +24,8 @@ class @Highlight extends AccessDocument
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
 
   @PUBLISH_CATALOG_SORT:
     [
@@ -64,6 +66,14 @@ class @Highlight extends AccessDocument
     [
       'author._id': person._id
     ]
+
+  @maintainerAccessPersonFields: ->
+    super
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      author: 1
 
   hasAdminAccess: (person) =>
     throw new Error "Not implemented"

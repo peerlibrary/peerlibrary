@@ -7,3 +7,5 @@ class @Url extends BaseDocument
 
   @Meta
     name: 'Url'
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['url']

@@ -1,5 +1,6 @@
 class @User extends BaseDocument
   # createdAt: time of creation
+  # updatedAt: time of last change
   # username: user's username
   # emails: list of
   #   address: e-mail address
@@ -13,3 +14,5 @@ class @User extends BaseDocument
     collection: Meteor.users
     fields: =>
       person: @ReferenceField Person
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['username', 'emails', 'services', 'person._id']

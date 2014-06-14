@@ -6,7 +6,9 @@ class @Publication extends ReadAccessDocument
   # maintainerGroups: ilist of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
   # adminGroups: ilist of groups who have admin permissions
+  # TODO: We should probably have a separate timestamp for when publication was orignally published
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # TODO: We sometimes use "foreign", sometimes "raw", should we unify this?
   # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
@@ -33,6 +35,8 @@ class @Publication extends ReadAccessDocument
   # sha256: SHA-256 hash of the file
   # size: size of the file (if cached)
   # importing: (temporary) list of
+  #   createdAt: timestamp when this instance of importing file was created
+  #   updatedAt: timestamp when this instance of importing file was last updated (the last file chunk received)
   #   person: person importing the document
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file
@@ -67,6 +71,8 @@ class @Publication extends ReadAccessDocument
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
 
   @ACCESS:
     PRIVATE: ACCESS.PRIVATE
@@ -239,18 +245,20 @@ class @Publication extends ReadAccessDocument
     conditions
 
   @readAccessPersonFields: ->
-    # _id field is implicitly added
-    isAdmin: 1
-    inGroups: 1
-    library: 1
+    _.extend @adminAccessPersonFields(), @maintainerAccessPersonFields(),
+      # _id field is implicitly added
+      isAdmin: 1
+      inGroups: 1
+      library: 1
 
   @readAccessSelfFields: ->
-    # _id field is implicitly added
-    cached: 1
-    processed: 1
-    access: 1
-    readPersons: 1
-    readGroups: 1
+    _.extend @adminAccessSelfFields(), @maintainerAccessSelfFields(),
+      # _id field is implicitly added
+      cached: 1
+      processed: 1
+      access: 1
+      readPersons: 1
+      readGroups: 1
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
@@ -279,6 +287,18 @@ class @Publication extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      authors: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -301,6 +321,17 @@ class @Publication extends ReadAccessDocument
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
+
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
 
   @defaultAccess: ->
     @ACCESS.OPEN

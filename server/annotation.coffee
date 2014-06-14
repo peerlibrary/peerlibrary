@@ -134,7 +134,6 @@ Meteor.methods
       _id: annotation._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         body: body
         references: references
 

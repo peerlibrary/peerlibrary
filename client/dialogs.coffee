@@ -36,7 +36,7 @@ Template.footer.events
 
     # Prefill subscribe form with user's email
     $email = $(template.findAll '#newsletter-dialog-email')
-    $email.val Meteor.person()?.email() unless $email.val()
+    $email.val Meteor.person(Person.emailFields())?.email() unless $email.val()
 
     Meteor.setTimeout =>
       $(template.findAll '#newsletter-dialog-email').focus()

@@ -67,11 +67,13 @@ class @AccessDocument extends BaseDocument
     []
 
   @readAccessPersonFields: ->
-    # _id field is implicitly added
-    isAdmin: 1
+    _.extend @adminAccessPersonFields(), @maintainerAccessPersonFields(),
+      # _id field is implicitly added
+      isAdmin: 1
 
   @readAccessSelfFields: ->
-    _id: 1 # To make sure we do not select all fields
+    _.extend @adminAccessSelfFields(), @maintainerAccessSelfFields(),
+      _id: 1 # To make sure we do not select all fields
 
   hasMaintainerAccess: (person) =>
     return true if person?.isAdmin
@@ -113,6 +115,15 @@ class @AccessDocument extends BaseDocument
   @_requireMaintainerAccessConditions: (person) ->
     []
 
+  @maintainerAccessPersonFields: ->
+    _.extend @adminAccessPersonFields(),
+      # _id field is implicitly added
+      isAdmin: 1
+
+  @maintainerAccessSelfFields: ->
+    _.extend @adminAccessSelfFields(),
+      _id: 1 # To make sure we do not select all fields
+
   hasAdminAccess: (person) =>
     return true if person?.isAdmin
 
@@ -147,6 +158,13 @@ class @AccessDocument extends BaseDocument
   @_requireAdminAccessConditions: (person) ->
     []
 
+  @adminAccessPersonFields: ->
+    # _id field is implicitly added
+    isAdmin: 1
+
+  @adminAccessSelfFields: ->
+    _id: 1 # To make sure we do not select all fields
+
   hasRemoveAccess: (person) =>
     # Default is same as maintainer access
     @hasMaintainerAccess person
@@ -154,6 +172,12 @@ class @AccessDocument extends BaseDocument
   @requireRemoveAccessSelector: (person, selector) ->
     # Default is same as maintainer access
     @requireMaintainerAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @maintainerAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @maintainerAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     document

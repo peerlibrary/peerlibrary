@@ -24,6 +24,8 @@ class @Comment extends AccessDocument
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       annotation: @ReferenceField Annotation
       publication: @ReferenceField Publication
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"
@@ -51,6 +53,14 @@ class @Comment extends AccessDocument
     [
       'author._id': person._id
     ]
+
+  @maintainerAccessPersonFields: ->
+    super
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      author: 1
 
   hasAdminAccess: (person) =>
     throw new Error "Not implemented"

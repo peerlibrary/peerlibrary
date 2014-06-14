@@ -86,8 +86,6 @@ Meteor.methods
       'members._id':
         $ne: member._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         members:
           _id: member._id
@@ -115,8 +113,6 @@ Meteor.methods
       _id: group._id
       'members._id': member._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         members:
           _id: member._id
@@ -135,10 +131,9 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid group." unless group
 
     Group.documents.update Group.requireMaintainerAccessSelector(person,
-        _id: group._id
-      ),
+      _id: group._id
+    ),
       $set:
-        updatedAt: moment.utc().toDate()
         name: name
 
 Meteor.publish 'groups-by-id', (groupId) ->

@@ -9,7 +9,7 @@
     Notify.success "User #{ email } invited.", "We have created an account and sent them an invitation email with a link to set their password." if showNotification
 
 Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
-  Meteor.person()?.displayName()
+  Meteor.person(Person.displayNameFields())?.displayName()
 
 changingPasswordInResetPassword = false
 changingPasswordInEnrollAccount = false

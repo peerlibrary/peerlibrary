@@ -12,3 +12,5 @@ class @Tag extends BaseDocument
     name: 'Tag'
     fields: =>
       slug: @GeneratedField 'self', ['name']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['name']

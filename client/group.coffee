@@ -41,7 +41,7 @@ Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
 Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person()
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -202,10 +202,10 @@ Template.groupMembersAddControlResultsItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.groupDetails.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.groupDetails.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupDetails.events
   'click .delete-group': (e, template) ->
