@@ -1,8 +1,9 @@
 # Local (client-only) document of importing files
 class ImportingFile extends Document
   # name: user's file name
-  # preprocessingProgress: progress of file preprocessing, in %
+  # readProgress: progress of reading from file, in %
   # uploadProgress: progress of uploading file, in %
+  # preprocessingProgress: progress of file preprocessing, in %
   # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
@@ -124,11 +125,8 @@ computeChecksum = (file, callback) ->
       ImportingFile.documents.update file._id,
       $set:
         # TODO: Remove uploadProgress update when progressbar frontend is updated (#513)
-        uploadProgress: progress * 100 #%
-        # When file reading in chunks is implemented, it will be the first part
-        # of preprocessing progress. Checksum computation should then continue
-        # preprocessing progress from that point on.
-        preprocessingProgress: progress * 100 #%
+        uploadProgress: progress * 100 # %
+        preprocessingProgress: progress * 100 # %
 
   hash.update file.content, (error, result) ->
     if error
@@ -192,8 +190,9 @@ importFile = (file) ->
     _id: id
     name: file.name
     status: "In preprocessing queue"
-    preprocessingProgress: 0
+    readProgress: 0
     uploadProgress: 0
+    preprocessingProgress: 0
     finished: false
     errored: false
     canceled: false
