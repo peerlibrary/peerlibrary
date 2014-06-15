@@ -219,6 +219,21 @@ class CanvasTextHighlight extends Annotator.Highlight
           k++
         hoverelt_ur.push(upperright[j]) if not witness
         j++
+      #now hoverelt_ur is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the upperright part of the selected region, sorted from upperleft to lowerright. Always remember that the lower the point is in the region, the larger the y coordinate is; the righter the point is, the larger the x coordinate is.
+      #6-15-14 do smoothing
+      counter1 = 0 #start with the upperleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ur.length-1
+          currentpt = hoverelt_ur[counter1]
+          nextpt = hoverelt_ur[counter1+1]
+          if (nextpt[0]-currentpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+            hoverelt_ur[counter1][0] = hoverelt_ur[counter1+1][0] #the upperlefter point has the x-coordinate of the lowerrighter point
+            hoverelt_ur = hoverelt_ur.filter (pt) -> pt isnt hoverelt_ur[counter1+1] #delete the lowerrighter point
+            nchange++
+          else
+            counter1++
       hoverelt.push(hoverelt_ur) 
 
       lowerright.sort (a,b) ->
@@ -237,6 +252,20 @@ class CanvasTextHighlight extends Annotator.Highlight
           k++
         hoverelt_lr.push(lowerright[j]) if not witness
         j++
+      #now hoverelt_lr is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the lowerright part of the selected region, sorted from upperright to lowerleft
+      counter1 = 0 #start with the lowerleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_lr.length-1
+          currentpt = hoverelt_lr[counter1]
+          nextpt = hoverelt_lr[counter1+1]
+          if (currentpt[0]-nextpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+            hoverelt_lr[counter1][1] = hoverelt_lr[counter1+1][1] #the upperrighter point has the y-coordinate of the lowerlefter point
+            hoverelt_lr = hoverelt_lr.filter (pt) -> pt isnt hoverelt_lr[counter1+1] #delete the lowerlefter point
+            nchange++
+          else
+            counter1++
       hoverelt.push(hoverelt_lr)
 
       lowerleft.sort (a,b) ->
@@ -255,6 +284,20 @@ class CanvasTextHighlight extends Annotator.Highlight
           k++
         hoverelt_ll.push(lowerleft[j]) if not witness
         j++
+      #now hoverelt_ll is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the lowerleft part of the selected region, sorted from upperleft to lowerright
+      counter1 = 0 #start with the upperleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ll.length-1
+          currentpt = hoverelt_ll[counter1]
+          nextpt = hoverelt_ll[counter1+1]
+          if (nextpt[0]-currentpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+            hoverelt_ll[counter1][1] = hoverelt_ll[counter1+1][1] #the upperlefter point has the y-coordinate of the lowerrighter point
+            hoverelt_ll = hoverelt_ll.filter (pt) -> pt isnt hoverelt_ll[counter1+1] #delete the upperlefter point
+            nchange++
+          else
+            counter1++
       hoverelt.push(hoverelt_ll) 
 
       upperleft.sort (a,b) ->
@@ -274,6 +317,20 @@ class CanvasTextHighlight extends Annotator.Highlight
           k++
         hoverelt_ul.push(upperleft[j]) if not witness
         j++
+      #now hoverelt_ul is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the upperleft part of the selected region, sorted from upperright to lowerleft
+      counter1 = 0 #start with the upperright most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ul.length-1
+          currentpt = hoverelt_ul[counter1]
+          nextpt = hoverelt_ul[counter1+1]
+          if (currentpt[0]-nextpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+            hoverelt_ul[counter1][0] = hoverelt_ul[counter1+1][0] #the upperrighter point has the y-coordinate of the lowerlefter point
+            hoverelt_ul = hoverelt_ul.filter (pt) -> pt isnt hoverelt_ul[counter1+1] #delete the upperrighter point
+            nchange++
+          else
+            counter1++
       hoverelt.push(hoverelt_ul)  
 
       @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]],[h_ur] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
