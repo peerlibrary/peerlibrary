@@ -44,6 +44,9 @@ class @Person extends AccessDocument
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:
         by: @ReferenceField 'self', [], false
+    triggers: =>
+      # We do not want only to update updateAt when user._id changes, but also emails and username
+      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'inGroups._id', 'publications._id']
 
   displayName: (dontRefetch) =>
     # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)

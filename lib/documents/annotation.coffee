@@ -5,7 +5,7 @@ class @Annotation extends ReadAccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
   # maintainerGroups: ilist of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -61,7 +61,10 @@ class @Annotation extends ReadAccessDocument
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
-  # inside: inside which groups this annotations was made/shared
+  # inside: list of groups this annotations was made/shared inside
+  #   _id
+  #   slug
+  #   name
   # local (client only): if it exists this is just a temporary annotation on the client side, 1 (automatically created, LOCAL.AUTOMATIC), 2 (user changed the content, LOCAL.CHANGED)
   # editing (client only): is this annotation being edited
 
@@ -90,6 +93,8 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in

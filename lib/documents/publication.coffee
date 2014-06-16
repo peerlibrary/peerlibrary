@@ -6,7 +6,9 @@ class @Publication extends ReadAccessDocument
   # maintainerGroups: ilist of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
   # adminGroups: ilist of groups who have admin permissions
+  # TODO: We should probably have a separate timestamp for when publication was orignally published
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # TODO: We sometimes use "foreign", sometimes "raw", should we unify this?
   # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
   # slug: slug for URL
@@ -33,6 +35,8 @@ class @Publication extends ReadAccessDocument
   # sha256: SHA-256 hash of the file
   # size: size of the file (if cached)
   # importing: (temporary) list of
+  #   createdAt: timestamp when this instance of importing file was created
+  #   updatedAt: timestamp when this instance of importing file was last updated (the last file chunk received)
   #   person: person importing the document
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file
@@ -67,6 +71,8 @@ class @Publication extends ReadAccessDocument
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
 
   @_filenamePrefix: ->
     'publication' + Storage._path.sep
