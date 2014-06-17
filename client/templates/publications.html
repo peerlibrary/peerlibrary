@@ -56,3 +56,92 @@
     {{> footer}}
   </div>
 </template>
+
+<template name="pulicationInlineItem">
+  {{#spaceless}}
+    <a class="inline-item publication" {{#unless noLink}}href="{{publicationPathFromId _id slug}}"{{/unless}}>
+      <i class="avatar only-icon icon-publication" title="Publication"></i>
+      <span class="name" title="{{name}}">
+        {{#if title}}
+          {{title}}
+        {{else}}
+          <i>title metadata missing</i>
+        {{/if}}
+      </span>
+    </a>
+  {{/spaceless}}
+</template>
+
+<template name="publicationCatalogItem">
+  <li class="catalog-item publication" data-publication-id="{{_id}}">
+    {{#if currentPersonId}}
+      {{> publicationLibraryMenu}}
+    {{/if}}
+
+    <div class="article-summary">
+      <div class="article-summary-data">
+        {{> publicationCatalogItemTitle}}
+        <div class="clearfix"></div>
+        {{#if authors.length}}
+          <span class="authors actionable">
+            {{#each authors}}
+              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+            {{/each}}
+          </span>
+        <br/>
+        {{/if}}
+        <span class="date">{{createdDay}}</span>
+        <br/>
+        <span class="actions actionable">
+          {{#if hasAbstract}}
+            <a href="#" class="preview-link">Abstract</a> &middot;
+          {{else}}
+            {{#if abstract}}
+              <a href="#" class="preview-link">Abstract</a> &middot;
+          {{/if}}
+          {{/if}}
+          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
+        </span>
+      </div>
+      {{#if thumbnailUrls.length}}
+      <div class="article-thumbnail actionable">
+        <ul class="scrubber">
+          {{#each thumbnailUrls}}
+          {{> publicationCatalogItemThumbnail}}
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+      <div class="clearfix"></div>
+      {{#if abstract}}
+      <div class="abstract">
+        <p class="abstract-content">{{abstract}}</p>
+      </div>
+      {{/if}}
+    </div>
+    <a class="full-item-link" href="{{publicationPathFromId _id slug}}"></a>
+  </li>
+</template>
+
+<template name="publicationCatalogItemTitle">
+  <h2 class="{{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+    {{#spaceless}}
+      <a class="actionable" href="{{publicationPathFromId _id slug}}">
+        {{#if title}}
+          {{title}}
+        {{else}}
+          {{#if importing.0.filename}}
+            {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+            {{importing.0.filename}}
+          {{else}}
+            <i>title metadata missing</i>
+          {{/if}}
+        {{/if}}
+      </a>
+    {{/spaceless}}
+  </h2>
+</template>
+
+<template name="publicationCatalogItemThumbnail">
+  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
+</template>

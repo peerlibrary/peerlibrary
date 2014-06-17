@@ -101,26 +101,3 @@
     {{/if}}
   {{/if}}
 </template>
-
-<template name="groupInlineItem">
-  <a class="inline-item group" {{#unless noLink}}href="{{groupPathFromId _id slug}}"{{/unless}}>
-    <i class="avatar only-icon icon-group" title="Group"></i>
-    <span class="name" title="{{name}}">{{name}}</span>
-  </a>
-</template>
-
-<template name="groupCatalogItem">
-  <li class="catalog-item group">
-    {{> groupCatalogItemName}}
-    <span class="group-count">{{countDescription}}</span>
-    <a class="full-item-link" href="{{groupPathFromId _id slug}}"></a>
-  </li>
-</template>
-
-<template name="groupCatalogItemName">
-  <h2>
-    <a href="{{groupPathFromId _id slug}}" class="actionable">
-      {{name}}
-    </a>
-  </h2>
-</template>
