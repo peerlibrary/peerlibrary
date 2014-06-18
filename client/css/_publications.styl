@@ -1,0 +1,87 @@
+.item-list
+  .publication.catalog-item
+    padding 20px
+
+    .thumbnail
+      float right
+      cursor pointer
+      display inline-block
+      width 95px
+      border 1px solid #c9d0dc
+      border-radius 2px
+      margin-left 20px
+
+    .thumbnail > img
+      width 90px
+      height auto
+      float right
+
+    h2
+      margin-bottom .83em
+
+    .authors
+      list-style none
+      margin 0
+      padding 0
+
+      li
+        display inline-block
+        margin 0 10px 10px 0
+
+        .inline-item
+          font-size 14px
+
+    .library-menu
+      display inline-block
+      position absolute
+      right 10px
+      top 0
+      left auto
+      width 22px
+      padding 10px 0
+      border-radius 0 0 2px 2px
+      min-height 0
+      transition all 0.2s
+      visibility hidden
+      opacity 0
+
+      .library-menu-button:first-of-type
+        margin-top 5px
+
+      .icon
+        float right
+        font-size 16px
+
+      &:hover
+        border-radius 2px
+        width 300px
+        padding 10px
+        right 0
+
+    &:hover
+      .library-menu
+        visibility visible
+        opacity 1
+
+    .abstract
+      display none
+
+    .article-summary
+      .article-summary-data
+        display inline-block
+        float left
+        width 85%
+
+        .authors span::after
+          content ","
+
+        .authors span:last-child::after
+          content ""
+
+    ul.scrubber
+      margin 0
+      width 95px
+      height 125px
+
+      li
+        display none

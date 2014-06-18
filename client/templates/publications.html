@@ -74,51 +74,54 @@
 
 <template name="publicationCatalogItem">
   <li class="catalog-item publication" data-publication-id="{{_id}}">
-    {{#if currentPersonId}}
-      {{> publicationLibraryMenu}}
-    {{/if}}
-
-    <div class="article-summary">
-      <div class="article-summary-data">
-        {{> publicationCatalogItemTitle}}
-        <div class="clearfix"></div>
-        {{#if authors.length}}
-          <span class="authors actionable">
-            {{#each authors}}
-              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
-            {{/each}}
-          </span>
-        <br/>
-        {{/if}}
-        <span class="date">{{createdDay}}</span>
-        <br/>
-        <span class="actions actionable">
-          {{#if hasAbstract}}
-            <a href="#" class="preview-link">Abstract</a> &middot;
-          {{else}}
-            {{#if abstract}}
-              <a href="#" class="preview-link">Abstract</a> &middot;
-          {{/if}}
-          {{/if}}
-          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
-        </span>
-      </div>
-      {{#if thumbnailUrls.length}}
-      <div class="article-thumbnail actionable">
+    {{#if thumbnailUrls.length}}
+      <div class="thumbnail actionable">
         <ul class="scrubber">
           {{#each thumbnailUrls}}
-          {{> publicationCatalogItemThumbnail}}
+            {{> publicationCatalogItemThumbnail}}
           {{/each}}
         </ul>
       </div>
+    {{/if}}
+
+    {{#if currentPersonId}}
+      {{#spaceless}}
+        <div class="toolbar actionable">
+          <button>{{> accessIcon}}</button>
+          <button><i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i></button>
+        </div>
+      {{/spaceless}}
+    {{/if}}
+
+    <div class="details">
+      {{> publicationCatalogItemTitle}}
+
+      {{#if authors.length}}
+        <ol class="authors actionable">
+          {{#each authors}}
+            <li>{{> personInlineItem}}</li>
+          {{/each}}
+        </ol>
       {{/if}}
-      <div class="clearfix"></div>
-      {{#if abstract}}
-      <div class="abstract">
-        <p class="abstract-content">{{abstract}}</p>
+
+      <p class="date">{{createdDay}}</p>
+
+      <div class="actions actionable">
+        {{#if hasAbstract}}
+          <button class="preview-link">Abstract</button> &middot;
+        {{/if}}
+        <a href="{{publicationPathFromId _id slug}}">Full text</a>
       </div>
+    </div>
+
+    <div class="extra-details">
+      {{#if abstract}}
+        <div class="abstract">
+          <p class="abstract-content">{{abstract}}</p>
+        </div>
       {{/if}}
     </div>
+
     <a class="full-item-link" href="{{publicationPathFromId _id slug}}"></a>
   </li>
 </template>

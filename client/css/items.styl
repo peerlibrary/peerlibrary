@@ -9,7 +9,7 @@
   box-sizing border-box
   max-width 100%
   font-size 13px
-  line-height 25px
+  line-height 2em
   height 24px
   white-space nowrap
   overflow hidden
@@ -69,8 +69,55 @@
     box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
 
-    h2
-      margin 0 0 0.2em 0
+    .toolbar
+      float right
+      position relative
+      top -2px
+      right -10px
+      margin 0 0 20px 20px
+      transition all 0.2s
+      visibility hidden
+      opacity 0
+
+      button
+        background none
+        border none
+        padding 2px
+        font-size 20px
+        color box-shadow-shadow
+
+        &:hover
+          color blue-accent
+          opacity 1
+
+    &:hover .toolbar
+      visibility visible
+      opacity 1
+
+    .details
+
+      &::after
+        content ""
+        clear both
+        display block
+
+      h2
+        margin 0 0 10px 0
+
+      p
+        margin 0 0 10px 0
+
+      .actions
+        button
+          background none
+          border none
+          padding 0
+          color blue-accent
+          font-size 14px
+          line-height 1.2em
+
+          &:hover
+            text-decoration underline
 
     .full-item-link
       display block
