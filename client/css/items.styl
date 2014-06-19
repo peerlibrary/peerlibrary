@@ -69,30 +69,49 @@
     box-shadow 0 0 0 1px box-shadow-border
     transition box-shadow 0.2s
 
+    &:hover
+      box-shadow 0 0 0 1px box-shadow-shadow
+
+      .toolbar
+        visibility visible
+        opacity 1
+
+    &.active
+      z-index 10
+
+      .toolbar.actionable
+        z-index 2
+
     .toolbar
       float right
       position relative
-      top -2px
+      top -6px
       right -10px
       margin 0 0 20px 20px
       transition all 0.2s
       visibility hidden
       opacity 0
 
-      button
+      &.actionable
+        z-index 2
+
+      .toolbar-button
         background none
         border none
         padding 2px
         font-size 20px
         color box-shadow-shadow
+        outline none
 
         &:hover
           color blue-accent
           opacity 1
 
-    &:hover .toolbar
-      visibility visible
-      opacity 1
+      &.displayed
+        visibility visible
+        opacity 1
+
+
 
     .details
 
@@ -104,10 +123,15 @@
       h2
         margin 0 0 10px 0
 
+        a
+          text-decoration none
+
       p
         margin 0 0 10px 0
 
       .actions
+        display inline
+
         button
           background none
           border none
@@ -146,7 +170,7 @@
 
   .ui-draggable.catalog-item:hover
   .ui-sortable-handle.catalog-item:hover
-    box-shadow 0 0 0 1px box-shadow-border, 0 2px 5px box-shadow-shadow
+    box-shadow 0 0 0 1px box-shadow-shadow, 0 2px 5px box-shadow-shadow
 
   .droppable-active
     box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)

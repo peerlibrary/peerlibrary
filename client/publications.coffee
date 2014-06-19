@@ -47,6 +47,56 @@ Template.publicationCatalogItem.destroyed = ->
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 
+libraryMenuSubscriptionCounter = 0
+libraryMenuSubscriptionPersonHandle = null
+libraryMenuSubscriptionCollectionsHandle = null
+
+onDropdownHidden = (event) ->
+  $toolbar = $(this).parents(".toolbar")
+  $item = $toolbar.parents(".catalog-item")
+  $toolbar.removeClass("displayed")
+  $item.removeClass("active").css('z-index','0')
+
+Template.publicationCatalogItemLibraryMenu.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onDropdownHidden)
+
+Template.publicationCatalogItemLibraryMenu.events
+  'click .toolbar-button': (e, template) ->
+
+    $anchor = $(template.findAll '.dropdown-anchor')
+    $anchor.toggle()
+
+    $toolbar = $(template.firstNode).parents(".toolbar")
+    $item = $toolbar.parents(".catalog-item")
+
+    if $anchor.is(':visible')
+      $toolbar.addClass("displayed")
+      $item.addClass("active").css('z-index','10')
+
+    else
+      onDropdownHidden.call($anchor, null)
+
+    # We only subscribe to person's collections on click, because they are not immediately seen.
+    libraryMenuSubscriptionCollectionsHandle = Meteor.subscribe 'my-collections' unless libraryMenuSubscriptionCollectionsHandle
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationCatalogItemLibraryMenu.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
+
+Template.publicationCatalogItemLibraryMenu.created = ->
+  libraryMenuSubscriptionCounter++
+  # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
+  libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'my-person-library' unless libraryMenuSubscriptionPersonHandle
+
+Template.publicationCatalogItemLibraryMenu.destroyed = ->
+  libraryMenuSubscriptionCounter--
+
+  unless libraryMenuSubscriptionCounter
+    libraryMenuSubscriptionPersonHandle?.stop()
+    libraryMenuSubscriptionPersonHandle = null
+    libraryMenuSubscriptionCollectionsHandle?.stop()
+    libraryMenuSubscriptionCollectionsHandle = null
+
 Editable.template Template.publicationCatalogItemTitle, ->
   @data.hasMaintainerAccess Meteor.person()
 ,
