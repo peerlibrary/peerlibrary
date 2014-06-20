@@ -23,7 +23,7 @@ updateCache = ->
     # TODO: Handle errors
     return
 
-  # There is only one latest post in the collection  
+  # There is only one latest post in the collection
   cachedPost = BlogPost.documents.findOne()
   loadedPost = posts.data.response.posts[0]
 
@@ -45,4 +45,4 @@ updateCache()
 
 Meteor.publish 'blog-posts', ->
   BlogPost.documents.find {}, BlogPost.PUBLISH_FIELDS()
- 
+
