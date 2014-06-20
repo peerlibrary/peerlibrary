@@ -11,10 +11,10 @@ updateCache = ->
   # If there is no Tumblr API key just return.
   # That way cache will stay empty. To client it
   # will look like there are no blog posts.
-  return unless Meteor.settings.private.thumblr.apikey
+  return unless Meteor.settings.private?.tumblr?.apikey
 
   Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
-  apikey = Meteor.settings.private.thumblr.apikey
+  apikey = Meteor.settings.private.tumblr.apikey
   url = "http://api.tumblr.com/v2/blog/peerlibrary.tumblr.com/posts?api_key=" + apikey
   try
     posts = HTTP.get url,
