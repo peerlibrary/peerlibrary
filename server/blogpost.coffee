@@ -1,11 +1,23 @@
+class @BlogPost extends BlogPost
+  @PUBLISH_FIELDS: ->
+    fields:
+      post_url: 1
+      total_post_count: 1
+
+# TODO: Adjust cache update interval
 CACHE_UPDATE_INTERVAL = 10000 # ms
-# TODO: Get our own API key
-THUMBLR_API_KEY = "fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
 
 updateCache = ->
+  # If there is no Tumblr API key just return.
+  # That way cache will stay empty. To client it
+  # will look like there are no blog posts.
+  return unless Meteor.settings.private.thumblr.apikey
+
   Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
+  apikey = Meteor.settings.private.thumblr.apikey
+  url = "http://api.tumblr.com/v2/blog/peerlibrary.tumblr.com/posts?api_key=" + apikey
   try
-    posts = HTTP.get "http://api.tumblr.com/v2/blog/peerlibrary.tumblr.com/posts?api_key=" + THUMBLR_API_KEY,
+    posts = HTTP.get url,
       timeout: 60000 # ms
   catch err
     # TODO: Handle errors
@@ -20,7 +32,8 @@ updateCache = ->
     return
 
   # Add total post count to post
-  loadedPost.totalPostCount = posts.data.reponse.posts
+  loadedPost.total_post_count = posts.data.response.blog.posts
+
   BlogPost.documents.insert loadedPost
 
   # Remove old cached post from collection if there was one
@@ -31,5 +44,5 @@ updateCache = ->
 updateCache()
 
 Meteor.publish 'blog-posts', ->
-  BlogPost.documents.find()
+  BlogPost.documents.find {}, BlogPost.PUBLISH_FIELDS()
  

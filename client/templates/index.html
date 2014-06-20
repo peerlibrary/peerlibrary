@@ -4,6 +4,7 @@
   {{else}}
     {{> indexMain}}
     {{> indexStatistics}}
+    {{> indexBlogPosts}}
   {{/if}}
 </template>
 
@@ -45,3 +46,16 @@
     </div>
   {{/constant}}
 </template>
+
+<template name="indexBlogPosts">
+  <div>
+    Peerlibrary blog:<br/><br/>
+    {{#if posts_exist}}
+      <a target="about:blank" href="{{post_url}}">Latest blog post</a><br/>
+      Total {{total_post_count}} posts
+    {{else}}
+      No blog posts
+    {{/if}}
+  </div>
+</template>
+
