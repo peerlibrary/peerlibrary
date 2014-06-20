@@ -30,6 +30,45 @@ button.default
 button.default:hover
   background-color box-shadow-border
 
+/* Tooltip
+========== */
+
+.tooltip-trigger
+  position relative
+
+  .tooltip-anchor
+    display none
+    position absolute
+    top 0
+    left 50%
+    right 0
+    z-index 10
+
+    &::before
+      content ''
+      position absolute
+      border-style solid
+      border-width 8px 0 0 8px
+      border-color #a1b3c2 transparent
+      display block
+      width 0
+      z-index 0
+      margin-left -10px
+      bottom 0
+      left 0
+
+    .tooltip-container
+      position  absolute
+      bottom 8px
+      left -100px
+      width 200px
+
+      .tooltip-content
+        margin 0 auto
+        background #a1b3c2
+        text-align center
+        padding 5px
+
 /* Dropdown
 =========== */
 
@@ -62,7 +101,7 @@ button.default:hover
       content ''
       position absolute
       border-style solid
-      border-width 0 8px 8px;
+      border-width 0 8px 8px
       border-color rgb(210,210,210) transparent
       display block
       width 0

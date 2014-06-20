@@ -127,9 +127,11 @@
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    <button class="toolbar-button">
-      <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
-    </button>
+    {{#tooltip}}
+      <button class="toolbar-button" title="SOME TOOLTIP">
+        <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
+      </button>
+    {{/tooltip}}
     <div class="dropdown-anchor">
       <div class="dropdown library-menu">
         {{> publicationLibraryMenuButtons}}

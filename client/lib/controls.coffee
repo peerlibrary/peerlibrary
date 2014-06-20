@@ -1,5 +1,3 @@
-
-
 # To close dropdowns when clicking, focusing, or pressing a key somewhere outside
 $(document).on 'click focus keypress dragstart', (e) ->
   closestTrigger = $(e.target).closest('.dropdown-trigger').get(0)
