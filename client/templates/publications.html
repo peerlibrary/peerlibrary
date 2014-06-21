@@ -75,7 +75,7 @@
 <template name="publicationCatalogItem">
   <li class="catalog-item publication" data-publication-id="{{_id}}">
     {{#if thumbnailUrls.length}}
-      <div class="thumbnail actionable">
+      <div class="thumbnail actionable {{documentLengthClass}}">
         <ul class="scrubber">
           {{#each thumbnailUrls}}
             {{> publicationCatalogItemThumbnail}}

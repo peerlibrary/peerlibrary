@@ -44,6 +44,12 @@ Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
   @_publicationHandle = null
 
+Template.publicationCatalogItem.documentLengthClass = ->
+  switch
+    when @numberOfPages < 10 then 'short'
+    when @numberOfPages < 25 then 'medium'
+    else 'long'
+
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 

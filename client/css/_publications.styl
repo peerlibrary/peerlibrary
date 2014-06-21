@@ -5,22 +5,51 @@
     padding 20px
 
     .thumbnail
+      position relative
       float right
       cursor pointer
       display inline-block
       width 95px
-      border solid 1px box-shadow-border
-      transition border-color 0.2s
-      border-radius 2px
+      height 125px
       margin-left 20px
-      overflow hidden
 
-    .thumbnail > img
-      width 90px
-      height auto
-      float right
+      .scrubber
+        position relative
+        z-index 2
+        margin 0
+        width 95px
+        height 125px
+        border solid 1px box-shadow-border
+        transition border-color 0.2s
+        background-color white
+        border-radius 2px
 
-    &:hover .thumbnail
+        li
+          display none
+
+          img
+            width 100%
+            height auto
+            float right
+
+      &.medium::before, &.long::before, &.long::after
+        content ""
+        position absolute
+        z-index 1
+        top 2px
+        left 2px
+        width 100%
+        height 100%
+        border solid 1px box-shadow-border
+        border-radius 2px
+        background-color white
+
+      &.long::after
+        top 4px
+        left 4px
+        z-index 0
+
+    &:hover .scrubber
       border-color box-shadow-shadow
 
     .authors
@@ -62,11 +91,3 @@
 
         .authors span:last-child::after
           content ""
-
-    ul.scrubber
-      margin 0
-      width 95px
-      height 125px
-
-      li
-        display none
