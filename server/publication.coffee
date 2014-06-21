@@ -36,7 +36,7 @@ class @Publication extends Publication
           Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
-          
+
       fields.annotationsCount.generator = (fields) ->
         [fields._id, fields.annotations?.length or 0]
 
