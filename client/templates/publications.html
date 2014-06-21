@@ -117,6 +117,10 @@
         {{/spaceless}}
       </p>
 
+      {{#if annotationsCount}}
+        <p><i class="icon-annotation"></i> {{annotationsCountDescription}}</p>
+      {{/if}}
+
       <div class="actions actionable">
         {{#if hasAbstract}}
           <button class="preview-link">Abstract</button> &middot;

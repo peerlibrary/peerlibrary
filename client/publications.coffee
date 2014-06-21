@@ -50,6 +50,9 @@ Template.publicationCatalogItem.documentLengthClass = ->
     when @numberOfPages < 25 then 'medium'
     else 'long'
 
+Template.publicationCatalogItem.annotationsCountDescription = ->
+  if @annotationsCount is 1 then "1 public annotation" else "#{ @annotationsCount } public annotations"
+
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 

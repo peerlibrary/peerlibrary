@@ -51,6 +51,7 @@ class @Publication extends ReadAccessDocument
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
+  # annotationsCount: number of annotations for this publication
   # referencingAnnotations: list of (reverse field from Annotation.references.publications)
   #   _id: annotation id
   # license: license information, if known
@@ -71,6 +72,7 @@ class @Publication extends ReadAccessDocument
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+      annotationsCount: @GeneratedField 'self', ['annotations']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
 

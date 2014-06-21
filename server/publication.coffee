@@ -15,6 +15,7 @@ class @Publication extends Publication
           [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
+
       fields.fullText.generator = (fields) ->
         return [null, null] unless fields.cached
         return [null, null] if fields.processed
@@ -35,6 +36,21 @@ class @Publication extends Publication
           Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
+          
+      fields.annotationsCount.generator = (fields) ->
+        # Only display the count of public annotations.
+        # TODO: Trigger update of this generator when annotation access changes.
+        annotationIds = _.pluck fields.annotations, '_id'
+        annotations = Annotation.documents.find
+          _id:
+            $in: annotationIds
+        .fetch()
+
+        length = _.where annotations,
+          access: ACCESS.PUBLIC
+        .length
+
+        [fields._id, length]
 
       fields
 
@@ -203,6 +219,7 @@ class @Publication extends Publication
       source: 1
       mediaType: 1
       access: 1
+      annotationsCount: 1
       readPersons: 1
       readGroups: 1
       maintainerPersons: 1
@@ -220,6 +237,7 @@ class @Publication extends Publication
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
       'access'
+      'annotationsCount'
     ]
 
 registerForAccess Publication
