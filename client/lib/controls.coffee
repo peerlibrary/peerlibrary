@@ -22,3 +22,12 @@ $(document).on 'keyup', (e) ->
     $('section .dropdown-anchor:visible').hide().trigger('dropdown-hidden')
 
   return # Make sure CoffeeScript does not return anything
+
+Meteor.startup ->
+  $(document).tooltip
+    items: '.tooltip'
+    position:
+      my: 'center bottom'
+      at: 'center top-10'
+    show: 200
+    hide: 200

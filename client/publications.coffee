@@ -47,18 +47,25 @@ Template.publicationCatalogItem.destroyed = ->
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 
+Template.publicationCatalogItem.open = Template.accessText.open
+Template.publicationCatalogItem.closed = Template.accessText.closed
+Template.publicationCatalogItem.private = Template.accessText.private
+
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
 libraryMenuSubscriptionCollectionsHandle = null
 
-onDropdownHidden = (event) ->
-  $toolbar = $(this).parents(".toolbar")
-  $item = $toolbar.parents(".catalog-item")
-  $toolbar.removeClass("displayed")
-  $item.removeClass("active").css('z-index','0')
+onLibraryDropdownHidden = (event) ->
+  # Return the library button to default state.
+  $toolbar = $(this).parents('.toolbar')
+  $toolbar.removeClass('displayed')
+  $item = $toolbar.parents('.catalog-item')
+  $item.removeClass('active').css('z-index','0')
+  $button = $toolbar.find('.toolbar-button')
+  $button.addClass('tooltip')
 
 Template.publicationCatalogItemLibraryMenu.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onDropdownHidden)
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
 
 Template.publicationCatalogItemLibraryMenu.events
   'click .toolbar-button': (e, template) ->
@@ -66,15 +73,24 @@ Template.publicationCatalogItemLibraryMenu.events
     $anchor = $(template.findAll '.dropdown-anchor')
     $anchor.toggle()
 
-    $toolbar = $(template.firstNode).parents(".toolbar")
-    $item = $toolbar.parents(".catalog-item")
-
     if $anchor.is(':visible')
-      $toolbar.addClass("displayed")
-      $item.addClass("active").css('z-index','10')
+      # Because the dropdown is active, make sure toolbar doesn't disappear when not hovered.
+      $toolbar = $(template.firstNode).parents('.toolbar')
+      $toolbar.addClass('displayed')
+
+      # Also make sure the catalog item is on top of other items,
+      # since the dropdown extends out of it.
+      $item = $toolbar.parents('.catalog-item')
+      $item.addClass('active').css('z-index','10')
+
+      # Temporarily remove and disable tooltips on the button.
+      $button = $(template.findAll '.toolbar-button')
+      tooltipId = $button.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $button.removeClass('tooltip')
 
     else
-      onDropdownHidden.call($anchor, null)
+      onLibraryDropdownHidden.call($anchor, null)
 
     # We only subscribe to person's collections on click, because they are not immediately seen.
     libraryMenuSubscriptionCollectionsHandle = Meteor.subscribe 'my-collections' unless libraryMenuSubscriptionCollectionsHandle

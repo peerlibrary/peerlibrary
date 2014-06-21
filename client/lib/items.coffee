@@ -5,12 +5,18 @@ Template.accessIcon.iconName = ->
     when Publication.ACCESS.PRIVATE then 'icon-private'
     else assert false
 
-Template.accessText.accessText = ->
-  switch @access
-    when Publication.ACCESS.OPEN then "open access"
-    when Publication.ACCESS.CLOSED then "closed access"
-    when Publication.ACCESS.PRIVATE then "private"
-    else assert false
+Template.accessText.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.accessText.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.accessText.private = ->
+  @access is Publication.ACCESS.PRIVATE
+
+Template.accessDescription.open = Template.accessText.open
+Template.accessDescription.closed = Template.accessText.closed
+Template.accessDescription.private = Template.accessText.private
 
 Template.member.documentIsPerson = ->
   @ instanceof Person

@@ -105,7 +105,17 @@
         {{/if}}
       </ol>
 
-      <p>{{createdDay}}, {{> accessIcon}}{{> accessText}}</p>
+      <p>{{createdDay}},
+        {{#spaceless}}
+          <span class="tooltip" title="
+            {{#if open}}Everyone has access to the publication{{/if}}
+            {{#if closed}}The publication is public, but only those who import the PDF have access to its content{{/if}}
+            {{#if private}}Only the users who import the PDF or are listed have access to the publication{{/if}}
+          ">
+            {{> accessIcon}}{{> accessText}}
+          </span>
+        {{/spaceless}}
+      </p>
 
       <div class="actions actionable">
         {{#if hasAbstract}}
@@ -122,16 +132,22 @@
         </div>
       {{/if}}
     </div>
+
+    <a class="full-item-link" href="{{publicationPathFromId _id slug}}"></a>
   </li>
 </template>
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    {{#tooltip}}
-      <button class="toolbar-button" title="SOME TOOLTIP">
-        <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
-      </button>
-    {{/tooltip}}
+    <button class="toolbar-button tooltip" title="
+      {{#if inLibrary}}
+        Publication is in your library
+      {{else}}
+        Add publication to library and collections.
+      {{/if}}
+    ">
+      <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
+    </button>
     <div class="dropdown-anchor">
       <div class="dropdown library-menu">
         {{> publicationLibraryMenuButtons}}

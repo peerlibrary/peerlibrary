@@ -6,7 +6,15 @@ Individual items found in files under their respective name -->
 </template>
 
 <template name="accessText">
-  {{accessText}}
+  {{#if open}}open access{{/if}}
+  {{#if closed}}closed access{{/if}}
+  {{#if private}}private{{/if}}
+</template>
+
+<template name="accessDescription">
+  {{#if open}}Everyone has access to the publication.{{/if}}
+  {{#if closed}}The publication is public, but only those who import the PDF have access to its content.{{/if}}
+  {{#if private}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
 </template>
 
 <!-- MEMBERS
