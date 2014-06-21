@@ -51,7 +51,7 @@ Template.publicationCatalogItem.documentLengthClass = ->
     else 'long'
 
 Template.publicationCatalogItem.annotationsCountDescription = ->
-  if @annotationsCount is 1 then "1 public annotation" else "#{ @annotationsCount } public annotations"
+  if @annotationsCount is 1 then "1 annotation" else "#{ @annotationsCount } annotations"
 
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract

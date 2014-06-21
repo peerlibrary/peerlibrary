@@ -38,19 +38,7 @@ class @Publication extends Publication
           return [null, null]
           
       fields.annotationsCount.generator = (fields) ->
-        # Only display the count of public annotations.
-        # TODO: Trigger update of this generator when annotation access changes.
-        annotationIds = _.pluck fields.annotations, '_id'
-        annotations = Annotation.documents.find
-          _id:
-            $in: annotationIds
-        .fetch()
-
-        length = _.where annotations,
-          access: ACCESS.PUBLIC
-        .length
-
-        [fields._id, length]
+        [fields._id, fields.annotations?.length or 0]
 
       fields
 
