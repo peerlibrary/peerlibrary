@@ -1,6 +1,7 @@
 Deps.autorun ->
   if Session.get 'indexActive'
     Meteor.subscribe 'statistics'
+    Meteor.subscribe 'latest-blog-post'
 
 Template.indexStatistics.publications = ->
   Statistics.documents.findOne()?.countPublications or 0
@@ -42,3 +43,12 @@ Template.indexMain.destroyed = ->
   @_background.destroy()
   @_background = null
   @_backgroundRendered = false
+
+Template.indexBlogPosts.postUrl = ->
+  BlogPost.documents.findOne()?.postUrl
+
+Template.indexBlogPosts.totalPostCount = ->
+  BlogPost.documents.findOne()?.postNumber
+
+Template.indexBlogPosts.postsExist = ->
+  return !!BlogPost.documents.findOne()

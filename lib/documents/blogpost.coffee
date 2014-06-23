@@ -3,5 +3,4 @@ class @BlogPost extends Document
 
   @Meta
     name: 'BlogPost'
-    collection: 'BlogPost'
 

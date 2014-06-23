@@ -50,9 +50,9 @@
 <template name="indexBlogPosts">
   <div>
     Peerlibrary blog:<br/><br/>
-    {{#if posts_exist}}
-      <a target="about:blank" href="{{post_url}}">Latest blog post</a><br/>
-      Total {{total_post_count}} posts
+    {{#if postsExist}}
+      <a target="about:blank" href="{{postUrl}}">Latest blog post</a><br/>
+      Total {{totalPostCount}} posts
     {{else}}
       No blog posts
     {{/if}}
