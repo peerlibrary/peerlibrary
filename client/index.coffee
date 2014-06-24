@@ -44,11 +44,4 @@ Template.indexMain.destroyed = ->
   @_background = null
   @_backgroundRendered = false
 
-Template.indexBlogPosts.postUrl = ->
-  BlogPost.documents.findOne()?.postUrl
-
-Template.indexBlogPosts.totalPostCount = ->
-  BlogPost.documents.findOne()?.postNumber
-
-Template.indexBlogPosts.postsExist = ->
-  return !!BlogPost.documents.findOne()
+Template.indexBlogPosts.post = BlogPost.documents.find()

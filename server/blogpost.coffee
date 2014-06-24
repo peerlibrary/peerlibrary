@@ -1,8 +1,9 @@
 class @BlogPost extends BlogPost
+  @totalPosts = 0
   @PUBLISH_FIELDS: ->
     fields:
       postUrl: 1
-      postNumber: 1
+      totalPosts: 1
 
 # TODO: Adjust cache update interval
 CACHE_UPDATE_INTERVAL = 10000 # ms
@@ -18,7 +19,13 @@ TUMBLR_POST_COUNT_LIMIT = 20
 Tumblr =
   _url: 'http://api.tumblr.com/v2/blog/' + TUMBLR_BLOG + '/'
 
+  # Constructs request URL using params
   _request: (params) ->
+    # params:
+    #       method -> string
+    #                 API method to call
+    #       args -> object (optional)
+    #               arguments to be passed to API method
     if !params?.method
       throw Error 'API method not set'
     key = Meteor.settings.private?.tumblr?.apikey
@@ -44,34 +51,46 @@ mapToCamelCase = (post) ->
     result[camelCaseKey] = value
   return result
 
-# Loads posts from Tumblr
-loadPosts = (count, offset) ->
+# Sync Tumblr posts with local collection
+syncPosts = (count, offset) ->
   # count -> Number of posts to load
-  # offset -> Start post number (optional)
-  return unless count > 0
+  # offset -> First post offset (optional)
+  return unless count
   offset = 0 unless offset
-  cachedPostCount = BlogPost.documents.find().count()
+  limit = Math.min count, TUMBLR_POST_COUNT_LIMIT
 
   try
     response = Tumblr.get
       method: 'posts'
       args:
-        limit: Math.min count, TUMBLR_POST_COUNT_LIMIT
+        limit: limit
         offset: offset
   catch err
-    # TODO: Handle errors
+    Log.error "Cache update failed: " + err
     return
 
   for post in response.data.response.posts
-    post.postNumber = cachedPostCount + count--
-    postExists = !!BlogPost.documents.findOne
-      id: post.id
-    if not postExists
-      BlogPost.documents.insert mapToCamelCase post
+    remotePost = mapToCamelCase post
+    localPost = BlogPost.documents.findOne
+      id: remotePost.id
+
+    # We add total post count to document so that client
+    # can easily read it
+    remotePost['totalPosts'] = BlogPost.totalPosts
+
+    # We mark document as updated so that it doesn't
+    # get deleted
+    remotePost['updated'] = 1
+
+    if !localPost
+      BlogPost.documents.insert remotePost
+    else
+      BlogPost.documents.update localPost._id,
+        $set: remotePost
 
   # Since number of posts that can be loaded in one request is limited
   # by Tumblr, function calles itself again if we want to load more posts
-  loadPosts count, offset + TUMBLR_POST_COUNT_LIMIT
+  syncPosts count - limit, offset + limit
 
 # Updates blog post cache and starts a timeout loop to keep it updated
 updateCache = ->
@@ -79,14 +98,23 @@ updateCache = ->
     response = Tumblr.get
       method: 'info'
   catch err
-    # TODO: Handle errors
+    Log.error "Connecting to Tumblr failed: " + err
     return
 
-  cachedPostCount = BlogPost.documents.find()?.count()
-  newPostCount = response.data.response.blog.posts
+  totalPosts = response.data.response.blog.posts
+  BlogPost.totalPosts = totalPosts
+  syncPosts totalPosts
 
-  if newPostCount > cachedPostCount
-    loadPosts newPostCount - cachedPostCount
+  # Remove all non-updated documents from collection
+  BlogPost.documents.remove
+    updated: 0
+
+  # Reset updated flag on all documents
+  BlogPost.documents.update {},
+    $set:
+      updated: 0
+  ,
+    multi: 1
 
   Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
 
@@ -94,11 +122,9 @@ Meteor.startup ->
   updateCache()
 
 Meteor.publish 'latest-blog-post', ->
-  postCount = BlogPost.documents.find().count()
-  BlogPost.documents.find
-    postNumber: postCount
-  ,
-    BlogPost.PUBLISH_FIELDS
-  ,
+  BlogPost.documents.find {},
     limit: 1
+    sort:
+      timestamp: -1
+    BlogPost.PUBLISH_FIELDS()
 
