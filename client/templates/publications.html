@@ -65,7 +65,7 @@
         {{#if title}}
           {{title}}
         {{else}}
-          <i>title metadata missing</i>
+          <i>&lt;title metadata missing&gt;</i>
         {{/if}}
       </span>
     </a>
@@ -170,7 +170,7 @@
           {{title}}
         {{else}}
           {{#if importing.0.filename}}
-            {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+            {{! Used only in personal library list, elsewhere we display "<title metadata missing>" to invite users to provide metadata }}
             {{importing.0.filename}}
           {{else}}
             <i>&lt;title metadata missing&gt;</i>
