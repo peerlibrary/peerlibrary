@@ -93,6 +93,11 @@ class @Publication extends ReadAccessDocument
       sort: [
         ['title', 'asc']
       ]
+    ,
+      name: "annotations"
+      sort: [
+        ['annotationsCount', 'desc']
+      ]
     ]
 
   @_filenamePrefix: ->
