@@ -114,7 +114,7 @@ Meteor.publish 'highlights', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'quote') if filter
+  findQuery = createQueryCriteria(filter, 'quote') if filter
 
   sort = if _.isNumber sortIndex then Highlight.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 

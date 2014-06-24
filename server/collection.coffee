@@ -252,7 +252,7 @@ Meteor.publish 'collections', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or sortIndex < Collection.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter
+  findQuery = createQueryCriteria(filter, 'name') if filter
 
   sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 

@@ -142,10 +142,12 @@ Meteor.publish 'persons', (limit, filter, sortIndex) ->
 
   findQuery = {}
   if filter
-    findQuery = _.extend findQuery,
-      createQueryCriteria(filter, 'familyName'),
-      createQueryCriteria(filter, 'givenName'),
-      createQueryCriteria(filter, 'user.username')
+    findQuery =
+      $or: [
+        createQueryCriteria(filter, 'familyName')
+        createQueryCriteria(filter, 'givenName')
+        createQueryCriteria(filter, 'user.username')
+      ]
 
   sort = if _.isNumber sortIndex then Person.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 

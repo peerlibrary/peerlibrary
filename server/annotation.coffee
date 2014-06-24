@@ -186,7 +186,7 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'body') if filter
+  findQuery = createQueryCriteria(filter, 'body') if filter
 
   sort = if _.isNumber sortIndex then Annotation.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
