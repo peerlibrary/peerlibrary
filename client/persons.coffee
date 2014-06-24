@@ -19,3 +19,12 @@ Template.persons.catalogSettings = ->
 
 Template.personInlineItem.status = ->
   if @user then "Registered User" else "Unregistered Person"
+
+Template.personCatalogItem.avatarSize = ->
+  100
+
+Template.personCatalogItem.publicationsCountDescription = ->
+  Publication.verboseNameWithCount @publications.length
+
+Template.personCatalogItem.groupsCountDescription = ->
+  Group.verboseNameWithCount @inGroups.length

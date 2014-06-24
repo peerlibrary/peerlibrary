@@ -69,11 +69,28 @@
 
 <template name="personCatalogItem">
   <li class="catalog-item person">
-    <h2>
-      <a href="{{personPathFromId _id slug}}" class="actionable">
-        {{displayName}}
-      </a>
-    </h2>
+    {{#if gravatarHash}}
+      <div class="avatar actionable">
+        <img src="{{avatar avatarSize}}"/>
+      </div>
+    {{/if}}
+
+    <div class="details">
+      <h2>
+        <a href="{{personPathFromId _id slug}}" class="actionable">
+          {{displayName}}
+        </a>
+      </h2>
+
+      {{#if publications.length}}
+        <p><i class="icon-publication"></i> {{publicationsCountDescription}}</p>
+      {{/if}}
+
+      {{#if inGroups.length}}
+        <p><i class="icon-group"></i> Member of {{groupsCountDescription}}</p>
+      {{/if}}
+    </div>
+
     <a class="full-item-link" href="{{personPathFromId _id slug}}"></a>
   </li>
 </template>

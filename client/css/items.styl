@@ -63,7 +63,7 @@
   .catalog-item
     position relative
     background white
-    padding 10px 15px
+    padding 20px
     margin 10px 0
     border-radius 2px
     box-shadow 0 0 0 1px box-shadow-border
@@ -111,8 +111,6 @@
         visibility visible
         opacity 1
 
-
-
     .details
 
       &::after
@@ -128,6 +126,9 @@
 
       p
         margin 0 0 10px 0
+
+        &:last-child
+          margin-bottom 0
 
       .actions
         display inline
@@ -177,6 +178,19 @@
 
   .droppable-hover
     background blue
+
+.sidebar
+  .item-list
+    .catalog-item
+      padding 10px 15px
+
+      .details
+        > *
+          display none
+
+        h2
+          display block
+          margin-bottom 2px
 
 /* Members
 ========== */
