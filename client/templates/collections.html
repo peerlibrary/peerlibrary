@@ -86,8 +86,11 @@
 
 <template name="collectionCatalogItem">
   <li class="catalog-item collection" data-collection-id="{{_id}}">
-    {{> collectionCatalogItemName}}
-    <span class="publications-count">{{countDescription}}</span>
+    <div class="details">
+      {{> collectionCatalogItemName}}
+      <p class="show-in-sidebar"><i class="icon-publication"></i> {{countDescription}}</p>
+    </div>
+
     <a class="full-item-link" href="{{collectionPathFromId _id slug}}"></a>
   </li>
 </template>

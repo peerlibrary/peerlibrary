@@ -43,3 +43,19 @@ Template.myGroups.myGroups = ->
     sort: [
       ['name', 'asc']
     ]
+
+Editable.template Template.groupCatalogItemName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
+Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
+
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

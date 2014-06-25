@@ -83,8 +83,11 @@
 
 <template name="groupCatalogItem">
   <li class="catalog-item group">
-    {{> groupCatalogItemName}}
-    <span class="group-count">{{countDescription}}</span>
+    <div class="details">
+      {{> groupCatalogItemName}}
+      <p class="show-in-sidebar"><i class="icon-group"></i> {{countDescription}}</p>
+    </div>
+
     <a class="full-item-link" href="{{groupPathFromId _id slug}}"></a>
   </li>
 </template>
