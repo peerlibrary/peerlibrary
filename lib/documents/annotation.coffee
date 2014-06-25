@@ -19,6 +19,8 @@ class @Annotation extends ReadAccessDocument
   # body: in HTML
   # publication:
   #   _id: publication's id
+  #   slug
+  #   title
   # references: made in the body of annotation or comments
   #   highlights: list of
   #     _id
@@ -58,6 +60,8 @@ class @Annotation extends ReadAccessDocument
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  # comments: list of (reverse field from Comment.annotation)
+  #   _id: comment id
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
@@ -79,7 +83,7 @@ class @Annotation extends ReadAccessDocument
       adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication, [], true, 'annotations'
+      publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
@@ -97,7 +101,7 @@ class @Annotation extends ReadAccessDocument
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id', 'comments._id']
 
   @PUBLISH_CATALOG_SORT:
     [

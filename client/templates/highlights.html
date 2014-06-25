@@ -67,11 +67,13 @@
 
 <template name="highlightCatalogItem">
   <li class="catalog-item highlight">
-    <h2>
-      <a href="{{highlightIdPath _id}}" class="actionable">
-        h:{{_id}}
-      </a>
-    </h2>
+    <div class="details">
+      <p class="actionable">{{> personInlineItem author}} highlighted in {{> publicationInlineItem publication}}</p>
+      <blockquote>
+        {{quote}}
+      </blockquote>
+    </div>
+
     <a class="full-item-link" href="{{highlightIdPath _id}}"></a>
   </li>
 </template>

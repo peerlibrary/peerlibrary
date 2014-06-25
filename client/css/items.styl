@@ -6,6 +6,7 @@
 .inline-item
   position relative
   display inline-block
+  vertical-align middle
   box-sizing border-box
   max-width 100%
   font-size 13px
@@ -29,6 +30,7 @@
       z-index 1
       vertical-align top
       padding-right 1px
+      border-radius 2px
 
     &::before
       position absolute
@@ -63,7 +65,7 @@
   .catalog-item
     position relative
     background white
-    padding 20px
+    padding 20px 20px 10px
     margin 10px 0
     border-radius 2px
     box-shadow 0 0 0 1px box-shadow-border
@@ -112,6 +114,8 @@
         opacity 1
 
     .details
+      > *
+        margin 0 0 10px 0
 
       &::after
         content ""
@@ -119,19 +123,11 @@
         display block
 
       h2
-        margin 0 0 10px 0
-
         a
           text-decoration none
 
-      p
-        margin 0 0 10px 0
-
-        &:last-child
-          margin-bottom 0
-
       .actions
-        display inline
+        display inline-block
 
         button
           background none
@@ -143,6 +139,10 @@
 
           &:hover
             text-decoration underline
+
+    .extra-details
+      > *
+        margin 0 0 10px 0
 
     .full-item-link
       display block
@@ -182,7 +182,7 @@
 .sidebar
   .item-list
     .catalog-item
-      padding 10px 15px
+      padding 10px 15px 0
 
       .details
         > *

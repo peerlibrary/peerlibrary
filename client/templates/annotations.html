@@ -67,11 +67,17 @@
 
 <template name="annotationCatalogItem">
   <li class="catalog-item annotation">
-    <h2>
-      <a href="{{annotationIdPath _id}}" class="actionable">
-        a:{{_id}}
-      </a>
-    </h2>
+    <div class="details">
+      <p class="actionable">{{> personInlineItem author}} wrote in {{> publicationInlineItem publication}}</p>
+      <blockquote>
+        {{{body}}}
+      </blockquote>
+
+      {{#if comments.length}}
+        <p><i class="icon-comment"></i> {{commentsCountDescription}}</p>
+      {{/if}}
+    </div>
+
     <a class="full-item-link" href="{{annotationIdPath _id}}"></a>
   </li>
 </template>

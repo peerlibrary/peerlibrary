@@ -15,14 +15,14 @@ class @Comment extends AccessDocument
   #   _id
   # body: in HTML (inline, no block elements)
   # license: license information, if known
-  # referencingAnnotations: list of (reverse field from Annotation.references.urls)
+  # referencingAnnotations: list of (reverse field from Annotation.references.comments)
   #   _id: annotation id
 
   @Meta
     name: 'Comment'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      annotation: @ReferenceField Annotation
+      annotation: @ReferenceField Annotation, [], true, 'comments'
       publication: @ReferenceField Publication
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']

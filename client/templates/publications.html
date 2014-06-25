@@ -57,10 +57,10 @@
   </div>
 </template>
 
-<template name="pulicationInlineItem">
+<template name="publicationInlineItem">
   {{#spaceless}}
     <a class="inline-item publication" {{#unless noLink}}href="{{publicationPathFromId _id slug}}"{{/unless}}>
-      <i class="avatar only-icon icon-publication" title="Publication"></i>
+      <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
         {{#if title}}
           {{title}}

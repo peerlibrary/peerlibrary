@@ -11,6 +11,8 @@ class @Highlight extends AccessDocument
   #     username
   # publication:
   #   _id: publication's id
+  #   slug
+  #   title
   # quote: quote made by this highlight
   # target: open annotation standard compatible target information
   # referencingAnnotations: list of (reverse field from Annotation.references.highlights)
@@ -23,7 +25,7 @@ class @Highlight extends AccessDocument
     name: 'Highlight'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication
+      publication: @ReferenceField Publication, ['slug', 'title']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
 

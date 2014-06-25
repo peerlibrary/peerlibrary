@@ -13,8 +13,8 @@ class @BaseDocument extends Document
     "#{ @verboseName() }s"
 
   @verboseNameWithCount: (quantity) ->
-    return "1 #{ @verboseName() }" if quantity = 1
-    "#{ quantity } #{ @verboseNamePlural }"
+    return "1 #{ @verboseName() }" if quantity == 1
+    "#{ quantity } #{ @verboseNamePlural() }"
 
 class @AccessDocument extends BaseDocument
   @Meta
