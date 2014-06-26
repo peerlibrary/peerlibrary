@@ -4,7 +4,7 @@
   {{else}}
     {{> indexMain}}
     {{> indexStatistics}}
-    {{> indexBlogPosts}}
+    {{> indexLatestBlogPost}}
   {{/if}}
 </template>
 
@@ -47,15 +47,15 @@
   {{/constant}}
 </template>
 
-<template name="indexBlogPosts">
+<template name="indexLatestBlogPost">
   <div>
     Peerlibrary blog:<br/><br/>
-    {{#each post}}
+    {{#if postsExist}}
       <a target="about:blank" href="{{postUrl}}">Latest blog post</a><br/>
-      Total {{totalPosts}} posts
+      Total {{postCount}} posts
     {{else}}
       No blog posts
-    {{/each}}
+    {{/if}}
   </div>
 </template>
 
