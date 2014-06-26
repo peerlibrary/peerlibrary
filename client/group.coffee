@@ -203,13 +203,13 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupDetails.canModify = ->
+Template.groupTools.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.groupTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person() # TODO: MERGE UPDATE
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
   
-Template.groupDetails.canRemove = ->
+Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupTools.events

@@ -84,13 +84,13 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.meteorError error, true if error
 
-Template.collectionDetails.canModify = ->
+Template.collectionTools.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.collectionTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person() # TODO: MERGE UPDATE
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.collectionDetails.canRemove = ->
+Template.collectionTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionTools.events
