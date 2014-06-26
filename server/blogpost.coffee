@@ -15,6 +15,7 @@ TUMBLR_BLOG = 'peerlibrary.tumblr.com'
 # Tumblr in one request is 20.
 # (https://www.tumblr.com/docs/en/api/v2)
 TUMBLR_POST_COUNT_LIMIT = 20
+UPDATE_IN_PROGRESS = false
 
 # Tumblr API wrapper
 Tumblr =
@@ -112,37 +113,41 @@ syncPosts = (params) ->
   # force: boolean (optional)
   #        Indicates that this is a force update, so it won't start a
   #        timeout loop.
-  try
-    response = Tumblr.get
-      method: 'info'
-  catch err
-    Log.error 'Connecting to Tumblr failed: ' + err
-    Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
-    return
+  unless UPDATE_IN_PROGRESS
+    console.log "Updating cache. Force = " + !!force
+    UPDATE_IN_PROGRESS = true
+    try
+      response = Tumblr.get
+        method: 'info'
+    catch err
+      Log.error 'Connecting to Tumblr failed: ' + err
+      Meteor.setTimeout updateBlogCache, CACHE_UPDATE_INTERVAL
+      return
 
-  status = response.data.meta.status
-  if status != 200
-    message = response.data.meta.message
-    Log.error 'Tumblr API error ' + status + ': ' + message
-  else
-    totalPosts = response.data.response.blog.posts
-    BlogPost.totalPosts = totalPosts
-    Meteor.setTimeout ->
-      syncPosts
-        count: totalPosts
-        callback: ->
-          # Remove all non-updated documents from collection
-          BlogPost.documents.remove
-            updated: 0
-
-          # Reset updated flag on all documents
-          BlogPost.documents.update {},
-            $set:
+    status = response.data.meta.status
+    if status != 200
+      message = response.data.meta.message
+      Log.error 'Tumblr API error ' + status + ': ' + message
+    else
+      totalPosts = response.data.response.blog.posts
+      BlogPost.totalPosts = totalPosts
+      Meteor.setTimeout ->
+        syncPosts
+          count: totalPosts
+          callback: ->
+            # Remove all non-updated documents from collection
+            BlogPost.documents.remove
               updated: 0
-          ,
-            multi: 1
-    ,
-      TUMBLR_REQUEST_INTERVAL
+
+            # Reset updated flag on all documents
+            BlogPost.documents.update {},
+              $set:
+                updated: 0
+            ,
+              multi: 1
+            UPDATE_IN_PROGRESS = false
+      ,
+        TUMBLR_REQUEST_INTERVAL
 
   Meteor.setTimeout updateBlogCache, CACHE_UPDATE_INTERVAL unless force
 
