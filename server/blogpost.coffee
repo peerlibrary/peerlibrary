@@ -80,7 +80,7 @@ syncPosts = (params) ->
     message = response.data.meta.message
     Log.error 'Tumblr API error ' + status + ': ' + message
     return
-  
+
   for post in response.data.response.posts
     # We remove internally used attributes from JSON object
     remotePost = mapToCamelCase _.omit post, ['_id', '_schema', 'updated']
@@ -108,7 +108,10 @@ syncPosts = (params) ->
     TUMBLR_REQUEST_INTERVAL
 
 # Updates blog post cache and starts a timeout loop to keep it updated
-updateCache = ->
+@updateBlogCache = (force) ->
+  # force: boolean (optional)
+  #        Indicates that this is a force update, so it won't start a
+  #        timeout loop.
   try
     response = Tumblr.get
       method: 'info'
@@ -131,7 +134,7 @@ updateCache = ->
           # Remove all non-updated documents from collection
           BlogPost.documents.remove
             updated: 0
-        
+
           # Reset updated flag on all documents
           BlogPost.documents.update {},
             $set:
@@ -141,10 +144,10 @@ updateCache = ->
     ,
       TUMBLR_REQUEST_INTERVAL
 
-  Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
+  Meteor.setTimeout updateBlogCache, CACHE_UPDATE_INTERVAL unless force
 
 Meteor.startup ->
-  updateCache()
+  updateBlogCache()
 
 Meteor.publish 'latest-blog-post', ->
   BlogPost.documents.find {},

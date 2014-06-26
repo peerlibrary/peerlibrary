@@ -65,6 +65,7 @@
   </div>
   {{> adminArXiv}}
   {{> adminFSM}}
+  {{> adminBlog}}
 </template>
 
 <template name="adminArXiv">
@@ -89,6 +90,13 @@
   <div class="admin-buttons">
     <button class="sync-fsm-metadata">Sync FSM metadata</button>
     <button class="sync-fsm-cache">Sync FSM cache</button>
+  </div>
+</template>
+
+<template name="adminBlog">
+  <h3>Blog Sync</h3>
+  <div class="admin-buttons">
+    <button class="sync-blog-cache">Sync blog cache</button>
   </div>
 </template>
 
