@@ -14,7 +14,6 @@ class @BlogPost extends Document
   # sourceTitle: string, The title of the source site
   # liked: boolean, indicates if a user has already liked a post or not
   # state: string, indicates the current state of the post
-  # totalPosts: the total number of post available for this request
   # updated: boolean, indicates if post existed on last cache update
 
   @Meta

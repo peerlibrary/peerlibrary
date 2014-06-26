@@ -8,6 +8,7 @@ class @BlogPost extends BlogPost
 # TODO: Adjust cache update interval
 CACHE_UPDATE_INTERVAL = 10000 # ms
 
+TUMBLR_REQUEST_INTERVAL = 500 # ms
 TUMBLR_BLOG = 'peerlibrary.tumblr.com'
 # According to Tumblr API documentation,
 # maxiumum number of posts we can get from
@@ -52,35 +53,43 @@ mapToCamelCase = (post) ->
   return result
 
 # Sync Tumblr posts with local collection
-syncPosts = (count, offset) ->
-  # count -> Number of posts to load
-  # offset -> First post offset (optional)
-  return unless count
-  offset = 0 unless offset
-  limit = Math.min count, TUMBLR_POST_COUNT_LIMIT
+syncPosts = (params) ->
+  # params:
+  #       count -> Number of posts to load
+  #       offset -> First post offset (optional)
+  #       callback -> Callback function (optional)
+  callback = (->) unless callback
+  unless params.count
+    params.callback()
+    return
+  params.offset = 0 unless params.offset
+  limit = Math.min params.count, TUMBLR_POST_COUNT_LIMIT
 
   try
     response = Tumblr.get
       method: 'posts'
       args:
         limit: limit
-        offset: offset
+        offset: params.offset
   catch err
     Log.error "Cache update failed: " + err
     return
 
+  status = response.data.meta.status
+  if status != 200
+    message = response.data.meta.message
+    Log.error 'Tumblr API error ' + status + ': ' + message
+    return
+  
   for post in response.data.response.posts
-    remotePost = mapToCamelCase post
+    # We remove internally used attributes from JSON object
+    remotePost = mapToCamelCase _.omit post, ['_id', '_schema', 'updated']
     localPost = BlogPost.documents.findOne
       id: remotePost.id
 
-    # We add total post count to document so that client
-    # can easily read it
-    remotePost['totalPosts'] = BlogPost.totalPosts
-
     # We mark document as updated so that it doesn't
     # get deleted
-    remotePost['updated'] = 1
+    remotePost['updated'] = true
 
     if !localPost
       BlogPost.documents.insert remotePost
@@ -90,7 +99,13 @@ syncPosts = (count, offset) ->
 
   # Since number of posts that can be loaded in one request is limited
   # by Tumblr, function calles itself again if we want to load more posts
-  syncPosts count - limit, offset + limit
+  Meteor.setTimeout ->
+    syncPosts
+      count: params.count - limit
+      offset: params.offset + limit
+      callback: params.callback
+  ,
+    TUMBLR_REQUEST_INTERVAL
 
 # Updates blog post cache and starts a timeout loop to keep it updated
 updateCache = ->
@@ -98,23 +113,33 @@ updateCache = ->
     response = Tumblr.get
       method: 'info'
   catch err
-    Log.error "Connecting to Tumblr failed: " + err
+    Log.error 'Connecting to Tumblr failed: ' + err
+    Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
     return
 
-  totalPosts = response.data.response.blog.posts
-  BlogPost.totalPosts = totalPosts
-  syncPosts totalPosts
-
-  # Remove all non-updated documents from collection
-  BlogPost.documents.remove
-    updated: 0
-
-  # Reset updated flag on all documents
-  BlogPost.documents.update {},
-    $set:
-      updated: 0
-  ,
-    multi: 1
+  status = response.data.meta.status
+  if status != 200
+    message = response.data.meta.message
+    Log.error 'Tumblr API error ' + status + ': ' + message
+  else
+    totalPosts = response.data.response.blog.posts
+    BlogPost.totalPosts = totalPosts
+    Meteor.setTimeout ->
+      syncPosts
+        count: totalPosts
+        callback: ->
+          # Remove all non-updated documents from collection
+          BlogPost.documents.remove
+            updated: 0
+        
+          # Reset updated flag on all documents
+          BlogPost.documents.update {},
+            $set:
+              updated: 0
+          ,
+            multi: 1
+    ,
+      TUMBLR_REQUEST_INTERVAL
 
   Meteor.setTimeout updateCache, CACHE_UPDATE_INTERVAL
 
