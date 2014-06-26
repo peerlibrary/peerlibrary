@@ -42,7 +42,7 @@ variable
 async
 cheerio
 isolate-value
-apm
 url-utils
 stacktrace
 related
+kadira

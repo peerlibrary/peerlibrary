@@ -62,7 +62,7 @@ button.default:hover
       content ''
       position absolute
       border-style solid
-      border-width 0 8px 8px;
+      border-width 0 8px 8px
       border-color rgb(210,210,210) transparent
       display block
       width 0
@@ -86,11 +86,43 @@ button.default:hover
       .menu-item
         button
           width 100%
+          padding 5px 20px
+          white-space nowrap
           border none
           background transparent
 
         button:hover
           background box-shadow-border
+
+      h3
+        font-weight 300
+
+      .toggle-list
+        list-style none
+        padding 0
+        margin -10px 0 0
+        border-radius 2px
+
+      .toggle-list-item
+        button
+          background none
+          border solid 1px transparent
+          width 100%
+          text-align left
+          padding 10px 10px 10px 30px
+          position relative
+
+        button:hover
+          border 1px solid box-shadow-border
+          background-color box-shadow-border
+
+        .icon-check::before
+          position absolute
+          left 7px
+          top 13px
+
+      .hint
+        font-size 13px
 
 /* Edit button
 ============== */
@@ -133,7 +165,7 @@ h1
       height 34px
       text-align left
 
-      .entity
+      .inline-item
         .avatar
           width 24px
           text-align center
@@ -309,7 +341,7 @@ h1
       background none
       text-align left
 
-      .entity
+      .inline-item
         color black
 
     button
@@ -407,6 +439,26 @@ h1
 
 .ui-slider .ui-widget-header
   padding 0
+
+.ui-tooltip
+  background rgb(14,41,57)
+  color white
+  text-align center
+  border-radius 0
+  box-shadow none
+  padding 5px
+
+  &::before
+    content ''
+    position absolute
+    border-style solid
+    border-width 8px 8px 0
+    border-color rgb(14,41,57) transparent
+    display block
+    width 0
+    margin-left -8px
+    bottom -8px
+    left 50%
 
 /* Layouts
 ========== */

@@ -132,3 +132,28 @@ Meteor.publish 'search-persons', (query, except) ->
 
 Person.Meta.collection._ensureIndex 'slug',
   unique: 1
+
+Meteor.publish 'persons', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Person.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  if filter
+    findQuery =
+      $or: [
+        createQueryCriteria(filter, 'familyName')
+        createQueryCriteria(filter, 'givenName')
+        createQueryCriteria(filter, 'user.username')
+      ]
+
+  sort = if _.isNumber sortIndex then Person.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  searchPublish @, 'persons', [filter, sortIndex],
+    cursor: Person.documents.find(findQuery,
+      limit: limit
+      fields: Person.PUBLISH_FIELDS().fields
+      sort: sort
+    )

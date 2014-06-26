@@ -1,0 +1,44 @@
+@import 'variables.import'
+
+.person.inline-item.no-user
+  .avatar
+    opacity 0.3
+
+.person.inline-item
+  .avatar
+    min-width 1.1em
+
+.item-list
+  .person.catalog-item
+    .avatar
+      position relative
+      float left
+      cursor pointer
+      display inline-block
+      margin 0 15px 10px 0
+      border solid 1px box-shadow-border
+      border-radius 2px
+      transition border-color 0.2s
+
+    &::after
+      content ""
+      display block
+      clear both
+
+    &:hover
+      .avatar
+        border-color box-shadow-shadow
+
+.sidebar
+  .item-list
+    .person.catalog-item
+      .avatar
+        margin-right 10px
+
+        img
+          width 24px
+
+      .details
+        h2
+          line-height 30px
+          height 24px

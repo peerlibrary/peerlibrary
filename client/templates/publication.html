@@ -51,7 +51,7 @@
   {{#if title}}
     <b class="title">{{title}}</b>
   {{else}}
-    <i class="title missing-value">title metadata missing</i>
+    <i class="title missing-value">&lt;title metadata missing&gt;</i>
   {{/if}}
 </template>
 
@@ -211,7 +211,7 @@
           </div>
         {{/if}}
         <div class="annotation-footer">
-          {{> personEntity author}}
+          {{> personInlineItem author}}
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>

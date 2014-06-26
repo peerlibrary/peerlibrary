@@ -18,18 +18,11 @@ class @Group extends Group
     fields: {} # All
 
   # A subset of public fields used when listing documents
-  @PUBLISH_LISTING_FIELDS: ->
+  @PUBLISH_CATALOG_FIELDS: ->
     fields:
       slug: 1
       name: 1
       membersCount: 1
-      access: 1
-      readPersons: 1
-      readGroups: 1
-      maintainerPersons: 1
-      maintainerGroups: 1
-      adminPersons: 1
-      adminGroups: 1
 
 registerForAccess Group
 
@@ -93,8 +86,6 @@ Meteor.methods
       'members._id':
         $ne: member._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         members:
           _id: member._id
@@ -122,8 +113,6 @@ Meteor.methods
       _id: group._id
       'members._id': member._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         members:
           _id: member._id
@@ -142,10 +131,9 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid group." unless group
 
     Group.documents.update Group.requireMaintainerAccessSelector(person,
-        _id: group._id
-      ),
+      _id: group._id
+    ),
       $set:
-        updatedAt: moment.utc().toDate()
         name: name
 
 Meteor.publish 'groups-by-id', (groupId) ->
@@ -169,28 +157,32 @@ Meteor.publish 'my-groups', ->
     Group.documents.find Group.requireReadAccessSelector(person,
       'members._id': person._id
     ),
-      Group.PUBLISH_LISTING_FIELDS()
+      Group.PUBLISH_CATALOG_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'groups', (limit, filter, sort) ->
+Meteor.publish 'groups', (limit, filter, sortIndex) ->
   check limit, PositiveNumber
-  check filter, Optional String
-  check sort, Optional [[String]]
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Group.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'name') if filter
+  findQuery = createQueryCriteria(filter, 'name') if filter
+
+  sort = if _.isNumber sortIndex then Group.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
     restrictedFindQuery = Group.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'groups', searchQueryDescriptor(filter, sort),
+    searchPublish @, 'groups', [filter, sortIndex],
       cursor: Group.documents.find(restrictedFindQuery,
         limit: limit
-        fields: Group.PUBLISH_LISTING_FIELDS().fields
+        fields: Group.PUBLISH_CATALOG_FIELDS().fields
         sort: sort
       )
   ,

@@ -1,13 +1,9 @@
-Template.catalogControls.created = ->
-  # Set initial sorting to the first passed-in option
-  Session.set @data.variables.sortName, @data.sorting[0].name
-  Session.set @data.variables.sort, @data.sorting[0].sort
-
-Template.catalogFilter.collection = ->
-  @collection
+Template.catalogFilter.documentsName = ->
+  @documentClass.verboseNamePlural()
 
 Template.catalogSort.field = ->
-  Session.get @variables.sortName
+  index = Session.get @variables.sort
+  @documentClass.PUBLISH_CATALOG_SORT[index].name
 
 Template.catalogSort.events
   'click .dropdown-trigger': (e, template) ->
@@ -21,14 +17,15 @@ Template.catalogSort.events
 Template.catalogSortSelection.options = ->
   # Modify the data with parent variables
   # TODO: Change when meteor allows to access parent context
-  _.map @sorting, (sorting) =>
+  index = 0
+  _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
     sorting._parent = @
+    sorting._index = index++
     sorting
 
 Template.catalogSortOption.events
   'click button': (e, template) ->
-    Session.set @_parent.variables.sortName, @name
-    Session.set @_parent.variables.sort, @sort
+    Session.set @_parent.variables.sort, @_index
     $(template.firstNode).closest('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
@@ -42,16 +39,20 @@ Template.catalogFilter.events
 
 LIMIT_INCREASE_STEP = 10
 
-# Helper that enables a list of entities with infinite scrolling and filtering
+# Helper that enables a list of documents with infinite scrolling and filtering
 class @Catalog
-  @create: (subscription, entityClass, templates, variables) ->
+  @catalogActiveVariables = []
+
+  @create: (subscription, documentClass, templates, variables) ->
     limitIncreasing = false
+
+    @catalogActiveVariables.push variables.active
 
     Deps.autorun ->
       # Every time filter or sort is changed, we reset counts
       # (We don't want to reset counts on currentLimit change)
       Session.get variables.filter
-      Session.get variables.sortName
+      Session.get variables.sort
       Session.set variables.count, 0
       Session.set variables.limit, INITIAL_CATALOG_LIMIT
       limitIncreasing = false
@@ -89,18 +90,18 @@ class @Catalog
     templates.main.destroyed = ->
       $(window).off '.directory'
 
-    templates.main.entities = ->
+    templates.main.documents = ->
       return unless Session.get(variables.limit)
 
       searchResult = SearchResult.documents.findOne
         name: subscription
-        query: searchQueryDescriptor Session.get(variables.filter), Session.get(variables.sort)
+        query: [Session.get(variables.filter), Session.get(variables.sort)]
 
       return unless searchResult
 
-      Session.set variables.count, searchResult["count#{entityClass.name}s"]
+      Session.set variables.count, searchResult["count#{documentClass.name}s"]
 
-      entityClass.documents.find
+      documentClass.documents.find
         'searchResult._id': searchResult._id
       ,
         sort: [
@@ -108,19 +109,19 @@ class @Catalog
         ]
         limit: Session.get variables.limit
 
-    templates.count?.entitiesCount = ->
+    templates.count?.documentsCount = ->
       Session.get variables.count
 
-    templates.empty.noEntities = ->
+    templates.empty.noDocuments = ->
       Session.get(variables.ready) and not Session.get(variables.count)
 
-    templates.empty.entitiesFilter = ->
+    templates.empty.documentsFilter = ->
       Session.get(variables.filter)
 
-    templates.loading.entitiesLoading = ->
+    templates.loading.documentsLoading = ->
       Session.get(variables.loading)
 
-    templates.loading.moreEntities = ->
+    templates.loading.moreDocuments = ->
       Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
 
     templates.loading.events

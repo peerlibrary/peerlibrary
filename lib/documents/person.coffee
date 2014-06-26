@@ -44,6 +44,44 @@ class @Person extends AccessDocument
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:
         by: @ReferenceField 'self', [], false
+    triggers: =>
+      # We do not want only to update updateAt when user._id changes, but also emails and username
+      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'inGroups._id', 'publications._id']
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "join date (newest first)"
+      sort: [
+        ['createdAt', 'desc']
+      ]
+    ,
+      name: "join date (oldest first)"
+      sort: [
+        ['createdAt', 'asc']
+      ]
+    ,
+      name: "given name"
+      sort: [
+        ['givenName', 'asc']
+        ['familyName', 'asc']
+      ]
+    ,
+      name: "family name"
+      sort: [
+        ['familyName', 'asc']
+        ['givenName', 'asc']
+      ]
+    ,
+      name: "username"
+      sort: [
+        ['user.username', 'asc']
+      ]
+    ]
 
   displayName: (dontRefetch) =>
     # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
@@ -64,17 +102,28 @@ class @Person extends AccessDocument
 
     @slug
 
+  @displayNameFields: ->
+    _.extend @emailFields(),
+      givenName: 1
+      familyName: 1
+      'user.username': 1
+      slug: 1
+
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.emails?[0]?.address
 
+  @emailFields: ->
+    'user.emails': 1
+
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
     size = 24 unless _.isNumber size
-    # TODO: Replace image link with one served from peerlibary.org
-    defaultAvatar = if @user then 'identicon' else 'http%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F5%2F52%2FSpacer.gif'
+
+    defaultAvatar = if @gravatarHash then 'identicon' else Meteor.absoluteUrl 'images/spacer.gif',
+      rootUrl: if Meteor.settings?.public?.production then null else 'https://peerlibrary.org'
+
     # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-    # TODO: gravatarHash does not appear
     "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }&d=#{ defaultAvatar }"
 
   hasReadAccess: (person) =>
@@ -116,6 +165,17 @@ class @Person extends AccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -139,11 +199,28 @@ class @Person extends AccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
+
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     # We need to know _id to be able to add it to adminPersons
@@ -160,14 +237,21 @@ class @Person extends AccessDocument
 
     document
 
-Meteor.person = (userId) ->
+Meteor.person = (userId, fields) ->
+  if not fields and _.isObject userId
+    fields = userId
+    userId = null
+
   # Meteor.userId is reactive
   userId ?= Meteor.userId()
+  fields ?= {}
 
   return null unless userId
 
   Person.documents.findOne
     'user._id': userId
+  ,
+    fields: fields
 
 Meteor.personId = (userId) ->
   # Meteor.userId is reactive
@@ -178,6 +262,7 @@ Meteor.personId = (userId) ->
   person = Person.documents.findOne
     'user._id': userId
   ,
-    _id: 1
+    fields:
+      _id: 1
 
   person?._id or null

@@ -3,9 +3,9 @@
     <h1>{{person.displayName}}</h1>
     {{#if authoredPublications.count}}
       <h2>Publications</h2>
-      <ol class="entity-list">
+      <ol class="item-list">
         {{#each authoredPublications}}
-          {{> publicationListing}}
+          {{> publicationCatalogItem}}
         {{/each}}
       </ol>
     {{/if}}

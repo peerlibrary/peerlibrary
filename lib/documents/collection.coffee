@@ -26,6 +26,9 @@ class @Collection extends ReadAccessDocument
   #   _id: publication's id
   # referencingAnnotations: list of (reverse field from Annotation.references.collections)
   #   _id: annotation id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Collection'
@@ -38,6 +41,28 @@ class @Collection extends ReadAccessDocument
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "name"
+      sort: [
+        ['name', 'asc']
+      ]
+    ,
+      name: "author"
+      sort: [
+        ['authorPerson', 'asc']
+        ['authorGroup', 'asc']
+        ['name', 'asc']
+      ]
+    ]
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
@@ -72,6 +97,19 @@ class @Collection extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      authorPerson: 1
+      authorGroup: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -94,6 +132,17 @@ class @Collection extends ReadAccessDocument
       'adminGroups._id':
         $in: _.pluck person.inGroups, '_id'
     ]
+
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
 
   @applyDefaultAccess: (personId, document) ->
     document = super

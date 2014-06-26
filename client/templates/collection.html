@@ -25,9 +25,9 @@
 
 <template name="collectionPublications">
   <div class="col12">
-    <ol class="collection-publications entity-list">
+    <ol class="collection-publications item-list">
       {{#each publications}}
-        {{> publicationListing}}
+        {{> publicationCatalogItem}}
       {{/each}}
     </ol>
   </div>
@@ -37,12 +37,12 @@
   <div class="col4 push12 sidebar collection-details">
     <div class="section">
       <h2>Collection by</h2>
-      {{> personEntity authorPerson}}
+      {{> personInlineItem authorPerson}}
     </div>
     {{> collectionTools}}
-    <div class="section to-my-library">
+    <p class="to-my-library">
       <a href="{{libraryPath}}">To My Library</a>
-    </div>
+    </p>
   </div>
 </template>
 
@@ -51,21 +51,19 @@
     <div class="section">
       <h2>Tools</h2>
       {{#if canRemove}}
-        <div class="section">
+        <p>
           <button class="delete-collection">Delete collection</button>
           {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
           {{! TODO: Remove all publications from collection }}
           {{! TODO: Add confirmation or undo for this action }}
-        </div>
+        </p>
       {{/if}}
-      <div class="hint section">
+      <p class="hint">
         You can reorder publications in a collection by dragging them.
-      </div>
+      </p>
       {{#if canModifyAccess}}
-        <div class="section">
-          <h3>Privacy</h3>
-          {{> accessControl}}
-        </div>
+        <h3>Privacy</h3>
+        {{> accessControl}}
       {{/if}}
     </div>
   {{/if}}

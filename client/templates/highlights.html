@@ -1,0 +1,79 @@
+<template name="highlights">
+  <h1>Highlights</h1>
+
+  <div class="row">
+    <div class="col12 catalog">
+      {{> catalogControls catalogSettings}}
+      {{> noHighlights}}
+      {{> highlightsList documents}}
+      {{> highlightsLoading}}
+    </div>
+    {{> myHighlights}}
+  </div>
+</template>
+
+<template name="highlightsList">
+  {{#if this}}
+  <ol class="item-list">
+    {{#each this}}
+      {{> highlightCatalogItem}}
+    {{/each}}
+  </ol>
+  {{/if}}
+</template>
+
+<template name="noHighlights">
+  {{#if noDocuments}}
+  <p class="status">
+    {{#if documentsFilter}}
+      The filter matches no highlights.
+    {{else}}
+      There are no highlights yet.
+      {{#if currentPersonId}}
+        Write the first by commenting on one of the publications.
+      {{else}}
+        Sign in and write the first.
+      {{/if}}
+    {{/if}}
+  </p>
+  {{/if}}
+</template>
+
+<template name="highlightsLoading">
+  {{#if documentsLoading}}
+    <p class="status">Loading …</p>
+  {{else}}
+    {{#if moreDocuments}}
+      <button class="load-more">Load more</button>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="myHighlights">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's highlights? }}
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="highlightInlineItem">
+  <a class="inline-item highlight" {{#unless noLink}}href="{{highlightIdPath _id}}"{{/unless}}>
+    <i class="avatar only-icon icon-highlight" title="Highlight"></i>
+    <span class="name" title="{{_id}}">h:{{_id}}</span>
+  </a>
+</template>
+
+<template name="highlightCatalogItem">
+  <li class="catalog-item highlight">
+    <div class="details">
+      <p class="actionable">{{> personInlineItem author}} highlighted in {{> publicationInlineItem publication}}</p>
+      <blockquote>
+        {{quote}}
+      </blockquote>
+    </div>
+
+    <a class="full-item-link" href="{{highlightIdPath _id}}"></a>
+  </li>
+</template>

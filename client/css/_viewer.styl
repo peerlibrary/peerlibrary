@@ -113,7 +113,7 @@ meta-menu-icon-font-size = 20px
 /* Library operations menu
 ========================== */
 
-.library-menu
+.library-menu.meta-menu
   top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
 
   .icon
@@ -126,7 +126,7 @@ meta-menu-icon-font-size = 20px
     display none
     margin-left 5px
 
-.library-menu:hover
+.library-menu.meta-menu:hover
   z-index 101
 
   .library-menu-button
@@ -556,7 +556,7 @@ annotations-control-height = 30px
         background-color #f7f7f7
         border-top 1px solid #e3e3e3
 
-        .person.entity
+        .person.inline-item
           margin-right 10px
           display inline-block
           vertical-align middle

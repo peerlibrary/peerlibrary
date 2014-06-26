@@ -1,11 +1,6 @@
 Template.baseFooter.infiniteScroll = ->
-  for variable in [
-    'searchActive'
-    'groupsActive'
-  ]
+  for variable in _.union ['searchActive', 'libraryActive'], Catalog.catalogActiveVariables
     return true if Session.get variable
-
-  false
 
 Template.footer.indexFooter = ->
   'index-footer' if Session.get('indexActive') and not Session.get('searchActive')

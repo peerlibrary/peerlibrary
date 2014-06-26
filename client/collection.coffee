@@ -38,10 +38,19 @@ Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
-Template.collectionName[method] = Template.collectionListingName[method] for method in ['created', 'rendered', 'destroyed']
-
 Template.collection.collection = ->
   Collection.documents.findOne Session.get('currentCollectionId')
+
+Editable.template Template.collectionName, ->
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+,
+(name) ->
+  Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter collection name"
+,
+  true
 
 Template.collectionPublications.publications = ->
   order = _.pluck @publications, '_id'
@@ -58,7 +67,7 @@ Template.collectionPublications.rendered = ->
 
   # Do not proceed if user cannot modify a collection
   # TODO: Can we make this reactive? So that if permissions change this is enabled or disabled?
-  unless collection?.hasMaintainerAccess Meteor.person()
+  unless collection?.hasMaintainerAccess Meteor.person collection?.constructor.maintainerAccessPersonFields()
     # Remove sortable functionality in case it was previously enabled
     $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
     return
@@ -75,14 +84,14 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.meteorError error, true if error
 
-Template.collectionTools.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+Template.collectionDetails.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.collectionTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person()
+  @hasAdminAccess Meteor.person() # TODO: MERGE UPDATE
 
-Template.collectionTools.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+Template.collectionDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionTools.events
   'click .delete-collection': (e, template) ->
@@ -105,8 +114,7 @@ Template.publicationLibraryMenuButtons.inCurrentCollection = ->
 
 Template.publicationLibraryMenuButtons.events
   'click .remove-from-current-collection': (e, template) ->
-    person = Meteor.person()
-    return unless person
+    return unless Meteor.personId()
 
     collection = Collection.documents.findOne
       _id: Session.get 'currentCollectionId'

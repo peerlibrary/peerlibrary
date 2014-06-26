@@ -105,3 +105,22 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
       _id: publicationId
     ,
       fields: Publication.readAccessSelfFields()
+
+Meteor.publish 'highlights', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'quote') if filter
+
+  sort = if _.isNumber sortIndex then Highlight.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  searchPublish @, 'highlights', [filter, sortIndex],
+    cursor: Highlight.documents.find(findQuery,
+      limit: limit
+      fields: Highlight.PUBLISH_FIELDS().fields
+      sort: sort
+    )

@@ -28,6 +28,29 @@ class @Group extends ReadAccessDocument
       slug: @GeneratedField 'self', ['name']
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['name', 'members._id']
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "members count"
+      sort: [
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "name"
+      sort: [
+        ['name', 'asc']
+      ]
+    ]
 
   _hasReadAccess: (person) =>
     access = super
@@ -71,6 +94,17 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -92,11 +126,28 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
+
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     document = super

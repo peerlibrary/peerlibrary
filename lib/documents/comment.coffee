@@ -15,15 +15,17 @@ class @Comment extends AccessDocument
   #   _id
   # body: in HTML (inline, no block elements)
   # license: license information, if known
-  # referencingAnnotations: list of (reverse field from Annotation.references.urls)
+  # referencingAnnotations: list of (reverse field from Annotation.references.comments)
   #   _id: annotation id
 
   @Meta
     name: 'Comment'
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      annotation: @ReferenceField Annotation
+      annotation: @ReferenceField Annotation, [], true, 'comments'
       publication: @ReferenceField Publication
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"
@@ -51,6 +53,14 @@ class @Comment extends AccessDocument
     [
       'author._id': person._id
     ]
+
+  @maintainerAccessPersonFields: ->
+    super
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      author: 1
 
   hasAdminAccess: (person) =>
     throw new Error "Not implemented"

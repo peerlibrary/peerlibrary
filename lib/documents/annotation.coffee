@@ -5,7 +5,7 @@ class @Annotation extends ReadAccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
   # maintainerGroups: ilist of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # author:
@@ -19,6 +19,8 @@ class @Annotation extends ReadAccessDocument
   # body: in HTML
   # publication:
   #   _id: publication's id
+  #   slug
+  #   title
   # references: made in the body of annotation or comments
   #   highlights: list of
   #     _id
@@ -58,12 +60,20 @@ class @Annotation extends ReadAccessDocument
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  # comments: list of (reverse field from Comment.annotation)
+  #   _id: comment id
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
-  # inside: inside which groups this annotations was made/shared
+  # inside: list of groups this annotations was made/shared inside
+  #   _id
+  #   slug
+  #   name
   # local (client only): if it exists this is just a temporary annotation on the client side, 1 (automatically created, LOCAL.AUTOMATIC), 2 (user changed the content, LOCAL.CHANGED)
   # editing (client only): is this annotation being edited
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Annotation'
@@ -73,7 +83,7 @@ class @Annotation extends ReadAccessDocument
       adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication, [], true, 'annotations'
+      publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
@@ -90,6 +100,21 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id', 'comments._id']
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['updatedAt', 'desc']
+      ]
+    ,
+      name: "author"
+      sort: [
+        ['author', 'asc']
+      ]
+    ]
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in

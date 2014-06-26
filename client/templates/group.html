@@ -29,11 +29,11 @@
 </template>
 
 <template name="groupMembers">
-  <div class="section">
-    <h2>Members</h2>
-    {{> groupMembersList}}
+  <h2 class="directory-title">Members</h2>
+  {{> groupMembersList}}
+  {{#if canModifyMembership}}
     {{> groupMembersAddControl}}
-  </div>
+  {{/if}}
 </template>
 
 <template name="groupMembersList">
@@ -45,15 +45,13 @@
 </template>
 
 <template name="groupMembersAddControl">
-  {{#if canModifyMembership}}
     <h3>Add a member</h3>
-    <div class="add-control control">
+    <div class="add-control">
       <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
       {{> groupMembersAddControlNoResults}}
       {{> groupMembersAddControlResults}}
       {{> groupMembersAddControlLoading}}
     </div>
-  {{/if}}
 </template>
 
 <template name="groupMembersAddControlNoResults">
@@ -93,19 +91,16 @@
 
 <template name="groupTools">
   {{#if canModify}}
-    <div class="section">
-      <h2>Tools</h2>
-      {{#if canRemove}}
-      <div class="section">
+    <h3>Tools</h3>
+    {{#if canRemove}}
+      <p>
         <button class="delete-group">Delete group</button>
         {{! TODO: Add confirmation or undo for this action }}
-      </div>
+      </p>
       {{/if}}
       {{#if canModifyAccess}}
-        <div class="section">
-          <h3>Privacy</h3>
-          {{> accessControl}}
-        </div>
+        <h3>Privacy</h3>
+        {{> accessControl}}
       {{/if}}
     </div>
   {{/if}}

@@ -16,33 +16,10 @@ Deps.autorun ->
     Meteor.subscribe 'my-groups'
 
 Template.groups.catalogSettings = ->
-  settings =
-    collection: "groups"
-    sorting: [
-        name: 'last active'
-        sort: [
-          ['updatedAt', 'desc']
-          ['membersCount', 'desc']
-          ['name', 'asc']
-        ]
-      ,
-        name: 'members'
-        sort: [
-          ['membersCount', 'desc']
-          ['name', 'asc']
-        ]
-      ,
-        name: 'name'
-        sort: [
-          ['name', 'asc']
-        ]
-    ]
-    variables:
-      filter: 'currentGroupsFilter'
-      sort: 'currentGroupsSort'
-      sortName: 'currentGroupsSortName'
-
-  settings
+  documentClass: Group
+  variables:
+    filter: 'currentGroupsFilter'
+    sort: 'currentGroupsSort'
 
 Template.groups.events
   'submit .add-group': (e, template) ->
@@ -61,8 +38,24 @@ Template.groups.events
 Template.myGroups.myGroups = ->
   Group.documents.find
     _id:
-      $in: _.pluck Meteor.person()?.inGroups, '_id'
+      $in: _.pluck Meteor.person(inGroups: 1)?.inGroups, '_id'
   ,
     sort: [
       ['name', 'asc']
     ]
+
+Editable.template Template.groupCatalogItemName, ->
+  @data.hasMaintainerAccess Meteor.person()
+,
+(name) ->
+  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
+Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
+
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

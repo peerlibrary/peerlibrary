@@ -15,6 +15,7 @@ class @Publication extends Publication
           [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
+
       fields.fullText.generator = (fields) ->
         return [null, null] unless fields.cached
         return [null, null] if fields.processed
@@ -35,6 +36,9 @@ class @Publication extends Publication
           Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
+
+      fields.annotationsCount.generator = (fields) ->
+        [fields._id, fields.annotations?.length or 0]
 
       fields
 
@@ -170,12 +174,10 @@ class @Publication extends Publication
     # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
     @fullText
 
-  _importingFilename: =>
-    # We assume that importing contains only this person, see comment in uploadPublication
-    assert @importing?[0]?.person?._id
-    assert.equal @importing[0].person._id, Meteor.personId()
+  _importingFilename: (index=0) =>
+    assert @importing?[index]?.importingId
 
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[index].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -205,6 +207,7 @@ class @Publication extends Publication
       source: 1
       mediaType: 1
       access: 1
+      annotationsCount: 1
       readPersons: 1
       readGroups: 1
       maintainerPersons: 1
@@ -222,6 +225,7 @@ class @Publication extends Publication
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
       'access'
+      'annotationsCount'
     ]
 
 registerForAccess Publication
@@ -257,6 +261,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
+      createdAt = moment.utc().toDate()
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
@@ -264,6 +269,8 @@ Meteor.methods
       ,
         $addToSet:
           importing:
+            createdAt: createdAt
+            updatedAt: createdAt
             person:
               _id: person._id
             filename: filename
@@ -276,11 +283,14 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
+      createdAt = moment.utc().toDate()
       id = Publication.documents.insert Publication.applyDefaultAccess person._id,
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
+        createdAt: createdAt
+        updatedAt: createdAt
         source: 'import'
         importing: [
+          createdAt: createdAt
+          updatedAt: createdAt
           person:
             _id: person._id
           filename: filename
@@ -329,6 +339,13 @@ Meteor.methods
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
     Storage.saveMeteorFile file, publication._importingFilename()
 
+    Publication.documents.update
+      _id: publication._id
+      'importing.person._id': person._id
+    ,
+      $set:
+        'importing.$.updatedAt': moment.utc().toDate()
+
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
       pdf = Storage.open publication._importingFilename()
@@ -349,6 +366,14 @@ Meteor.methods
           $set:
             cached: moment.utc().toDate()
             size: file.size
+
+      # Remove all other partially uploaded files, if there are any
+      for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
+        filename = publication._importingFilename i
+        try
+          Storage.remove filename
+        catch error
+          # We ignore any error when removing partially uploaded files
 
       # Hash was verified, so add it to uploader's library
       Person.documents.update
@@ -412,21 +437,24 @@ Meteor.methods
       _id: publication._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         title: title
 
-Meteor.publish 'publications', (limit, filter, sort) ->
+Meteor.publish 'publications', (limit, filter, sortIndex) ->
   check limit, PositiveNumber
-  check filter, Optional String
-  check sort, Optional [[String]]
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = _.extend findQuery, createQueryCriteria(filter, 'fullText') if filter
+  findQuery = createQueryCriteria(filter, 'title') if filter
+
+  sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'publications', searchQueryDescriptor(filter, sort),
+    searchPublish @, 'publications', [filter, sortIndex],
       cursor: Publication.documents.find(restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
@@ -436,7 +464,7 @@ Meteor.publish 'publications', (limit, filter, sort) ->
     Person.documents.find
       _id: @personId
     ,
-      fields: _.extend Group.readAccessPersonFields()
+      fields: _.extend Publication.readAccessPersonFields()
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, NonEmptyString

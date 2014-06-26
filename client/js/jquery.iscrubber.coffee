@@ -33,7 +33,8 @@ $.fn.iscrubber = (customOptions) ->
     $this.width(width).css('padding', 0)
 
     # get trigger width => (scrubber width / number of children)
-    trigger = width / $this.children().length
+    count = $this.children().length
+    trigger = width / count
 
     # show first element
     scrub(elements, options.showItem)
@@ -46,6 +47,7 @@ $.fn.iscrubber = (customOptions) ->
       # get the index of image to display on top
       index = Math.ceil(x/trigger)
       index = 1 if index == 0
+      index = count if index > count
       scrub(elements, index)
 
     # bind event when mouse leaves scrubber

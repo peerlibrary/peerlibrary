@@ -32,7 +32,7 @@ INVALID_SHA256_CHARS_REGEX = new RegExp '[^a-f0-9]'
   EMAIL_REGEX.test x
 
 # We provide our own optional that also allows null
-@Optional = (pattern) ->
+@OptionalOrNull = (pattern) ->
   Match.Where (x) ->
     check x, Match.OneOf null, Match.Optional pattern
     true

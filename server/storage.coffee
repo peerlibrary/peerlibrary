@@ -45,6 +45,10 @@ class @Storage extends Storage
   @remove: (filename) ->
     fs.unlinkSync @_fullPath filename
 
+  @lastModificationTime: (filename) ->
+    stats = fs.statSync @_fullPath filename
+    stats.mtime
+
 # Find .meteor directory
 directoryPath = process.mainModule.filename.split path.sep
 while directoryPath.length > 0

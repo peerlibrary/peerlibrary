@@ -40,7 +40,8 @@ Template.group.notFound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
-Template.groupName[method] = Template.groupListingName[method] for method in ['created', 'rendered', 'destroyed']
+Template.groupMembers.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -49,8 +50,7 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = ->
-  @hasAdminAccess Meteor.person()
+Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
 
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->
@@ -203,14 +203,14 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupTools.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+Template.groupDetails.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
 Template.groupTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person()
-
-Template.groupTools.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+  @hasAdminAccess Meteor.person() # TODO: MERGE UPDATE
+  
+Template.groupDetails.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupTools.events
   'click .delete-group': (e, template) ->
