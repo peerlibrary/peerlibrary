@@ -41,7 +41,9 @@ class @ArXivPDF extends ArXivPDF
 
 randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
-globals = @
+
+updateBlogCache = @updateBlogCache
+
 Meteor.methods
   'sample-data': ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
@@ -580,7 +582,7 @@ Meteor.methods
     @unblock()
 
     Log.info "Forcing blog cache sync"
-    globals.updateBlogCache true # force flag
+    updateBlogCache true # force flag
 
 Meteor.publish 'arxiv-pdfs', ->
   return unless @personId

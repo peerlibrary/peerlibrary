@@ -114,7 +114,6 @@ syncPosts = (params) ->
   #        Indicates that this is a force update, so it won't start a
   #        timeout loop.
   unless UPDATE_IN_PROGRESS
-    console.log "Updating cache. Force = " + !!force
     UPDATE_IN_PROGRESS = true
     try
       response = Tumblr.get
