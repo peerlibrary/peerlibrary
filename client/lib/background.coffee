@@ -34,6 +34,7 @@ class Vector
     @deltaY = 0
 
   update: (time) =>
+    return if Session.get 'backgroundPaused'
     distance = Math.sin(Math.min(Math.abs(@originY + 0.5 * @originX + 150 - (time / 2) / 5 % (Math.max(window.innerWidth, window.innerHeight) + 300)) / Math.sqrt(1.25), 200) / 200 * Math.PI / 2) * 60
     if not @duration or time > @start + @duration
       @start = time
@@ -160,30 +161,30 @@ class @Background
     columns = Math.ceil(width / deltaX)
     rows    = Math.ceil(height / deltaY)
 
-    if not Session.get 'backgroundPaused'
-      @stage = new PIXI.Stage 0xFFFFFF
+    @stage = new PIXI.Stage 0xFFFFFF
 
-      for i in [0...rows]
-        for j in [0...columns]
-          x = originX + j * deltaX
-          y = originY + i * deltaY
-          o = i % 2
-          e = 1 - i % 2
+    for i in [0...rows]
+      for j in [0...columns]
+        x = originX + j * deltaX
+        y = originY + i * deltaY
+        o = i % 2
+        e = 1 - i % 2
 
-          triangle = getTriangle x, y + deltaY * o, x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o
-          @stage.addChild triangle.graphics
+        triangle = getTriangle x, y + deltaY * o, x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o
+        @stage.addChild triangle.graphics
 
-          triangle = getTriangle x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o, x + 3 * deltaX / 2, y + deltaY * e
-          @stage.addChild triangle.graphics
+        triangle = getTriangle x + deltaX / 2, y + deltaY * e, x + deltaX, y + deltaY * o, x + 3 * deltaX / 2, y + deltaY * e
+        @stage.addChild triangle.graphics
 
     return # To not have CoffeeScript return a result of for loop
 
   draw: (time) =>
     return unless @renderer
 
-    if not Session.get 'backgroundPaused'
-      vector.update time for key, vector of @vectors
-      triangle.draw() for key, triangle of @triangles
-      @renderer.render @stage
+    return if Session.get 'backgroundPaused'
+
+    vector.update time for key, vector of @vectors
+    triangle.draw() for key, triangle of @triangles
+    @renderer.render @stage
 
     frame @draw

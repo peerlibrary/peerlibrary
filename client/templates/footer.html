@@ -9,21 +9,23 @@
       <li><a href="https://github.com/peerlibrary/peerlibrary/wiki/Public-API">API</a></li>
     </ul>
     <ul class="connect">
-      <div>
-        <li>{{> backgroundPauseButton}}</li>
-      </div>
-      <div>
-        <li><a href="http://blog.peerlibrary.org">Blog</a></li>
-        <li><a href="https://twitter.com/PeerLibrary">Twitter</a></li>
-        <li><a href="http://lists.peerlibrary.org/lists/info/news" class="newsletter">Newsletter</a></li>
-        <li><a href="mailto:hello@peerlibrary.org">Contact</a></li>
-      </div>
+      <li>{{> backgroundPauseButton}}</li>
+      <li><a href="http://blog.peerlibrary.org">Blog</a></li>
+      <li><a href="https://twitter.com/PeerLibrary">Twitter</a></li>
+      <li><a href="http://lists.peerlibrary.org/lists/info/news" class="newsletter">Newsletter</a></li>
+      <li><a href="mailto:hello@peerlibrary.org">Contact</a></li>
     </ul>
   </footer>
 </template>
 
 <template name="backgroundPauseButton">
-<div><input type=button value="{{backgroundPauseButtonText}}"></div>
+    <button>
+      {{#if backgroundPaused}}
+      Start Background
+      {{else}}
+      Stop Background
+      {{/if}}
+    </button>
 </template>
 
 <template name="baseFooter">
