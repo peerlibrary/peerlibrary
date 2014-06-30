@@ -46,29 +46,14 @@ class CanvasTextHighlight extends Annotator.Highlight
         @_box.height = segment.top + segment.height - @_box.top
 
   _precomputeHover: (segments) =>
-    # TODO: Improve polygon drawing, split segment array by chunks
-
-    ## _hover is an array of vertices coordinates
-    #@_hover = []
-    #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top + segments[0].height)])
-    #@_hover.push([Math.round(segments[0].left), Math.round(segments[0].top)])
-
-    #before 4-9-14
     #merge the row
+    #first, creat an array named temp whose entries are of the form [segment, logical], where each segment corresponds to each entry of the input array <segments>. The logicals are initially set to true.
     l = segments.length
     temp = []
     for segment in segments
       temp.push([_.clone(segment),true])
-
-
-    for segment in temp
-      segment.left = Math.round(segment.left)
-      segment.width = Math.round(segment.width)
-      segment.top = Math.round(segment.top)
-      segment.height = Math.round(segment.height)
-
-
-    i = l-1
+    #each segment is a rectangle, now begin to merge the rectangles in the same row into one rectangle
+    i = l-1 #begins at the rectangle located at the end
     while i>=0
       current = temp[i][0]
       currentleft = current.left
@@ -82,7 +67,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         compareright = compare.left+compare.width
         comparetop = compare.top
         comparebottom = compare.top+compare.height
-        if ((currentleft-compareright<=15) and (currentleft-compareright>-1)) or ((compareleft <= currentleft) and (currentleft <=compareright) and (compareright <=currentright)) #need to try some numbers
+        if ((currentleft-compareright<=15) and (currentleft-compareright>=0)) or ((compareleft <= currentleft) and (currentleft <=compareright) and (compareright <=currentright)) #horizontal conditions to merge, need to try some numbers.  
           if currenttop <= comparetop and comparetop <= currentbottom
             temp[j][0].top = currenttop
             temp[j][0].width = currentright-temp[j][0].left
@@ -99,13 +84,12 @@ class CanvasTextHighlight extends Annotator.Highlight
         j--
       i--
     #finish merging the row
-    #define temp2 to be the the merged row of the form (segment,true).
+    #define temp2 to be the the merged row of the form (segment,true). Notice that now segment is a complete row (shape is rectangle)
     temp2 = []
     for segment in temp
       temp2.push(segment) if segment[1]
 
-    #4-9-14
-    #check if any box is contained in any other box
+    #This step may be redundant, but it checks if any box is contained in any other box
     i = 0
     while i < temp2.length and temp2[i][1]
       current = temp2[i][0]
@@ -129,11 +113,11 @@ class CanvasTextHighlight extends Annotator.Highlight
       i++
 
     
-    #4-23-14 merge blocks
+    #Now going to merge rows
     temp2.sort (a,b) ->
       return if (((a[0].left+a[0].width)<=b[0].left) or (((a[0].left+a[0].width)>b[0].left) and (a[0].top<=b[0].top))) then -1 else 1 
     
-    #temp3 is going to group neighbour rows together
+    #temp3 is going to group neighbour rows together as a block
     temp3 = []
     i = 0
     while i < temp2.length 
@@ -158,7 +142,7 @@ class CanvasTextHighlight extends Annotator.Highlight
           comparetop = compare.top
           comparebottom = compare.top+compare.height
           #group two rows if they are close to each other, set group number to be equal, i.e., change the group number for all elements in one group to the group number of the other group.
-          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=7)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=7))) and ((not (currentleft-compareright>15)) and (not (compareleft-currentright>15)) and (temp3[k][1] isnt temp3[j][1])) 
+          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=7)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=7))) and ((not (currentleft-compareright>5)) and (not (compareleft-currentright>5)) and (temp3[k][1] isnt temp3[j][1])) #here the number 5 is the number of pixels that the horizontal distance between two rows should not exceeds, if they are to be grouped into the same block.  
             t = _.clone(temp3[k][1])
             temp3[k][1] = temp3[j][1]
             m = 0
@@ -169,7 +153,7 @@ class CanvasTextHighlight extends Annotator.Highlight
           k++
         j++
 
-    #define temp4 to be grouped rows [[row1,row3,row6],[row2,row4],[row5]]
+    #define temp4 to be grouped rows, e.g., [[row1,row3,row6],[row2,row4],[row5]]
     temp4 = []
     i = 0
     while i < L #i is group number
@@ -201,7 +185,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         lowerright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top+temp4[i][j].height])
         j++
 
-      #want to get hover = [[hoverelt1],..], number of hoverelt's are the same as the group number; [hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]], where [h_ur] = [[pt_x,pt_y],..,[pt_X,pt_Y]] are the vertices in the upperright part of the convex hull, and similar for others.
+      #want to get hover = [[hoverelt1],..], number of hoverelt's are the same as the group number; [hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]], where [h_ur] = [[pt1_x,pt1_y],..,[ptn_x,ptn_x]] are the vertices in the upperright part of the convex hull, and similar for others.
 
       upperright.sort (a,b) ->
         return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
@@ -220,7 +204,8 @@ class CanvasTextHighlight extends Annotator.Highlight
         hoverelt_ur.push(upperright[j]) if not witness
         j++
       #now hoverelt_ur is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the upperright part of the selected region, sorted from upperleft to lowerright. Always remember that the lower the point is in the region, the larger the y coordinate is; the righter the point is, the larger the x coordinate is.
-      #6-15-14 do smoothing
+      #do smoothing
+      pixeldiff = 2 #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
       counter1 = 0 #start with the upperleft most point
       nchange = 1     #number of adjustments made, initially set > 0
       while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
@@ -228,7 +213,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         while nchange is 0 and counter1<hoverelt_ur.length-1
           currentpt = hoverelt_ur[counter1]
           nextpt = hoverelt_ur[counter1+1]
-          if (nextpt[0]-currentpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+          if (nextpt[0]-currentpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff) #lines no more than "pixeldiff" pixels wide will be smoothed
             hoverelt_ur[counter1][0] = hoverelt_ur[counter1+1][0] #the upperlefter point has the x-coordinate of the lowerrighter point
             hoverelt_ur = hoverelt_ur.filter (pt) -> pt isnt hoverelt_ur[counter1+1] #delete the lowerrighter point
             nchange++
@@ -260,7 +245,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         while nchange is 0 and counter1<hoverelt_lr.length-1
           currentpt = hoverelt_lr[counter1]
           nextpt = hoverelt_lr[counter1+1]
-          if (currentpt[0]-nextpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+          if (currentpt[0]-nextpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff) 
             hoverelt_lr[counter1][1] = hoverelt_lr[counter1+1][1] #the upperrighter point has the y-coordinate of the lowerlefter point
             hoverelt_lr = hoverelt_lr.filter (pt) -> pt isnt hoverelt_lr[counter1+1] #delete the lowerlefter point
             nchange++
@@ -292,7 +277,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         while nchange is 0 and counter1<hoverelt_ll.length-1
           currentpt = hoverelt_ll[counter1]
           nextpt = hoverelt_ll[counter1+1]
-          if (nextpt[0]-currentpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+          if (nextpt[0]-currentpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff)
             hoverelt_ll[counter1][1] = hoverelt_ll[counter1+1][1] #the upperlefter point has the y-coordinate of the lowerrighter point
             hoverelt_ll = hoverelt_ll.filter (pt) -> pt isnt hoverelt_ll[counter1+1] #delete the upperlefter point
             nchange++
@@ -325,7 +310,7 @@ class CanvasTextHighlight extends Annotator.Highlight
         while nchange is 0 and counter1<hoverelt_ul.length-1
           currentpt = hoverelt_ul[counter1]
           nextpt = hoverelt_ul[counter1+1]
-          if (currentpt[0]-nextpt[0]<=2 or nextpt[1]-currentpt[1]<=2) #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+          if (currentpt[0]-nextpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff)
             hoverelt_ul[counter1][0] = hoverelt_ul[counter1+1][0] #the upperrighter point has the y-coordinate of the lowerlefter point
             hoverelt_ul = hoverelt_ul.filter (pt) -> pt isnt hoverelt_ul[counter1+1] #delete the upperrighter point
             nchange++
@@ -333,7 +318,7 @@ class CanvasTextHighlight extends Annotator.Highlight
             counter1++
       hoverelt.push(hoverelt_ul)  
 
-      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]],[h_ur] = [[pt_x,pt_y],..,[pt_X,pt_Y]]
+      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]],[h_ur] = [[pt1_x,pt1_y],..,[ptn_x,ptn_y]]
       i++
 
 
@@ -352,36 +337,39 @@ class CanvasTextHighlight extends Annotator.Highlight
     # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
     context.strokeStyle = 'rgba(180,170,0,9)'
 
-
-    #4-23-14
+    #begin to draw
     L = @_hover.length
     context.beginPath()
     i = 0
-    while i< L
-      hoverelt = _.clone(@_hover[i])
-      upperright = hoverelt[0]
-      console.log hoverelt
+    while i< L #there are L different blocks to draw
+      hoverelt = _.clone(@_hover[i]) #it contains four elements, each element contains vertices in upperright corner or lowerright corner or lowerleft corner or upperleft cornner.
+      upperright = hoverelt[0] 
+      #console.log hoverelt
       lowerright = hoverelt[1]
       lowerleft = hoverelt[2]
       upperleft = hoverelt[3]
+      #begin to draw vertices in upperright corner. these vertices are ordered from upperleft to lowerright
       context.moveTo(upperright[0][0],upperright[0][1])
       j = 0
       while j < (upperright.length-1)
         context.lineTo(upperright[j][0],upperright[j+1][1])
         context.lineTo(upperright[j+1][0],upperright[j+1][1])
         j++
+      #begin to draw vertices in lowerright corner. these vertices are ordered from upperright to lowerleft
       j = 0
       while j < (lowerright.length-1)
         context.lineTo(lowerright[j][0],lowerright[j][1])
         context.lineTo(lowerright[j+1][0],lowerright[j][1])
         j++
-      context.lineTo(lowerright[j][0],lowerright[j][1])
+      context.lineTo(lowerright[j][0],lowerright[j][1])      
+      #begin to draw vertices in lowerleft corner. these vertices are ordered from upperleft to lowerright, so start from the last vertex
       j = (lowerleft.length-1)
       while j >0
         context.lineTo(lowerleft[j][0],lowerleft[j][1])
         context.lineTo(lowerleft[j][0],lowerleft[j-1][1])
         j--
       context.lineTo(lowerleft[j][0],lowerleft[j][1])
+      #begin to draw vertices in upperleft corner. these vertices are ordered from upperright to lowerleft, so start from the last vertex.
       j = (upperleft.length-1)
       while j > 0
         context.lineTo(upperleft[j][0],upperleft[j][1])
@@ -391,7 +379,7 @@ class CanvasTextHighlight extends Annotator.Highlight
       context.lineTo(upperright[0][0],upperright[0][1])
       i++
     context.closePath()
-
+    #end drawing
 
 
     context.stroke()
