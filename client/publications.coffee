@@ -56,9 +56,14 @@ Template.publicationCatalogItem.annotationsCountDescription = ->
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 
-Template.publicationCatalogItem.open = Template.accessText.open
-Template.publicationCatalogItem.closed = Template.accessText.closed
-Template.publicationCatalogItem.private = Template.accessText.private
+Template.publicationCatalogItem.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.publicationCatalogItem.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.publicationCatalogItem.private = ->
+  @access is Publication.ACCESS.PRIVATE
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null

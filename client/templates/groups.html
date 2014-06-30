@@ -85,7 +85,20 @@
   <li class="catalog-item group">
     <div class="details">
       {{> groupCatalogItemName}}
-      <p class="show-in-sidebar"><i class="icon-group"></i> {{countDescription}}</p>
+      <p class="members-count show-in-sidebar">
+        <i class="icon-group"></i>
+        {{#if private}}
+          <i class="icon-private"></i>
+        {{/if}}
+        {{countDescription}}
+      </p>
+        {{#if private}}
+          <p>
+            <span class="tooltip" title="Only the users listed can see the group">
+              <i class="icon-private"></i> private group
+            </span>
+          </p>
+        {{/if}}
     </div>
 
     <a class="full-item-link" href="{{groupPathFromId _id slug}}"></a>

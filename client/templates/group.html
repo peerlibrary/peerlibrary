@@ -108,5 +108,13 @@
         </div>
       {{/if}}
     </div>
+  {{else}}
+    {{#if private}}
+      <div class="private section">
+        <h2>Privacy</h2>
+          <p><i class="icon-private"></i> private group</p>
+          <p class="description">Only the users listed can see the group</p>
+      </div>
+    {{/if}}
   {{/if}}
 </template>

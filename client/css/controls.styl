@@ -257,7 +257,6 @@ h1
 
 /* Meta menus and jQuery UI widgets
 =================================== */
-
 .meta-menu, .ui-widget
   input, button
     display block
@@ -330,8 +329,9 @@ h1
   .edit:hover
     color #ccc
 
-  .add-control
+.add-control
     background white
+    border-radius 2px
 
     .add-button
       display block
@@ -350,6 +350,9 @@ h1
 
     button:hover
       background-color rgba(120,120,120,0.3)
+
+  input:focus
+    box-shadow none
 
     .access-results
       margin 0

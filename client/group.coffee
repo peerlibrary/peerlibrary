@@ -224,6 +224,9 @@ Template.groupTools.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.groupTools.private = ->
+  @access is ACCESS.PRIVATE
+
 # We allow passing the group slug if caller knows it
 Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
   group = Group.documents.findOne groupId
