@@ -49,6 +49,3 @@ Template.indexLatestBlogPost.postUrl = ->
 
 Template.indexLatestBlogPost.postCount = ->
   Statistics.documents.findOne()?.countBlogPosts
-
-Template.indexLatestBlogPost.postsExist = ->
-  return !!BlogPost.documents.findOne()
