@@ -38,7 +38,7 @@ Template.group.notFound = ->
   groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 
 Template.group.group = ->
-  Group.documents.findOne Session.get 'currentGroupId'
+  Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
 
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
@@ -139,7 +139,7 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
   not @_loading() and not (searchResult.countPersons or 0)
 
-Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.email
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
@@ -203,12 +203,6 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupTools.canModify = ->
-  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
-
-Template.groupTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
-  
 Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
@@ -223,9 +217,6 @@ Template.groupTools.events
       Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
-
-Template.groupTools.private = ->
-  @access is ACCESS.PRIVATE
 
 # We allow passing the group slug if caller knows it
 Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->

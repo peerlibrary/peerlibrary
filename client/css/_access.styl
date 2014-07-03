@@ -1,18 +1,58 @@
 @import 'variables.import'
 
 .access-menu
-  .private-access-control
-    .member
-      display inline-block
-      width auto
+  .roles-control
+
+    .roles-control-list
+      padding 0
+      list-style none
+
+      li
+        display table-row
+
+        .item
+          display table-cell
+          width 100%
+
+          .inline-item
+            max-width 125px
+            margin-bottom 4px
+
+            .avatar
+              width 24px
+              text-align center
+
+              img
+                position absolute
+                left 0
+
+              &::before
+                position static
+                vertical-align middle
+                margin-top -2px
+
+        &:last-child .document .inline-item
+          margin-bottom 0
+
+        .role
+          display table-cell
+          font-weight 300
+          font-size 13px
+          text-align right
+          white-space nowrap
+
+          .icon-down
+            font-size 9px
+
+      &.read-only
+        li
+          .item
+            .inline-item
+              max-width 130px
 
     .add-control .member
       display block
       width 100%
-
-    .private-access-control-members
-      .access-list
-        display inline
 
 .meta-menu
   .access-menu
@@ -97,6 +137,12 @@
         &:hover
           border 1px solid box-shadow-border
           background white
+
+    .access-name
+      margin-bottom 10px
+
+      .access-icon
+        font-size 18px
 
     .description
       font-weight 300

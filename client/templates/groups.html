@@ -75,10 +75,12 @@
 </template>
 
 <template name="groupInlineItem">
-  <a class="inline-item group" {{#unless noLink}}href="{{groupPathFromId _id slug}}"{{/unless}}>
-    <i class="avatar only-icon icon-group" title="Group"></i>
-    <span class="name" title="{{name}}">{{name}}</span>
-  </a>
+  {{#spaceless}}
+    <a class="inline-item group" {{#unless noLink}}href="{{groupPathFromId _id slug}}"{{/unless}}>
+      <i class="avatar only-icon icon-group" title="Group"></i>
+      <span class="name" title="{{name}}">{{name}}</span>
+    </a>
+  {{/spaceless}}
 </template>
 
 <template name="groupCatalogItem">

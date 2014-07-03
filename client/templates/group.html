@@ -92,29 +92,15 @@
 </template>
 
 <template name="groupTools">
-  {{#if canModify}}
-    <div class="section">
-      <h2>Tools</h2>
-      {{#if canRemove}}
+  <div class="section">
+    <h2>Tools</h2>
+    {{#if canRemove}}
       <div class="section">
         <button class="delete-group">Delete group</button>
         {{! TODO: Add confirmation or undo for this action }}
       </div>
-      {{/if}}
-      {{#if canModifyAccess}}
-        <div class="section">
-          <h3>Privacy</h3>
-          {{> accessControl}}
-        </div>
-      {{/if}}
-    </div>
-  {{else}}
-    {{#if private}}
-      <div class="private section">
-        <h2>Privacy</h2>
-          <p><i class="icon-private"></i> private group</p>
-          <p class="description">Only the users listed can see the group</p>
-      </div>
     {{/if}}
-  {{/if}}
+    <h3>Privacy</h3>
+    {{> accessControl}}
+  </div>
 </template>
