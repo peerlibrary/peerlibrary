@@ -1,0 +1,28 @@
+<template name="settings">
+  <br/><br/><br/>
+  {{#if person}}
+    <h1>{{person.displayName}} personal settings</h1>
+    {{>settingsUsername}}<br/><br/>
+    {{>settingsPassword}}
+  {{/if}}
+</template>
+
+<template name="settingsUsername">
+  <form id="set-username">
+    <label for="username">Username</label>
+    <input type="text" id="username" value="{{user.username}}" /><br/>
+    <button>Change username</button>
+  </form>
+</template>
+
+<template name="settingsPassword">
+  <form id="set-password">
+    <label for="current-password">Current password</label>
+    <input type="password" id="current-password" /><br/>
+    <label for="new-password">New password</label>
+    <input type="password" id="new-password" /><br/>
+    <label for="new-password-confirm">Confirm new password</label>
+    <input type="password" id="new-password-confirm" /><br/>
+    <button>Change password</button>
+  </form>
+</template>

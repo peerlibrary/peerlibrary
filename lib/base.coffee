@@ -212,6 +212,13 @@ else
           currentPersonSlug: personSlug
         'person'
 
+    '/u/:personSlug/settings':
+      as: 'settings'
+      to: (personSlug) ->
+        setSession
+          currentPersonSlug: personSlug
+        'settings'
+
     '/h/:highlightId':
       as: 'highlightId'
       documentId: 'highlightId'
