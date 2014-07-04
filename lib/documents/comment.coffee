@@ -1,6 +1,7 @@
 class @Comment extends AccessDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last comment activity (for now same as updatedAt)
   # author:
   #   _id: author's person id
   #   slug: author's person id
@@ -26,6 +27,9 @@ class @Comment extends AccessDocument
       publication: @ReferenceField Publication
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']
+      personLastActivity: RelatedLastActivityTrigger Person, ['author._id'], (doc, oldDoc) -> doc.author?._id
+      annotationLastActivity: RelatedLastActivityTrigger Annotation, ['annotation._id'], (doc, oldDoc) -> doc.annotation?._id
+      publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

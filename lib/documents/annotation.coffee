@@ -3,11 +3,12 @@ class @Annotation extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
   # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last annotation activity (commenting)
   # author:
   #   _id: person id
   #   slug
@@ -100,8 +101,21 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+    # We do not see referencing something as an event which should update lastActivity of a referenced document.
+    # Additionally, we update lastActivity when there is a constructive change, like adding to a group, and not when
+    # document is being removed. When value changes we update just the related lastActivity of a new value, not old one.
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id', 'comments._id']
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['author._id'], (doc, oldDoc) -> doc.author?._id
+      publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
+      tagsLastActivity: RelatedLastActivityTrigger Tag, ['tags.tag._id'], (doc, oldDoc) ->
+        newTags = (tag.tag._id for tag in doc.tags or [])
+        oldTags = (tag.tag._id for tag in oldDoc.tags or [])
+        _.difference newTags, oldTags
+      groupsLastActivity: RelatedLastActivityTrigger Group, ['inside._id'], (doc, oldDoc) ->
+        newGroups = (group._id for group in doc.inside or [])
+        oldGroups = (group._id for group in oldDoc.inside or [])
+        _.difference newGroups, oldGroups
 
   @PUBLISH_CATALOG_SORT:
     [

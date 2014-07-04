@@ -122,8 +122,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.9.0",
-        "commit": "2e254ecd7cf98ee0b47e370170b00ca9e61009f9"
+        "tag": "v0.9.1",
+        "commit": "d5ead8496ef19d4549631de19a0f60dadd44745e"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -167,8 +167,8 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.2.0",
-        "commit": "0f0f6b90a80f2be3980154977fe19f84cc535cf8"
+        "tag": "v2.4.7",
+        "commit": "c860e10cbe416ebb3d4999adccd5c486f232f9c6"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

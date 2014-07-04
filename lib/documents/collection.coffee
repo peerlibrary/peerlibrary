@@ -3,11 +3,12 @@ class @Collection extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last collection activity (for now same as updatedAt)
   # authorPerson:
   #   _id: author's person id
   #   slug
@@ -43,6 +44,13 @@ class @Collection extends ReadAccessDocument
       publications: [@ReferenceField Publication]
     triggers: =>
       updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['authorPerson._id'], (doc, oldDoc) -> doc.authorPerson?._id
+      groupLastActivity: RelatedLastActivityTrigger Group, ['authorGroup._id'], (doc, oldDoc) -> doc.authorGroup?._id
+      # TODO: For now we are updating last activity of all publications in a collection, but we might consider removing this and leave it to the "trending" view
+      publicationsLastActivity: RelatedLastActivityTrigger Publication, ['publications._id'], (doc, oldDoc) ->
+        newPublications = (publication._id for publication in doc.publications or [])
+        oldPublications = (publication._id for publication in oldDoc.publications or [])
+        _.difference newPublications, oldPublications
 
   @PUBLISH_CATALOG_SORT:
     [
