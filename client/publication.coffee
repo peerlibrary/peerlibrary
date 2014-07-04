@@ -530,21 +530,25 @@ Template.publicationMetaMenu.events addAccessEvents
 Template.publicationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.publicationAccessControl.open = ->
+Template.publicationAccessControlPrivacyForm.open = ->
   @access is Publication.ACCESS.OPEN
 
-Template.publicationAccessControl.closed = ->
+Template.publicationAccessControlPrivacyForm.closed = ->
   @access is Publication.ACCESS.CLOSED
 
-Template.publicationAccessControl.private = ->
+Template.publicationAccessControlPrivacyForm.private = ->
   @access is Publication.ACCESS.PRIVATE
 
+Template.publicationAccessControlPrivacyInfo.open = Template.publicationAccessControlPrivacyForm.open
+Template.publicationAccessControlPrivacyInfo.closed = Template.publicationAccessControlPrivacyForm.closed
+Template.publicationAccessControlPrivacyInfo.private = Template.publicationAccessControlPrivacyForm.private
+
 # We copy over event handlers from accessControl template (which are general enough to work)
-for spec, callbacks of Template.accessControl._tmpl_data.events
+for spec, callbacks of Template.accessControlPrivacyForm._tmpl_data.events
   for callback in callbacks
     eventMap = {}
     eventMap[spec] = callback
-    Template.publicationAccessControl.events eventMap
+    Template.publicationAccessControlPrivacyForm.events eventMap
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -1237,6 +1241,15 @@ Template.annotationEditor.events
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
     return # Make sure CoffeeScript does not return anything
+
+Template.visibilityMenu.events
+  'click .dropdown-trigger': (e, template) ->
+    # Make sure only the trigger toggles the dropdown
+    return if $(e.target).closest('.dropdown-anchor').length
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return false # Make sure CoffeeScript does not return anything
 
 Template.visibilityMenu.public = ->
   if @local

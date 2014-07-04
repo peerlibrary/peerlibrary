@@ -40,9 +40,14 @@
       </p>
       <p>Source: {{source}}</p>
       <p>{{createdAt}}</p>
-      {{#if canModifyAccess}}
-        {{> publicationAccessControl}}
-      {{/if}}
+      <div class="access-menu">
+        {{#if canModifyAccess}}
+          {{> publicationAccessControlPrivacyForm}}
+        {{else}}
+          {{> publicationAccessControlPrivacyInfo}}
+        {{/if}}
+        {{> rolesControl}}
+      </div>
     </div>
   </div>
 </template>
@@ -111,8 +116,7 @@
   </li>
 </template>
 
-<template name="publicationAccessControl">
-  <div class="access-menu">
+<template name="publicationAccessControlPrivacyForm">
     <form class="access publication-access">
       <div class="selections">
 
@@ -136,9 +140,33 @@
       <div class="description closed {{#if closed}}displayed{{/if}}">The publication is public, but only those who import the PDF have access to its content.</div>
       <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
     </form>
+</template>
 
+<template name="publicationAccessControlPrivacyInfo">
+  <div class="access publication-access">
+    {{#if open}}
+      <div class="access-name">
+        <i class="access-icon icon-public"></i> Open access publication
+      </div>
+      <div class="description open displayed">
+        Everyone has access to the publication.
+      </div>
+    {{/if}}
+    {{#if closed}}
+      <div class="access-name">
+        <i class="access-icon icon-closed"></i> Closed access publication
+      </div>
+      <div class="description open displayed">
+        The publication is public, but only those who import the PDF have access to its content.
+      </div>
+    {{/if}}
     {{#if private}}
-      {{> privateAccessControl}}
+      <div class="access-name">
+        <i class="access-icon icon-private"></i> Private publication
+      </div>
+      <div class="description private displayed">
+        Only the users who import the PDF or are listed have access to the publication.
+      </div>
     {{/if}}
   </div>
 </template>
@@ -266,8 +294,8 @@
           }}
         </div>
         <div class="form-control">
-          <button type="button" class="btn blue save">Save</button>
           {{> visibilityMenu}}
+          <button type="button" class="btn blue save">Save</button>
         </div>
       </form>
     </div>
@@ -344,27 +372,50 @@
 </template>
 
 <template name="visibilityMenu">
-  <div class="visibility-menu">
-    {{! TODO: Temporary disabled, not yet finalized code
-      <div class="ui-dropdown">
-        <div class="ui-selection-wrapper">
-          <span class="ui-selection">
-            <i class="icon-public"></i>
-            Public
-          </span>
-          <i class="icon-down"></i>
-        </div>
+  <div class="visibility-menu dropdown-trigger">
+    {{#if public}}
+      <i class="icon-public"></i> Public annotation
+    {{else}}
+      <i class="icon-private"></i> Private annotation
+    {{/if}}
+    <div class="dropdown-anchor">
+      <div class="right-aligned dropdown">
+        {{#if local}}
+          {{> annotationDefaultsForm}}
+        {{else}}
+          {{> accessControl}}
+        {{/if}}
       </div>
-    }}
-    <div class="hint">
-      {{#if public}}
-        <i class="icon-public"></i>
-        Public
-      {{else}}
-        <i class="icon-private"></i>
-        Private
-      {{/if}}
     </div>
+  </div>
+</template>
+
+<template name="annotationDefaultsForm">
+  <p>Choose defaults for new annotations.</p>
+  <div class="context-controls access-menu">
+    <form class="access {{documentName}}-access">
+      <div class="selections">
+
+        <label class="selection {{#if public}}selected{{/if}}">
+          <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+          <i class="access-icon icon-public"></i> Public
+        </label>
+
+        <label class="selection {{#if private}}selected{{/if}}">
+          <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+          <i class="access-icon icon-private"></i> Private
+        </label>
+
+      </div>
+      <div class="description public {{#if public}}displayed{{/if}}">New annotations will be visible to everyone.</div>
+      <div class="description private {{#if private}}displayed{{/if}}">
+        {{#if myGroups.count}}
+          New annotations will be visible to you and members of groups selected below.
+        {{else}}
+          New annotations will be visible only to you.
+        {{/if}}
+      </div>
+    </form>
   </div>
 </template>
 
@@ -544,39 +595,14 @@
 <template name="contextMenu">
   <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
     <div class="icons">
-      {{#if public}}<i class="context-icon icon-public"></i>{{/if}}
-      {{#if private}}<i class="context-icon icon-private"></i>{{/if}}
-      {{#if selectedGroups.length}}
-        <i class="context-icon icon-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
-      {{/if}}
+      {{#spaceless}}
+        <i class="context-icon icon-group"></i>
+        {{#if selectedGroups.length}}
+          <span class="context-icon group-count">{{selectedGroups.length}}</span>
+        {{/if}}
+      {{/spaceless}}
     </div>
     <div class="meta-content">
-      <p>Choose defaults for new annotations.</p>
-      <div class="context-controls access-menu">
-        <form class="access {{documentName}}-access">
-          <div class="selections">
-
-            <label class="selection {{#if public}}selected{{/if}}">
-              <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-              <i class="access-icon icon-public"></i> Public
-            </label>
-
-            <label class="selection {{#if private}}selected{{/if}}">
-              <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-              <i class="access-icon icon-private"></i> Private
-            </label>
-
-          </div>
-          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be visible to everyone.</div>
-          <div class="description private {{#if private}}displayed{{/if}}">
-            {{#if myGroups.count}}
-              New annotations will be visible to you and members of groups selected below.
-            {{else}}
-              New annotations will be visible only to you.
-            {{/if}}
-          </div>
-        </form>
-      </div>
       {{> contextMenuGroups}}
       <p class="hint">You can always change and customize permissions for each annotation individually.</p>
     </div>

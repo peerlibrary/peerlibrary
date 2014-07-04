@@ -39,7 +39,7 @@
       <div class="access-name">
         <i class="access-icon icon-public"></i> Public {{documentName}}
       </div>
-      <div class="description public {{#if public}}displayed{{/if}}">
+      <div class="description public displayed">
         Everyone can see the {{documentName}}.
       </div>
     {{/if}}
@@ -47,7 +47,7 @@
       <div class="access-name">
         <i class="access-icon icon-private"></i> Private {{documentName}}
       </div>
-      <div class="description private {{#if private}}displayed{{/if}}">
+      <div class="description private displayed">
         Only the users listed can see the {{documentName}}.
       </div>
     {{/if}}
@@ -55,12 +55,14 @@
 </template>
 
 <template name="rolesControl">
-  <div class="roles-control">
-    {{> rolesControlList}}
-    {{#if canModifyAccess}}
-      {{> rolesControlAdd}}
-    {{/if}}
-  </div>
+  {{#if showControl}}
+    <div class="roles-control">
+      {{> rolesControlList}}
+      {{#if canModifyAccess}}
+        {{> rolesControlAdd}}
+      {{/if}}
+    </div>
+  {{/if}}
 </template>
 
 <template name="rolesControlList">

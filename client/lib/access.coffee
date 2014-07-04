@@ -1,4 +1,7 @@
-Template.accessControl.events
+Template.accessControl.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.accessControlPrivacyForm.events
   'change .access input:radio': (e, template) ->
     access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
@@ -31,9 +34,6 @@ Template.accessControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.accessControl.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
-
 Template.accessControlPrivacyForm.public = ->
   @access is @constructor.ACCESS.PUBLIC
 
@@ -63,6 +63,13 @@ Template.rolesControl.created = ->
 Template.rolesControl.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
+
+Template.rolesControl.showControl = ->
+  return true if Template.accessControl.canModifyAccess.call @
+
+  @adminGroups?.length > 0 or @adminPersons?.length > 0 or
+  @maintainerGroups?.length > 0 or @maintainerPersons?.length > 0 or
+  @access is ACCESS.PRIVATE and (@readGroups?.length > 0 or @readPersons?.length > 0)
 
 Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
 

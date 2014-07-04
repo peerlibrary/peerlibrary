@@ -56,6 +56,8 @@
 
 .meta-menu
   .access-menu
+    background-color rgba(120,120,120,0.9)
+
     .selections
       display table
       border-collapse separate
@@ -87,6 +89,13 @@
         &:hover, &.selected
           background-color rgba(200,200,200,0.7)
 
+    .access-name
+      padding 10px
+      text-align center
+
+      .access-icon
+        font-size 18px
+
     .description
       padding 0 10px 10px
       text-align center
@@ -95,19 +104,16 @@
     .displayed.description
       display block
 
-    .private-access-control
+    .roles-control
       padding 10px
 
-      .private-access-control-members
-        .access-list
-          button:hover
-            color white
-
-        .member
-          .remove-button:hover
-            color #ccc
+      .role
+        .dropdown
+          button
+            color black
 
 .sidebar
+.dropdown
   .access-menu
     padding-left 10px
 
