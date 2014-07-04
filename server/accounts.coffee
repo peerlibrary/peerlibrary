@@ -39,6 +39,22 @@ Meteor.methods
     Accounts.sendEnrollmentEmail userId
 
     invited._id
+  
+  'set-username': (newUsername) ->
+    check newUsername, String
+
+    # TODO: Check new username
+    throw new Meteor.Error 400, 'Invalid username' if FORBIDDEN_USERNAME_REGEX.test newUsername
+
+    Meteor.users.update
+      _id: Meteor.userId()
+    ,
+      $set:
+        username: newUsername
+
+    user = Meteor.users.findOne
+      _id: Meteor.userId()
+
 
 Accounts.onCreateUser (options, user) ->
   # Idea is that only server side knows invite secret and we can
