@@ -66,7 +66,7 @@ class @Person extends AccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "join date (newest first)"

@@ -117,7 +117,7 @@ class @Annotation extends ReadAccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "author"

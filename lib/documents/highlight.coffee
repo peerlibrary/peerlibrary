@@ -33,12 +33,12 @@ class @Highlight extends AccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "author"
       sort: [
-        ['author', 'asc']
+        ['author.displayName', 'asc']
       ]
     ]
 

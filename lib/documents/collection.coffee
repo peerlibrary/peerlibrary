@@ -53,7 +53,7 @@ class @Collection extends ReadAccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "name"
@@ -63,8 +63,9 @@ class @Collection extends ReadAccessDocument
     ,
       name: "author"
       sort: [
-        ['authorPerson', 'asc']
-        ['authorGroup', 'asc']
+        # TODO: This does not sort correctly over both persons and groups at the same time
+        ['authorPerson.displayName', 'asc']
+        ['authorGroup.name', 'asc']
         ['name', 'asc']
       ]
     ]

@@ -41,7 +41,7 @@ class @Group extends ReadAccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
         ['membersCount', 'desc']
         ['name', 'asc']
       ]

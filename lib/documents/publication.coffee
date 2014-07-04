@@ -90,7 +90,7 @@ class @Publication extends ReadAccessDocument
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
         ['title', 'asc']
       ]
     ,
