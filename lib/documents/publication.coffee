@@ -3,14 +3,15 @@ class @Publication extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
-  # TODO: We should probably have a separate timestamp for when publication was orignally published
+  # adminGroups: list of groups who have admin permissions
+  # TODO: We should probably have a separate timestamp for when publication was originally published
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
   # TODO: We sometimes use "foreign", sometimes "raw", should we unify this?
   # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
+  # lastActivity: time of the last publication activity (annotation made, highlight made, etc.)
   # slug: slug for URL
   # authors: list of
   #   _id: author's person id
@@ -41,7 +42,7 @@ class @Publication extends ReadAccessDocument
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
-  # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
+  # cachedId: used for the the cached filename (available for open access publications, if user has the publication in the library, or is a private publication)
   # mediaType: which media type a cached file is (currently supported: pdf, tei)
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # processError:
@@ -71,8 +72,14 @@ class @Publication extends ReadAccessDocument
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+    # We are using publications in Person's updatedAt trigger, because it is part of person's metadata, but this
+    # means that it also updates person's lastActivity, so we do not need to have a trigger here for authors field
     triggers: =>
       updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
+      personsLastActivity: RelatedLastActivityTrigger Person, ['importing.person._id'], (doc, oldDoc) ->
+        newImporters = (importer.person._id for importer in doc.importing or [])
+        oldImporters = (importer.person._id for importer in oldDoc.importing or [])
+        _.difference newImporters, oldImporters
 
   @_filenamePrefix: ->
     'publication' + Storage._path.sep

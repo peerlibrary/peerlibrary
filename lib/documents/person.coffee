@@ -1,10 +1,11 @@
 class @Person extends AccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last user site activity (authored anything, voted on anything, etc.)
   # user: (null if without user account)
   #   _id
   #   emails: list with first element of user's e-mail
@@ -18,9 +19,9 @@ class @Person extends AccessDocument
   #   by: a person who invited this person
   #     _id
   #   message: optional message for invitation email
-  # inGroups: list of
+  # inGroups: list of (reverse field from Group.members)
   #   _id: id of a group the person is in
-  # publications: list of
+  # publications: list of (reverse field from Publication.authors)
   #   _id: authored publication id
   # library: list of
   #   _id: added publication id
@@ -39,14 +40,22 @@ class @Person extends AccessDocument
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       slug: @GeneratedField 'self', ['user.username']
-      publications: [@ReferenceField Publication]
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:
         by: @ReferenceField 'self', [], false
+    # We are using publications in updatedAt trigger, because it is part of person's metadata, but this means
+    # that it also updates lastActivity, so we do not need to have a trigger in Publication for authors field
     triggers: =>
-      # We do not want only to update updateAt when user._id changes, but also emails and username
-      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'inGroups._id', 'publications._id']
+      # We do not want only to update updateAt when user._id changes, but also emails and username, so we trigger for the whole user field
+      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'publications._id']
+      lastActivity: LastActivityTrigger ['library._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) -> doc.invited?.by._id
+      # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
+      publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->
+        newPublications = (publication._id for publication in doc.library or [])
+        oldPublications = (publication._id for publication in oldDoc.library or [])
+        _.difference newPublications, oldPublications
 
   displayName: (dontRefetch) =>
     # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
