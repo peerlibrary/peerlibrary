@@ -4,12 +4,9 @@ class @Highlight extends AccessDocument
   # lastActivity: time of the last highlight activity (for now same as updatedAt)
   # author:
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
+  #   slug
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # publication:
   #   _id: publication's id
   #   slug
@@ -25,7 +22,7 @@ class @Highlight extends AccessDocument
   @Meta
     name: 'Highlight'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash']
       publication: @ReferenceField Publication, ['slug', 'title']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']

@@ -15,11 +15,9 @@ class @Publication extends ReadAccessDocument
   # slug: slug for URL
   # authors: list of
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
-  #   user
-  #     username
+  #   slug
+  #   displayName
+  #   gravatarHash
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -63,11 +61,11 @@ class @Publication extends ReadAccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username'], true, 'publications']
+      authors: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'publications']
       importing: [
         person: @ReferenceField Person
       ]

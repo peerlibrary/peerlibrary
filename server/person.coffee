@@ -10,11 +10,15 @@ class @Person extends Person
           [fields._id, fields.user.username]
         else
           [fields._id, fields._id]
+
+      fields.displayName.generator = (fields) ->
+        [fields._id, new Person(fields).getDisplayName()]
+
       fields.gravatarHash.generator = (fields) ->
         address = fields.emails?[0]?.address
         return [null, undefined] unless fields.person?._id and address
-
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+
       fields
 
   # A set of fields which are public and can be published to the client
@@ -23,6 +27,7 @@ class @Person extends Person
       'user._id': 1
       'user.username': 1
       slug: 1
+      displayName: 1
       gravatarHash: 1
       givenName: 1
       familyName: 1
@@ -35,19 +40,13 @@ class @Person extends Person
 
   # A subset of public fields used for automatic publishing
   @PUBLISH_AUTO_FIELDS: ->
-    fields: _.extend _.pick(@PUBLISH_FIELDS().fields, [
-      'user._id'
-      'user.username'
+    fields: _.pick @PUBLISH_FIELDS().fields, [
       'slug'
+      'displayName'
       'gravatarHash'
-      'givenName'
-      'familyName'
       'isAdmin'
       'inGroups'
-    ]),
-      # Additionally, provide email address so that displayName can
-      # display something meaningful for users who have been invited
-      'user.emails': 1
+    ]
 
 Meteor.publish 'persons-by-id-or-slug', (slug) ->
   check slug, NonEmptyString

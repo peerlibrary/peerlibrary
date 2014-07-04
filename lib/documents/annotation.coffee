@@ -12,11 +12,8 @@ class @Annotation extends ReadAccessDocument
   # author:
   #   _id: person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # body: in HTML
   # publication:
   #   _id: publication's id
@@ -32,13 +29,10 @@ class @Annotation extends ReadAccessDocument
   #     slug
   #     title
   #   persons: list of
-  #     _id
+  #     _id: person id
   #     slug
-  #     givenName
-  #     familyName
+  #     displayName
   #     gravatarHash
-  #     user
-  #       username
   #   groups: list of
   #     _id
   #     slug
@@ -80,17 +74,17 @@ class @Annotation extends ReadAccessDocument
   @Meta
     name: 'Annotation'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash']
       publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
-        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'referencingAnnotations']
         groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
@@ -128,7 +122,7 @@ class @Annotation extends ReadAccessDocument
     ,
       name: "author"
       sort: [
-        ['author', 'asc']
+        ['author.displayName', 'asc']
       ]
     ]
 

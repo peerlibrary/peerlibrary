@@ -12,11 +12,8 @@ class @Collection extends ReadAccessDocument
   # authorPerson:
   #   _id: author's person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # authorGroup:
   #   _id: author's group id
   #   slug
@@ -34,11 +31,11 @@ class @Collection extends ReadAccessDocument
   @Meta
     name: 'Collection'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authorPerson: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], false
+      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]

@@ -35,7 +35,7 @@ Meteor.startup ->
 
   timestamp = moment.utc().toDate()
 
-  fields = ['_id', 'slug', 'givenName', 'familyName', 'gravatarHash']
+  fields = ['_id', 'slug', 'displayName', 'gravatarHash']
   author = _.pick Meteor.person(_.object fields, _.times fields.length, -> 1), fields
   author.user = _.pick Meteor.person(user: 1).user, 'username'
 

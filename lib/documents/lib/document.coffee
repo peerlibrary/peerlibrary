@@ -194,7 +194,7 @@ class @ReadAccessDocument extends AccessDocument
   @Meta
     abstract: true
     fields: =>
-      readPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      readPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @ACCESS:
