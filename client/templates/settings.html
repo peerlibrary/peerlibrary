@@ -10,8 +10,8 @@
 <template name="settingsUsername">
   <form id="set-username">
     <label for="username">Username</label>
-    <input type="text" id="username" value="{{user.username}}" /><br/>
-    <button>Change username</button>
+    <input type="text" id="new-username" value="{{user.username}}" /><br/>
+    <button class="change-username">Change username</button>
   </form>
 </template>
 
@@ -23,6 +23,6 @@
     <input type="password" id="new-password" /><br/>
     <label for="new-password-confirm">Confirm new password</label>
     <input type="password" id="new-password-confirm" /><br/>
-    <button>Change password</button>
+    <button class="change-password">Change password</button>
   </form>
 </template>

@@ -212,13 +212,6 @@ else
           currentPersonSlug: personSlug
         'person'
 
-    '/u/:personSlug/settings':
-      as: 'settings'
-      to: (personSlug) ->
-        setSession
-          currentPersonSlug: personSlug
-        'settings'
-
     '/h/:highlightId':
       as: 'highlightId'
       documentId: 'highlightId'
@@ -281,6 +274,13 @@ else
         setSession
           libraryActive: true
         'library'
+
+    '/settings':
+      as: 'settings'
+      to: ->
+        setSession
+          settingsActive: true
+        'settings'
 
 Meteor.Router.add
   '/about':
