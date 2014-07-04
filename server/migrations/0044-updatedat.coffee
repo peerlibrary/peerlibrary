@@ -36,6 +36,13 @@ class Migration extends Document.PatchMigration
       return callback error if error
       super db, collectionName, currentSchema, newSchema, callback
 
+  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
+    db.collection collectionName, (error, collection) =>
+      return callback error if error
+      collection.update {_schema: currentSchema}, {$unset: {lastActivity: ''}}, {multi: true}, (error, count) =>
+        return callback error if error
+        super db, collectionName, currentSchema, oldSchema, callback
+
 class MinorMigration extends Document.MinorMigration
   name: "Adding missing values for updatedAt and lastActivity fields"
 
@@ -43,6 +50,13 @@ class MinorMigration extends Document.MinorMigration
     populate.call @, db, collectionName, currentSchema, newSchema, (error) =>
       return callback error if error
       super db, collectionName, currentSchema, newSchema, callback
+
+  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
+    db.collection collectionName, (error, collection) =>
+      return callback error if error
+      collection.update {_schema: currentSchema}, {$unset: {lastActivity: ''}}, {multi: true}, (error, count) =>
+        return callback error if error
+        super db, collectionName, currentSchema, oldSchema, callback
 
 # User is special case because we are also adding updatedAt field itself
 User.addMigration new MinorMigration()
