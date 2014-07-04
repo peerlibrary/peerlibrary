@@ -22,7 +22,7 @@ class @Annotation extends ReadAccessDocument
   #   _id: publication's id
   #   slug
   #   title
-  # references: made in the body of annotation or comments
+  # references: made in the body of the annotation
   #   highlights: list of
   #     _id
   #   annotations: list of
@@ -63,6 +63,7 @@ class @Annotation extends ReadAccessDocument
   #     slug: ISO 639-1 dictionary
   # comments: list of (reverse field from Comment.annotation)
   #   _id: comment id
+  # commentsCount: number of comments for this annotation
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
@@ -101,6 +102,7 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+      commentsCount: @GeneratedField 'self', ['comments']
     # We do not see referencing something as an event which should update lastActivity of a referenced document.
     # Additionally, we update lastActivity when there is a constructive change, like adding to a group, and not when
     # document is being removed. When value changes we update just the related lastActivity of a new value, not old one.

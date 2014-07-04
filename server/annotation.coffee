@@ -4,10 +4,16 @@ class @Annotation extends Annotation
   @Meta
     name: 'Annotation'
     replaceParent: true
+    fields: (fields) =>
+      fields.commentsCount.generator = (fields) ->
+        [fields._id, fields.comments?.length or 0]
+      fields
 
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
-    fields: {} # All
+    fields:
+      # We are sending only the count over, not all comments
+      comments: 0
 
 registerForAccess Annotation
 

@@ -18,4 +18,4 @@ Template.annotations.catalogSettings = ->
     sort: 'currentAnnotationsSort'
 
 Template.annotationCatalogItem.commentsCountDescription = ->
-  Comment.verboseNameWithCount @comments.length
+  Comment.verboseNameWithCount @commentsCount
