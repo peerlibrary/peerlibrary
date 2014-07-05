@@ -35,11 +35,11 @@
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/meteor-variable.git"
     },
-    "async": {},
     "cheerio": {},
     "isolate-value": {},
     "stacktrace": {},
     "related": {},
-    "kadira": {}
+    "kadira": {},
+    "directcollection": {}
   }
 }

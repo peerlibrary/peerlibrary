@@ -37,12 +37,12 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary"
       },
-      "async": {},
       "cheerio": {},
       "isolate-value": {},
       "stacktrace": {},
       "related": {},
-      "kadira": {}
+      "kadira": {},
+      "directcollection": {}
     },
     "packages": {
       "router": {
@@ -122,8 +122,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.9.1",
-        "commit": "d5ead8496ef19d4549631de19a0f60dadd44745e"
+        "tag": "v0.10.0",
+        "commit": "9c9894391d9aa0bf3701b058228fc29d5fe9da73"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -139,11 +139,6 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary",
         "commit": "ffe9875c0983bf2cb369f51da468f7d7307c5da3"
-      },
-      "async": {
-        "git": "https://github.com/peerlibrary/meteor-async.git",
-        "tag": "v0.2.9.3",
-        "commit": "e95ab2eadd39c78261db3f8ef96bcb9e0b36bd81"
       },
       "cheerio": {
         "git": "https://github.com/andreioprisan/meteor-cheerio.git",
@@ -169,6 +164,11 @@
         "git": "https://github.com/meteorhacks/kadira.git",
         "tag": "v2.4.7",
         "commit": "c860e10cbe416ebb3d4999adccd5c486f232f9c6"
+      },
+      "directcollection": {
+        "git": "https://github.com/peerlibrary/meteor-directcollection.git",
+        "tag": "v0.1.1",
+        "commit": "1092a6cb3aca2b6ed8e97d91b6e68f49493532b1"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
