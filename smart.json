@@ -40,6 +40,8 @@
     "stacktrace": {},
     "related": {},
     "kadira": {},
-    "directcollection": {}
+    "directcollection": {},
+    "url-utils": {},
+    "segfault-handler": {}
   }
 }
