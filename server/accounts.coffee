@@ -40,6 +40,11 @@ Meteor.methods
 
     invited._id
 
+  'validate-username': (username) ->
+    check username, String
+    checkUsername username
+    return # Make sure CoffeeScript does not return anything
+
   'set-username': (username) ->
     check username, String
     checkUsername username
