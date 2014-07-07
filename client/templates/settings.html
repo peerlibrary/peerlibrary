@@ -2,7 +2,9 @@
   <br/><br/><br/>
   {{#if person}}
     <h1>{{person.displayName}} personal settings</h1>
-    {{>settingsUsername}}<br/><br/>
+    {{#if usernameNotSet}}
+      {{>settingsUsername}}<br/><br/>
+    {{/if}}
     {{>settingsPassword}}
   {{/if}}
 </template>
@@ -10,8 +12,8 @@
 <template name="settingsUsername">
   <form id="set-username">
     <label for="username">Username</label>
-    <input type="text" id="new-username" value="{{user.username}}" /><br/>
-    <button class="change-username">Change username</button>
+    <input type="text" id="username" /><br/>
+    <button class="set-username">Set username</button>
   </form>
 </template>
 

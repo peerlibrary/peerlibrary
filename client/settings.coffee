@@ -4,6 +4,9 @@ Template.settings.person = ->
 Template.settingsUsername.user = ->
   return Meteor.user()
 
+Handlebars.registerHelper "usernameNotSet", ->
+  return !Meteor.person().user.username
+
 Template.settingsPassword.events =
   'click button.change-password': (event, template) ->
     event.preventDefault()
@@ -17,6 +20,11 @@ Template.settingsPassword.events =
       Notify.meteorError error, true
       return # make sure CoffeeScript does not return anything
 
+    # TODO: This should probably be checked at one central place
+    if newPass.length < 6
+      Notify.meteorError new Meteor.Error 400, "Password must be at least 6 characters long"
+      return # make sure CoffeeScript does not return anything
+
     # Update password
     Accounts.changePassword currentPass, newPass, (error) ->
       console.log error
@@ -26,9 +34,12 @@ Template.settingsPassword.events =
     return # make sure CoffeeScript does not return anything
 
 Template.settingsUsername.events =
-  'click button.change-username': (event, template) ->
+  'click button.set-username': (event, template) ->
     event.preventDefault()
-    newUsername = $('#new-username').val()
-    Meteor.call 'set-username', newUsername, (error, result) ->
+    username = $('#username').val()
+    Meteor.call 'set-username', username, (error) ->
       Notify.meteorError error, true if error
-      Notify.success "Username changed successfully" unless error
+      Notify.success "Username set successfully" unless error
+
+    return # make sure CoffeeScript does not return anything
+
