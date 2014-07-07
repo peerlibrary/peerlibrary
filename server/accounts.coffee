@@ -39,7 +39,7 @@ Meteor.methods
     Accounts.sendEnrollmentEmail userId
 
     invited._id
-  
+
   'set-username': (newUsername) ->
     check newUsername, String
 

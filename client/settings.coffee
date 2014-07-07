@@ -16,8 +16,8 @@ Template.settingsPassword.events =
       error = new Meteor.Error 400, "Passwords do not match"
       Notify.meteorError error, true
       return # make sure CoffeeScript does not return anything
-  
-    # Update password  
+
+    # Update password
     Accounts.changePassword currentPass, newPass, (error) ->
       console.log error
       Notify.meteorError error, true if error
