@@ -27,7 +27,6 @@ Template.settingsPassword.events =
 
     # Update password
     Accounts.changePassword currentPass, newPass, (error) ->
-      console.log error
       Notify.meteorError error, true if error
       Notify.success "Password changed sucessfully" unless error
 
