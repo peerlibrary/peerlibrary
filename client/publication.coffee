@@ -1177,7 +1177,6 @@ Template.annotationEditor.rendered = ->
   # Save reference to the template of the local annotation for access in global event handlers
   if @data.local and @data.editing
     localAnnotationEditorTemplate = @
-    console.log localAnnotationEditorTemplate
 
 Template.annotationEditor.destroyed = ->
   destroyEditor @
