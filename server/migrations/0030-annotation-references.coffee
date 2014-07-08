@@ -1,48 +1,26 @@
 class Migration extends Document.MajorMigration
   name: "Converting highlights field to references field"
 
-  forward: (db, collectionName, currentSchema, newSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema, highlights: {$exists: true}, references: {$exists: false}}, {highlights: 1}
-      document = null
-      async.doWhilst (callback) =>
-        cursor.nextObject (error, doc) =>
-          return callback error if error
-          document = doc
-          return callback null unless document
+  forward: (document, collection, currentSchema, newSchema) =>
+    count = 0
 
-          collection.update {_schema: currentSchema, _id: document._id, highlights: document.highlights, references: {$exists: false}}, {$unset: {highlights: ''}, $set: {references: {highlights: document.highlights, annotations: [], publications: [], persons: [], tags: []}}}, (error, count) =>
-            return callback error if error
-            callback null
-      ,
-        =>
-          document
-      ,
-        (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, newSchema, callback
+    collection.findEach {_schema: currentSchema, highlights: {$exists: true}, references: {$exists: false}}, {highlights: 1}, (document) =>
+      count += collection.update {_schema: currentSchema, _id: document._id, highlights: document.highlights, references: {$exists: false}}, {$unset: {highlights: ''}, $set: {references: {highlights: document.highlights, annotations: [], publications: [], persons: [], tags: []}, _schema: newSchema}}
 
-  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema, highlights: {$exists: false}, references: $exists: true}, {references: 1}
-      document = null
-      async.doWhilst (callback) =>
-        cursor.nextObject (error, doc) =>
-          return callback error if error
-          document = doc
-          return callback null unless document
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
-          collection.update {_schema: currentSchema, _id: document._id, references: document.references}, {$unset: {references: ''}, $set: {highlights: (document.references?.highlights or [])}}, (error, count) =>
-            return callback error if error
-            callback null
-      ,
-        =>
-          document
-      ,
-        (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, oldSchema, callback
+  backward: (document, collection, currentSchema, oldSchema) =>
+    count = 0
+
+    collection.findEach {_schema: currentSchema, highlights: {$exists: false}, references: $exists: true}, {references: 1}, (document) =>
+      count += collection.update {_schema: currentSchema, _id: document._id, references: document.references}, {$unset: {references: ''}, $set: {highlights: (document.references?.highlights or []), _schema: oldSchema}}
+
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
 Annotation.addMigration new Migration()
