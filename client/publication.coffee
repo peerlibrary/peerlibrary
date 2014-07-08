@@ -959,6 +959,9 @@ Template.publicationAnnotations.realAnnotations = ->
   isolateValue ->
     !!viewportAnnotations(false).count()
 
+# Reference to the current local annotation template, so we can access it from global event handlers
+localAnnotationEditorTemplate = null
+
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
     if Session.get 'currentHighlightId'
@@ -995,6 +998,43 @@ Template.publicationAnnotations.created = ->
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
 
     return # Make sure CoffeeScript does not return anything
+
+  $(document).on 'click.publicationAnnotations keyup.publicationAnnotations', (e) =>
+    # We collapse a local editor if there was no change to the content
+    # and user is not actively editing it (like having a dialog open)
+
+    # If focus moved somewhere else in the local annotation (like
+    # click on a toolbar button), we do not do anything
+    return if $(e.target).closest('.local.annotation').length > 0
+
+    # Same if we just closed a dialog
+    return if $(e.target).hasClass('ui-icon-closethick') > 0
+
+    # Find the current local annotation
+    localAnnotations = LocalAnnotation.documents.find
+      local:
+        $exists: true
+    .fetch()
+
+    assert localAnnotations.length > 0
+    localAnnotation = localAnnotations[0]
+
+    # We do nothing if editor is already collapsed
+    return unless localAnnotation.editing
+
+    # Do nothing if content was changed, and content is not empty
+    $editor = $('.local.annotation.editing .annotation-content-editor')
+    return if localAnnotation.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If dialog is open, we do not do anything
+    return if localAnnotationEditorTemplate?._destroyDialog
+
+    # Collapse
+    LocalAnnotation.documents.update localAnnotation._id,
+      $set:
+        local: LocalAnnotation.LOCAL.AUTOMATIC
+      $unset:
+        editing: ''
 
 Template.publicationAnnotations.rendered = ->
   $annotationsList = $(@findAll '.annotations-list')
@@ -1134,6 +1174,11 @@ Template.annotationEditor.rendered = ->
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
   ###
 
+  # Save reference to the template of the local annotation for access in global event handlers
+  if @data.local and @data.editing
+    localAnnotationEditorTemplate = @
+    console.log localAnnotationEditorTemplate
+
 Template.annotationEditor.destroyed = ->
   destroyEditor @
   @_scribe = null
@@ -1149,36 +1194,6 @@ Template.annotationEditor.events
     LocalAnnotation.documents.update @_id,
       $set:
         editing: true
-
-    return # Make sure CoffeeScript does not return anything
-
-  # We collapse a local editor if there was no change to the content
-  # and user is not activelly editing it (like having a dialog open)
-  'blur .annotation-content-editor': (e, template) ->
-    # We do nothing if editor is already collapsed
-    return unless @editing
-
-    # We set editing based on the focus only for local annotations
-    return unless @local
-
-    # Do nothing if content was changed, and content is not empty
-    $editor = $(e.currentTarget)
-    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
-
-    # If focus moved somewhere else in the editor (like
-    # click on a toolbar button), we do not do anything
-    $annotation = $editor.closest('.annotation')
-    return if $annotation.is(e.relatedTarget) or $annotation.has(e.relatedTarget).length
-
-    # If dialog is open, we do not do anything
-    return if template._destroyDialog
-
-    # Collapse
-    LocalAnnotation.documents.update @_id,
-      $set:
-        local: LocalAnnotation.LOCAL.AUTOMATIC
-      $unset:
-        editing: ''
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1249,7 +1264,7 @@ Template.visibilityMenu.events
 
     $(template.findAll '.dropdown-anchor').toggle()
 
-    return false # Make sure CoffeeScript does not return anything
+    return # Make sure CoffeeScript does not return anything
 
 Template.visibilityMenu.public = ->
   if @local
