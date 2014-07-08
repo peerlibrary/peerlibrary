@@ -1,5 +1,5 @@
 class Migration extends Document.AddOptionalFieldsMigration
-  name: "Adding foreignUrl field"
-  fields: ['foreignUrl']
+  name: "Adding processError field"
+  fields: ['processError']
 
 Publication.addMigration new Migration()

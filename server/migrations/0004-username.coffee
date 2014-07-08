@@ -1,4 +1,5 @@
 class Migration extends Document.UpdateAllMinorMigration
-  name: "Adding gravatarHash to author"
+  name: "Adding user.username to author"
 
 Annotation.addMigration new Migration()
+Highlight.addMigration new Migration()

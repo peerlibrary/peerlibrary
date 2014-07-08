@@ -39,10 +39,10 @@ blob
 facts
 scribe
 variable
-async
 cheerio
 isolate-value
 url-utils
 stacktrace
 related
 kadira
+directcollection
