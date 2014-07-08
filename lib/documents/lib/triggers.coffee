@@ -14,10 +14,13 @@ class LastActivityTriggerClass extends Document._Trigger
       $set:
         lastActivity: timestamp
 
-  constructor: (fields) ->
-    super fields, (newDocument, oldDocument) ->
+  constructor: (fields, trigger) ->
+    super fields, trigger or (newDocument, oldDocument) ->
       # Don't do anything when document is removed
       return unless newDocument._id
+
+      # Don't do anything if there was no change
+      return if _.isEqual newDocument, oldDocument
 
       timestamp = moment.utc().toDate()
       @updateLastActivity newDocument._id, timestamp
@@ -46,6 +49,9 @@ class RelatedLastActivityTriggerClass extends Document._Trigger
       # Don't do anything when document is removed
       return unless newDocument._id
 
+      # Don't do anything if there was no change
+      return if _.isEqual newDocument, oldDocument
+
       timestamp = moment.utc().toDate()
       relatedIds = @relatedIds newDocument, oldDocument
       relatedIds = [relatedIds] unless _.isArray relatedIds
@@ -71,16 +77,19 @@ class UpdatedAtTriggerClass extends LastActivityTriggerClass
       $set:
         updatedAt: timestamp
 
-  constructor: (fields) ->
+  constructor: (fields, noLastActivity) ->
     super fields, (newDocument, oldDocument) ->
       # Don't do anything when document is removed
       return unless newDocument._id
+
+      # Don't do anything if there was no change
+      return if _.isEqual newDocument, oldDocument
 
       timestamp = moment.utc().toDate()
       @updateUpdatedAt newDocument._id, timestamp
 
       # Every time we update updatedAt, we update lastActivity as well
-      @updateLastActivity newDocument._id, timestamp
+      @updateLastActivity newDocument._id, timestamp unless noLastActivity
 
 @UpdatedAtTrigger = (args...) ->
   new UpdatedAtTriggerClass args...
