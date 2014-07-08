@@ -48,14 +48,12 @@
 </template>
 
 <template name="indexLatestBlogPost">
-  <div>
-    Peerlibrary blog:<br/><br/>
-    {{#if postCount}}
-      <a target="about:blank" href="{{latestPost.postUrl}}">Latest blog post</a><br/>
-      Total {{postCount}} posts
-    {{else}}
-      No blog posts
-    {{/if}}
-  </div>
+  {{#if latestBlogPost}}
+    <div class="latest-blog-post">
+      <h3><a href="{{latestBlogPost.tumblr.postUrl}}">{{#if latestBlogPost.tumblr.title}}{{latestBlogPost.tumblr.title}}{{else}}{{latestBlogPost.tumblr.caption}}{{/if}}</a></h3>
+      {{#if blogUrl}}
+        <p class="hint"><a href="{{blogUrl}}">View all {{blogPostsCount}} blog posts</a></p>
+      {{/if}}
+    </div>
+  {{/if}}
 </template>
-

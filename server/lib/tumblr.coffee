@@ -1,162 +1,94 @@
-class @BlogPost extends BlogPost
-  @totalPosts = 0
-  @PUBLISH_FIELDS: ->
-    fields:
-      postUrl: 1
-      totalPosts: 1
+# This code loads PeerLibrary's blog posts from Tumblr and stores them as
+# BlogPosts so that we can show latest blog post link on PeerLibrary index page
 
-# TODO: Adjust cache update interval
-CACHE_UPDATE_INTERVAL = 10000 # ms
-
+UPDATE_INTERVAL = 30 * 60 * 1000 # ms
 TUMBLR_REQUEST_INTERVAL = 500 # ms
-TUMBLR_BLOG = 'peerlibrary.tumblr.com'
-# According to Tumblr API documentation,
-# maxiumum number of posts we can get from
-# Tumblr in one request is 20.
-# (https://www.tumblr.com/docs/en/api/v2)
+# According to Tumblr API documentation, maximum number of posts we can get from
+# Tumblr in one request is 20, see https://www.tumblr.com/docs/en/api/v2
 TUMBLR_POST_COUNT_LIMIT = 20
-UPDATE_IN_PROGRESS = false
+TUMBLR_BASIC_PARAMS =
+  # We do not really need this info, but if we can have it...
+  reblog_info: true
+  notes_info: true
+  # So that we do not have to convert from HTML to text ourselves
+  filter: 'text'
 
-# Tumblr API wrapper
-Tumblr =
-  _url: 'http://api.tumblr.com/v2/blog/' + TUMBLR_BLOG + '/'
+if Meteor.settings?.tumblr
+  baseHostname = Meteor.settings.tumblr.baseHostname
+  apiKey = Meteor.settings.tumblr.apiKey
 
-  # Constructs request URL using params
-  _request: (params) ->
-    # params:
-    #       method -> string
-    #                 API method to call
-    #       args -> object (optional)
-    #               arguments to be passed to API method
-    if !params?.method
-      throw Error 'API method not set'
-    key = Meteor.settings.private?.tumblr?.apikey
-    if !key
-      throw Error 'Tumblr API key not set'
+  tumblrApiPosts = (params) ->
+    params = _.defaults params, TUMBLR_BASIC_PARAMS, api_key: apiKey
+    url = "https://api.tumblr.com/v2/blog/#{ baseHostname }/posts"
+    # We return JSON data directly
+    HTTP.get(url, params: params).data
 
-    result = @_url + params.method + '?api_key=' + key
-    if params.args
-      for key, value of params.args
-        result += '&' + key + '=' + value
-    return result
-
-  get: (params) ->
-    HTTP.get @_request params
-
-# Converts object attribute names from underscore to camel case
-mapToCamelCase = (post) ->
-  result = {}
-  for key, value of post
-    camelCaseKey = key.replace /(\_[a-z])/g,
-      (match) ->
-        match.charAt(1).toUpperCase()
-    result[camelCaseKey] = value
-  return result
-
-# Sync Tumblr posts with local collection
-syncPosts = (params) ->
-  # params:
-  #       count -> Number of posts to load
-  #       offset -> First post offset (optional)
-  #       callback -> Callback function (optional)
-  callback = (->) unless callback
-  unless params.count
-    params.callback()
-    return
-  params.offset = 0 unless params.offset
-  limit = Math.min params.count, TUMBLR_POST_COUNT_LIMIT
-
-  try
-    response = Tumblr.get
-      method: 'posts'
-      args:
-        limit: limit
-        offset: params.offset
-  catch err
-    Log.error "Cache update failed: " + err
-    return
-
-  status = response.data.meta.status
-  if status != 200
-    message = response.data.meta.message
-    Log.error 'Tumblr API error ' + status + ': ' + message
-    return
-
-  for post in response.data.response.posts
-    # We remove internally used attributes from JSON object
-    remotePost = mapToCamelCase _.omit post, ['_id', '_schema', 'updated']
-    localPost = BlogPost.documents.findOne
-      id: remotePost.id
-
-    # We mark document as updated so that it doesn't
-    # get deleted
-    remotePost['updated'] = true
-
-    if !localPost
-      BlogPost.documents.insert remotePost
+  # Converts object attribute names from underscore to camel case
+  mapToCamelCase = (obj) ->
+    if _.isArray obj
+      _.map obj, mapToCamelCase
+    else if not _.isObject obj
+      obj
     else
-      BlogPost.documents.update localPost._id,
-        $set: remotePost
+      result = {}
+      for key, value of obj
+        camelCaseKey = key.replace /(\_[a-z])/gi, (match) -> match.charAt(1).toUpperCase()
+        result[camelCaseKey] = mapToCamelCase value
+      result
 
-  # Since number of posts that can be loaded in one request is limited
-  # by Tumblr, function calles itself again if we want to load more posts
-  Meteor.setTimeout ->
-    syncPosts
-      count: params.count - limit
-      offset: params.offset + limit
-      callback: params.callback
-  ,
-    TUMBLR_REQUEST_INTERVAL
+  getTumblrPostsPage = (offset) ->
+    data = tumblrApiPosts
+      offset: offset
+      limit: TUMBLR_POST_COUNT_LIMIT
+    throw new Error "Tumblr API error: #{ util.inspect data.meta }" unless data.meta.status is 200
+    data.response.posts
 
-# Updates blog post cache and starts a timeout loop to keep it updated
-@updateBlogCache = (force) ->
-  # force: boolean (optional)
-  #        Indicates that this is a force update, so it won't start a
-  #        timeout loop.
-  unless UPDATE_IN_PROGRESS
-    UPDATE_IN_PROGRESS = true
+  updatingTumblr = false
+  @updateTumblr = ->
     try
-      response = Tumblr.get
-        method: 'info'
-    catch err
-      Log.error 'Connecting to Tumblr failed: ' + err
-      Meteor.setTimeout updateBlogCache, CACHE_UPDATE_INTERVAL
-      return
+      return if updatingTumblr
+      updatingTumblr = true
 
-    status = response.data.meta.status
-    if status != 200
-      message = response.data.meta.message
-      Log.error 'Tumblr API error ' + status + ': ' + message
-    else
-      totalPosts = response.data.response.blog.posts
-      BlogPost.totalPosts = totalPosts
-      Meteor.setTimeout ->
-        syncPosts
-          count: totalPosts
-          callback: ->
-            # Remove all non-updated documents from collection
-            BlogPost.documents.remove
-              updated: 0
+      seenTumblrIds = []
 
-            # Reset updated flag on all documents
-            BlogPost.documents.update {},
-              $set:
-                updated: 0
-            ,
-              multi: 1
-            UPDATE_IN_PROGRESS = false
-      ,
-        TUMBLR_REQUEST_INTERVAL
+      loop
+        posts = getTumblrPostsPage seenTumblrIds.length
+        break unless posts.length
 
-  Meteor.setTimeout updateBlogCache, CACHE_UPDATE_INTERVAL unless force
+        for post in posts
+          post = mapToCamelCase post
+          # We remove reblog key because it can often change and we would be unnecessary updating updatedAt
+          post = _.omit post, 'reblogKey'
 
-Meteor.startup ->
-  updateBlogCache()
+          # We are interested only in published blog posts
+          continue if post.state isnt 'published'
 
-Meteor.publish 'latest-blog-post', ->
-  BlogPost.documents.find {},
-    limit: 1
-    sort:
-      timestamp: -1
-    BlogPost.PUBLISH_FIELDS()
+          # Upsert combines foreignId with tumblr field when inserting
+          {numberAffected, insertedId} = BlogPost.documents.upsert
+            foreignId: post.id
+          ,
+            $set:
+              tumblr: post
+          BlogPost.documents.update insertedId, $set: createdAt: moment.utc().toDate() if insertedId
 
+          seenTumblrIds.push post.id
+
+        Meteor._sleepForMs TUMBLR_REQUEST_INTERVAL
+
+      BlogPost.documents.remove
+        'tumblr.id':
+          $nin: seenTumblrIds
+
+    finally
+      updatingTumblr = false
+
+  updateTumblrBackgroundLoop = ->
+    try
+      updateTumblr()
+    catch error
+      Log.error "Updating Tumblr blog posts error: #{ error }"
+    Meteor.setTimeout updateTumblrBackgroundLoop, UPDATE_INTERVAL
+
+  Meteor.startup ->
+    # We defer first iteration of the loop so that we do not block startup
+    Meteor.defer updateTumblrBackgroundLoop

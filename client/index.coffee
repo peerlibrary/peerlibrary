@@ -44,8 +44,11 @@ Template.indexMain.destroyed = ->
   @_background = null
   @_backgroundRendered = false
 
-Template.indexLatestBlogPost.latestPost = ->
+Template.indexLatestBlogPost.latestBlogPost = ->
   BlogPost.documents.findOne()
 
-Template.indexLatestBlogPost.postCount = ->
-  Statistics.documents.findOne()?.countBlogPosts
+Template.indexLatestBlogPost.blogPostsCount = ->
+  Statistics.documents.findOne()?.countBlogPosts or 0
+
+Template.indexLatestBlogPost.blogUrl = ->
+  Meteor.settings?.public?.blogUrl

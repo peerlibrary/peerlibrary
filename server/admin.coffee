@@ -576,13 +576,20 @@ Meteor.methods
 
     Log.info "Done (#{ count })"
 
-  'sync-blog-cache': ->
+  'sync-blog': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
     @unblock()
 
-    Log.info "Forcing blog cache sync"
-    updateBlogCache true # force flag
+    if not Meteor.settings.tumblr
+      Log.error "Tumblr settings missing"
+      throw new Meteor.Error 500, "Tumblr settings missing"
+
+    Log.info "Syncing blog posts"
+
+    updateTumblr()
+
+    Log.info "Done"
 
 Meteor.publish 'arxiv-pdfs', ->
   return unless @personId

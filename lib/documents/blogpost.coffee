@@ -1,21 +1,31 @@
 class @BlogPost extends Document
-  # blogName: string, short name used to uniquely identify a blog
-  # id: string, post's unique ID
-  # postUrl: string, location of the post
-  # type: string, type of post
-  # timestamp: time of the post, in seconds since the epoch
-  # date: GMT date and time of the post, as a string
-  # format: string, post format (html or markdown)
-  # reblogKey: string, key used to reblog this post
-  # tags: array, tags applied to the post
-  # bookmarklet: boolean, indicates whether the post was created via the Tumblr bookmarklet
-  # mobile: boolean, indicates whether the post was created via mobile/email publishing
-  # sourceUrl: string, the URL for the source of the content (for quotes, reblogs, etc.)
-  # sourceTitle: string, The title of the source site
-  # liked: boolean, indicates if a user has already liked a post or not
-  # state: string, indicates the current state of the post
-  # updated: boolean, indicates if post existed on last cache update
+  # createdAt: timestamp when document was created
+  # updatedAt: timestamp of this version
+  # foreignId: foreign ID of the blog post
+  # tumblr: (a non-comprehensive list of fields)
+  #   blogName: string, short name used to uniquely identify a blog
+  #   id: number, post's unique ID
+  #   postUrl: string, URL of the post
+  #   type: string, type of post
+  #   timestamp: time of the post, in seconds since the epoch
+  #   date: GMT date and time of the post, as a string
+  #   state: string, indicates the current state of the post
+  #   format: string, post format (html or markdown)
+  #   tags: array, tags applied to the post
+  #   source: string, source description
+  #   sourceUrl: string, the URL for the source of the content (for quotes, reblogs, etc.)
+  #   sourceTitle: string, the title of the source site
+  #   postAuthor: string, post's author
+  #   shortUrl: shortened URL of the post
+  #   noteCount: count of Tumblr notes (likes, reblogs, etc.)
+  #   title: for text and link types, title of the post
+  #   body: for text type, body of the post
+  #   text: for quote type, text of the quote
+  #   caption: for photo and video types, caption
+  #   url: for link type, URL of the link
+  #   description: for link type, description of the link
 
   @Meta
     name: 'BlogPost'
-
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['foreignId', 'tumblr'], true

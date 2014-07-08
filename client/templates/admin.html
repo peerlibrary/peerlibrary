@@ -6,6 +6,7 @@
     {{> adminDatabase}}
     {{> adminErrors}}
     {{> adminSources}}
+    {{> adminBlog}}
     {{> adminFacts}}
   </div>
 </template>
@@ -65,7 +66,6 @@
   </div>
   {{> adminArXiv}}
   {{> adminFSM}}
-  {{> adminBlog}}
 </template>
 
 <template name="adminArXiv">
@@ -94,9 +94,9 @@
 </template>
 
 <template name="adminBlog">
-  <h3>Blog Sync</h3>
+  <h2>Blog</h2>
   <div class="admin-buttons">
-    <button class="sync-blog-cache">Sync blog cache</button>
+    <button class="sync-blog">Sync blog</button>
   </div>
 </template>
 
