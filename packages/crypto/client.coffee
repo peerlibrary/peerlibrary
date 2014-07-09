@@ -128,7 +128,7 @@ class BaseCryptoWorker
         progress = @totalSizeProcessed / (@size or @totalSizeQueued)
         @onProgress progress
         @busy = false
-        @flush()
+        @nextInQueue()
 
       done: (result) =>
         @current?.onDone? null, result
@@ -140,7 +140,7 @@ class BaseCryptoWorker
         if params.data instanceof ArrayBuffer
           Crypto._browserSupport.useWorker = true
           @busy = false
-          @flush()
+          @nextInQueue()
         else
           Crypto._browserSupport.useWorker = false
           @instance._switchToFallbackWorker()
@@ -151,9 +151,9 @@ class BaseCryptoWorker
     else
       @totalSizeQueued += params.size or 0
       @queue.push params
-    @flush()
+    @nextInQueue()
 
-  flush: =>
+  nextInQueue: =>
     return if @busy
     @busy = true
 

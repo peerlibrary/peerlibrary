@@ -1,6 +1,7 @@
 globals = @
 
-for disableWorker in [false, true]
+# force worker use, disable worker use, use autodetect
+for disableWorker in [false, true, null]
   testAsyncMulti "crypto - sending complete file as ArrayBuffer, checking hash (disableWorker: #{ disableWorker })", [
     (test, expect) ->
       globals.downloadPdf expect globals.downloadComplete
