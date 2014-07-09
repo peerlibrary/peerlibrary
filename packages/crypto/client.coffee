@@ -47,7 +47,7 @@ Crypto =
               transferable = false
               cryptoWorker.enqueue
                 type: 'array'
-                size: 0
+                size: 0 # We do not want to modify totalSizeQueued with our test
                 data: testArray
                 message: 'ping'
                 transferable: transferable
