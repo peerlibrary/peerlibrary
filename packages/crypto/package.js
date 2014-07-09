@@ -9,14 +9,14 @@ Package.on_use(function (api) {
   api.use(['blob'], ['client']);
 
   api.add_files([
-    'lib/crypto.coffee'
+    'lib.coffee'
   ], ['client', 'server']);
 
   api.add_files([
-    'server/crypto.coffee',
+    'server.coffee',
   ], 'server' );
   api.add_files([
-    'client/crypto.coffee',
+    'client.coffee',
   ], 'client' );
 
   api.add_files([
@@ -34,12 +34,12 @@ Package.on_test(function (api) {
   api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
   api.use(['jquery'], ['client']);
 
-  api.add_files(['lib/tests.coffee'], ['client', 'server']);
+  api.add_files(['tests/common.coffee'], ['client', 'server']);
   api.add_files([
-    'client/tests_generic.coffee',
-    'client/tests_any_worker.coffee',
-    'client/tests_fallback_worker.coffee'
+    'tests/general.coffee',
+    'tests/any_worker.coffee',
+    'tests/fallback_worker.coffee'
   ], ['client']);
-  api.add_files(['server/tests.coffee'], ['server']);
+  api.add_files(['tests/server.coffee'], ['server']);
   api.add_files(['assets/test.pdf'], ['client', 'server'], {isAsset: true});
 });
