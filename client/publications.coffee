@@ -1,5 +1,5 @@
 # Used for global variable assignments in local scopes
-root = @
+globals = @
 
 Catalog.create 'publications', Publication,
   main: Template.publications
@@ -135,7 +135,7 @@ Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle
 
 Template.publicationCatalogItemThumbnail.events
   'click li': (e, template) ->
-    root.startViewerOnPage = @page
+    globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
     publication = @publication
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug

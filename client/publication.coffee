@@ -1,5 +1,5 @@
 # Used for global variable assignments in local scopes
-root = @
+globals = @
 
 @SCALE = 1.25
 
@@ -792,7 +792,7 @@ Template.publicationScroller.rendered = ->
     # Sync the position of the scroller viewport
     setViewportPosition $viewport
 
-    root.startViewerOnPage = null
+    globals.startViewerOnPage = null
 
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
