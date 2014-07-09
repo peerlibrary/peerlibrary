@@ -196,6 +196,18 @@ class @Background
   draw: (time) =>
     return unless @renderer
 
+    if not Session.get('backgroundPaused') and @autorunHandle
+      # Cleanup after resume (again, just to be sure)
+      @autorunHandle.stop()
+      @autorunHandle = null
+
+    @pausedDelay += time - @pausedTime if @pausedTime isnt 0
+    @pausedTime = 0
+
+    vector.update time - @pausedDelay for key, vector of @vectors
+    triangle.draw() for key, triangle of @triangles
+    @renderer.render @stage
+
     if Session.get 'backgroundPaused'
       # Remember the time when we were paused
       @pausedTime = time
@@ -208,16 +220,5 @@ class @Background
           # Restart the loop
           frame @draw
       return
-    else if @autorunHandle
-      # Cleanup after resume (again, just to be sure)
-      @autorunHandle.stop()
-      @autorunHandle = null
-
-    @pausedDelay += time - @pausedTime if @pausedTime isnt 0
-    @pausedTime = 0
-
-    vector.update time - @pausedDelay for key, vector of @vectors
-    triangle.draw() for key, triangle of @triangles
-    @renderer.render @stage
 
     frame @draw
