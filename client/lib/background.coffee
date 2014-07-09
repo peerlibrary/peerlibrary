@@ -34,7 +34,6 @@ class Vector
     @deltaY = 0
 
   update: (time) =>
-    return if Session.get 'backgroundPaused'
     distance = Math.sin(Math.min(Math.abs(@originY + 0.5 * @originX + 150 - (time / 2) / 5 % (Math.max(window.innerWidth, window.innerHeight) + 300)) / Math.sqrt(1.25), 200) / 200 * Math.PI / 2) * 60
     if not @duration or time > @start + @duration
       @start = time
@@ -87,6 +86,9 @@ class @Background
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle = null
 
   destroy: =>
     @renderer = null
@@ -95,6 +97,10 @@ class @Background
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle.stop() if @autorunHandle
+    @autorunHandle = null
 
   computeRatio: =>
     devicePixelRatio = window.devicePixelRatio or 1
@@ -181,9 +187,27 @@ class @Background
   draw: (time) =>
     return unless @renderer
 
-    return if Session.get 'backgroundPaused'
+    if Session.get 'backgroundPaused'
+      # Remember the time when we were paused
+      @pausedTime = time
+      # And react to the change of backgroundPaused
+      @autorunHandle = Deps.autorun =>
+        unless Session.get 'backgroundPaused'
+          # Cleanup after resume
+          @autorunHandle.stop()
+          @autorunHandle = null
+          # Restart the loop
+          frame @draw
+      return
+    else if @autorunHandle
+      # Cleanup after resume (again, just to be sure)
+      @autorunHandle.stop()
+      @autorunHandle = null
 
-    vector.update time for key, vector of @vectors
+    @pausedDelay += time - @pausedTime if @pausedTime isnt 0
+    @pausedTime = 0
+
+    vector.update time - @pausedDelay for key, vector of @vectors
     triangle.draw() for key, triangle of @triangles
     @renderer.render @stage
 
