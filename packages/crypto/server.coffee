@@ -9,28 +9,31 @@ Crypto =
 
     update: (data, callback) =>
       throw new Error "No data given" if not data
-      callback ?= ->
 
       try
         @_hash.update data
         @_total += data.length
       catch error
-        return callback error
+        # If callback is given we use it for reporting
+        # the error, otherwise we rethrow
+        return callback error if callback
+        throw error
 
       if @size?
         @onProgress @_total / @size
       else
         @onProgress()
 
-      callback null
+      callback? null
 
     finalize: (callback) =>
-      callback ?= ->
-
       try
         sha256 = @_hash.digest 'hex'
       catch error
-        return callback error
+        # If callback is given we use it for reporting
+        # the error, otherwise we rethrow
+        return callback error if callback
+        throw error
 
-      callback null, sha256
+      callback? null, sha256
       sha256

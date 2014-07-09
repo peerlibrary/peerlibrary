@@ -33,15 +33,15 @@ Package.on_use(function (api) {
 });
 
 Package.on_test(function (api) {
-  api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
+  api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript', 'underscore', 'async'], ['client', 'server']);
 
   api.add_files([
-    'tests/common.coffee'
+    'tests/common.coffee',
+    'tests/defined.coffee'
   ], ['client', 'server']);
 
   api.add_files([
-    'tests/general.coffee',
-    'tests/worker.coffee'
+    'tests/client.coffee'
   ], 'client');
 
   api.add_files([

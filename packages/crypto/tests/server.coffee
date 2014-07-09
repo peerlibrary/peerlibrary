@@ -1,36 +1,80 @@
-globals = @
-bin = Assets.getBinary pdfFilename
-globals.pdf = new Buffer new Uint8Array bin.buffer
+getPdf = ->
+  pdf = Assets.getBinary PDF_FILENAME
+  new Buffer new Uint8Array pdf.buffer
 
-Tinytest.add 'Checking package visibility', (test) ->
-  globals.createHash()
-  test.isTrue globals.isDefined, "Crypto.SHA256 is not defined"
-  test.isTrue Package['crypto'].Crypto.SHA256, "Package.sha256.Crypto.SHA256 is not defined"
+Tinytest.add 'crypto - file size', (test) ->
+  pdf = getPdf()
+  test.equal pdf.length, PDF_BYTE_LENGTH
 
-Tinytest.add 'Checking file size', (test) ->
-  test.equal globals.pdf.length, pdfByteLength
+Tinytest.add 'crypto - sending complete file as Buffer, checking hash (blocking)', (test) ->
+  pdf = getPdf()
+  hash = createHash()
+  hash.update pdf
+  result = hash.finalize()
+  test.equal result, PDF_HASH
 
-Tinytest.add 'Sending complete file as Buffer, checking hash', (test) ->
-  globals.createHash()
-  globals.hash.update globals.pdf
-  globals.hash.finalize (error, result) ->
-    test.equal error, null
-    test.equal result, pdfHash
+Tinytest.add 'crypto - sending file in regular chunks, checking hash (blocking)', (test) ->
+  pdf = getPdf()
+  hash = createHash()
+  chunkStart = 0
+  while chunkStart < pdf.length
+    {chunkData, chunkStart} = getChunk pdf, chunkStart
+    hash.update chunkData
+  result = hash.finalize()
+  test.equal result, PDF_HASH
 
-Tinytest.add 'Sending file in regular chunks, checking hash', (test) ->
-  globals.createHash()
-  globals.chunkStart = 0
-  while globals.chunkStart < globals.pdf.length
-    globals.sendChunk()
-  globals.hash.finalize (error, result) ->
-    test.equal error, null
-    test.equal result, pdfHash
+Tinytest.add 'crypto - sending file in irregular chunks, checking hash (blocking)', (test) ->
+  pdf = getPdf()
+  hash = createHash()
+  chunkStart = 0
+  while chunkStart < pdf.length
+    {chunkData, chunkStart} = getChunk pdf, chunkStart, true # true is for randomized chunks
+    hash.update chunkData
+  result = hash.finalize()
+  test.equal result, PDF_HASH
 
-Tinytest.add 'Sending file in irregular chunks, checking hash', (test) ->
-  globals.createHash()
-  globals.chunkStart = 0
-  while globals.chunkStart < globals.pdf.length
-    globals.sendChunk true # true is for random
-  globals.hash.finalize (error, result) ->
-    test.equal error, null
-    test.equal result, pdfHash
+Tinytest.addAsync 'crypto - sending complete file as Buffer, checking hash (callback)', (test, onComplete) ->
+  pdf = getPdf()
+  hash = createHash()
+  hash.update pdf, (error) ->
+    test.isFalse error, error?.toString?() or error
+    hash.finalize (error, result) ->
+      test.isFalse error, error?.toString?() or error
+      test.equal result, PDF_HASH
+      onComplete()
+
+Tinytest.addAsync 'crypto - sending file in regular chunks, checking hash (callback)', (test, onComplete) ->
+  pdf = getPdf()
+  hash = createHash()
+  chunkStart = 0
+  async.whilst ->
+    chunkStart < pdf.length
+  ,
+    (callback) ->
+      {chunkData, chunkStart} = getChunk pdf, chunkStart
+      hash.update chunkData, callback
+  ,
+    (error) ->
+      test.isFalse error, error?.toString?() or error
+      hash.finalize (error, result) ->
+        test.isFalse error, error?.toString?() or error
+        test.equal result, PDF_HASH
+        onComplete()
+
+Tinytest.addAsync 'crypto - sending file in irregular chunks, checking hash (callback)', (test, onComplete) ->
+  pdf = getPdf()
+  hash = createHash()
+  chunkStart = 0
+  async.whilst ->
+    chunkStart < pdf.length
+  ,
+    (callback) ->
+      {chunkData, chunkStart} = getChunk pdf, chunkStart, true # true is for randomized chunks
+      hash.update chunkData, callback
+  ,
+    (error) ->
+      test.isFalse error, error?.toString?() or error
+      hash.finalize (error, result) ->
+        test.isFalse error, error?.toString?() or error
+        test.equal result, PDF_HASH
+        onComplete()

@@ -1,35 +1,24 @@
-@testRoot = '/packages/crypto'
-@pdfFilename = 'assets/test.pdf'
-@pdfHash = '750cb3269e8222c05548184a2814b8f4b102e9157fe5fd498cfcaeb237fbd38f'
-@pdfByteLength = 13069
-@chunkSize = 1024 * 2 # bytes
-@chunkStart = 0
-@pdf = null
+@TEST_ROOT = '/packages/crypto'
+@PDF_FILENAME = 'assets/test.pdf'
+@PDF_HASH = '750cb3269e8222c05548184a2814b8f4b102e9157fe5fd498cfcaeb237fbd38f'
+@PDF_BYTE_LENGTH = 13069
+@CHUNK_SIZE = 2 * 1024 # bytes
 
-@sendChunk = (random) ->
-  random = 0 if not random?
+@getChunk = (pdf, chunkStart, random) ->
+  random ?= 0
   factor = Math.random() * 2
-  currentChunkSize = Math.round(chunkSize * (1 + factor * random))
+  currentChunkSize = Math.round(CHUNK_SIZE * (1 + factor * random))
   chunkEnd = chunkStart + currentChunkSize
-  chunkEnd = @pdfByteLength if chunkEnd > @pdfByteLength
-  chunkData = pdf.slice(chunkStart, chunkEnd)
-  hash.update chunkData
+  chunkEnd = @PDF_BYTE_LENGTH if chunkEnd > @PDF_BYTE_LENGTH
+  chunkData = pdf.slice chunkStart, chunkEnd
   chunkStart += currentChunkSize
+  chunkData: chunkData
+  chunkStart: chunkStart
 
-@isDefined = false
-@hash = null
 @createHash = (params) ->
-  if not params
-    params =
-      disableWorker: null
-      onProgress: null
-      size: null
-  @isDefined = true
-  try
-    @hash = new Crypto.SHA256
-      chunkSize: @chunkSize
-      disableWorker: params.disableWorker or false
-      onProgress: params.onProgress or ->
-      size: params.size
-    @isDefined = true
-
+  params = _.defaults params or {},
+    disableWorker: null
+    onProgress: null
+    size: null
+  new Crypto.SHA256 _.extend params,
+    chunkSize: @CHUNK_SIZE
