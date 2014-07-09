@@ -1,51 +1,53 @@
 importScripts('../digest.js/digest.js');
-hash = Digest.SHA256(),
 
-onmessage = function (oEvent){
-  var message = oEvent.data.message;
-  ActionHandler[message](oEvent.data);
-}
+var hash = Digest.SHA256();
 
-// handles messages received from main thread
+addEventListener('message', function (event) {
+  var message = event.data.message;
+  ActionHandler[message](event.data);
+});
+
+// Handles messages received from main thread
 var ActionHandler = {
-  test: function SHA256WebWorkerActionHandler_test (data) {
+  test: function (eventData) {
   },
-  ping: function SHA256WebWorkerActionHandler_ping (data) {
-    MessageHandler.pong(data); // send data back (pong)
+  ping: function (eventData) {
+    // Sends data back (pong) so we can verify how communication with the worker works
+    MessageHandler.pong(eventData);
   },
-  update: function SHA256WebWorkerActionHandler_updateChunk (eventData) {
+  update: function (eventData) {
     hash.update(eventData.chunk);
-    MessageHandler.progress();
+    MessageHandler.chunkDone();
   },
-  finalize: function SHA256WebWorkerActionHandler_finalizeChunks (eventData) {
-    var sha256 = SHA256WebWorker_getFinalHashString(hash);
+  finalize: function (eventData) {
+    var sha256 = finalizeHash(hash);
     MessageHandler.done(sha256);
   }
-}
+};
 
-// structures and sends messages to main thread
+// Sends messages to main thread
 var MessageHandler = {
-  progress: function SHA256WebWorkerMessageHandler_sendChunkInfo () {
+  chunkDone: function () {
     postMessage({
-      message: 'progress'
+      message: 'chunkDone'
     });
   },
-  done: function SHA256WebWorkerMessageHandler_sendSHA256 (sha256){
+  done: function (sha256) {
     postMessage({
       message: 'done',
       data: sha256
-    })
+    });
   },
-  pong: function SHA256WebWorkerMessageHandler_pong (data) {
+  pong: function (data) {
     postMessage({
       message: 'pong',
       data: data
-    })
+    });
   }
-}
+};
 
-// converts binary hash to hex (string) representation
-function SHA256WebWorker_getFinalHashString (hash) {
+// Converts binary hash to hex (string) representation
+function finalizeHash(hash) {
   var binaryData = hash.finalize();
   var hexTab = '0123456789abcdef', sha256 = '', _i, _len, a;
   var array = new Uint8Array(binaryData);

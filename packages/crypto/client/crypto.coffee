@@ -160,7 +160,7 @@ class BaseWorker
     @totalSizeProcessed = 0
 
     @handler =
-      progress: ->
+      chunkDone: ->
         progress = self.totalSizeProcessed / (self.totalSize or self.totalSizeQueued)
         self.onProgress? progress
         self.busy = false
@@ -294,7 +294,7 @@ class WorkerFallback extends BaseWorker
     catch e
       @handler.done e, null
       @destroy()
-    @handler.progress()
+    @handler.chunkDone()
 
   finalize: ->
     error = null
