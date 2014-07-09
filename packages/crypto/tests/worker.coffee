@@ -13,7 +13,7 @@ for disableWorker in [false, true]
         test.equal error, null
         test.equal result, pdfHash
   ]
-  
+
   testAsyncMulti "crypto - sending complete file as Blob, checking hash (disableWorker: #{ disableWorker })", [
     (test, expect) ->
       globals.downloadPdf expect globals.downloadComplete
@@ -27,7 +27,7 @@ for disableWorker in [false, true]
         test.equal error, null
         test.equal result, pdfHash
   ]
-  
+
   testAsyncMulti "crypto - sending file in regular chunks, checking hash (disableWorker: #{ disableWorker })", [
     (test, expect) ->
       globals.downloadPdf expect globals.downloadComplete
@@ -42,7 +42,7 @@ for disableWorker in [false, true]
         test.equal error, null
         test.equal result, pdfHash
   ]
-  
+
   testAsyncMulti "crypto - sending file in irregular chunks, checking hash (disableWorker: #{ disableWorker })", [
     (test, expect) ->
       globals.downloadPdf expect globals.downloadComplete
@@ -57,7 +57,7 @@ for disableWorker in [false, true]
         test.equal error, null
         test.equal result, pdfHash
   ]
-  
+
   testAsyncMulti "crypto - progress callback (disableWorker: #{ disableWorker })", [
     (test, expect) ->
       globals.downloadPdf expect globals.downloadComplete

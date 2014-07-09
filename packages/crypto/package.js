@@ -34,7 +34,6 @@ Package.on_use(function (api) {
 
 Package.on_test(function (api) {
   api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
-  api.use(['jquery'], ['client']);
 
   api.add_files([
     'tests/common.coffee'

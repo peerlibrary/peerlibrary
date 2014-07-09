@@ -1,11 +1,4 @@
 globals = @
-@fileLoaded = false
-@queue = []
-
-# Process queue
-@processQueue = () ->
-  return if not fileLoaded
-  test() while test = queue.shift()
 
 # Download file using XMLHttpRequest
 # not using jQuery or HTTP package because they don't support arraybuffer response
