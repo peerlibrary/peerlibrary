@@ -4,10 +4,10 @@
 
 if not ArrayBuffer.prototype.slice
   ArrayBuffer.prototype.slice = (start, end) ->
-    that = new UInt8Array this
+    that = new Uint8Array this
     end = that.length if typeof end is 'undefined'
     result = new ArrayBuffer end - start
-    resultArray = new UInt8Array result
+    resultArray = new Uint8Array result
     for i in [0..resultArray.length]
       resultArray[i] = that[i + start]
     result
