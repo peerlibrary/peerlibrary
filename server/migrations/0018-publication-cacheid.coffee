@@ -12,86 +12,46 @@ getNewFilename = (cachedId) ->
 class Migration extends Document.MajorMigration
   name: "Adding cachedId field"
 
-  forward: (db, collectionName, currentSchema, newSchema, callback) =>
-    db.collection collectionName, Meteor.bindEnvironment (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema, cachedId: {$exists: false}}, {cached: 1, source: 1, foreignId: 1}
-      document = null
-      async.doWhilst Meteor.bindEnvironment(
-        (callback) =>
-          cursor.nextObject Meteor.bindEnvironment (error, doc) =>
-            return callback error if error
-            document = doc
-            return callback null unless document
+  forward: (document, collection, currentSchema, newSchema) =>
+    count = 0
 
-            oldFilename = getOldFilename document
+    collection.findEach {_schema: currentSchema, cachedId: {$exists: false}}, {cached: 1, source: 1, foreignId: 1}, (document) =>
+      oldFilename = getOldFilename document
 
-            cachedId = Random.id()
-            newFilename = getNewFilename cachedId
+      cachedId = Random.id()
+      newFilename = getNewFilename cachedId
 
-            collection.update {_schema: currentSchema, _id: document._id, cachedId: {$exists: false}}, {$set: {cachedId: cachedId}}, Meteor.bindEnvironment (error, count) =>
-              return callback error if error
-              return callback null unless count
+      count += collection.update  {_schema: currentSchema, _id: document._id, cachedId: {$exists: false}}, {$set: {cachedId: cachedId, _schema: newSchema}}
 
-              Meteor.bindEnvironment(=>
-                if document.cached
-                  if document.source is 'arXiv'
-                    Storage.link oldFilename, newFilename
-                  else
-                    Storage.rename oldFilename, newFilename
-                callback null
-              , callback)()
-            , callback
-          , callback
-        , callback)
-      ,
-        =>
-          document
-      ,
-        Meteor.bindEnvironment (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, newSchema, callback
-        , callback
-    , callback
+      if document.cached
+        if document.source is 'arXiv'
+          Storage.link oldFilename, newFilename
+        else
+          Storage.rename oldFilename, newFilename
 
-  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
-    db.collection collectionName, Meteor.bindEnvironment (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema, cachedId: $exists: true}, {cached: 1, cachedId: 1, source: 1, foreignId: 1}
-      document = null
-      async.doWhilst Meteor.bindEnvironment(
-        (callback) =>
-          cursor.nextObject Meteor.bindEnvironment (error, doc) =>
-            return callback error if error
-            document = doc
-            return callback null unless document
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
-            oldFilename = getOldFilename document
-            newFilename = getNewFilename document.cachedId
+  backward: (document, collection, currentSchema, oldSchema) =>
+    count = 0
 
-            collection.update {_schema: currentSchema, _id: document._id, cachedId: document.cachedId}, {$unset: {cachedId: ''}}, Meteor.bindEnvironment (error, count) =>
-              return callback error if error
-              return callback null unless count
+    collection.findEach {_schema: currentSchema, cachedId: $exists: true}, {cached: 1, cachedId: 1, source: 1, foreignId: 1}, (document) =>
+      oldFilename = getOldFilename document
+      newFilename = getNewFilename document.cachedId
 
-              Meteor.bindEnvironment(=>
-                if document.cached
-                  if document.source is 'arXiv'
-                    Storage.remove newFilename
-                  else
-                    Storage.rename newFilename, oldFilename
-                  callback null
-              , callback)()
-            , callback
-          , callback
-        , callback)
-      ,
-        =>
-          document
-      ,
-        Meteor.bindEnvironment (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, oldSchema, callback
-        , callback
-    , callback
+      count += collection.update {_schema: currentSchema, _id: document._id, cachedId: document.cachedId}, {$unset: {cachedId: ''}, $set: {_schema: oldSchema}}
+
+      if document.cached
+        if document.source is 'arXiv'
+          Storage.remove newFilename
+        else
+          Storage.rename newFilename, oldFilename
+
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
 Publication.addMigration new Migration()
