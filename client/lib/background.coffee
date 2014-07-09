@@ -84,6 +84,9 @@ class @Background
     @computeRatio()
     @clearBackground()
 
+    # We randomize start time so that it is not always the same, which
+    # also helps when background is paused that it looks different every time
+    @randomizedStart = Math.random() * 10000 + 10000
     @stage = null
     @triangles = {}
     @vectors = {}
@@ -204,7 +207,7 @@ class @Background
     @pausedDelay += time - @pausedTime if @pausedTime isnt 0
     @pausedTime = 0
 
-    vector.update time - @pausedDelay for key, vector of @vectors
+    vector.update time - @pausedDelay + @randomizedStart for key, vector of @vectors
     triangle.draw() for key, triangle of @triangles
     @renderer.render @stage
 
