@@ -51,6 +51,10 @@ Crypto =
                 data: testArray
                 message: 'ping'
                 transferable: transferable
+          catch error
+            # There was an error creating a worker, but disableWorker is
+            # explicitly set to false, so fallback is forbidden, let's rethrow
+            throw error if @disableWorker is false
 
         if not cryptoWorker
           cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
@@ -66,7 +70,8 @@ Crypto =
         # copy may not work
 
       else
-        if not @disableWorker and Crypto._browserSupport.useWorker
+        # Or is disableWorker not set and we can use a web worker, or disableWorker is explicitly set to false
+        if (not @disableWorker? and Crypto._browserSupport.useWorker) or @disableWorker is false
           cryptoWorker = new WebCryptoWorker @, @size, @onProgress, @workerSrc, @chunkSize
         else
           cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
