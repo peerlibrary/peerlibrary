@@ -6,6 +6,7 @@
     {{> adminDatabase}}
     {{> adminErrors}}
     {{> adminSources}}
+    {{> adminBlog}}
     {{> adminFacts}}
   </div>
 </template>
@@ -89,6 +90,13 @@
   <div class="admin-buttons">
     <button class="sync-fsm-metadata">Sync FSM metadata</button>
     <button class="sync-fsm-cache">Sync FSM cache</button>
+  </div>
+</template>
+
+<template name="adminBlog">
+  <h2>Blog</h2>
+  <div class="admin-buttons">
+    <button class="sync-blog">Sync blog</button>
   </div>
 </template>
 
