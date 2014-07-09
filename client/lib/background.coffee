@@ -82,6 +82,7 @@ class @Background
   constructor: ->
     @renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
     @computeRatio()
+    @clearBackground()
 
     @stage = null
     @triangles = {}
@@ -112,6 +113,14 @@ class @Background
                         context.oBackingStorePixelRatio or 1
 
     @ratio = devicePixelRatio / backingStoreRatio
+
+  clearBackground: =>
+    # Used also in variables.import.styl, keep in sync
+    stage = new PIXI.Stage 0xf6f8f8
+    graphics = new PIXI.Graphics()
+    stage.addChild graphics
+    graphics.clear()
+    @renderer.render stage
 
   render: =>
     @resizeView()
