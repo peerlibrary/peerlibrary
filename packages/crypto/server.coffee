@@ -8,6 +8,7 @@ Crypto =
       @_hash = crypto.createHash 'sha256'
 
     update: (data, callback) =>
+      throw new Error "No data given" if not data
       callback ?= ->
 
       try

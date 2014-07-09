@@ -1,157 +1,121 @@
+# TODO: How to properly find out the location of this? And know the query string value?
+WORKER_SRC = '/packages/crypto/assets/web-worker.js'
+CHUNK_SIZE = 128 * 1024 # bytes
+
 Crypto =
-  browserSupport:
+  _browserSupport:
     useWorker: null
-    transferrable: null
+    transferable: null
 
   SHA256: class extends Crypto.SHA256
-    # defaults
+    # Defaults
     disableWorker: false
-    workerSrc: '/packages/crypto/assets/web-worker.js'
-    chunkSize: 1024 * 32 # bytes
-    transfer: true
+    workerSrc: WORKER_SRC
+    chunkSize: CHUNK_SIZE
     size: null
+
+    # params: (in addition to superclass)
+    #   disableWorker: boolean (optional)
+    #   workerSrc: string, override default location of script to be opened in worker thread (optional)
+    #   chunkSize: integer, override default chunk size in bytes (optional)
+    #              chunks are send to the worker one by one, smaller chunks result in less memory allocation, but more overhead
     constructor: (params) ->
-      # params:
-      #       disableWorker -> boolean (optional)
-      #       workerSrc -> string (optional)
-      #                    override default location of script to be opened in worker thread
-      #       chunkSize -> integer (optional)
-      #                    override default chunk size in bytes
-      #                    chunks are sent to Worker one by one
-      #                    smaller chunks result with less memory allocation
-      #       onProgress -> progress callback function (optional)
-      #                     arguments:
-      #                              progress -> float, between 0 and 1 (inclusive)
-      #       size -> complete file size (optional)
-      if params
-        if params.disableWorker
-          @disableWorker = params.disableWorker
-        if params.workerSrc
-          @workerSrc = params.workerSrc
-        if params.chunkSize
-          @chunkSize = params.chunkSize
-        @onProgress = params.onProgress or ->
-        if params.size
-          size = params.size
+      super
+      @disableWorker = params?.disableWorker
+      @workerSrc = params.workerSrc if params?.workerSrc
+      @chunkSize = params.chunkSize if params?.chunkSize?
+      @cryptoWorker = @_createCryptoWorker()
 
-      bs = Crypto.browserSupport
-      testArray = null
-      # https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer#slice%28%29
-      # http://stackoverflow.com/a/10101213
-      if not ArrayBuffer.prototype.slice
-        ArrayBuffer.prototype.slice = (start, end) ->
-          that = new UInt8Array this
-          if typeof end == "undefined"
-            end = that.length
-          result = new ArrayBuffer end - start
-          resultArray = new UInt8Array result
-          for i in [0..resultArray.length]
-            resultArray[i] = that[i+start]
-          result
+    _createCryptoWorker: =>
+      if not @disableWorker and not Crypto._browserSupport.useWorker?
+        testArray = new ArrayBuffer 8
+        cryptoWorker = null
+        transferable = false
 
-      if not @disableWorker and bs.useWorker == null
-        testArray = testArray or new ArrayBuffer 8
-        worker = null
-        transferrable = false
-
-        if typeof window != "undefined" and window.Worker
+        if Worker
           try
-            worker = new WebWorker @, size, @onProgress, @workerSrc,
-                                   @chunkSize
+            cryptoWorker = new WebCryptoWorker @, @size, @onProgress, @workerSrc, @chunkSize
             try
-              worker.worker.postMessage
+              cryptoWorker.worker.postMessage
                 message: 'test'
-                data: testArray,
-                  [testArray]
-              transferrable = not testArray.byteLength
-            catch e
-              transferrable = false
-              worker.enqueue
+                data: testArray
+              ,
+                [testArray]
+              # If array was correctly transferred, it becomes unusable (neutered) here
+              transferable = not testArray.byteLength
+            catch error
+              transferable = false
+              cryptoWorker.enqueue
                 type: 'array'
                 size: 0
                 data: testArray
                 message: 'ping'
-                transferrable: transferrable
+                transferable: transferable
 
-        if not worker
-          worker = new WorkerFallback @, size, @onProgress, @chunkSize
-          bs.useWorker = false
-          bs.transferrable = false
+        if not cryptoWorker
+          cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
+          Crypto._browserSupport.useWorker = false
+          Crypto._browserSupport.transferable = false
 
-        else if transferrable
-          bs.useWorker = true
-          bs.transferrable = true
-        # if transferrable is false, even if Worker is set at this point
-        # we need to wait for 'pong' answer from Worker because
-        # structured copy may not work
+        else if transferable
+          Crypto._browserSupport.useWorker = true
+          Crypto._browserSupport.transferable = true
+
+        # If transferable is false, even if useWorker is set at this point
+        # we need to wait for "pong" answer from worker because structured
+        # copy may not work
 
       else
-        if not @disableWorker and bs.useWorker == true
-          worker = new WebWorker @, size, @onProgress, @workerSrc,
-                                 @chunkSize
+        if not @disableWorker and Crypto._browserSupport.useWorker
+          cryptoWorker = new WebCryptoWorker @, @size, @onProgress, @workerSrc, @chunkSize
         else
-          worker = new WorkerFallback @, size, @onProgress, @chunkSize
+          cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
 
-      @worker = worker
+      cryptoWorker
 
-    update: (data, callback) ->
-      # data -> File, Blob or ArrayBuffer (required), chunk of data to be added for hash computation
-      # callback -> callback function (optional) to be called after data is processed
-      #     arguments:
-      #             error -> Error instance or null if there is no error
-      #             result -> returns null
-      if not data
-        throw new Error "No data given"
-      if not @worker
-        throw new Error "Worker is destroyed"
+    update: (data, callback) =>
+      throw new Error "No data given" if not data
+      callback ?= ->
+
+      assert @cryptoWorker
 
       params =
         message: 'update'
         data: data
-        onDone: callback or ->
+        onDone: callback
       if params.data instanceof Blob
         params.type = 'blob'
         params.size = params.data.size
        else
         params.type = 'array'
         params.size = params.data.byteLength
-      if not params.transfer
-        params.transfer = false
-      params.onDone = callback
-      @worker.enqueue params
 
-    finalize: (callback) ->
-      # callback -> callback function (required)
-      #  arguments:
-      #           error -> Error instance or null if there is no error
-      #           result -> string, sha256 hash computed from data chunks
-      #                     or null if error is raised
-      if not callback
-        throw new Error "callback not given!"
-      if not @worker
-        throw new Error "Worker is destroyed"
+      @cryptoWorker.enqueue params
+
+    finalize: (callback) =>
+      throw new Error "No callback given" if not callback
+
+      assert @cryptoWorker
 
       params =
         message: 'finalize'
         onDone: callback
-        size: 0
-      @worker.enqueue params
+      @cryptoWorker.enqueue params
 
-    destroy: ->
-      delete @worker
+    _destroy: =>
+      delete @cryptoWorker.worker if @cryptoWorker
+      delete @cryptoWorker
 
-    switchWorker: ->
-      # Switches from web worker to fallback worker
-      fallbackWorker = new WorkerFallback @, @worker.totalsize,
-                                          @onProgress, @chunkSize
-      fallbackWorker.enqueue @worker.queue
-      delete @worker
-      @worker = fallbackWorker
-                    #useWorker, transferrable
+    _switchToFallbackWorker: =>
+      @cryptoWorker.worker.terminate()
+      delete @cryptoWorker.worker
 
-class BaseWorker
-  constructor: (@instance, @totalSize, @onProgress, @chunkSize) ->
-    self = @
+      fallbackWorker = new FallbackCryptoWorker @, @cryptoWorker.size, @onProgress, @chunkSize
+      fallbackWorker.enqueue @cryptoWorker.queue
+      @cryptoWorker = fallbackWorker
+
+class BaseCryptoWorker
+  constructor: (@instance, @size, @onProgress, @chunkSize) ->
     @chunkStart = 0
     @busy = false
     @queue = []
@@ -160,41 +124,41 @@ class BaseWorker
     @totalSizeProcessed = 0
 
     @handler =
-      chunkDone: ->
-        progress = self.totalSizeProcessed / (self.totalSize or self.totalSizeQueued)
-        self.onProgress? progress
-        self.busy = false
-        self.flush()
+      chunkDone: =>
+        progress = @totalSizeProcessed / (@size or @totalSizeQueued)
+        @onProgress progress
+        @busy = false
+        @flush()
 
-      done: (result) ->
-        self.current?.onDone? null, result
+      done: (result) =>
+        @current?.onDone? null, result
 
-      error: (error) ->
-        self.current?.onDone? error, null
+      error: (error) =>
+        @current?.onDone? error, null
 
-      pong: (params) ->
+      pong: (params) =>
         if params.data instanceof ArrayBuffer
-          Crypto.browserSupport.useWorker = true
-          self.busy = false
-          self.flush()
+          Crypto._browserSupport.useWorker = true
+          @busy = false
+          @flush()
         else
-          Crypto.browserSupport.useWorker = false
-          self.instance.switchWorker()
+          Crypto._browserSupport.useWorker = false
+          @instance._switchToFallbackWorker()
 
-  enqueue: (params) ->
-    if params instanceof Array
+  enqueue: (params) =>
+    if _.isArray params
       @enqueue item for item in params
     else
-      @totalSizeQueued += params.size
+      @totalSizeQueued += params.size or 0
       @queue.push params
     @flush()
 
-  flush: () ->
+  flush: =>
     return if @busy
     @busy = true
 
-    # check if current chunk is processed completely
-    if @current and (@chunkStart >= @current.size)
+    # Check if current chunk is processed completely
+    if @current and @chunkStart >= @current.size
       @handler.done
         error: null,
         result: null
@@ -204,32 +168,32 @@ class BaseWorker
       @chunkStart = 0
       @current = @queue.shift() or null
       if not @current
-        return @busy = false
+        @busy = false
+        return
 
-    if @current.message == 'finalize'
+    if @current.message is 'finalize'
       @finalize()
       return
 
-    if @current.message == 'ping'
+    if @current.message is 'ping'
       @worker.postMessage
         message: 'ping'
         data: @current.data
       return
 
-    # read next chunk (or part of chunk)
+    # Read next chunk (or part of chunk)
     start = @chunkStart
     end = start + @chunkSize
-    if end > @current.size
-      end = @current.size
+    end = @current.size if end > @current.size
     @chunkStart = end
     chunk = @current.data.slice start, end
     @totalSizeProcessed += end - start
-    if @current.type == 'blob'
+    if @current.type is 'blob'
       @readBlob chunk
     else
       @processChunk chunk
 
-  readBlob: (blob) ->
+  readBlob: (blob) =>
     self = @
     reader = new FileReader()
     reader.onload = ->
@@ -245,68 +209,67 @@ class BaseWorker
   destroy: ->
     throw new Error "Not implemented!"
 
-class WebWorker extends BaseWorker
+class WebCryptoWorker extends BaseCryptoWorker
   constructor: (instance, size, onProgress, workerSrc, chunkSize) ->
     super instance, size, onProgress, chunkSize
+
     @worker = new Worker workerSrc
 
-    self = @
-    @worker.onmessage = (oEvent) ->
-      data = oEvent.data.data
-      message = oEvent.data.message
-      self.handler[message] data
+    @worker.onmessage = (event) =>
+      data = event.data.data
+      message = event.data.message
+      @handler[message] data
 
-    @worker.onerror = (error) ->
-      self.handler.error error
-      self.destroy()
+    @worker.onerror = (error) =>
+      @handler.error error
+      @destroy()
 
-  processChunk: (chunk) ->
-    message = chunk: chunk, message: 'update'
-    if @transferrable
-      @worker.postMessage message, [params.chunk]
+  processChunk: (chunk) =>
+    message =
+      message: 'update'
+      chunk: chunk
+    if @transferable
+      @worker.postMessage message, [chunk]
     else
       @worker.postMessage message
 
-  finalize: ->
+  finalize: =>
     @worker.postMessage
       message: 'finalize'
 
-  destroy: ->
+  destroy: =>
     @worker.terminate()
-    @instance.destroy()
+    @instance._destroy()
 
-
-class WorkerFallback extends BaseWorker
+class FallbackCryptoWorker extends BaseCryptoWorker
   constructor: (instance, size, onProgress, chunkSize) ->
     super instance, size, onProgress, chunkSize
+
     @hash = new Digest.SHA256
 
-  _bin2hex: (array) ->
+  _bin2hex: (array) =>
     hexTab = '0123456789abcdef'
     str = ''
     for a in array
       str += hexTab.charAt((a >>> 4) & 0xF) + hexTab.charAt(a & 0xF)
     str
 
-  processChunk: (chunk) ->
+  processChunk: (chunk) =>
     try
       @hash.update chunk
-    catch e
-      @handler.done e, null
+    catch error
+      @handler.error error
       @destroy()
+      return
     @handler.chunkDone()
 
-  finalize: ->
-    error = null
-    sha256 = null
+  finalize: =>
     try
       binaryData = @hash.finalize()
-      fin = new Uint8Array binaryData
-      sha256 = @_bin2hex fin
+      sha256 = @_bin2hex new Uint8Array binaryData
       @handler.done sha256
-    catch e
-      error = e
+    catch error
       @handler.error error
 
-  destroy: ->
-    @instance.destroy()
+  destroy: =>
+    @instance._destroy()

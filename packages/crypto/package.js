@@ -3,7 +3,7 @@ Package.describe({
 });
 
 Package.on_use(function (api) {
-  api.use(['coffeescript'], ['client', 'server']);
+  api.use(['coffeescript', 'underscore', 'assert'], ['client', 'server']);
 
   api.export('Crypto');
 
@@ -12,6 +12,7 @@ Package.on_use(function (api) {
   ], ['client', 'server']);
 
   api.add_files([
+    'arraybuffer.coffee',
     'client.coffee'
   ], 'client' );
 
