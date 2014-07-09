@@ -28,7 +28,7 @@ Package.on_use(function (api) {
 
 	api.add_files([
 		'digest.js/digest.js',
-		'assets/web-worker.js'
+		'assets/worker.js'
 	], 'client', {isAsset: true});
 });
 

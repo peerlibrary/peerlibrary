@@ -1,5 +1,5 @@
 # TODO: How to properly find out the location of this? And know the query string value?
-WORKER_SRC = '/packages/crypto/assets/web-worker.js'
+WORKER_SRC = '/packages/crypto/assets/worker.js'
 CHUNK_SIZE = 128 * 1024 # bytes
 
 Crypto =
