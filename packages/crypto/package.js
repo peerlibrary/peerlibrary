@@ -42,8 +42,7 @@ Package.on_test(function (api) {
 
   api.add_files([
     'tests/general.coffee',
-    'tests/any_worker.coffee',
-    'tests/fallback_worker.coffee'
+    'tests/worker.coffee'
   ], 'client');
 
   api.add_files([
