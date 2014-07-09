@@ -194,10 +194,9 @@ class BaseCryptoWorker
       @processChunk chunk
 
   readBlob: (blob) =>
-    self = @
     reader = new FileReader()
-    reader.onload = ->
-      self.processChunk @result
+    reader.onload = (event) =>
+      @processChunk reader.result
     reader.readAsArrayBuffer blob
 
   processChunk: (chunk) ->
