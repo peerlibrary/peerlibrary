@@ -151,6 +151,7 @@ Deps.autorun ->
   document = ImportingFile.documents.findOne
     sha256:
       $exists: false
+    errored: false
   ,
     fields:
       _id: 1
@@ -176,6 +177,12 @@ Deps.autorun ->
           $set:
             sha256: sha256
             status: "In import queue"
+  reader.onerror = (error) ->
+    console.log "Error " + error
+    ImportingFile.documents.update document._id,
+      $set:
+        errored: true
+        status: error.toString()
 
   # TODO: Read file in chunks
   reader.readAsArrayBuffer importingFiles[document._id]
