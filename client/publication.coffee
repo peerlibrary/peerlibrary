@@ -1340,16 +1340,36 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.visibilityMenu.events
+onAnnotationAccessDropdownHidden = (event) ->
+  # Return the access button to default state.
+  $button = $(this).closest('.access-button')
+  $button.find('span').addClass('tooltip')
+
+Template.annotationAccessButton.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
+
+Template.annotationAccessButton.events
   'click .dropdown-trigger': (e, template) ->
     # Make sure only the trigger toggles the dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
 
-    $(template.firstNode).find('.dropdown-anchor').first().toggle()
+    $anchor = $(template.firstNode).find('.dropdown-anchor').first()
+    $anchor.toggle()
+
+    if $anchor.is(':visible')
+      # Temporarily remove and disable tooltips on the button.
+      $button = $(template.findAll '.access-button')
+      $tooltip = $button.find('.tooltip')
+      tooltipId = $tooltip.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $tooltip.removeClass('tooltip')
+
+    else
+      onAnnotationAccessDropdownHidden.call($anchor, null)
 
     return # Make sure CoffeeScript does not return anything
 
-Template.visibilityMenuVisibility.public = ->
+Template.annotationAccessButtonText.public = ->
   if @local
     getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
   else

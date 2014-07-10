@@ -47,9 +47,9 @@
 </template>
 
 <template name="collectionTools">
-  {{#if canModify}}
-    <div class="section">
-      <h2>Tools</h2>
+  <div class="section">
+    {{#if canModify}}
+    <h2>Tools</h2>
       {{#if canRemove}}
         <div class="section">
           <button class="delete-collection">Delete collection</button>
@@ -61,12 +61,10 @@
       <p class="hint section">
         You can reorder publications in a collection by dragging them.
       </p>
-      {{#if canModifyAccess}}
-        <div class="section">
-          <h3>Permissions</h3>
-          {{> accessControl}}
-        </div>
-      {{/if}}
+    {{/if}}
+    <div class="section">
+      <h3>Permissions</h3>
+      {{> accessButton}}
     </div>
-  {{/if}}
+  </div>
 </template>

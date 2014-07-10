@@ -54,6 +54,44 @@
       display block
       width 100%
 
+.access-button.dropdown-trigger
+  .dropdown-anchor
+    .dropdown
+      width 235px
+      padding 10px
+
+      .access-menu
+        .selections
+          margin-left 0
+
+        .hint
+          margin-bottom 0
+
+        .roles-control
+          .roles-control-list
+            .role
+              padding-right 12px
+              position relative
+
+              .icon-down
+                position absolute
+                right -12px
+                top 3px
+
+              .dropdown
+                width auto
+                padding 5px 0
+
+            &.read-only
+              margin-bottom 0
+
+              .role
+                padding-right 0
+
+  &.read-only
+    .access-name
+      display none
+
 .meta-menu
   .access-menu
     background-color rgba(120,120,120,0.9)
@@ -167,5 +205,6 @@
           width 100%
 
 .sidebar
-  .access-menu
-    padding-left 10px
+  .access-button
+    display inline-block
+    padding 5px

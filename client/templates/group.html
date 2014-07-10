@@ -93,14 +93,17 @@
 
 <template name="groupTools">
   <div class="section">
-    <h2>Tools</h2>
     {{#if canRemove}}
+      <h2>Tools</h2>
       <div class="section">
         <button class="delete-group">Delete group</button>
         {{! TODO: Add confirmation or undo for this action }}
       </div>
     {{/if}}
-    <h3>Permissions</h3>
-    {{> accessControl}}
+    <div class="section">
+      <h3>Permissions</h3>
+      {{> accessButton}}
+    </div>
   </div>
+
 </template>

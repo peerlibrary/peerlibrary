@@ -294,7 +294,7 @@
           }}
         </div>
         <div class="form-control">
-          {{> visibilityMenu}}
+          {{> annotationAccessButton}}
           <button type="button" class="btn blue save">Save</button>
         </div>
       </div>
@@ -371,9 +371,9 @@
   </div>
 </template>
 
-<template name="visibilityMenu">
-  <div class="visibility-menu dropdown-trigger">
-    {{> visibilityMenuVisibility}}
+<template name="annotationAccessButton">
+  <div class="access-button dropdown-trigger">
+    {{> annotationAccessButtonText}}
     <div class="dropdown-anchor">
       <div class="right-aligned dropdown">
         <h3>Permissions</h3>
@@ -387,12 +387,27 @@
   </div>
 </template>
 
-<template name="visibilityMenuVisibility">
-  {{#if public}}
-    <i class="icon-public"></i> Public annotation
-  {{else}}
-    <i class="icon-private"></i> Private annotation
-  {{/if}}
+<template name="annotationAccessButtonText">
+  <span class="tooltip" title="
+    {{#if local}}
+      {{#if public}}
+        Everyone will be able see the annotation.
+      {{else}}
+        Only the users listed will be able to see the annotation.
+      {{/if}}
+    {{else}}
+      {{#if public}}
+        Everyone can see the annotation.
+      {{else}}
+        Only the users listed can see the annotation.
+      {{/if}}
+    {{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i> Public annotation
+    {{else}}
+      <i class="icon-private"></i> Private annotation
+    {{/if}}
+  </span>
 </template>
 
 <template name="newAnnotationAccessControl">

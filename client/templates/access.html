@@ -1,3 +1,23 @@
+<template name="accessButton">
+  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="
+    {{#if public}}
+      Everyone can see the {{documentName}}.
+    {{else}}
+      Only the users listed can see the {{documentName}}.
+    {{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i> Public {{documentName}}
+    {{else}}
+      <i class="icon-private"></i> Private {{documentName}}
+    {{/if}}
+    <div class="dropdown-anchor">
+      <div class="dropdown">
+        {{> accessControl}}
+      </div>
+    </div>
+  </div>
+</template>
+
 <template name="accessControl">
   <div class="access-menu control">
     {{#if canModifyAccess}}
@@ -37,7 +57,7 @@
   <div class="access {{documentName}}-access">
     {{#if public}}
       <div class="access-name">
-        <i class="access-icon icon-public"></i> Public {{documentName}}
+        <i class="access-icon icon-public"></i> Public
       </div>
       <div class="description public displayed">
         Everyone can see the {{documentName}}.
@@ -45,7 +65,7 @@
     {{/if}}
     {{#if private}}
       <div class="access-name">
-        <i class="access-icon icon-private"></i> Private {{documentName}}
+        <i class="access-icon icon-private"></i> Private
       </div>
       <div class="description private displayed">
         Only the users listed can see the {{documentName}}.

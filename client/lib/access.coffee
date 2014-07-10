@@ -1,3 +1,46 @@
+onAccessDropdownHidden = (event) ->
+  # Return the access button to default state.
+  $button = $(this).closest('.access-button')
+  $button.addClass('tooltip')
+
+Template.accessButton.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+
+Template.accessButton.events
+  'click .dropdown-trigger': (e, template) ->
+    # Make sure only the trigger toggles the dropdown
+    return if $.contains template.find('.dropdown-anchor'), e.target
+
+    $anchor = $(template.firstNode).find('.dropdown-anchor').first()
+    $anchor.toggle()
+
+    if $anchor.is(':visible')
+      # Temporarily remove and disable tooltips on the button.
+      $button = $(template.findAll '.access-button')
+      tooltipId = $button.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $button.removeClass('tooltip')
+
+    else
+      onAccessDropdownHidden.call($anchor, null)
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.accessButton.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.accessButton.public = ->
+  @access is @constructor.ACCESS.PUBLIC
+
+Template.accessButton.documentName = ->
+  # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+  if @constructor.Meta.collection._name is null
+    documentName = @constructor.Meta.parent._name
+  else
+    documentName = @constructor.Meta._name
+
+  documentName.toLowerCase()
+
 Template.accessControl.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
@@ -40,14 +83,7 @@ Template.accessControlPrivacyForm.public = ->
 Template.accessControlPrivacyForm.private = ->
   @access is @constructor.ACCESS.PRIVATE
 
-Template.accessControlPrivacyForm.documentName = ->
-  # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-  if @constructor.Meta.collection._name is null
-    documentName = @constructor.Meta.parent._name
-  else
-    documentName = @constructor.Meta._name
-
-  documentName.toLowerCase()
+Template.accessControlPrivacyForm.documentName = Template.accessButton.documentName
 
 Template.accessControlPrivacyInfo.public = Template.accessControlPrivacyForm.public
 
