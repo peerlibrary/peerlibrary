@@ -1,10 +1,10 @@
 # Local (client-only) document of importing files
 class ImportingFile extends Document
   # name: user's file name
+  # status: current status or error message
   # readProgress: progress of reading from file, in %
   # uploadProgress: progress of uploading file, in %
   # preprocessingProgress: progress of file preprocessing, in %
-  # status: current status or error message
   # finished: true when importing has finished
   # errored: true when there was an error
   # canceled: true when user cancels import
@@ -18,14 +18,14 @@ class ImportingFile extends Document
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
 DRAGGING_OVER_DOM = false
+
 importingFiles = {}
 
 # Observes files that are processed and removes them from dictionary
-processedFiles = ImportingFile.documents.find()
+processedFiles = ImportingFile.documents.find {}
 processedFiles.observeChanges
   removed: (id) ->
     delete importingFiles[id]
-
 
 verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -85,6 +85,8 @@ uploadFile = (file, publicationId) ->
 
 # Process next element from import queue
 Deps.autorun ->
+  # Autorun will not re-run until the same document does not have finished
+  # or errored fields set, but after they are set, next file will be returned
   document = ImportingFile.documents.findOne
     finished: false
     errored: false
@@ -118,7 +120,6 @@ Deps.autorun ->
     else
       uploadFile importingFiles[document._id], result.publicationId
 
-
 computeChecksum = (file, callback) ->
   hash = new Crypto.SHA256
     onProgress: (progress) ->
@@ -128,7 +129,7 @@ computeChecksum = (file, callback) ->
         uploadProgress: progress * 100 # %
         preprocessingProgress: progress * 100 # %
 
-  hash.update file.content, (error, result) ->
+  hash.update file.content, (error) ->
     if error
       ImportingFile.documents.update file._id,
         $set:
@@ -147,6 +148,8 @@ testPDF = (file, callback) ->
 
 # Process next element from preprocessing queue
 Deps.autorun ->
+  # Autorun will not re-run until the same document does not yet have
+  # sha256 field, but after the field is set, next file will be returned
   document = ImportingFile.documents.findOne
     sha256:
       $exists: false
@@ -161,9 +164,9 @@ Deps.autorun ->
 
   reader = new FileReader()
   reader.onload = ->
-    importingFiles[document._id].content = @result
+    importingFiles[document._id].content = reader.result
     testPDF importingFiles[document._id], ->
-      computeChecksum importingFiles[document._id], (error, result) ->
+      computeChecksum importingFiles[document._id], (error, sha256) ->
         if error
           ImportingFile.documents.update document._id,
             $set:
@@ -173,12 +176,11 @@ Deps.autorun ->
 
         ImportingFile.documents.update document._id,
           $set:
-            sha256: result
+            sha256: sha256
             status: "In import queue"
 
   # TODO: Read file in chunks
   reader.readAsArrayBuffer importingFiles[document._id]
-
 
 importFile = (file) ->
   id = Random.id()
