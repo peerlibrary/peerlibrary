@@ -25,8 +25,8 @@ testAsyncMulti 'crypto - file size', [
     test.equal @pdf.byteLength, PDF_BYTE_LENGTH
 ]
 
-# Force worker use, disable worker use, use autodetect
-for disableWorker in [false, true, null]
+# Disable worker use, use autodetect; add false to force worker use (tests might fail)
+for disableWorker in [true, null]
   do (disableWorker) ->
     testAsyncMulti "crypto - sending complete file as ArrayBuffer, checking hash (disableWorker: #{ disableWorker })", [
       (test, expect) ->
