@@ -1173,7 +1173,7 @@ Template.publicationAnnotationsItem.events
     # IDs are local to the client and we do not want to make user believe annotation
     # is already saved and that ID is permanent, or even that user would link to that
     # location.
-    else if $(e.target).closest('.annotations-list .local.annotation')
+    else if $(e.target).closest('.annotations-list .local.annotation').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
