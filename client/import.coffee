@@ -11,6 +11,7 @@ class ImportingFile extends Document
   # imported: true if file was successfully imported
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
+  # enqueued: true when file is enqueued
 
   @Meta
     name: 'ImportingFile'
@@ -26,6 +27,19 @@ processedFiles = ImportingFile.documents.find {}
 processedFiles.observeChanges
   removed: (id) ->
     delete importingFiles[id]
+
+# Observes enqueued files that get canceled
+canceledFiles = ImportingFile.documents.find
+  canceled: true
+  enqueued: true
+  finished: false
+  errored: false
+canceledFiles.observe
+  added: (id) ->
+    ImportingFile.documents.update id,
+      $set:
+        finished: true
+        status: "Import canceled"
 
 verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,
@@ -90,6 +104,7 @@ Deps.autorun ->
   document = ImportingFile.documents.findOne
     finished: false
     errored: false
+    canceled: false
     sha256:
       $exists: true
   ,
@@ -98,6 +113,10 @@ Deps.autorun ->
       name: 1
       sha256: 1
   return unless document
+
+  ImportingFile.documents.update document._id,
+    $set:
+      enqueued: false
 
   Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
     if error
@@ -152,6 +171,7 @@ Deps.autorun ->
     sha256:
       $exists: false
     errored: false
+    finished: false
   ,
     fields:
       _id: 1
@@ -160,6 +180,7 @@ Deps.autorun ->
   ImportingFile.documents.update document._id,
     $set:
       status: "Preprocessing"
+      enqueued: false
 
   reader = new FileReader()
   reader.onload = ->
@@ -177,6 +198,8 @@ Deps.autorun ->
           $set:
             sha256: sha256
             status: "In import queue"
+            enqueued: true
+
   reader.onerror = (error) ->
     console.log "Error " + error
     ImportingFile.documents.update document._id,
@@ -204,6 +227,7 @@ importFile = (file) ->
     errored: false
     canceled: false
     imported: false
+    enqueued: true
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
