@@ -85,21 +85,17 @@ class @Publication extends Publication
         Storage.link @foreignFilename(), @cachedFilename()
         assert Storage.exists @cachedFilename()
 
-    cache = (error, result) ->
-      @sha256 = result
-      @cached = moment.utc().toDate()
-      Publication.documents.update @_id,
-        $set:
-          cached: @cached
-          sha256: @sha256
-
     if not @sha256
       pdfContent = Storage.open @cachedFilename()
       hash = new Crypto.SHA256()
       hash.update pdfContent
-      @sha256 = hash.finalize cache
-    else
-      cache(null, @sha256)
+      @sha256 = hash.finalize()
+
+    @cached = moment.utc().toDate()
+    Publication.documents.update @_id,
+      $set:
+        cached: @cached
+        sha256: @sha256
 
   process: =>
     switch @mediaType
@@ -350,39 +346,38 @@ Meteor.methods
 
       hash = new Crypto.SHA256()
       hash.update pdf
-      hash.finalize (error, result)->
-        sha256 = result
+      sha256 = hash.finalize()
 
-        unless sha256 == publication.sha256
-          throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
+      unless sha256 == publication.sha256
+        throw new Meteor.Error 400, "Hash of uploaded file does not match hash provided initially."
 
-        unless publication.cached
-          # Upload is being finished for the first time, so move it to permanent location
-          Storage.rename publication._importingFilename(), publication.cachedFilename()
-          Publication.documents.update
-            _id: publication._id
-          ,
-            $set:
-              cached: moment.utc().toDate()
-              size: file.size
-
-        # Remove all other partially uploaded files, if there are any
-        for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
-          filename = publication._importingFilename i
-          try
-            Storage.remove filename
-          catch error
-            # We ignore any error when removing partially uploaded files
-
-        # Hash was verified, so add it to uploader's library
-        Person.documents.update
-          _id: person._id
-          'library._id':
-            $ne: publication._id
+      unless publication.cached
+        # Upload is being finished for the first time, so move it to permanent location
+        Storage.rename publication._importingFilename(), publication.cachedFilename()
+        Publication.documents.update
+          _id: publication._id
         ,
-          $addToSet:
-            library:
-              _id: publication._id
+          $set:
+            cached: moment.utc().toDate()
+            size: file.size
+
+      # Remove all other partially uploaded files, if there are any
+      for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
+        filename = publication._importingFilename i
+        try
+          Storage.remove filename
+        catch error
+          # We ignore any error when removing partially uploaded files
+
+      # Hash was verified, so add it to uploader's library
+      Person.documents.update
+        _id: person._id
+        'library._id':
+          $ne: publication._id
+      ,
+        $addToSet:
+          library:
+            _id: publication._id
 
   'verify-publication': (publicationId, samplesData) ->
     check publicationId, DocumentId
