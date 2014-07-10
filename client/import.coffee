@@ -135,9 +135,9 @@ computeChecksum = (file, callback) ->
         $set:
           errored: true
           status: error.toString()
-    return
+      return
 
-  hash.finalize callback
+    hash.finalize callback
 
 testPDF = (file, callback) ->
   PDFJS.getDocument(data: file.content, password: '').then callback, (message, exception) ->
