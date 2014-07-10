@@ -9,7 +9,7 @@ Crypto =
 
   SHA256: class extends Crypto.SHA256
     # Defaults
-    disableWorker: false
+    disableWorker: null
     workerSrc: WORKER_SRC
     chunkSize: CHUNK_SIZE
     size: null
@@ -21,7 +21,7 @@ Crypto =
     #              chunks are send to the worker one by one, smaller chunks result in less memory allocation, but more overhead
     constructor: (params) ->
       super
-      @disableWorker = params?.disableWorker
+      @disableWorker = params.disableWorker if params?.disableWorker?
       @workerSrc = params.workerSrc if params?.workerSrc
       @chunkSize = params.chunkSize if params?.chunkSize?
       @cryptoWorker = @_createCryptoWorker()
@@ -50,7 +50,6 @@ Crypto =
                 size: 0 # We do not want to modify totalSizeQueued with our test
                 data: testArray
                 message: 'ping'
-                transferable: transferable
           catch error
             # There was an error creating a worker, but disableWorker is
             # explicitly set to false, so fallback is forbidden, let's rethrow
@@ -65,9 +64,10 @@ Crypto =
           Crypto._browserSupport.useWorker = true
           Crypto._browserSupport.transferable = true
 
-        # If transferable is false, even if useWorker is set at this point
-        # we need to wait for "pong" answer from worker because structured
-        # copy may not work
+        else
+          # If transferable is false, we need to wait for "pong" answer
+          # from worker because structured copy may not work
+          Crypto._browserSupport.transferable = false
 
       else
         # Or is disableWorker not set and we can use a web worker, or disableWorker is explicitly set to false
@@ -80,14 +80,17 @@ Crypto =
 
     update: (data, callback) =>
       throw new Error "No data given" if not data
-      callback ?= ->
 
-      assert @cryptoWorker
+      unless @cryptoWorker
+        if callback
+          return callback new Error "Reusing consumed instance"
+        else
+          throw new Error "Reusing consumed instance"
 
       params =
         message: 'update'
         data: data
-        onDone: callback
+        onDone: callback or ->
       if params.data instanceof Blob
         params.type = 'blob'
         params.size = params.data.size
@@ -100,7 +103,7 @@ Crypto =
     finalize: (callback) =>
       throw new Error "No callback given" if not callback
 
-      assert @cryptoWorker
+      return callback new Error "Reusing consumed instance" unless @cryptoWorker
 
       params =
         message: 'finalize'
@@ -115,9 +118,10 @@ Crypto =
       @cryptoWorker.worker.terminate()
       delete @cryptoWorker.worker
 
-      fallbackWorker = new FallbackCryptoWorker @, @cryptoWorker.size, @onProgress, @chunkSize
-      fallbackWorker.enqueue @cryptoWorker.queue
-      @cryptoWorker = fallbackWorker
+      queue = @cryptoWorker.queue
+      @cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
+      @cryptoWorker.addQueue queue
+      @cryptoWorker.nextInQueue()
 
 class BaseCryptoWorker
   constructor: (@instance, @size, @onProgress, @chunkSize) ->
@@ -142,21 +146,22 @@ class BaseCryptoWorker
         @current?.onDone? error, null
 
       pong: (params) =>
-        if params.data instanceof ArrayBuffer
-          Crypto._browserSupport.useWorker = true
+        Crypto._browserSupport.useWorker = params.data instanceof ArrayBuffer
+        # Or we can use a web worker, or disableWorker is explicitly set to false
+        if Crypto._browserSupport.useWorker or @instance.disableWorker is false
           @busy = false
           @nextInQueue()
         else
-          Crypto._browserSupport.useWorker = false
           @instance._switchToFallbackWorker()
 
   enqueue: (params) =>
-    if _.isArray params
-      @enqueue item for item in params
-    else
-      @totalSizeQueued += params.size or 0
-      @queue.push params
+    @totalSizeQueued += params.size or 0
+    @queue.push params
     @nextInQueue()
+
+  addQueue: (queue) =>
+    @totalSizeQueued += item.size or 0 for item in queue
+    @queue = @queue.concat queue
 
   nextInQueue: =>
     return if @busy
@@ -164,9 +169,7 @@ class BaseCryptoWorker
 
     # Check if current chunk is processed completely
     if @current and @chunkStart >= @current.size
-      @handler.done
-        error: null,
-        result: null
+      @handler.done null
       @current = null
 
     if not @current
@@ -185,6 +188,8 @@ class BaseCryptoWorker
         message: 'ping'
         data: @current.data
       return
+
+    assert.equal @current.message, 'update'
 
     # Read next chunk (or part of chunk)
     start = @chunkStart
@@ -219,20 +224,22 @@ class WebCryptoWorker extends BaseCryptoWorker
 
     @worker = new Worker workerSrc
 
-    @worker.onmessage = (event) =>
+    @worker.addEventListener 'message', (event) =>
       data = event.data.data
       message = event.data.message
       @handler[message] data
+    , false
 
-    @worker.onerror = (error) =>
-      @handler.error error
+    @worker.addEventListener 'error', (error) =>
       @destroy()
+      @handler.error error
+    , false
 
   processChunk: (chunk) =>
     message =
       message: 'update'
       chunk: chunk
-    if @transferable
+    if Crypto._browserSupport.transferable
       @worker.postMessage message, [chunk]
     else
       @worker.postMessage message
@@ -262,8 +269,8 @@ class FallbackCryptoWorker extends BaseCryptoWorker
     try
       @hash.update chunk
     catch error
-      @handler.error error
       @destroy()
+      @handler.error error
       return
     @handler.chunkDone()
 
@@ -271,9 +278,10 @@ class FallbackCryptoWorker extends BaseCryptoWorker
     try
       binaryData = @hash.finalize()
       sha256 = @_bin2hex new Uint8Array binaryData
-      @handler.done sha256
     catch error
-      @handler.error error
+      return @handler.error error
+
+    @handler.done sha256
 
   destroy: =>
     @instance._destroy()

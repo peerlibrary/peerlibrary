@@ -25,132 +25,133 @@ testAsyncMulti 'crypto - file size', [
     test.equal @pdf.byteLength, PDF_BYTE_LENGTH
 ]
 
-# force worker use, disable worker use, use autodetect
+# Force worker use, disable worker use, use autodetect
 for disableWorker in [false, true, null]
-  testAsyncMulti "crypto - sending complete file as ArrayBuffer, checking hash (disableWorker: #{ disableWorker })", [
-    (test, expect) ->
-      getPdf expect (error, pdf) =>
-        test.isFalse error, error?.toString?() or error
-        test.isTrue pdf
-        @pdf = pdf
-  ,
-    (test, expect) ->
-      onComplete = expect()
-      hash = createHash
-        disableWorker: disableWorker
-      hash.update @pdf, (error) ->
-        test.isFalse error, error?.toString?() or error
-        hash.finalize (error, result) ->
+  do (disableWorker) ->
+    testAsyncMulti "crypto - sending complete file as ArrayBuffer, checking hash (disableWorker: #{ disableWorker })", [
+      (test, expect) ->
+        getPdf expect (error, pdf) =>
           test.isFalse error, error?.toString?() or error
-          test.equal result, PDF_HASH
-          onComplete()
-  ]
-
-  testAsyncMulti "crypto - sending complete file as Blob, checking hash (disableWorker: #{ disableWorker })", [
-    (test, expect) ->
-      getPdf expect (error, pdf) =>
-        test.isFalse error, error?.toString?() or error
-        test.isTrue pdf
-        @pdf = pdf
-  ,
-    (test, expect) ->
-      onComplete = expect()
-      blob = new Blob [@pdf]
-      hash = createHash
-        disableWorker: disableWorker
-      hash.update blob, (error) ->
-        test.isFalse error, error?.toString?() or error
-        hash.finalize (error, result) ->
-          test.isFalse error, error?.toString?() or error
-          test.equal result, PDF_HASH
-          onComplete()
-  ]
-
-  testAsyncMulti "crypto - sending file in regular chunks, checking hash (disableWorker: #{ disableWorker })", [
-    (test, expect) ->
-      getPdf expect (error, pdf) =>
-        test.isFalse error, error?.toString?() or error
-        test.isTrue pdf
-        @pdf = pdf
-  ,
-    (test, expect) ->
-      onComplete = expect()
-      hash = createHash
-        disableWorker: disableWorker
-      chunkStart = 0
-      async.whilst =>
-        chunkStart < @pdf.byteLength
-      ,
-        (callback) =>
-          {chunkData, chunkStart} = getChunk @pdf, chunkStart
-          hash.update chunkData, callback
-      ,
-        (error) ->
+          test.isTrue pdf
+          @pdf = pdf
+    ,
+      (test, expect) ->
+        onComplete = expect()
+        hash = createHash
+          disableWorker: disableWorker
+        hash.update @pdf, (error) ->
           test.isFalse error, error?.toString?() or error
           hash.finalize (error, result) ->
             test.isFalse error, error?.toString?() or error
             test.equal result, PDF_HASH
             onComplete()
-  ]
+    ]
 
-  testAsyncMulti "crypto - sending file in irregular chunks, checking hash (disableWorker: #{ disableWorker })", [
-    (test, expect) ->
-      getPdf expect (error, pdf) =>
-        test.isFalse error, error?.toString?() or error
-        test.isTrue pdf
-        @pdf = pdf
-  ,
-    (test, expect) ->
-      onComplete = expect()
-      hash = createHash
-        disableWorker: disableWorker
-      chunkStart = 0
-      async.whilst =>
-        chunkStart < @pdf.byteLength
-      ,
-        (callback) =>
-          {chunkData, chunkStart} = getChunk @pdf, chunkStart, true # true is for randomized chunks
-          hash.update chunkData, callback
-      ,
-        (error) ->
+    testAsyncMulti "crypto - sending complete file as Blob, checking hash (disableWorker: #{ disableWorker })", [
+      (test, expect) ->
+        getPdf expect (error, pdf) =>
+          test.isFalse error, error?.toString?() or error
+          test.isTrue pdf
+          @pdf = pdf
+    ,
+      (test, expect) ->
+        onComplete = expect()
+        blob = new Blob [@pdf]
+        hash = createHash
+          disableWorker: disableWorker
+        hash.update blob, (error) ->
           test.isFalse error, error?.toString?() or error
           hash.finalize (error, result) ->
             test.isFalse error, error?.toString?() or error
             test.equal result, PDF_HASH
             onComplete()
-  ]
+    ]
 
-  testAsyncMulti "crypto - progress callback (disableWorker: #{ disableWorker })", [
-    (test, expect) ->
-      getPdf expect (error, pdf) =>
-        test.isFalse error, error?.toString?() or error
-        test.isTrue pdf
-        @pdf = pdf
-  ,
-    (test, expect) ->
-      onComplete = expect()
-
-      round = (number) ->
-        number.toPrecision 5
-      chunkCount = @pdf.byteLength / CHUNK_SIZE
-      progressStep = 1 / chunkCount
-      expectedProgress = 0
-      progressCount = 0
-  
-      hash = createHash
-        size: @pdf.byteLength
-        disableWorker: disableWorker
-        onProgress: (progress) ->
-          expectedProgress += progressStep
-          expectedProgress = 1 if expectedProgress > 1
-          progressCount++
-          test.equal round(progress), round(expectedProgress)
-
-      hash.update @pdf, (error) ->
-        test.isFalse error, error?.toString?() or error
-        hash.finalize (error, result) ->
+    testAsyncMulti "crypto - sending file in regular chunks, checking hash (disableWorker: #{ disableWorker })", [
+      (test, expect) ->
+        getPdf expect (error, pdf) =>
           test.isFalse error, error?.toString?() or error
-          test.equal result, PDF_HASH
-          test.equal progressCount, Math.ceil(chunkCount)
-          onComplete()
-  ]
+          test.isTrue pdf
+          @pdf = pdf
+    ,
+      (test, expect) ->
+        onComplete = expect()
+        hash = createHash
+          disableWorker: disableWorker
+        chunkStart = 0
+        async.whilst =>
+          chunkStart < @pdf.byteLength
+        ,
+          (callback) =>
+            {chunkData, chunkStart} = getChunk @pdf, chunkStart
+            hash.update chunkData, callback
+        ,
+          (error) ->
+            test.isFalse error, error?.toString?() or error
+            hash.finalize (error, result) ->
+              test.isFalse error, error?.toString?() or error
+              test.equal result, PDF_HASH
+              onComplete()
+    ]
+
+    testAsyncMulti "crypto - sending file in irregular chunks, checking hash (disableWorker: #{ disableWorker })", [
+      (test, expect) ->
+        getPdf expect (error, pdf) =>
+          test.isFalse error, error?.toString?() or error
+          test.isTrue pdf
+          @pdf = pdf
+    ,
+      (test, expect) ->
+        onComplete = expect()
+        hash = createHash
+          disableWorker: disableWorker
+        chunkStart = 0
+        async.whilst =>
+          chunkStart < @pdf.byteLength
+        ,
+          (callback) =>
+            {chunkData, chunkStart} = getChunk @pdf, chunkStart, true # true is for randomized chunks
+            hash.update chunkData, callback
+        ,
+          (error) ->
+            test.isFalse error, error?.toString?() or error
+            hash.finalize (error, result) ->
+              test.isFalse error, error?.toString?() or error
+              test.equal result, PDF_HASH
+              onComplete()
+    ]
+
+    testAsyncMulti "crypto - progress callback (disableWorker: #{ disableWorker })", [
+      (test, expect) ->
+        getPdf expect (error, pdf) =>
+          test.isFalse error, error?.toString?() or error
+          test.isTrue pdf
+          @pdf = pdf
+    ,
+      (test, expect) ->
+        onComplete = expect()
+
+        round = (number) ->
+          number.toPrecision 5
+        chunkCount = @pdf.byteLength / CHUNK_SIZE
+        progressStep = 1 / chunkCount
+        expectedProgress = 0
+        progressCount = 0
+
+        hash = createHash
+          size: @pdf.byteLength
+          disableWorker: disableWorker
+          onProgress: (progress) ->
+            expectedProgress += progressStep
+            expectedProgress = 1 if expectedProgress > 1
+            progressCount++
+            test.equal round(progress), round(expectedProgress)
+
+        hash.update @pdf, (error) ->
+          test.isFalse error, error?.toString?() or error
+          hash.finalize (error, result) ->
+            test.isFalse error, error?.toString?() or error
+            test.equal result, PDF_HASH
+            test.equal progressCount, Math.ceil(chunkCount)
+            onComplete()
+    ]
