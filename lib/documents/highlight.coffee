@@ -1,6 +1,7 @@
 class @Highlight extends AccessDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last highlight activity (for now same as updatedAt)
   # author:
   #   _id: author's person id
   #   slug: author's person id
@@ -21,7 +22,10 @@ class @Highlight extends AccessDocument
     fields: =>
       author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication
-      updatedAt: UpdatedAtField 'self', ['author._id', 'publication._id', 'quote', 'target']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
+      personLastActivity: RelatedLastActivityTrigger Person, ['author._id'], (doc, oldDoc) -> doc.author?._id
+      publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

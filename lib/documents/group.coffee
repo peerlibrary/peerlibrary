@@ -3,11 +3,12 @@ class @Group extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last group activity (annotation made inside a group, etc.)
   # slug: slug for URL
   # name: name of the group
   # members: list of people in the group
@@ -28,7 +29,13 @@ class @Group extends ReadAccessDocument
       slug: @GeneratedField 'self', ['name']
       members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
-      updatedAt: UpdatedAtField 'self', ['name', 'members._id']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['name', 'members._id']
+      # TODO: For now we are updating last activity of all persons in a group, but we might consider removing this and leave it to the "trending" view
+      personsLastActivity: RelatedLastActivityTrigger Person, ['members._id'], (doc, oldDoc) ->
+        newMembers = (member._id for member in doc.members or [])
+        oldMembers = (member._id for member in oldDoc.members or [])
+        _.difference newMembers, oldMembers
 
   _hasReadAccess: (person) =>
     access = super

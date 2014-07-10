@@ -1,46 +1,54 @@
 Package.describe({
-  summary: "Crypto package"
+  summary: "Efficient crypto operations in web workers"
 });
 
 Package.on_use(function (api) {
+  api.use(['coffeescript', 'underscore', 'assert'], ['client', 'server']);
+
   api.export('Crypto');
 
-  api.use(['coffeescript', 'logging'], ['client', 'server']);
-  api.use(['blob'], ['client']);
-
   api.add_files([
-    'lib/crypto.coffee'
+    'lib.coffee'
   ], ['client', 'server']);
 
   api.add_files([
-    'server/crypto.coffee',
-  ], 'server' );
-  api.add_files([
-    'client/crypto.coffee',
+    'arraybuffer.coffee',
+    'client.coffee'
   ], 'client' );
 
   api.add_files([
+    'server.coffee'
+  ], 'server' );
+
+  // We have to add digest.js in two ways, to be available
+  // in a fallback worker, and in a web worker
+  api.add_files([
     'digest.js/digest.js'
-    ], 'client', {bare: true});
+  ], 'client', {bare: true});
 
 	api.add_files([
 		'digest.js/digest.js',
-		'assets/web-worker.js'
+		'assets/worker.js'
 	], 'client', {isAsset: true});
-
 });
 
 Package.on_test(function (api) {
-  api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
-  api.use(['jquery'], ['client']);
+  api.use(['crypto', 'tinytest', 'test-helpers', 'coffeescript', 'underscore', 'async'], ['client', 'server']);
 
-  api.add_files(['lib/tests.coffee'], ['client', 'server']);
   api.add_files([
-    'client/tests_generic.coffee',
-    'client/tests_any_worker.coffee',
-    'client/tests_web_worker.coffee',
-    'client/tests_fallback_worker.coffee'
-  ], ['client']);
-  api.add_files(['server/tests.coffee'], ['server']);
-  api.add_files(['assets/test.pdf'], ['client', 'server'], {isAsset: true});
+    'tests/common.coffee',
+    'tests/defined.coffee'
+  ], ['client', 'server']);
+
+  api.add_files([
+    'tests/client.coffee'
+  ], 'client');
+
+  api.add_files([
+    'tests/server.coffee'
+  ], 'server');
+
+  api.add_files([
+    'assets/test.pdf'
+  ], ['client', 'server'], {isAsset: true});
 });

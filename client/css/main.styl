@@ -3,36 +3,28 @@
 @font-face
   font-family 'Fira Sans'
   src url('/fonts/FiraSans-Regular.eot')
-  src url('/fonts/FiraSans-Regular.eot?#iefix') format('embedded-opentype'),
-  url('/fonts/FiraSans-Regular.woff') format('woff'),
-  url('/fonts/FiraSans-Regular.ttf') format('truetype')
+  src url('/fonts/FiraSans-Regular.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Regular.woff') format('woff'), url('/fonts/FiraSans-Regular.ttf') format('truetype')
   font-weight normal
   font-style normal
 
 @font-face
   font-family 'Fira Sans'
   src url('/fonts/FiraSans-Italic.eot')
-  src url('/fonts/FiraSans-Italic.eot?#iefix') format('embedded-opentype'),
-  url('/fonts/FiraSans-Italic.woff') format('woff'),
-  url('/fonts/FiraSans-Italic.ttf') format('truetype')
+  src url('/fonts/FiraSans-Italic.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Italic.woff') format('woff'), url('/fonts/FiraSans-Italic.ttf') format('truetype')
   font-weight normal
   font-style italic
 
 @font-face
   font-family 'Fira Sans'
   src url('/fonts/FiraSans-Bold.eot')
-  src url('/fonts/FiraSans-Bold.eot?#iefix') format('embedded-opentype'),
-  url('/fonts/FiraSans-Bold.woff') format('woff'),
-  url('/fonts/FiraSans-Bold.ttf') format('truetype')
+  src url('/fonts/FiraSans-Bold.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Bold.woff') format('woff'), url('/fonts/FiraSans-Bold.ttf') format('truetype')
   font-weight bold
   font-style normal
 
 @font-face
   font-family 'Fira Sans'
   src url('/fonts/FiraSans-Light.eot')
-  src url('/fonts/FiraSans-Light.eot?#iefix') format('embedded-opentype'),
-  url('/fonts/FiraSans-Light.woff') format('woff'),
-  url('/fonts/FiraSans-Light.ttf') format('truetype')
+  src url('/fonts/FiraSans-Light.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Light.woff') format('woff'), url('/fonts/FiraSans-Light.ttf') format('truetype')
   font-weight 300
   font-style normal
 
@@ -43,12 +35,14 @@
 
 html, button, input, select, textarea
   color #22
+  -webkit-font-smoothing antialiased
 
 body
   font 14px "Fira Sans", sans-serif
   line-height default-line-height
   margin 0 auto
   background light-grey
+  -webkit-font-smoothing antialiased
 
 ::-moz-selection
   background selection-color
@@ -122,6 +116,9 @@ blockquote
   padding 0 15px
   margin-left 0
   margin-right 0
+
+dl ul
+  margin 0
 
 /* Buttons
 ========== */

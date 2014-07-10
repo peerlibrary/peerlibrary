@@ -1,6 +1,7 @@
 class @User extends Document
   # createdAt: time of creation
-  # updatedAt: time of last change
+  # updatedAt: time of the last change
+  # lastActivity: time of the last user account activity (login, password change, etc.)
   # username: user's username
   # emails: list of
   #   address: e-mail address
@@ -14,4 +15,6 @@ class @User extends Document
     collection: Meteor.users
     fields: =>
       person: @ReferenceField Person
-      updatedAt: UpdatedAtField 'self', ['username', 'emails', 'services', 'person._id']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
+      lastActivity: LastActivityTrigger ['services']
