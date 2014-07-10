@@ -125,8 +125,6 @@ computeChecksum = (file, callback) ->
     onProgress: (progress) ->
       ImportingFile.documents.update file._id,
       $set:
-        # TODO: Remove uploadProgress update when progressbar frontend is updated (#513)
-        uploadProgress: progress * 100 # %
         preprocessingProgress: progress * 100 # %
 
   hash.update file.content, (error) ->
@@ -293,6 +291,13 @@ Template.importingFilesItem.hideCancel = ->
   # We keep cancel shown even when canceled is set, until we get back
   # in the file upload method callback and set finished as well
   @finished or @errored
+
+Template.importingFilesItem.state = ->
+  return 'errored' if @errored
+  return 'canceled' if @canceled
+  return 'finished' if @finished
+  return 'preprocessing' unless @sha256
+  return 'importing'
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
