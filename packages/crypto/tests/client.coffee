@@ -39,12 +39,19 @@ for disableWorker in [false, true, null]
         onComplete = expect()
         hash = createHash
           disableWorker: disableWorker
-        hash.update @pdf, (error) ->
+        hash.update @pdf, (error) =>
           test.isFalse error, error?.toString?() or error
-          hash.finalize (error, result) ->
+          hash.finalize (error, result) =>
             test.isFalse error, error?.toString?() or error
             test.equal result, PDF_HASH
-            onComplete()
+
+             # Cannot reuse consumed hash
+            hash.update @pdf, (error) ->
+              test.isTrue error
+              hash.finalize (error, result) ->
+                test.isTrue error
+                test.isFalse result
+                onComplete()
     ]
 
     testAsyncMulti "crypto - sending complete file as Blob, checking hash (disableWorker: #{ disableWorker })", [

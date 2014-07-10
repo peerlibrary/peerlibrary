@@ -140,9 +140,11 @@ class BaseCryptoWorker
         @nextInQueue()
 
       done: (result) =>
+        @destroy()
         @current?.onDone? null, result
 
       error: (error) =>
+        @destroy()
         @current?.onDone? error, null
 
       pong: (params) =>
@@ -169,7 +171,7 @@ class BaseCryptoWorker
 
     # Check if current chunk is processed completely
     if @current and @chunkStart >= @current.size
-      @handler.done null
+      @current.onDone?()
       @current = null
 
     if not @current
@@ -231,7 +233,6 @@ class WebCryptoWorker extends BaseCryptoWorker
     , false
 
     @worker.addEventListener 'error', (error) =>
-      @destroy()
       @handler.error error
     , false
 
@@ -269,9 +270,8 @@ class FallbackCryptoWorker extends BaseCryptoWorker
     try
       @hash.update chunk
     catch error
-      @destroy()
-      @handler.error error
-      return
+      return @handler.error error
+
     @handler.chunkDone()
 
   finalize: =>

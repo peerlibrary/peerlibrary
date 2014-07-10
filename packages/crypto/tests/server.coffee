@@ -13,6 +13,14 @@ Tinytest.add 'crypto - sending complete file as Buffer, checking hash (blocking)
   result = hash.finalize()
   test.equal result, PDF_HASH
 
+  # Cannot reuse consumed hash
+  test.throws ->
+    hash.update pdf
+  , /HashUpdate fail/
+  test.throws ->
+    hash.finalize()
+  , /Not initialized/
+
 Tinytest.add 'crypto - sending file in regular chunks, checking hash (blocking)', (test) ->
   pdf = getPdf()
   hash = createHash()
@@ -41,7 +49,14 @@ Tinytest.addAsync 'crypto - sending complete file as Buffer, checking hash (call
     hash.finalize (error, result) ->
       test.isFalse error, error?.toString?() or error
       test.equal result, PDF_HASH
-      onComplete()
+
+      # Cannot reuse consumed hash
+      hash.update pdf, (error) ->
+        test.isTrue error
+        hash.finalize (error, result) ->
+          test.isTrue error
+          test.isFalse result
+          onComplete()
 
 Tinytest.addAsync 'crypto - sending file in regular chunks, checking hash (callback)', (test, onComplete) ->
   pdf = getPdf()
