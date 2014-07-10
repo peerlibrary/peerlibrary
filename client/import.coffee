@@ -157,7 +157,7 @@ importFile = (file) ->
 
       # TODO: Remove the following workaround for a bug
       # Deps.flush does not seem to really do it, so we have to use Meteor.setTimeout to workaround
-      # See: https://github.com/meteor/meteor/issues/1619
+      # See https://github.com/meteor/meteor/issues/1619
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
