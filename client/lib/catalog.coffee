@@ -8,7 +8,7 @@ Template.catalogSort.field = ->
 Template.catalogSort.events
   'click .dropdown-trigger': (e, template) ->
     # Make sure only the trigger toggles the dropdown
-    return if $(e.target).closest('.dropdown-anchor').length
+    return if $.contains template.find('.dropdown-anchor'), e.target
 
     $(template.findAll '.dropdown-anchor').toggle()
 

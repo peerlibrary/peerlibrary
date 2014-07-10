@@ -137,19 +137,23 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'groups-by-id', (groupId) ->
-  check groupId, DocumentId
+Meteor.publish 'groups-by-id', (groupIds) ->
+  check groupIds, Match.OneOf(DocumentId, [DocumentId])
+
+  groupIds = [groupIds] unless _.isArray groupIds
 
   @related (person) ->
     Group.documents.find Group.requireReadAccessSelector(person,
-      _id: groupId
-    ),
+        _id:
+          $in: groupIds
+      ),
       Group.PUBLISH_FIELDS()
   ,
     Person.documents.find
       _id: @personId
     ,
-      fields: _.extend Group.readAccessPersonFields()
+      fields: _.extend Publication.readAccessPersonFields(),
+        library: 1
 
 Meteor.publish 'my-groups', ->
   @related (person) ->

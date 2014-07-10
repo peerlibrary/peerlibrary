@@ -157,7 +157,7 @@ changeRole = (data, newRole) ->
 Template.rolesControlRoleEditor.events
   'click .dropdown-trigger': (e, template) ->
     # Make sure only the trigger toggles the dropdown
-    return if $(e.target).closest('.dropdown-anchor').length
+    return if $.contains template.find('.dropdown-anchor'), e.target
 
     $(template.findAll '.dropdown-anchor').toggle()
 
@@ -367,7 +367,6 @@ Template.rolesControlResults.results = ->
   _.map results, (result) =>
     result._parent = @
     result
-
 
 Template.rolesControlResultsItem.ifPerson = (options) ->
   if @ instanceof Person

@@ -91,7 +91,6 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
     createInSetQuery(documentId, 'admin', personOrGroupName, personOrGroupId)),
     createRemoveFromSetCommand('admin', personOrGroupName, personOrGroupId)
 
-  console.log changesCount
   changesCount
 
 # TODO: Use this code on the client side as well

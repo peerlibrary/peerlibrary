@@ -218,7 +218,7 @@
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
-      <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
+      <a class="author" href="{{personPathFromId currentPerson._id currentPerson.slug}}">
         <img src="{{currentPerson.avatar 30}}" class="avatar" />
       </a>
     {{else}}
@@ -261,7 +261,7 @@
   {{! editing can be false here only for local annotations }}
   <div class="annotations-editor {{#unless editing}}collapsed{{/unless}}">
     <div class="annotations-editor-form-wrapper">
-      <form class="annotations-form">
+      <div class="annotations-form">
         <div class="form-content">
           <div class="format-toolbar">
             {{#constant}}
@@ -297,7 +297,7 @@
           {{> visibilityMenu}}
           <button type="button" class="btn blue save">Save</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
@@ -373,15 +373,12 @@
 
 <template name="visibilityMenu">
   <div class="visibility-menu dropdown-trigger">
-    {{#if public}}
-      <i class="icon-public"></i> Public annotation
-    {{else}}
-      <i class="icon-private"></i> Private annotation
-    {{/if}}
+    {{> visibilityMenuVisibility}}
     <div class="dropdown-anchor">
       <div class="right-aligned dropdown">
+        <h3>Permissions</h3>
         {{#if local}}
-          {{> annotationDefaultsForm}}
+          {{> newAnnotationAccessControl}}
         {{else}}
           {{> accessControl}}
         {{/if}}
@@ -390,33 +387,126 @@
   </div>
 </template>
 
-<template name="annotationDefaultsForm">
-  <p>Choose defaults for new annotations.</p>
-  <div class="context-controls access-menu">
-    <form class="access {{documentName}}-access">
-      <div class="selections">
+<template name="visibilityMenuVisibility">
+  {{#if public}}
+    <i class="icon-public"></i> Public annotation
+  {{else}}
+    <i class="icon-private"></i> Private annotation
+  {{/if}}
+</template>
 
-        <label class="selection {{#if public}}selected{{/if}}">
-          <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-          <i class="access-icon icon-public"></i> Public
-        </label>
-
-        <label class="selection {{#if private}}selected{{/if}}">
-          <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="access-icon icon-private"></i> Private
-        </label>
-
-      </div>
-      <div class="description public {{#if public}}displayed{{/if}}">New annotations will be visible to everyone.</div>
-      <div class="description private {{#if private}}displayed{{/if}}">
-        {{#if myGroups.count}}
-          New annotations will be visible to you and members of groups you choose to work in.
-        {{else}}
-          New annotations will be visible only to you.
-        {{/if}}
-      </div>
-    </form>
+<template name="newAnnotationAccessControl">
+  <div class="access-menu control">
+    {{> newAnnotationAccessForm}}
+    {{> newAnnotationRolesControl}}
   </div>
+  <p class="hint">You can always change and customize annotation permissions later.</p>
+</template>
+
+<template name="newAnnotationAccessForm">
+  <div class="access {{documentName}}-access">
+    <div class="selections">
+
+      <label class="selection {{#if public}}selected icon-check{{/if}}">
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <i class="access-icon icon-public"></i> Public
+      </label>
+
+      <label class="selection {{#if private}}selected icon-check{{/if}}">
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <i class="access-icon icon-private"></i> Private
+      </label>
+
+    </div>
+    <div class="description public {{#if public}}displayed{{/if}}">Everyone will be able see the annotation.</div>
+    <div class="description private {{#if private}}displayed{{/if}}">Only the users listed will be able to see the annotation.</div>
+  </div>
+</template>
+
+<template name="newAnnotationRolesControl">
+  <div class="roles-control">
+    {{> newAnnotationRolesControlList}}
+    {{> newAnnotationRolesControlAdd}}
+  </div>
+</template>
+
+<template name="newAnnotationRolesControlList">
+  <ol class="roles-control-list">
+    {{#each rolesList}}
+      {{> newAnnotationRolesControlRoleEditor}}
+    {{/each}}
+  </ol>
+</template>
+
+<template name="newAnnotationRolesControlRoleEditor">
+  <li>
+    <div class="item">
+      {{#if isPerson}}{{> personInlineItem personOrGroup}}{{/if}}
+      {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
+    </div>
+    <div class="role">
+      {{#spaceless}}
+        {{#unless locked}}
+          <div class="dropdown-trigger">
+        {{/unless}}
+
+        {{#if admin}}administrator{{/if}}
+        {{#if maintainer}}maintainer{{/if}}
+        {{#if readAccess}}view access{{/if}}
+
+        {{#unless locked}}
+            <i class="icon-down"></i>
+            <div class="dropdown-anchor">
+              <ul class="dropdown right-aligned">
+                <li class="menu-item"><button class="administrator-button">administrator</button></li>
+                <li class="menu-item"><button class="maintainer-button">maintainer</button></li>
+                {{#if private}}<li class="menu-item"><button class="read-access-button">view access</button></li>{{/if}}
+                {{#unless cantRemove}}<li class="menu-item"><button class="remove-button">remove</button></li>{{/unless}}
+              </ul>
+            </div>
+          </div>
+        {{/unless}}
+      {{/spaceless}}
+    </div>
+  </li>
+</template>
+
+<template name="newAnnotationRolesControlAdd">
+  <div class="add-control control">
+    <input type="text" class="add-access" placeholder="Add users or groups" />
+    {{> newAnnotationRolesControlNoResults}}
+    {{> newAnnotationRolesControlResults}}
+    {{> newAnnotationRolesControlLoading}}
+  </div>
+</template>
+
+<template name="newAnnotationRolesControlNoResults">
+  {{#if noResults}}
+    <div class="no-results add-control-results">
+      No people or groups found
+      {{> addControlInviteByEmail email}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="newAnnotationRolesControlResults">
+  {{#if results.length}}
+    <ul class="access-results add-control-results">
+      {{#each results}}
+        {{> newAnnotationRolesControlResultsItem}}
+      {{/each}}
+    </ul>
+  {{/if}}
+</template>
+
+<template name="newAnnotationRolesControlResultsItem">
+  {{> memberAdd}}
+</template>
+
+<template name="newAnnotationRolesControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
 </template>
 
 <template name="annotationInvite">
@@ -483,25 +573,6 @@
       {{/with}}
     {{/each}}
   </p>
-</template>
-
-<template name="annotationsControl">
-  <div class="annotations-control">
-    {{#if currentPersonId}}
-      {{! TODO: Temporary disabled, not yet finalized code
-        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
-      }}
-      {{> contextMenu}}
-      {{#if inside.count}}
-        <div class="filter">
-          Groups filter:
-          {{#each inside}}
-            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
-          {{/each}}
-        </div>
-      {{/if}}
-    {{/if}}
-  </div>
 </template>
 
 <template name="annotationMetaMenu">
@@ -592,27 +663,43 @@
   </div>
 </template>
 
+<template name="annotationsControl">
+  <div class="annotations-control">
+    {{#if currentPersonId}}
+      {{! TODO: Temporary disabled, not yet finalized code
+      <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+      }}
+      {{> contextMenu}}
+      {{> groupsFilter}}
+    {{/if}}
+  </div>
+</template>
+
 <template name="contextMenu">
-  <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
+  <div class="meta-menu context-menu control">
     <div class="icons">
-      {{#spaceless}}
-        <i class="context-icon icon-group"></i>
-        {{#if selectedGroups.length}}
-          <span class="context-icon group-count">{{selectedGroups.length}}</span>
-        {{/if}}
-      {{/spaceless}}
+      {{> contextMenuGroupsCount}}
     </div>
     <div class="meta-content">
       {{> contextMenuGroups}}
-      <p class="hint">You can always change and customize permissions for each annotation individually.</p>
     </div>
   </div>
 </template>
 
+<template name="contextMenuGroupsCount">
+  {{#spaceless}}
+    <i class="context-icon icon-group"></i>
+    {{#if selectedGroups.length}}
+      <span class="context-icon group-count">{{selectedGroups.length}}</span>
+    {{/if}}
+  {{/spaceless}}
+</template>
+
 <template name="contextMenuGroups">
-  {{#if myGroups.count}}
-    <h3>Work inside groups</h3>
-    <div class="context-menu-groups access-menu">
+  <h3>Work inside groups</h3>
+  <p class="hint">Filter shown annotations and share new annotations with groups.</p>
+  <div class="context-menu-groups access-menu">
+    {{#if myGroups.count}}
       <ol class="toggle-list">
         {{#each myGroups}}
           {{> contextMenuGroupListing}}
@@ -625,8 +712,12 @@
           Select groups you want to share annotations with.
         {{/if}}
       </div>
-    </div>
-  {{/if}}
+    {{else}}
+      <div class="description displayed no-groups">
+        You are not a member of any groups.
+      </div>
+    {{/if}}
+  </div>
 </template>
 
 <template name="contextMenuGroupListing">
@@ -635,6 +726,17 @@
       <span class="group-name">{{name}}</span>
     </button>
   </li>
+</template>
+
+<template name="groupsFilter">
+  {{#if inside.count}}
+    <div class="filter">
+      Groups filter:
+      {{#each inside}}
+        <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
+      {{/each}}
+    </div>
+  {{/if}}
 </template>
 
 <template name="editorLinkPrompt">

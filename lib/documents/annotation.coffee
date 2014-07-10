@@ -176,9 +176,18 @@ class @Annotation extends ReadAccessDocument
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
     if document.author?._id and document.author._id not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: document.author._id
+
+    # Grant read access to all groups inside which this annotation was shared
+    document.inside ?= []
+    document.inside.forEach (group, index) ->
+      if group._id not in _.pluck document.readGroups, '_id'
+        document.readGroups ?= []
+        document.readGroups.push
+          _id: group._id
 
     document

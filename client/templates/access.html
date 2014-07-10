@@ -10,7 +10,7 @@
 </template>
 
 <template name="accessControlPrivacyForm">
-  <form class="access {{documentName}}-access">
+  <div class="access {{documentName}}-access">
     <div class="selections">
 
       <label class="selection {{#if public}}selected icon-check{{/if}}">
@@ -30,7 +30,7 @@
     <div class="description private {{#if private}}displayed{{/if}}">
       Only the users listed can see the {{documentName}}.
     </div>
-  </form>
+  </div>
 </template>
 
 <template name="accessControlPrivacyInfo">
