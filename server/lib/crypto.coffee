@@ -1,4 +1,4 @@
-if Meteor.settings.secretKey
+if Meteor.settings?.secretKey
   Crypto.SECRET_KEY = Meteor.settings.secretKey
 else
   Log.warn "Secret key setting missing, using public one"
