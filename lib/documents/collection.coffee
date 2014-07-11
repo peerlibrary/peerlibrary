@@ -33,11 +33,11 @@ class @Collection extends ReadAccessDocument
   @Meta
     name: 'Collection'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser'], false
+      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
       authorName: @GeneratedField 'self', ['authorPerson', 'authorGroup']
       slug: @GeneratedField 'self', ['name']

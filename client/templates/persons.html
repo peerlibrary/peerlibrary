@@ -58,7 +58,7 @@
 
 <template name="personInlineItem">
   {{#spaceless}}
-    <a class="inline-item person {{#unless hasUser}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
+    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
       <i class="avatar icon-person" title="{{status}}">
         <img src="{{avatar avatarSize}}"/>
       </i>

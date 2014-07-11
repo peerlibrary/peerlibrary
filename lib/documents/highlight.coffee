@@ -22,7 +22,7 @@ class @Highlight extends AccessDocument
   @Meta
     name: 'Highlight'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication, ['slug', 'title']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']

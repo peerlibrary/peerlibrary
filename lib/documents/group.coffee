@@ -22,12 +22,12 @@ class @Group extends ReadAccessDocument
   @Meta
     name: 'Group'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField 'self', ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
-      members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser'], true, 'inGroups']
+      members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['name', 'members._id']

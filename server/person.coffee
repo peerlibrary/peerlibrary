@@ -19,9 +19,6 @@ class @Person extends Person
         return [null, undefined] unless fields.person?._id and address
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
 
-      fields.hasUser.generator = (fields) ->
-        [fields._id, !!fields.user]
-
       fields
 
   # A set of fields which are public and can be published to the client
@@ -29,7 +26,6 @@ class @Person extends Person
     fields:
       'user._id': 1
       'user.username': 1
-      hasUser: 1
       slug: 1
       displayName: 1
       gravatarHash: 1

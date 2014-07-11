@@ -143,13 +143,7 @@
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    <button class="toolbar-button tooltip" title="
-      {{#if inLibrary}}
-        Publication is in your library
-      {{else}}
-        Add publication to library and collections.
-      {{/if}}
-    ">
+    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections.{{/if}}">
       <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
     </button>
     <div class="dropdown-anchor">

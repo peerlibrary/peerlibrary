@@ -18,7 +18,7 @@ Template.persons.catalogSettings = ->
     sort: 'currentPersonsSort'
 
 Template.personInlineItem.status = ->
-  if @hasUser then "Registered User" else "Unregistered Person"
+  if @user then "Registered User" else "Unregistered Person"
 
 Template.personCatalogItem.avatarSize = ->
   100

@@ -19,7 +19,7 @@ class @Comment extends AccessDocument
   @Meta
     name: 'Comment'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
       annotation: @ReferenceField Annotation, [], true, 'comments'
       publication: @ReferenceField Publication
     triggers: =>

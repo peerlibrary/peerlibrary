@@ -13,7 +13,6 @@ class @Person extends AccessDocument
   #   _id
   #   emails: list with first element of user's e-mail
   #   username
-  # hasUser: boolean, whether person has a user account
   # slug: unique slug for URL
   # gravatarHash: hash for Gravatar
   # givenName
@@ -39,12 +38,11 @@ class @Person extends AccessDocument
   @Meta
     name: 'Person'
     fields: =>
-      maintainerPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      maintainerPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      adminPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
-      hasUser: @GeneratedField 'self', ['user']
       slug: @GeneratedField 'self', ['user.username']
       displayName: @GeneratedField 'self', ['displayName', 'givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
@@ -104,7 +102,7 @@ class @Person extends AccessDocument
       name: "username"
       # TODO: Sorting by names should be case insensitive
       sort: [
-        ['hasUser', 'desc']
+        ['user', 'desc']
         ['user.username', 'asc']
       ]
     ]

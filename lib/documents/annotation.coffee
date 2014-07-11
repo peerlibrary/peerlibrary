@@ -74,11 +74,11 @@ class @Annotation extends ReadAccessDocument
   @Meta
     name: 'Annotation'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']

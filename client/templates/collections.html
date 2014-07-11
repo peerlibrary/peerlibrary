@@ -51,17 +51,19 @@
 
 <template name="myCollections">
   <div class="col4 push12 sidebar">
-    <h2>My Collections</h2>
-    {{#if myCollections.count}}
-      <ol class="item-list">
-        {{#each myCollections}}
-          {{> collectionCatalogItem}}
-        {{/each}}
-      </ol>
-    {{else}}
-      {{> noMyCollections}}
+    {{#if currentPersonId}}
+      <h2>My Collections</h2>
+      {{#if myCollections.count}}
+        <ol class="item-list">
+          {{#each myCollections}}
+            {{> collectionCatalogItem}}
+          {{/each}}
+        </ol>
+      {{else}}
+        {{> noMyCollections}}
+      {{/if}}
+      {{> addNewCollection}}
     {{/if}}
-    {{> addNewCollection}}
   </div>
 </template>
 
@@ -88,14 +90,12 @@
   <li class="catalog-item collection" data-collection-id="{{_id}}">
     <div class="details">
       {{> collectionCatalogItemName}}
-      <p class="author">Collection by
-        <span class="actionable">
-          {{#if authorPerson}}
-            {{> personInlineItem authorPerson}}
-          {{else}}
-            {{> groupInlineItem authorGroup}}
-          {{/if}}
-        </span>
+      <p class="author">
+        {{#if authorPerson}}
+          <i class="icon-person"></i> Collection by <span class="actionable">{{> personInlineItem authorPerson}}</span>
+        {{else}}
+          <i class="icon-group"></i> Collection by <span class="actionable">{{> groupInlineItem authorGroup}}</span>
+        {{/if}}
       </p>
       <p class="show-in-sidebar"><i class="icon-publication"></i> {{countDescription}}</p>
     </div>

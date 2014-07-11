@@ -61,9 +61,9 @@ class @Publication extends ReadAccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       authors: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'publications']
       importing: [
