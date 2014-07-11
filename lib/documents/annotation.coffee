@@ -74,11 +74,11 @@ class @Annotation extends ReadAccessDocument
   @Meta
     name: 'Annotation'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']
       publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
@@ -121,8 +121,14 @@ class @Annotation extends ReadAccessDocument
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['author.displayName', 'asc']
+      ]
+    ,
+      name: "comments"
+      sort: [
+        ['commentsCount', 'desc']
       ]
     ]
 

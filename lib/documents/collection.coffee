@@ -18,10 +18,12 @@ class @Collection extends ReadAccessDocument
   #   _id: author's group id
   #   slug
   #   name
+  # authorName: either authorPerson.displayName or authorGroup.name
   # name: the name of the collection
   # slug: unique slug for URL
   # publications: list of
   #   _id: publication's id
+  # publicationsCount: number of publications in this collection
   # referencingAnnotations: list of (reverse field from Annotation.references.collections)
   #   _id: annotation id
   # searchResult (client only): the last search query this document is a result for, if any, used only in search results
@@ -31,14 +33,16 @@ class @Collection extends ReadAccessDocument
   @Meta
     name: 'Collection'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], false
+      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
+      authorName: @GeneratedField 'self', ['authorPerson', 'authorGroup']
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
+      publicationsCount: @GeneratedField 'self', ['publications']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
       personLastActivity: RelatedLastActivityTrigger Person, ['authorPerson._id'], (doc, oldDoc) -> doc.authorPerson?._id
@@ -57,16 +61,21 @@ class @Collection extends ReadAccessDocument
       ]
     ,
       name: "name"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['name', 'asc']
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
-        # TODO: This does not sort correctly over both persons and groups at the same time
-        ['authorPerson.displayName', 'asc']
-        ['authorGroup.name', 'asc']
+        ['authorName', 'asc']
         ['name', 'asc']
+      ]
+    ,
+      name: "publications"
+      sort: [
+        ['publicationsCount', 'desc']
       ]
     ]
 

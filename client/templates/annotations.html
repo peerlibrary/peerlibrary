@@ -14,28 +14,28 @@
 
 <template name="annotationsList">
   {{#if this}}
-  <ol class="item-list">
-    {{#each this}}
-      {{> annotationCatalogItem}}
-    {{/each}}
-  </ol>
+    <ol class="item-list">
+      {{#each this}}
+        {{> annotationCatalogItem}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
 <template name="noAnnotations">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no annotations.
-    {{else}}
-      There are no annotations yet.
-      {{#if currentPersonId}}
-        Write the first by commenting on one of the publications.
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no annotations.
       {{else}}
-        Sign in and write the first.
+        There are no annotations yet.
+        {{#if currentPersonId}}
+          Create the first by annotating one of the publications.
+        {{else}}
+          Sign in and create the first.
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </p>
+    </p>
   {{/if}}
 </template>
 
@@ -61,14 +61,14 @@
 <template name="annotationInlineItem">
   <a class="inline-item annotation" {{#unless noLink}}href="{{annotationIdPath _id}}"{{/unless}}>
     <i class="avatar only-icon icon-annotation" title="Annotation"></i>
-    <span class="name" title="{{_id}}">a:{{_id}}</span>
+    <span class="name" title="{{_id}}">{{annotationReference _id}}</span>
   </a>
 </template>
 
 <template name="annotationCatalogItem">
   <li class="catalog-item annotation">
     <div class="details">
-      <p class="actionable">{{> personInlineItem author}} wrote in {{> publicationInlineItem publication}}</p>
+      <p class="actionable">{{> personInlineItem author}} annotated {{> publicationInlineItem publication}}</p>
       <blockquote>
         {{{body}}}
       </blockquote>

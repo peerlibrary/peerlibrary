@@ -19,6 +19,9 @@ class @Person extends Person
         return [null, undefined] unless fields.person?._id and address
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
 
+      fields.hasUser.generator = (fields) ->
+        [fields._id, !!fields.user]
+
       fields
 
   # A set of fields which are public and can be published to the client
@@ -26,6 +29,7 @@ class @Person extends Person
     fields:
       'user._id': 1
       'user.username': 1
+      hasUser: 1
       slug: 1
       displayName: 1
       gravatarHash: 1
@@ -41,6 +45,18 @@ class @Person extends Person
   # A subset of public fields used for automatic publishing
   @PUBLISH_AUTO_FIELDS: ->
     fields: _.pick @PUBLISH_FIELDS().fields, [
+      'user._id'
+      'slug'
+      'displayName'
+      'gravatarHash'
+      'isAdmin'
+      'inGroups'
+    ]
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields: _.pick @PUBLISH_FIELDS().fields, [
+      'hasUser'
       'slug'
       'displayName'
       'gravatarHash'
@@ -137,22 +153,15 @@ Meteor.publish 'persons', (limit, filter, sortIndex) ->
   check filter, OptionalOrNull String
   check sortIndex, OptionalOrNull Number
   check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or sortIndex < Person.PUBLISH_CATALOG_SORT.length
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Person.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  if filter
-    findQuery =
-      $or: [
-        createQueryCriteria(filter, 'familyName')
-        createQueryCriteria(filter, 'givenName')
-        createQueryCriteria(filter, 'user.username')
-      ]
+  findQuery = createQueryCriteria(filter, 'displayName') if filter
 
   sort = if _.isNumber sortIndex then Person.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   searchPublish @, 'persons', [filter, sortIndex],
-    cursor: Person.documents.find(findQuery,
+    cursor: Person.documents.find findQuery,
       limit: limit
-      fields: Person.PUBLISH_FIELDS().fields
+      fields: Person.PUBLISH_CATALOG_FIELDS().fields
       sort: sort
-    )

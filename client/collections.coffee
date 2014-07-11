@@ -49,15 +49,15 @@ Template.addNewCollection.events
     return # Make sure CoffeeScript does not return anything
 
 Editable.template Template.collectionCatalogItemName, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
-(name) ->
-  Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-    return Notify.meteorError error, true if error
+  (name) ->
+    Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
 ,
   "Enter collection name"
 ,
   false
 
 Template.collectionCatalogItem.countDescription = ->
-  if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"
+  Publication.verboseNameWithCount @publications?.length

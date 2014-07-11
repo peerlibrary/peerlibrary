@@ -83,16 +83,16 @@ Template.publicationCatalogItemLibraryMenu.events
     $anchor.toggle()
 
     if $anchor.is(':visible')
-      # Because the dropdown is active, make sure toolbar doesn't disappear when not hovered.
+      # Because the dropdown is active, make sure toolbar doesn't disappear when not hovered
       $toolbar = $(template.firstNode).parents('.toolbar')
       $toolbar.addClass('displayed')
 
       # Also make sure the catalog item is on top of other items,
-      # since the dropdown extends out of it.
+      # since the dropdown extends out of it
       $item = $toolbar.parents('.catalog-item')
       $item.addClass('active').css('z-index','10')
 
-      # Temporarily remove and disable tooltips on the button.
+      # Temporarily remove and disable tooltips on the button
       $button = $(template.findAll '.toolbar-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
@@ -101,7 +101,7 @@ Template.publicationCatalogItemLibraryMenu.events
     else
       onLibraryDropdownHidden.call($anchor, null)
 
-    # We only subscribe to person's collections on click, because they are not immediately seen.
+    # We only subscribe to person's collections on click, because they are not immediately seen
     libraryMenuSubscriptionCollectionsHandle = Meteor.subscribe 'my-collections' unless libraryMenuSubscriptionCollectionsHandle
 
     return # Make sure CoffeeScript does not return anything
@@ -110,7 +110,7 @@ Template.publicationCatalogItemLibraryMenu.inLibrary = Template.publicationLibra
 
 Template.publicationCatalogItemLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++
-  # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status.
+  # We need to subscribe to person's library here, because the icon of the menu changes to reflect in-library status
   libraryMenuSubscriptionPersonHandle = Meteor.subscribe 'my-person-library' unless libraryMenuSubscriptionPersonHandle
 
 Template.publicationCatalogItemLibraryMenu.destroyed = ->
@@ -123,11 +123,11 @@ Template.publicationCatalogItemLibraryMenu.destroyed = ->
     libraryMenuSubscriptionCollectionsHandle = null
 
 Editable.template Template.publicationCatalogItemTitle, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
-(title) ->
-  Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
-    return Notify.meteorError error, true if error
+  (title) ->
+    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+      return Notify.meteorError error, true if error
 ,
   "Enter publication title"
 

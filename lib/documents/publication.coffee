@@ -61,9 +61,9 @@ class @Publication extends ReadAccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       authors: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'publications']
       importing: [
@@ -95,6 +95,7 @@ class @Publication extends ReadAccessDocument
       ]
     ,
       name: "title"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['title', 'asc']
       ]

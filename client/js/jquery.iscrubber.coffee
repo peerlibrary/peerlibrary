@@ -8,7 +8,7 @@
 $.fn.iscrubber = (customOptions) ->
 
   $.fn.iscrubber.defaultOptions =
-    showItem: 1
+    showItem: 0
     leaveToFirst: true
 
   # Set the options.
@@ -17,7 +17,7 @@ $.fn.iscrubber = (customOptions) ->
   # scrub function
   scrub = (elements, itemToShow) ->
     elements.css('display', 'none')
-    $(elements[itemToShow-1]).css('display', 'block')
+    elements.eq(itemToShow).css('display', 'block')
 
   this.each ->
     $this = $(this)
@@ -32,22 +32,24 @@ $.fn.iscrubber = (customOptions) ->
     width = elements.first().width()
     $this.width(width).css('padding', 0)
 
-    # get trigger width => (scrubber width / number of children)
+    # get trigger width for each page => (scrubber width / number of children)
     count = $this.children().length
-    trigger = width / count
+    pageTriggerWidth = $this.outerWidth() / count
 
     # show first element
     scrub(elements, options.showItem)
 
     # bind event when mouse moves over scrubber
     $this.on 'mousemove.iscrubber', (e) ->
-      # get x mouse position
-      x = e.pageX - $this.offset().left
+      # get x mouse position and take 1px border into account
+      x = e.pageX - $this.offset().left + 1
 
       # get the index of image to display on top
-      index = Math.ceil(x/trigger)
-      index = 1 if index == 0
-      index = count if index > count
+      index = Math.floor(x/pageTriggerWidth)
+
+      # make sure the index is within bounds (0 <= index < count)
+      index = Math.min(Math.max(0, index), count-1)
+
       scrub(elements, index)
 
     # bind event when mouse leaves scrubber

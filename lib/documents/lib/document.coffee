@@ -13,6 +13,7 @@ class @BaseDocument extends Document
     "#{ @verboseName() }s"
 
   @verboseNameWithCount: (quantity) ->
+    quantity = 0 unless quantity
     return "1 #{ @verboseName() }" if quantity == 1
     "#{ quantity } #{ @verboseNamePlural() }"
 
@@ -194,7 +195,7 @@ class @ReadAccessDocument extends AccessDocument
   @Meta
     abstract: true
     fields: =>
-      readPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash']]
+      readPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @ACCESS:

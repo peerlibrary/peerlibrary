@@ -22,7 +22,7 @@ class @Highlight extends AccessDocument
   @Meta
     name: 'Highlight'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'hasUser']
       publication: @ReferenceField Publication, ['slug', 'title']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
@@ -37,6 +37,7 @@ class @Highlight extends AccessDocument
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['author.displayName', 'asc']
       ]

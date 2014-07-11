@@ -14,23 +14,23 @@
 
 <template name="personsList">
   {{#if this}}
-  <ol class="item-list">
-    {{#each this}}
-      {{> personCatalogItem}}
-    {{/each}}
-  </ol>
+    <ol class="item-list">
+      {{#each this}}
+        {{> personCatalogItem}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
 <template name="noPersons">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no people.
-    {{else}}
-      There are no people yet. Sign up and become the first.
-    {{/if}}
-  </p>
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no people.
+      {{else}}
+        There are no people yet. Sign up and become the first.
+      {{/if}}
+    </p>
   {{/if}}
 </template>
 
@@ -58,7 +58,7 @@
 
 <template name="personInlineItem">
   {{#spaceless}}
-    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
+    <a class="inline-item person {{#unless hasUser}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
       <i class="avatar icon-person" title="{{status}}">
         <img src="{{avatar avatarSize}}"/>
       </i>

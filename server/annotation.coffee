@@ -7,6 +7,7 @@ class @Annotation extends Annotation
     fields: (fields) =>
       fields.commentsCount.generator = (fields) ->
         [fields._id, fields.comments?.length or 0]
+
       fields
 
   # A set of fields which are public and can be published to the client
@@ -14,6 +15,14 @@ class @Annotation extends Annotation
     fields:
       # We are sending only the count over, not all comments
       comments: 0
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields:
+      author: 1
+      body: 1
+      publication: 1
+      commentsCount: 1
 
 registerForAccess Annotation
 
@@ -189,7 +198,7 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
   check filter, OptionalOrNull String
   check sortIndex, OptionalOrNull Number
   check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'body') if filter
@@ -200,11 +209,10 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
     restrictedFindQuery = Annotation.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'annotations', [filter, sortIndex],
-      cursor: Annotation.documents.find(restrictedFindQuery,
+      cursor: Annotation.documents.find restrictedFindQuery,
         limit: limit
-        fields: Annotation.PUBLISH_FIELDS().fields
+        fields: Annotation.PUBLISH_CATALOG_FIELDS().fields
         sort: sort
-      )
   ,
     Person.documents.find
       _id: @personId

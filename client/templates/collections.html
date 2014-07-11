@@ -14,28 +14,28 @@
 
 <template name="collectionsList">
   {{#if this}}
-  <ol class="item-list">
-    {{#each this}}
-      {{> collectionCatalogItem}}
-    {{/each}}
-  </ol>
+    <ol class="item-list">
+      {{#each this}}
+        {{> collectionCatalogItem}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
 <template name="noCollections">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no collections.
-    {{else}}
-      There are no collections yet.
-      {{#if currentPersonId}}
-        Write the first by commenting on one of the publications.
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no collections.
       {{else}}
-        Sign in and write the first.
+        There are no collections yet.
+        {{#if currentPersonId}}
+          Create the first one using the form on the right.
+        {{else}}
+          Sign in and create the first.
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </p>
+    </p>
   {{/if}}
 </template>
 
@@ -66,7 +66,7 @@
 </template>
 
 <template name="noMyCollections">
-  <p class="no-collections hint">You don't have any collections. Create one below.</p>
+  <p class="no-collections hint">You do not have any collections. Create one below.</p>
 </template>
 
 <template name="addNewCollection">
@@ -80,7 +80,7 @@
 <template name="collectionInlineItem">
   <a class="inline-item collection" {{#unless noLink}}href="{{collectionIdPath _id}}"{{/unless}}>
     <i class="avatar only-icon icon-collection" title="Collection"></i>
-    <span class="name" title="{{_id}}">a:{{_id}}</span>
+    <span class="name" title="{{_id}}">{{collectionReference _id}}</span>
   </a>
 </template>
 
@@ -88,6 +88,15 @@
   <li class="catalog-item collection" data-collection-id="{{_id}}">
     <div class="details">
       {{> collectionCatalogItemName}}
+      <p class="author">Collection by
+        <span class="actionable">
+          {{#if authorPerson}}
+            {{> personInlineItem authorPerson}}
+          {{else}}
+            {{> groupInlineItem authorGroup}}
+          {{/if}}
+        </span>
+      </p>
       <p class="show-in-sidebar"><i class="icon-publication"></i> {{countDescription}}</p>
     </div>
 

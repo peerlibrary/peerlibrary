@@ -14,28 +14,28 @@
 
 <template name="highlightsList">
   {{#if this}}
-  <ol class="item-list">
-    {{#each this}}
-      {{> highlightCatalogItem}}
-    {{/each}}
-  </ol>
+    <ol class="item-list">
+      {{#each this}}
+        {{> highlightCatalogItem}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
 <template name="noHighlights">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no highlights.
-    {{else}}
-      There are no highlights yet.
-      {{#if currentPersonId}}
-        Write the first by commenting on one of the publications.
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no highlights.
       {{else}}
-        Sign in and write the first.
+        There are no highlights yet.
+        {{#if currentPersonId}}
+          Create the first by highlighting text in one of the publications.
+        {{else}}
+          Sign in and create the first.
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </p>
+    </p>
   {{/if}}
 </template>
 
@@ -61,7 +61,7 @@
 <template name="highlightInlineItem">
   <a class="inline-item highlight" {{#unless noLink}}href="{{highlightIdPath _id}}"{{/unless}}>
     <i class="avatar only-icon icon-highlight" title="Highlight"></i>
-    <span class="name" title="{{_id}}">h:{{_id}}</span>
+    <span class="name" title="{{_id}}">{{highlightReference _id}}</span>
   </a>
 </template>
 

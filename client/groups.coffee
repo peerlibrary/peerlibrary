@@ -45,11 +45,11 @@ Template.myGroups.myGroups = ->
     ]
 
 Editable.template Template.groupCatalogItemName, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
-(name) ->
-  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return Notify.meteorError error, true if error
+  (name) ->
+    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
 ,
   "Enter group name"
 ,
