@@ -228,6 +228,9 @@ class @Publication extends Publication
       'annotationsCount'
     ]
 
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS = @PUBLISH_SEARCH_RESULTS_FIELDS
+
 registerForAccess Publication
 
 Meteor.methods
@@ -444,7 +447,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   check filter, OptionalOrNull String
   check sortIndex, OptionalOrNull Number
   check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or sortIndex < Publication.PUBLISH_CATALOG_SORT.length
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'title') if filter
@@ -455,11 +458,19 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'publications', [filter, sortIndex],
-      cursor: Publication.documents.find(restrictedFindQuery,
+      cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
-        fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
+        fields: Publication.PUBLISH_CATALOG_FIELDS().fields
         sort: sort
-      )
+      added: (id, fields) =>
+        fields.hasAbstract = !!fields.abstract
+        delete fields.abstract
+        fields
+      changed: (id, fields) =>
+        if 'abstract' of fields
+          fields.hasAbstract = !!fields.abstract
+          delete fields.abstract
+        fields
   ,
     Person.documents.find
       _id: @personId

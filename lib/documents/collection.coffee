@@ -3,27 +3,27 @@ class @Collection extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last collection activity (for now same as updatedAt)
   # authorPerson:
   #   _id: author's person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # authorGroup:
   #   _id: author's group id
   #   slug
   #   name
+  # authorName: either authorPerson.displayName or authorGroup.name
   # name: the name of the collection
   # slug: unique slug for URL
   # publications: list of
   #   _id: publication's id
+  # publicationsCount: number of publications in this collection
   # referencingAnnotations: list of (reverse field from Annotation.references.collections)
   #   _id: annotation id
   # searchResult (client only): the last search query this document is a result for, if any, used only in search results
@@ -33,34 +33,49 @@ class @Collection extends ReadAccessDocument
   @Meta
     name: 'Collection'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authorPerson: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], false
+      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
+      authorName: @GeneratedField 'self', ['authorPerson', 'authorGroup']
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
+      publicationsCount: @GeneratedField 'self', ['publications']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['authorPerson._id'], (doc, oldDoc) -> doc.authorPerson?._id
+      groupLastActivity: RelatedLastActivityTrigger Group, ['authorGroup._id'], (doc, oldDoc) -> doc.authorGroup?._id
+      # TODO: For now we are updating last activity of all publications in a collection, but we might consider removing this and leave it to the "trending" view
+      publicationsLastActivity: RelatedLastActivityTrigger Publication, ['publications._id'], (doc, oldDoc) ->
+        newPublications = (publication._id for publication in doc.publications or [])
+        oldPublications = (publication._id for publication in oldDoc.publications or [])
+        _.difference newPublications, oldPublications
 
   @PUBLISH_CATALOG_SORT:
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "name"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['name', 'asc']
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
-        ['authorPerson', 'asc']
-        ['authorGroup', 'asc']
+        ['authorName', 'asc']
         ['name', 'asc']
+      ]
+    ,
+      name: "publications"
+      sort: [
+        ['publicationsCount', 'desc']
       ]
     ]
 

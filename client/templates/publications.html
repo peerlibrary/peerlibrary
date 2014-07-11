@@ -23,18 +23,18 @@
 
 <template name="noPublications">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no publications.
-    {{else}}
-      There are no publications yet.
-      {{#if currentPersonId}}
-        Import the first from the menu on top.
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no publications.
       {{else}}
-        Sign in and import the first.
+        There are no publications yet.
+        {{#if currentPersonId}}
+          Import the first from the menu on top.
+        {{else}}
+          Sign in and import the first.
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </p>
+    </p>
   {{/if}}
 </template>
 
@@ -145,13 +145,7 @@
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    <button class="toolbar-button tooltip" title="
-      {{#if inLibrary}}
-        Publication is in your library
-      {{else}}
-        Add publication to library and collections.
-      {{/if}}
-    ">
+    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections.{{/if}}">
       <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
     </button>
     <div class="dropdown-anchor">

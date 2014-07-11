@@ -5,14 +5,12 @@
 
 .inline-item
   position relative
-  display inline-block
   vertical-align middle
   box-sizing border-box
   max-width 100%
   font-size 13px
   line-height 2em
   height 24px
-  white-space nowrap
   overflow hidden
   text-overflow ellipsis
 
@@ -40,9 +38,11 @@
       z-index 0
 
     &.icon-person::before
+      /* This is fine tuned so the icons appear consistent in size */
       font-size 1.07em
 
     &.icon-group::before
+      /* This is fine tuned so the icons appear consistent in size */
       font-size 1.53em
 
   .name

@@ -35,15 +35,21 @@ Meteor.startup ->
 
   timestamp = moment.utc().toDate()
 
-  fields = ['_id', 'slug', 'givenName', 'familyName', 'gravatarHash']
+  fields = ['_id', 'slug', 'displayName', 'gravatarHash']
   author = _.pick Meteor.person(_.object fields, _.times fields.length, -> 1), fields
   author.user = _.pick Meteor.person(user: 1).user, 'username'
+
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      slug: 1
+      title: 1
+    transform: null
 
   createdAt: timestamp
   updatedAt: timestamp
   author: author
-  publication:
-    _id: Session.get 'currentPublicationId'
+  publication: publication
   references:
     highlights: []
     annotations: []
@@ -53,6 +59,7 @@ Meteor.startup ->
     tags: []
     collections: []
     comments: []
+  commentsCount: 0
   tags: []
   body: ''
 

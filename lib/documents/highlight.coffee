@@ -1,14 +1,12 @@
 class @Highlight extends AccessDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last highlight activity (for now same as updatedAt)
   # author:
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
+  #   slug
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # publication:
   #   _id: publication's id
   #   slug
@@ -24,21 +22,24 @@ class @Highlight extends AccessDocument
   @Meta
     name: 'Highlight'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication, ['slug', 'title']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'publication._id', 'quote', 'target']
+      personLastActivity: RelatedLastActivityTrigger Person, ['author._id'], (doc, oldDoc) -> doc.author?._id
+      publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
 
   @PUBLISH_CATALOG_SORT:
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
-        ['author', 'asc']
+        ['author.displayName', 'asc']
       ]
     ]
 

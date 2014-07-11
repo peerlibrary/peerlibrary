@@ -1,3 +1,6 @@
+# The ammount by which we increate the limit of returned results
+LIMIT_INCREASE_STEP = 10
+
 Template.catalogFilter.documentsName = ->
   @documentClass.verboseNamePlural()
 
@@ -36,8 +39,6 @@ Template.catalogFilter.events
     Session.set template.data.variables.filter, filter
 
     return # Make sure CoffeeScript does not return anything
-
-LIMIT_INCREASE_STEP = 10
 
 # Helper that enables a list of documents with infinite scrolling and filtering
 class @Catalog

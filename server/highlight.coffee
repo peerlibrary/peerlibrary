@@ -7,6 +7,13 @@ class @Highlight extends Highlight
   @PUBLISH_FIELDS: ->
     fields: {} # All
 
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields:
+      author: 1
+      publication: 1
+      quote: 1
+
 Meteor.methods
   'highlights-path': (highlightId) ->
     check highlightId, DocumentId
@@ -111,7 +118,7 @@ Meteor.publish 'highlights', (limit, filter, sortIndex) ->
   check filter, OptionalOrNull String
   check sortIndex, OptionalOrNull Number
   check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'quote') if filter
@@ -119,8 +126,7 @@ Meteor.publish 'highlights', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Highlight.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   searchPublish @, 'highlights', [filter, sortIndex],
-    cursor: Highlight.documents.find(findQuery,
+    cursor: Highlight.documents.find findQuery,
       limit: limit
-      fields: Highlight.PUBLISH_FIELDS().fields
+      fields: Highlight.PUBLISH_CATALOG_FIELDS().fields
       sort: sort
-    )

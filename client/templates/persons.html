@@ -14,23 +14,23 @@
 
 <template name="personsList">
   {{#if this}}
-  <ol class="item-list">
-    {{#each this}}
-      {{> personCatalogItem}}
-    {{/each}}
-  </ol>
+    <ol class="item-list">
+      {{#each this}}
+        {{> personCatalogItem}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
 <template name="noPersons">
   {{#if noDocuments}}
-  <p class="status">
-    {{#if documentsFilter}}
-      The filter matches no people.
-    {{else}}
-      There are no people yet. Sign up and become the first.
-    {{/if}}
-  </p>
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no people.
+      {{else}}
+        There are no people yet. Sign up and become the first.
+      {{/if}}
+    </p>
   {{/if}}
 </template>
 

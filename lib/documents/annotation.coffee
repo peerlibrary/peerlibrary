@@ -3,25 +3,23 @@ class @Annotation extends ReadAccessDocument
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
   # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last annotation activity (commenting)
   # author:
   #   _id: person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # body: in HTML
   # publication:
   #   _id: publication's id
   #   slug
   #   title
-  # references: made in the body of annotation or comments
+  # references: made in the body of the annotation
   #   highlights: list of
   #     _id
   #   annotations: list of
@@ -31,13 +29,10 @@ class @Annotation extends ReadAccessDocument
   #     slug
   #     title
   #   persons: list of
-  #     _id
+  #     _id: person id
   #     slug
-  #     givenName
-  #     familyName
+  #     displayName
   #     gravatarHash
-  #     user
-  #       username
   #   groups: list of
   #     _id
   #     slug
@@ -62,6 +57,7 @@ class @Annotation extends ReadAccessDocument
   #     slug: ISO 639-1 dictionary
   # comments: list of (reverse field from Comment.annotation)
   #   _id: comment id
+  # commentsCount: number of comments for this annotation
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
@@ -78,17 +74,17 @@ class @Annotation extends ReadAccessDocument
   @Meta
     name: 'Annotation'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
       publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
-        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'referencingAnnotations']
         groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
@@ -100,19 +96,39 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+      commentsCount: @GeneratedField 'self', ['comments']
+    # We do not see referencing something as an event which should update lastActivity of a referenced document.
+    # Additionally, we update lastActivity when there is a constructive change, like adding to a group, and not when
+    # document is being removed. When value changes we update just the related lastActivity of a new value, not old one.
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id', 'comments._id']
+      updatedAt: UpdatedAtTrigger ['author._id', 'body', 'publication._id', 'tags.tag._id', 'license', 'inside._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['author._id'], (doc, oldDoc) -> doc.author?._id
+      publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
+      tagsLastActivity: RelatedLastActivityTrigger Tag, ['tags.tag._id'], (doc, oldDoc) ->
+        newTags = (tag.tag._id for tag in doc.tags or [])
+        oldTags = (tag.tag._id for tag in oldDoc.tags or [])
+        _.difference newTags, oldTags
+      groupsLastActivity: RelatedLastActivityTrigger Group, ['inside._id'], (doc, oldDoc) ->
+        newGroups = (group._id for group in doc.inside or [])
+        oldGroups = (group._id for group in oldDoc.inside or [])
+        _.difference newGroups, oldGroups
 
   @PUBLISH_CATALOG_SORT:
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "author"
+      # TODO: Sorting by names should be case insensitive
       sort: [
-        ['author', 'asc']
+        ['author.displayName', 'asc']
+      ]
+    ,
+      name: "comments"
+      sort: [
+        ['commentsCount', 'desc']
       ]
     ]
 

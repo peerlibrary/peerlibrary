@@ -1,6 +1,7 @@
 class @Tag extends BaseDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last tag activity (something tagged, etc.)
   # name:
   #   en: name of the tag in English (ISO 639-1)
   # slug:

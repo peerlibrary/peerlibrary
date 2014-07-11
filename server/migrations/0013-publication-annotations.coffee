@@ -1,15 +1,6 @@
-class Migration extends Document.MinorMigration
+# Reverse fields are more like auto fields than synced fields
+class Migration extends Document.AddAutoFieldsMigration
   name: "Adding annotations field"
-
-  forward: (db, collectionName, currentSchema, newSchema, callback) =>
-    @updateAll()
-    super db, collectionName, currentSchema, newSchema, callback
-
-  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      collection.update {_schema: currentSchema}, {$unset: {annotations: ''}}, {multi: true}, (error, count) =>
-        return callback error if error
-        super db, collectionName, currentSchema, oldSchema, callback
+  fields: ['annotations']
 
 Publication.addMigration new Migration()

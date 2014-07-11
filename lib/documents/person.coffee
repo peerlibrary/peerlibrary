@@ -1,10 +1,14 @@
+EMAIL_FIELDS =
+  'user.emails': 1
+
 class @Person extends AccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last user site activity (authored anything, voted on anything, etc.)
   # user: (null if without user account)
   #   _id
   #   emails: list with first element of user's e-mail
@@ -13,14 +17,15 @@ class @Person extends AccessDocument
   # gravatarHash: hash for Gravatar
   # givenName
   # familyName
+  # displayName: combination of givenName, familyName, user.username, email, and slug
   # isAdmin: boolean, is user an administrator or not
   # invited:
   #   by: a person who invited this person
   #     _id
   #   message: optional message for invitation email
-  # inGroups: list of
+  # inGroups: list of (reverse field from Group.members)
   #   _id: id of a group the person is in
-  # publications: list of
+  # publications: list of (reverse field from Publication.authors)
   #   _id: authored publication id
   # library: list of
   #   _id: added publication id
@@ -33,26 +38,35 @@ class @Person extends AccessDocument
   @Meta
     name: 'Person'
     fields: =>
-      maintainerPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       slug: @GeneratedField 'self', ['user.username']
-      publications: [@ReferenceField Publication]
+      displayName: @GeneratedField 'self', ['displayName', 'givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:
         by: @ReferenceField 'self', [], false
+    # We are using publications in updatedAt trigger, because it is part of person's metadata, but this means
+    # that it also updates lastActivity, so we do not need to have a trigger in Publication for authors field
     triggers: =>
-      # We do not want only to update updateAt when user._id changes, but also emails and username
-      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'inGroups._id', 'publications._id']
+      # We do not want only to update updateAt when user._id changes, but also emails and username, so we trigger for the whole user field
+      updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'publications._id']
+      lastActivity: LastActivityTrigger ['library._id']
+      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) -> doc.invited?.by._id
+      # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
+      publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->
+        newPublications = (publication._id for publication in doc.library or [])
+        oldPublications = (publication._id for publication in oldDoc.library or [])
+        _.difference newPublications, oldPublications
 
   @PUBLISH_CATALOG_SORT:
     [
       name: "last activity"
       sort: [
-        ['updatedAt', 'desc']
+        ['lastActivity', 'desc']
       ]
     ,
       name: "join date (newest first)"
@@ -65,56 +79,56 @@ class @Person extends AccessDocument
         ['createdAt', 'asc']
       ]
     ,
+      name: "displayed name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['displayName', 'asc']
+      ]
+    ,
       name: "given name"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['givenName', 'asc']
         ['familyName', 'asc']
       ]
     ,
       name: "family name"
+      # TODO: Sorting by names should be case insensitive
       sort: [
         ['familyName', 'asc']
         ['givenName', 'asc']
       ]
     ,
       name: "username"
+      # TODO: Sorting by names should be case insensitive
       sort: [
+        ['user', 'desc']
         ['user.username', 'asc']
       ]
     ]
 
-  displayName: (dontRefetch) =>
-    # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
-    dontRefetch = false unless _.isBoolean dontRefetch
-    if @givenName and @familyName
+  getDisplayName: =>
+    if @displayName
+      return @displayName
+    else if @givenName and @familyName
       return "#{ @givenName } #{ @familyName }"
     else if @givenName
       return @givenName
+    else if @familyName
+      return @familyName
     else if @user?.username
       return @user.username
     else if @email()
       return @email()
-    else if not dontRefetch # To prevent infinite loop
-      # Maybe we have access to a person document with more fields
-      person = @constructor.documents.findOne @_id
-      person.slug = @slug unless not person or person.slug
-      return person.displayName true if person
-
-    @slug
-
-  @displayNameFields: ->
-    _.extend @emailFields(),
-      givenName: 1
-      familyName: 1
-      'user.username': 1
-      slug: 1
+    else
+      return @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.emails?[0]?.address
 
   @emailFields: ->
-    'user.emails': 1
+    EMAIL_FIELDS
 
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)

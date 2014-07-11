@@ -44,9 +44,9 @@ Template.collection.collection = ->
 Editable.template Template.collectionName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
-(name) ->
-  Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-    return Notify.meteorError error, true if error
+  (name) ->
+    Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
 ,
   "Enter collection name"
 ,
