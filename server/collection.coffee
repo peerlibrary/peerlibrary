@@ -25,11 +25,11 @@ class @Collection extends Collection
 
   # A subset of public fields used for catalog results
   @PUBLISH_CATALOG_FIELDS: ->
-      authorPerson: 1
-      authorGroup: 1
-      name: 1
-      slug: 1
-      publicationsCount: 1
+    authorPerson: 1
+    authorGroup: 1
+    name: 1
+    slug: 1
+    publicationsCount: 1
 
 registerForAccess Collection
 
