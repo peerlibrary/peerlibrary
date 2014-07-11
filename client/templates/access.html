@@ -1,10 +1,5 @@
 <template name="accessButton">
-  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="
-    {{#if public}}
-      Everyone can see the {{documentName}}.
-    {{else}}
-      Only the users listed can see the {{documentName}}.
-    {{/if}}">
+  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="{{#if public}}Everyone can see the {{documentName}}.{{else}}Only the users listed can see the {{documentName}}.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public {{documentName}}
     {{else}}

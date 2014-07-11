@@ -107,11 +107,7 @@
 
       <p>{{createdDay}},
         {{#spaceless}}
-          <span class="tooltip" title="
-            {{#if open}}Everyone has access to the publication{{/if}}
-            {{#if closed}}The publication is public, but only those who import the PDF have access to its content{{/if}}
-            {{#if private}}Only the users who import the PDF or are listed have access to the publication{{/if}}
-          ">
+          <span class="tooltip" title="{{#if open}}Everyone has access to the publication{{/if}}{{#if closed}}The publication is public, but only those who import the PDF have access to its content{{/if}}{{#if private}}Only the users who import the PDF or are listed have access to the publication{{/if}}">
             {{#if open}}<i class="icon-public"></i>open access{{/if}}
             {{#if closed}}<i class="icon-closed"></i>closed access{{/if}}
             {{#if private}}<i class="icon-private"></i>private{{/if}}

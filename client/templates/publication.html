@@ -388,20 +388,7 @@
 </template>
 
 <template name="annotationAccessButtonText">
-  <span class="tooltip" title="
-    {{#if local}}
-      {{#if public}}
-        Everyone will be able see the annotation.
-      {{else}}
-        Only the users listed will be able to see the annotation.
-      {{/if}}
-    {{else}}
-      {{#if public}}
-        Everyone can see the annotation.
-      {{else}}
-        Only the users listed can see the annotation.
-      {{/if}}
-    {{/if}}">
+  <span class="tooltip" title="{{#if local}}{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}{{else}}{{#if public}}Everyone can see the annotation.{{else}}Only the users listed can see the annotation.{{/if}}{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public annotation
     {{else}}
