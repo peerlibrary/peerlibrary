@@ -160,15 +160,15 @@ changeRole = (data, newRole) ->
 
   return if oldRole is newRole
 
-  notification = () ->
+  notification = ->
     Notify.success "Rights changed."
 
   unless oldRole
-    notification = () ->
+    notification = ->
       Notify.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } added."
 
   else unless newRole
-    notification = () ->
+    notification = ->
       Notify.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } removed."
 
   if data.personOrGroup instanceof Person
