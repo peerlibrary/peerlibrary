@@ -50,7 +50,7 @@ $.fn.iscrubber = (customOptions) ->
       index = Math.floor(x / pageTriggerWidth)
 
       # Make sure the index is within bounds (0 <= index < count)
-      index = Math.min(Math.max(0, index), count-1)
+      index = Math.min(Math.max(0, index), count - 1)
 
       scrub(elements, index)
 
