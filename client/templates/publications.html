@@ -108,9 +108,9 @@
       <p>{{createdDay}},
         {{#spaceless}}
           <span class="tooltip" title="
-            {{#if open}}Everyone has access to the publication{{/if}}
-            {{#if closed}}The publication is public, but only those who import the PDF have access to its content{{/if}}
-            {{#if private}}Only the users who import the PDF or are listed have access to the publication{{/if}}
+            {{#if open}}Everyone has access to the publication.{{/if}}
+            {{#if closed}}The publication is public, but only those who import the PDF have access to its content.{{/if}}
+            {{#if private}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
           ">
             {{> accessIcon}}{{> accessText}}
           </span>
@@ -143,7 +143,7 @@
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections.{{/if}}">
+    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library.{{else}}Add publication to library and collections.{{/if}}">
       <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
     </button>
     <div class="dropdown-anchor">
