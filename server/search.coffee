@@ -3,16 +3,7 @@ Meteor.publish 'search-results', (query, limit) ->
   check query, NonEmptyString
   check limit, PositiveNumber
 
-  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
-
-  findQuery =
-    $and: []
-
-  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
-  for keyword in keywords when keyword
-    findQuery.$and.push
-      fullText: new RegExp keyword, 'i'
-
+  findQuery = createQueryCriteria(query, 'fullText')
   return unless findQuery.$and.length
 
   @related (person) ->

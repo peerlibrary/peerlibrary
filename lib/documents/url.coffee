@@ -1,4 +1,4 @@
-class @Url extends Document
+class @Url extends BaseDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # lastActivity: time of the last url activity (for now same as updatedAt)

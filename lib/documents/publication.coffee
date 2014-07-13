@@ -15,11 +15,9 @@ class @Publication extends ReadAccessDocument
   # slug: slug for URL
   # authors: list of
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
-  #   user
-  #     username
+  #   slug
+  #   displayName
+  #   gravatarHash
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
@@ -52,6 +50,7 @@ class @Publication extends ReadAccessDocument
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
+  # annotationsCount: number of annotations for this publication
   # referencingAnnotations: list of (reverse field from Annotation.references.publications)
   #   _id: annotation id
   # license: license information, if known
@@ -62,16 +61,17 @@ class @Publication extends ReadAccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username'], true, 'publications']
+      authors: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'publications']
       importing: [
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
       fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+      annotationsCount: @GeneratedField 'self', ['annotations']
     # We are using publications in Person's updatedAt trigger, because it is part of person's metadata, but this
     # means that it also updates person's lastActivity, so we do not need to have a trigger here for authors field
     triggers: =>
@@ -80,6 +80,31 @@ class @Publication extends ReadAccessDocument
         newImporters = (importer.person._id for importer in doc.importing or [])
         oldImporters = (importer.person._id for importer in oldDoc.importing or [])
         _.difference newImporters, oldImporters
+
+  @ACCESS:
+    PRIVATE: ACCESS.PRIVATE
+    CLOSED: 1
+    OPEN: 2
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+        ['title', 'asc']
+      ]
+    ,
+      name: "title"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['title', 'asc']
+      ]
+    ,
+      name: "annotations"
+      sort: [
+        ['annotationsCount', 'desc']
+      ]
+    ]
 
   @_filenamePrefix: ->
     'publication' + Storage._path.sep
@@ -110,11 +135,6 @@ class @Publication extends ReadAccessDocument
 
   createdDay: =>
     moment(@createdAt).format 'MMMM Do YYYY'
-
-  @ACCESS:
-    PRIVATE: ACCESS.PRIVATE
-    CLOSED: 1
-    OPEN: 2
 
   hasReadAccess: (person, cache=false) =>
     return false unless @cached

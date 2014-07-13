@@ -2,7 +2,22 @@
   PRIVATE: 0
   PUBLIC: 1
 
-class @AccessDocument extends Document
+class @BaseDocument extends Document
+  @Meta
+    abstract: true
+
+  @verboseName: ->
+    @Meta._name.toLowerCase()
+
+  @verboseNamePlural: ->
+    "#{ @verboseName() }s"
+
+  @verboseNameWithCount: (quantity) ->
+    quantity = 0 unless quantity
+    return "1 #{ @verboseName() }" if quantity == 1
+    "#{ quantity } #{ @verboseNamePlural() }"
+
+class @AccessDocument extends BaseDocument
   @Meta
     abstract: true
 
@@ -180,7 +195,7 @@ class @ReadAccessDocument extends AccessDocument
   @Meta
     abstract: true
     fields: =>
-      readPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      readPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       readGroups: [@ReferenceField Group, ['slug', 'name']]
 
   @ACCESS:

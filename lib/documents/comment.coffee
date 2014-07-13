@@ -4,26 +4,23 @@ class @Comment extends AccessDocument
   # lastActivity: time of the last comment activity (for now same as updatedAt)
   # author:
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
+  #   slug
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # annotation
   #   _id
   # publication
   #   _id
   # body: in HTML (inline, no block elements)
   # license: license information, if known
-  # referencingAnnotations: list of (reverse field from Annotation.references.urls)
+  # referencingAnnotations: list of (reverse field from Annotation.references.comments)
   #   _id: annotation id
 
   @Meta
     name: 'Comment'
     fields: =>
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      annotation: @ReferenceField Annotation
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
+      annotation: @ReferenceField Annotation, [], true, 'comments'
       publication: @ReferenceField Publication
     triggers: =>
       updatedAt: UpdatedAtTrigger ['author._id', 'annotation._id', 'publication._id', 'body', 'license']

@@ -30,6 +30,100 @@ button.default
 button.default:hover
   background-color box-shadow-border
 
+/* Dropdown
+=========== */
+
+.dropdown-trigger
+  position relative
+  cursor pointer
+
+  .dropdown-anchor
+    display none
+    position absolute
+    bottom 0
+    left 0
+    right 0
+    z-index 10
+
+    &::after
+      content ''
+      position absolute
+      border-style solid
+      border-width 0 8px 8px
+      border-color #FFFFFF transparent
+      display block
+      width 0
+      z-index 1
+      margin-left -10px
+      top 1px
+      left 50%
+
+    &::before
+      content ''
+      position absolute
+      border-style solid
+      border-width 0 8px 8px
+      border-color rgb(210,210,210) transparent
+      display block
+      width 0
+      z-index 0
+      margin-left -10px
+      top 0
+      left 50%
+
+    .dropdown
+      background white
+      border-color rgb(210,210,210)
+      border-style solid
+      border-width 1px
+      position  absolute
+      padding 5px 0
+      margin 0
+      list-style none
+      top 8px
+      left 0
+
+      .menu-item
+        button
+          width 100%
+          padding 5px 20px
+          white-space nowrap
+          border none
+          background transparent
+
+        button:hover
+          background box-shadow-border
+
+      h3
+        font-weight 300
+
+      .toggle-list
+        list-style none
+        padding 0
+        margin -10px 0 0
+        border-radius 2px
+
+      .toggle-list-item
+        button
+          background none
+          border solid 1px transparent
+          width 100%
+          text-align left
+          padding 10px 10px 10px 30px
+          position relative
+
+        button:hover
+          border 1px solid box-shadow-border
+          background-color box-shadow-border
+
+        .icon-check::before
+          position absolute
+          left 7px
+          top 13px
+
+      .hint
+        font-size 13px
+
 /* Edit button
 ============== */
 
@@ -54,13 +148,46 @@ h1
   .edit
     margin-top -5px
 
-/* Search bar
-============= */
-.search-bar
-  input
-    border none
-    background none
-    font-weight 300
+.sidebar
+  .edit
+    width auto
+
+/* Add control
+============== */
+
+.add-control
+  .member
+    .add-button
+      display block
+      border none
+      background none
+      padding 5px
+      height 34px
+      text-align left
+
+      .inline-item
+        .avatar
+          width 24px
+          text-align center
+
+          img
+            position absolute
+            left 0
+
+          &::before
+            position static
+            vertical-align middle
+            margin-top -2px
+
+        .name
+          text-decoration none
+
+  .add-and-invite
+    width 100%
+    margin-top 10px
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
 
 /* Sidebar
 ========== */
@@ -79,7 +206,7 @@ h1
     font-size 0.9em
     font-weight 300
 
-  input, button, select
+  input, button, select, .add-control
     display block
     width 235px
     box-sizing border-box
@@ -95,6 +222,17 @@ h1
 
     input:focus
       border-right-width 1px
+
+  .add-control
+    border 1px solid box-shadow-border
+
+    input, input:focus
+      width 233px
+      border none
+      box-shadow none
+
+    .add-button:hover
+      background-color box-shadow-border
 
 /* Meta menus and jQuery UI widgets
 =================================== */
@@ -170,6 +308,35 @@ h1
 
   .edit:hover
     color #ccc
+
+  .add-control
+    background white
+
+    .add-button
+      display block
+      width 100%
+      padding 5px
+      margin-bottom 0
+      background none
+      text-align left
+
+      .inline-item
+        color black
+
+    button
+      background-color rgba(120,120,120,0.2)
+      color black
+
+    button:hover
+      background-color rgba(120,120,120,0.3)
+
+    .access-results
+      margin 0
+
+  .add-control-results
+    color black
+    padding 0 10px 10px
+    font-weight 300
 
 /* jQuery UI widgets
 ==================== */
@@ -251,6 +418,26 @@ h1
 
 .ui-slider .ui-widget-header
   padding 0
+
+.ui-tooltip
+  background rgb(14,41,57)
+  color white
+  text-align center
+  border-radius 0
+  box-shadow none
+  padding 5px
+
+  &::before
+    content ''
+    position absolute
+    border-style solid
+    border-width 8px 8px 0
+    border-color rgb(14,41,57) transparent
+    display block
+    width 0
+    margin-left -8px
+    bottom -8px
+    left 50%
 
 /* Layouts
 ========== */

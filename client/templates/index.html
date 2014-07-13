@@ -11,28 +11,40 @@
 <template name="indexStatistics">
   <ul class="statistics">
     <li>
-      <span class="value">{{publications}}</span>
-      <span class="label">Publications</span>
+      <a href="{{publicationsPath}}">
+        <span class="value">{{publications}}</span>
+        <span class="label">Publications</span>
+      </a>
     </li>
     <li>
-      <span class="value">{{persons}}</span>
-      <span class="label">People</span>
+      <a href="{{personsPath}}">
+        <span class="value">{{persons}}</span>
+        <span class="label">People</span>
+      </a>
     </li>
     <li>
-      <span class="value">{{highlights}}</span>
-      <span class="label">Highlights</span>
+      <a href="{{highlightsPath}}">
+        <span class="value">{{highlights}}</span>
+        <span class="label">Highlights</span>
+      </a>
     </li>
     <li>
-      <span class="value">{{annotations}}</span>
-      <span class="label">Annotations</span>
+      <a href="{{annotationsPath}}">
+        <span class="value">{{annotations}}</span>
+        <span class="label">Annotations</span>
+      </a>
     </li>
     <li>
-      <span class="value">{{groups}}</span>
-      <span class="label">Groups</span>
+      <a href="{{groupsPath}}">
+        <span class="value">{{groups}}</span>
+        <span class="label">Groups</span>
+      </a>
     </li>
     <li>
-      <span class="value">{{collections}}</span>
-      <span class="label">Collections</span>
+      <a href="{{collectionsPath}}">
+        <span class="value">{{collections}}</span>
+        <span class="label">Collections</span>
+      </a>
     </li>
   </ul>
 </template>

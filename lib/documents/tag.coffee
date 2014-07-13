@@ -1,4 +1,4 @@
-class @Tag extends Document
+class @Tag extends BaseDocument
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
   # lastActivity: time of the last tag activity (something tagged, etc.)
