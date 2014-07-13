@@ -82,4 +82,5 @@ Handlebars.registerHelper 'annotationReference', (annotationId, annotation, opti
   assert annotationId, annotation._id if annotation
 
   _id: annotationId # TODO: Remove when we will be able to access parent template context
+  noLink: annotation?.noLink # TODO: Remove when we will be able to access parent template context
   text: "a:#{ annotationId }"

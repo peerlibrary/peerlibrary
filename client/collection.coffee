@@ -140,5 +140,6 @@ Handlebars.registerHelper 'collectionReference', (collectionId, collection, opti
   assert collectionId, comment._id if collection
 
   _id: collectionId # TODO: Remove when we will be able to access parent template context
+  noLink: collection?.noLink # TODO: Remove when we will be able to access parent template context
   text: "c:#{ collectionId }"
   title: collection?.name or collection?.slug

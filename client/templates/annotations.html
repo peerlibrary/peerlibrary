@@ -59,10 +59,12 @@
 </template>
 
 <template name="annotationInlineItem">
-  <a class="inline-item annotation" {{#unless noLink}}href="{{annotationIdPath _id}}"{{/unless}}>
-    <i class="avatar only-icon icon-annotation" title="Annotation"></i>
-    <span class="name" title="{{_id}}">{{annotationReference _id}}</span>
-  </a>
+  {{#with annotationReference _id this}}
+    <a class="inline-item annotation"{{#unless noLink}} href="{{annotationPathFromId _id}}"{{/unless}}>
+      <i class="avatar only-icon icon-annotation" title="Annotation"></i>
+      <span class="name"{{#if title}} title="{{title}}"{{/if}>{{text}}</span>
+    </a>
+  {{/with}}
 </template>
 
 <template name="annotationCatalogItem">
