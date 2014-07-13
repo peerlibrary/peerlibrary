@@ -42,6 +42,7 @@ class @Person extends Person
   @PUBLISH_AUTO_FIELDS: ->
     fields: _.pick @PUBLISH_FIELDS().fields, [
       'user._id'
+      'user.username'
       'slug'
       'displayName'
       'gravatarHash'
@@ -52,7 +53,8 @@ class @Person extends Person
   # A subset of public fields used for catalog results
   @PUBLISH_CATALOG_FIELDS: ->
     fields: _.pick @PUBLISH_FIELDS().fields, [
-      'hasUser'
+      'user._id'
+      'user.username'
       'slug'
       'displayName'
       'gravatarHash'

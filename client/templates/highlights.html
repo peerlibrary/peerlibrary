@@ -59,10 +59,12 @@
 </template>
 
 <template name="highlightInlineItem">
-  <a class="inline-item highlight" {{#unless noLink}}href="{{highlightIdPath _id}}"{{/unless}}>
-    <i class="avatar only-icon icon-highlight" title="Highlight"></i>
-    <span class="name" title="{{_id}}">{{highlightReference _id}}</span>
-  </a>
+  {{#with highlightReference _id this}}
+    <a class="inline-item highlight"{{#unless noLink}} href="{{highlightPathFromId _id}}"{{/unless}}>
+      <i class="avatar only-icon icon-highlight" title="Highlight"></i>
+      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
+    </a>
+  {{/with}}
 </template>
 
 <template name="highlightCatalogItem">

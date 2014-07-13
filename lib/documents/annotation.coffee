@@ -84,7 +84,7 @@ class @Annotation extends ReadAccessDocument
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
-        persons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
         groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']

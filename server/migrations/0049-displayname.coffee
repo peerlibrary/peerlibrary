@@ -1,6 +1,6 @@
 # Replacing is removing (major) + adding (minor), so we choose RemoveSyncedFieldsMigration
 class Migration extends Document.RemoveSyncedFieldsMigration
-  name: "Replacing givenName, familyName, and user.username with displayName"
+  name: "Replacing givenName and familyName with displayName"
 
 Annotation.addMigration new Migration()
 Collection.addMigration new Migration()

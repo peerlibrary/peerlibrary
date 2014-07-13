@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "3146cdbd8357f1a8028be8a4ea50c3c778c5f069"
+    "commit": "b0d898b2132213734820f18295a5e7d2ad481833"
   },
   "dependencies": {
     "basePackages": {
@@ -50,7 +50,7 @@
       "router": {
         "git": "https://github.com/peerlibrary/meteor-router.git",
         "branch": "peerlibrary",
-        "commit": "9585141bf221e9cb6e479c56e12dc3d364002d47"
+        "commit": "ea58b18ec91e93d1f8293021a7eb1cc8611d715b"
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
