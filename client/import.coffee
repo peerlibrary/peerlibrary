@@ -102,7 +102,7 @@ uploadFile = (file, publicationId) ->
 # Process next element from import queue
 Deps.autorun ->
   # Autorun will not re-run when document changes status from 'preprocessed' to 'importing',
-  # but after it changes to any other status, next file will be returned.
+  # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
     state:
       $in: ['importing', 'preprocessed']
@@ -224,13 +224,13 @@ importFile = (file) ->
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
-  finishedAndErroredCount = ImportingFile.documents.find(
+  erroredFinishedImportedCount = ImportingFile.documents.find(
     state:
       $in: ['errored', 'finished', 'imported']
   ).count()
 
   # We prevent hiding if user is uploading files
-  if allCount == finishedAndErroredCount
+  if allCount is erroredFinishedImportedCount
     Session.set 'importOverlayActive', false
     ImportingFile.documents.remove {}
 
@@ -423,10 +423,10 @@ Deps.autorun ->
 
   return unless importingFilesCount
 
-  finishedFilesCount = ImportingFile.documents.find(state: $in: ['finished', 'imported']).count()
+  finishedImportedFilesCount = ImportingFile.documents.find(state: $in: ['finished', 'imported']).count()
 
   # If there are any files still in progress or if there are any errors, do nothing
-  return if importingFilesCount isnt finishedFilesCount
+  return if importingFilesCount isnt finishedImportedFilesCount
 
   importedFilesCount = ImportingFile.documents.find(state: 'imported').count()
 
