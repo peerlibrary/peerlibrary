@@ -648,32 +648,37 @@ Template.publicationDisplay.cached = ->
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
-  @_displayRendered = false
+  @_displayWrapper = null
 
 Template.publicationDisplay.rendered = ->
-  return if @_displayRendered
-  @_displayRendered = true
+  # We want to rendered the publication only if display wrapper DOM element has changed,
+  # so we store a random ID in the DOM element so that we can check if it is an old or
+  # new DOM element. We ignore rendered callbacks which happen for example because
+  # display wrapper's child templates were rendered (eg., when one hovers over a highlight).
+  return if @_displayWrapper?[0]?._displayWrapperId and @_displayWrapper[0]._displayWrapperId is @findAll('.display-wrapper')?[0]._displayWrapperId
+  @_displayWrapper = @findAll '.display-wrapper'
+  @_displayWrapper?[0]?._displayWrapperId = Random.id()
 
-  Deps.nonreactive =>
-    @_displayHandle = Deps.autorun =>
-      publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+  @_displayHandle?.stop()
+  @_displayHandle = Deps.autorun =>
+    publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
-      return unless publication
+    return unless publication
 
-      # Maybe we don't yet have whole publication object available
-      try
-        unless publication.url()
-          return
-      catch error
+    # Maybe we don't yet have whole publication object available
+    try
+      unless publication.url()
         return
+    catch error
+      return
 
-      publication.show $(@findAll '.display-wrapper')
-      Deps.onInvalidate publication.destroy
+    publication.show $(@_displayWrapper)
+    Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
   @_displayHandle?.stop()
   @_displayHandle = null
-  @_displayRendered = false
+  @_displayWrapper = null
 
 makePercentage = (x) ->
   100 * Math.max(Math.min(x, 1), 0)
