@@ -25,7 +25,7 @@ currentViewport = new Variable
   bottom: null
 
 # Variable containing currently realized (added to the DOM) highlights
-@currentHighlights = new KeysEqualityVariable {}
+@currentHighlights = new Variable {}
 
 ANNOTATION_DEFAULTS =
   access: Annotation.defaultAccess()
