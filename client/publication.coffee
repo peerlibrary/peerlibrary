@@ -899,22 +899,7 @@ Template.annotationInvite.highlights = ->
   isolateValue ->
     !!_.size(currentHighlights())
 
-viewportAnnotations = (local) ->
-  visibleHighlights = isolateValue ->
-    viewport = currentViewport()
-    highlights = currentHighlights()
-
-    insideViewport = (area) ->
-      viewport.top <= area.top + area.height and viewport.bottom >= area.top
-
-    _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
-
-  insideGroups = isolateValue ->
-    getAnnotationDefaults().groups
-
-  isPublicationCached = isolateValue ->
-    Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
-
+displayedAnnotations = (local) ->
   conditions = [
     # We display those which the user is editing (otherwise user could lose edited content)
     local:
@@ -922,27 +907,48 @@ viewportAnnotations = (local) ->
     editing: true
   ]
 
-  # If user has access to publication's full text content, then we
-  # limit annotations to only those with currently visible highlights
-  if isPublicationCached
-    # We display all annotations which are not linked to any highlight
-    conditions.push
-      local:
-        $exists: false
-      'references.highlights':
-        $in: [null, []]
+  insideGroups = isolateValue ->
+    getAnnotationDefaults().groups
 
-    # We display those which have a corresponding highlight visible
+  unless Session.get 'currentPublicationLimitAnnotationsToViewport'
+    # When not limited by the viewport, simply display all non-local annotations
     conditions.push
       local:
         $exists: false
-      'references.highlights._id':
-        $in: visibleHighlights
   else
-    # When publication's full text content is not available, show all non-local annotations
-    conditions.push
-      local:
-        $exists: false
+    visibleHighlights = isolateValue ->
+      viewport = currentViewport()
+      highlights = currentHighlights()
+
+      insideViewport = (area) ->
+        viewport.top <= area.top + area.height and viewport.bottom >= area.top
+
+      _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
+
+    isPublicationCached = isolateValue ->
+      Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
+
+    # If user has access to publication's full text content, then we
+    # limit annotations to only those with currently visible highlights
+    if isPublicationCached
+      # We display all annotations which are not linked to any highlight
+      conditions.push
+        local:
+          $exists: false
+        'references.highlights':
+          $in: [null, []]
+
+      # We display those which have a corresponding highlight visible
+      conditions.push
+        local:
+          $exists: false
+        'references.highlights._id':
+          $in: visibleHighlights
+    else
+      # When publication's full text content is not available, show all non-local annotations
+      conditions.push
+        local:
+          $exists: false
 
   if local
     conditions.push
@@ -967,11 +973,11 @@ viewportAnnotations = (local) ->
     ]
 
 Template.publicationAnnotations.annotations = ->
-  viewportAnnotations true
+  displayedAnnotations true
 
 Template.publicationAnnotations.realAnnotations = ->
   isolateValue ->
-    !!viewportAnnotations(false).count()
+    !!displayedAnnotations(false).count()
 
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (e) =>
