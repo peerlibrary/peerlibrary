@@ -8,16 +8,15 @@ class ImportingFile extends Document
   # canceled: true when user cancels import
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
-  # state: current document state, one of the following strings:
-  #        - new            -> file in queue for preprocessing
-  #        - preprocessing  -> file currently being preprocessed
-  #        - preprocessed   -> file in queue for importing
-  #        - importing      -> file currently being imported
-  #        - finished       -> file processing finished successfully, but it
-  #                            was not imported (import canceled or aready exists)
-  #        - imported       -> file processing finished successfully and
-  #                            it was imported
-  #        - errored        -> file processing errored
+  # state: current document state, one of the following constant strings
+  #   new: file in queue for preprocessing
+  #   preprocessing: file currently being preprocessed
+  #   preprocessed: file in queue for importing
+  #   importing: file currently being imported
+  #   finished: file processing finished successfully, but it
+  #             was not imported (import canceled or already exists)
+  #   imported: file processing finished successfully and at was imported
+  #   errored: file processing errored
 
   @Meta
     name: 'ImportingFile'
