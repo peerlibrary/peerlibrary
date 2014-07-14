@@ -388,7 +388,7 @@ class @Annotator extends Annotator
       @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
-      # immediatelly send a mouse enter event to make sure related annotation has
+      # immediately send a mouse enter event to make sure related annotation has
       # a hovered state. Even if _selectHighlight not really happened because of
       # a click, it is still a nice effect to emphasize the invitation.
       Meteor.defer ->
