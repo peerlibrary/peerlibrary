@@ -1,17 +1,23 @@
 # Local (client-only) document of importing files
 class ImportingFile extends Document
   # name: user's file name
-  # status: current status or error message
+  # status: current status or error message displayed to user
   # readProgress: progress of reading from file, in %
   # uploadProgress: progress of uploading file, in %
   # preprocessingProgress: progress of file preprocessing, in %
-  # finished: true when importing has finished
-  # errored: true when there was an error
   # canceled: true when user cancels import
-  # imported: true if file was successfully imported
   # publicationId: publication ID for the imported file
   # sha256: SHA256 hash for the file
-  # enqueued: true when file is enqueued
+  # state: current document state, one of the following strings:
+  #        - new            -> file in queue for preprocessing
+  #        - preprocessing  -> file currently being preprocessed
+  #        - preprocessed   -> file in queue for importing
+  #        - importing      -> file currently being imported
+  #        - finished       -> file processing finished successfully, but it
+  #                            was not imported (import canceled or aready exists)
+  #        - imported       -> file processing finished successfully and
+  #                            it was imported
+  #        - errored        -> file processing errored
 
   @Meta
     name: 'ImportingFile'
@@ -28,17 +34,16 @@ processedFiles.observeChanges
   removed: (id) ->
     delete importingFiles[id]
 
-# Observes enqueued files that get canceled
+# Observes files that get canceled while being in preprocessing or import queue
 canceledFiles = ImportingFile.documents.find
   canceled: true
-  enqueued: true
-  finished: false
-  errored: false
+  state:
+    $in: ['new', 'preprocessed']
 canceledFiles.observe
   added: (id) ->
     ImportingFile.documents.update id,
       $set:
-        finished: true
+        state: 'finished'
         status: "Import canceled"
 
 verifyFile = (file, publicationId, samples) ->
@@ -52,14 +57,13 @@ verifyFile = (file, publicationId, samples) ->
     if error
       ImportingFile.documents.update file._id,
         $set:
-          errored: true
+          state: 'errored'
           status: error.toString()
       return
 
     ImportingFile.documents.update file._id,
       $set:
-        finished: true
-        imported: true
+        state: 'imported'
         publicationId: publicationId
         status: "File imported"
 
@@ -80,33 +84,29 @@ uploadFile = (file, publicationId) ->
             # We got back from the chunk upload, so we can mark it as
             # really canceled (that is, finished) and display to the
             # user that cancelling has been successful
-            finished: true
+            state: 'finished'
             status: "Import canceled"
         return
 
       if error
         ImportingFile.documents.update file._id,
           $set:
-            errored: true
+            state: 'errored'
             status: error.toString()
         return
 
       ImportingFile.documents.update file._id,
         $set:
-          finished: true
-          imported: true
+          state: 'imported'
           publicationId: publicationId
 
 # Process next element from import queue
 Deps.autorun ->
-  # Autorun will not re-run until the same document does not have finished
-  # or errored fields set, but after they are set, next file will be returned
+  # Autorun will not re-run when document changes status from 'preprocessed' to 'importing',
+  # but after it changes to any other status, next file will be returned.
   document = ImportingFile.documents.findOne
-    finished: false
-    errored: false
-    canceled: false
-    sha256:
-      $exists: true
+    state:
+      $in: ['importing', 'preprocessed']
   ,
     fields:
       id: 1
@@ -116,20 +116,20 @@ Deps.autorun ->
 
   ImportingFile.documents.update document._id,
     $set:
-      enqueued: false
+      state: 'importing'
 
   Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
     if error
       ImportingFile.documents.update document._id,
         $set:
-          errored: true
+          state: 'errored'
           status: error.toString()
       return
 
     if result.already
       ImportingFile.documents.update document._id,
         $set:
-          finished: true
+          state: 'finished'
           status: "File already imported"
           publicationId: result.publicationId
       return
@@ -150,7 +150,7 @@ computeChecksum = (file, callback) ->
     if error
       ImportingFile.documents.update file._id,
         $set:
-          errored: true
+          state: 'errored'
           status: error.toString()
       return
 
@@ -160,18 +160,16 @@ testPDF = (file, callback) ->
   PDFJS.getDocument(data: file.content, password: '').then callback, (message, exception) ->
     ImportingFile.documents.update file._id,
       $set:
-        errored: true
+        state: 'errored'
         status: "Invalid PDF file"
 
 # Process next element from preprocessing queue
 Deps.autorun ->
-  # Autorun will not re-run until the same document does not yet have
-  # sha256 field, but after the field is set, next file will be returned
+  # Autorun will not re-run when document changes status from 'new' to 'preprocessing',
+  # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
-    sha256:
-      $exists: false
-    errored: false
-    finished: false
+    state:
+      $in: ['preprocessing', 'new']
   ,
     fields:
       _id: 1
@@ -180,7 +178,7 @@ Deps.autorun ->
   ImportingFile.documents.update document._id,
     $set:
       status: "Preprocessing"
-      enqueued: false
+      state: 'preprocessing'
 
   reader = new FileReader()
   reader.onload = ->
@@ -190,7 +188,7 @@ Deps.autorun ->
         if error
           ImportingFile.documents.update document._id,
             $set:
-              errored: true
+              state: 'errored'
               status: error.toString()
           return
 
@@ -198,13 +196,12 @@ Deps.autorun ->
           $set:
             sha256: sha256
             status: "In import queue"
-            enqueued: true
+            state: 'preprocessed'
 
   reader.onerror = (error) ->
-    console.log "Error " + error
     ImportingFile.documents.update document._id,
       $set:
-        errored: true
+        state: 'errored'
         status: error.toString()
 
   # TODO: Read file in chunks
@@ -223,20 +220,14 @@ importFile = (file) ->
     readProgress: 0
     uploadProgress: 0
     preprocessingProgress: 0
-    finished: false
-    errored: false
     canceled: false
-    imported: false
-    enqueued: true
+    state: 'new'
 
 hideOverlay = ->
   allCount = ImportingFile.documents.find().count()
   finishedAndErroredCount = ImportingFile.documents.find(
-    $or: [
-      finished: true
-    ,
-      errored: true
-    ]
+    state:
+      $in: ['errored', 'finished', 'imported']
   ).count()
 
   # We prevent hiding if user is uploading files
@@ -321,14 +312,11 @@ Template.importingFilesItem.events =
 Template.importingFilesItem.hideCancel = ->
   # We keep cancel shown even when canceled is set, until we get back
   # in the file upload method callback and set finished as well
-  @finished or @errored
+  @state in ['finished', 'errored']
 
 Template.importingFilesItem.state = ->
-  return 'errored' if @errored
   return 'canceled' if @canceled
-  return 'finished' if @finished
-  return 'preprocessing' unless @sha256
-  return 'importing'
+  return @state
 
 Template.searchInput.events =
   'click .drop-files-to-import': (e, template) ->
@@ -436,19 +424,19 @@ Deps.autorun ->
 
   return unless importingFilesCount
 
-  finishedFilesCount = ImportingFile.documents.find(finished: true).count()
+  finishedFilesCount = ImportingFile.documents.find(state: $in: ['finished', 'imported']).count()
 
   # If there are any files still in progress or if there are any errors, do nothing
   return if importingFilesCount isnt finishedFilesCount
 
-  importedFilesCount = ImportingFile.documents.find(imported: true).count()
+  importedFilesCount = ImportingFile.documents.find(state: 'imported').count()
 
   # If no file was really imported (all canceled?)
   return unless importedFilesCount
 
   if importedFilesCount is 1
     Notify.success "Imported the publication."
-    Meteor.Router.toNew Meteor.Router.publicationPath ImportingFile.documents.findOne(imported: true).publicationId
+    Meteor.Router.toNew Meteor.Router.publicationPath ImportingFile.documents.findOne(state: 'imported').publicationId
   else
     Notify.success "Imported #{ importedFilesCount } publications."
     Meteor.Router.toNew Meteor.Router.libraryPath()
