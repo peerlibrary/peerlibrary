@@ -907,24 +907,37 @@ viewportAnnotations = (local) ->
   insideGroups = isolateValue ->
     getAnnotationDefaults().groups
 
+  isPublicationCached = isolateValue ->
+    Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
+
   conditions = [
-    # We display all annotations which are not linked to any highlight
-    local:
-      $exists: false
-    'references.highlights':
-      $in: [null, []]
-  ,
-    # We display those which have a corresponding highlight visible
-    local:
-      $exists: false
-    'references.highlights._id':
-      $in: visibleHighlights
-  ,
     # We display those which the user is editing (otherwise user could lose edited content)
     local:
       $exists: false
     editing: true
   ]
+
+  # If user has access to publication's full text content, then we
+  # limit annotations to only those with currently visible highlights
+  if isPublicationCached
+    # We display all annotations which are not linked to any highlight
+    conditions.push
+      local:
+        $exists: false
+      'references.highlights':
+        $in: [null, []]
+
+    # We display those which have a corresponding highlight visible
+    conditions.push
+      local:
+        $exists: false
+      'references.highlights._id':
+        $in: visibleHighlights
+  else
+    # When publication's full text content is not available, show all non-local annotations
+    conditions.push
+      local:
+        $exists: false
 
   if local
     conditions.push
