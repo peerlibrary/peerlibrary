@@ -1458,7 +1458,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
     locked: true
   ]
 
-  getNewAnnotationAdminGroups().forEach (admin, index) ->
+  for admin in getNewAnnotationAdminGroups()
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is admin
 
@@ -1466,7 +1466,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       personOrGroup: Group.documents.findOne admin, fields: searchResult: 0
       admin: true
 
-  getNewAnnotationAdminPersons().forEach (admin, index) ->
+  for admin in getNewAnnotationAdminPersons()
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is admin
 
@@ -1474,7 +1474,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       personOrGroup: Person.documents.findOne admin, fields: searchResult: 0
       admin: true
 
-  getNewAnnotationMaintainerGroups().forEach (maintainer, index) ->
+  for maintainer in getNewAnnotationMaintainerGroups()
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer
 
@@ -1482,7 +1482,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       personOrGroup: Group.documents.findOne maintainer, fields: searchResult: 0
       maintainer: true
 
-  getNewAnnotationMaintainerPersons().forEach (maintainer, index) ->
+  for maintainer in getNewAnnotationMaintainerPersons()
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer
 
@@ -1491,9 +1491,8 @@ Template.newAnnotationRolesControlList.rolesList = ->
       maintainer: true
 
   if getNewAnnotationAccess() is ACCESS.PRIVATE
-
     # Add working-in groups to read permissions
-    getNewAnnotationWorkInsideGroups().forEach (group, index) ->
+    for group in getNewAnnotationWorkInsideGroups()
       existing = _.find rolesList, (item) ->
         item.personOrGroup._id is group
 
@@ -1506,7 +1505,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
         readAccess: true
         cantRemove: true
 
-    getNewAnnotationReadGroups().forEach (reader, index) ->
+    for reader in getNewAnnotationReadGroups()
       return if _.find rolesList, (item) ->
         item.personOrGroup._id is reader
 
@@ -1514,7 +1513,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
         personOrGroup: Group.documents.findOne reader, fields: searchResult: 0
         readAccess: true
 
-    getNewAnnotationReadPersons().forEach (reader, index) ->
+    for reader in getNewAnnotationReadPersons()
       return if _.find rolesList, (item) ->
         item.personOrGroup._id is reader
 

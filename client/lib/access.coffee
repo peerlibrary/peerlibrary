@@ -128,7 +128,7 @@ Template.rolesControlList.rolesList = ->
   admins = []
   admins = admins.concat(@adminGroups) if @adminGroups
   admins = admins.concat(@adminPersons) if @adminPersons
-  admins.forEach (admin, index) ->
+  for admin in admins
     rolesList.push
       personOrGroup: admin
       admin: true
@@ -136,7 +136,7 @@ Template.rolesControlList.rolesList = ->
   maintainers = []
   maintainers = maintainers.concat(@maintainerGroups) if @maintainerGroups
   maintainers = maintainers.concat(@maintainerPersons) if @maintainerPersons
-  maintainers.forEach (maintainer, index) ->
+  for maintainer in maintainers
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer._id
 
@@ -148,7 +148,7 @@ Template.rolesControlList.rolesList = ->
     readers = []
     readers = readers.concat(@readGroups) if @readGroups
     readers = readers.concat(@readPersons) if @readPersons
-    readers.forEach (reader, index) ->
+    for reader in readers
       return if _.find rolesList, (item) ->
         item.personOrGroup._id is reader._id
 

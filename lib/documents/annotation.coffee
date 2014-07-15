@@ -200,7 +200,7 @@ class @Annotation extends ReadAccessDocument
 
     # Grant read access to all groups inside which this annotation was shared
     document.inside ?= []
-    document.inside.forEach (group, index) ->
+    for group in document.inside
       if group._id not in _.pluck document.readGroups, '_id'
         document.readGroups ?= []
         document.readGroups.push

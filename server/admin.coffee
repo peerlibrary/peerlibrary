@@ -372,7 +372,7 @@ Meteor.methods
 
     count = 0
 
-    Publication.documents.find(cached: {$exists: false}).forEach (publication) ->
+    for publication in Publication.documents.find(cached: {$exists: false})
       try
         publication.checkCache()
         count++ if publication.cached
@@ -543,7 +543,7 @@ Meteor.methods
 
     count = 0
 
-    Publication.documents.find(source: 'FSM', cached: {$exists: false}).forEach (publication) ->
+    for publication in Publication.documents.find(source: 'FSM', cached: {$exists: false})
       try
         if not Storage.exists publication.cachedFilename()
           Log.info "Caching file for #{ publication._id }: #{ publication.foreignFilename() } -> #{ publication.cachedFilename() }"
