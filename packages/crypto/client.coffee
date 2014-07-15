@@ -186,7 +186,7 @@ class BaseCryptoWorker
       return
 
     if @current.message is 'ping'
-      @ping()
+      @ping @current.data
      return
 
     assert.equal @current.message, 'update'
@@ -215,7 +215,7 @@ class BaseCryptoWorker
   finalize: (params) ->
     throw new Error "Not implemented!"
 
-  ping: ->
+  ping: (data) ->
     throw new Error "Not implemented!"
 
   destroy: ->
@@ -250,10 +250,10 @@ class WebCryptoWorker extends BaseCryptoWorker
     @worker.postMessage
       message: 'finalize'
 
-  ping: =>
+  ping: (data) =>
     @worker.postMessage
       message: 'ping'
-      data: @current.data
+      data: data
 
   destroy: =>
     @worker.terminate()
