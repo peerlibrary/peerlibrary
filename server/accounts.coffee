@@ -7,6 +7,22 @@ FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
 INVITE_SECRET = Random.id()
 
+validateUsername = (username) ->
+  throw new Meteor.Error 400, "Username must be at least 3 characters long." unless username and username.length >= 3
+
+  throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test username
+
+  throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test username
+
+  # Check for unique username in a case insensitive manner.
+  # We do not have to escape username because we have already
+  # checked that it contains only a-zA-Z0-9_- characters.
+  throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ username }$", 'i'
+
+  # Username must not match any existing Person _id otherwise our queries for
+  # Person documents querying both _id and slug would return multiple documents
+  throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: username
+
 Meteor.methods
   'invite-user': (email, message) ->
     check email, EMail
@@ -40,18 +56,24 @@ Meteor.methods
 
     invited._id
 
-  'validate-username': (username) ->
+  'reset-password-with-username': (token, verifier, username) ->
+    check token, String
+    check verifier, Object
     check username, String
-    checkUsername username
-    return # Make sure CoffeeScript does not return anything
+
+    validateUsername username
+    newUser = Meteor.call 'resetPassword', token, verifier
+    Meteor.call 'set-username', username
+
+    newUser
 
   'set-username': (username) ->
     check username, String
-    checkUsername username
+    validateUsername username
 
     user = User.documents.findOne
       _id: Meteor.userId()
-    throw new Meteor.Error 400, "Username already set" if user.username
+    throw new Meteor.Error 400, "Username already set" if user?.username
 
     Meteor.users.update
       _id: Meteor.userId()
@@ -60,22 +82,6 @@ Meteor.methods
         username: username
 
     return # Make sure CoffeeScript does not return anything
-
-checkUsername = (username) ->
-  throw new Meteor.Error 400, "Username must be at least 3 characters long." unless username and username.length >= 3
-
-  throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test username
-
-  throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test username
-
-  # Check for unique username in a case insensitive manner.
-  # We do not have to escape username because we have already
-  # checked that it contains only a-zA-Z0-9_- characters.
-  throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ username }$", 'i'
-
-  # Username must not match any existing Person _id otherwise our queries for
-  # Person documents querying both _id and slug would return multiple documents
-  throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: username
 
 
 Accounts.onCreateUser (options, user) ->
@@ -100,7 +106,7 @@ Accounts.onCreateUser (options, user) ->
   # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
 
   # Check username unless onCreateUser is called because user has been invited
-  checkUsername user.username unless options.secret
+  validateUsername user.username unless options.secret
 
   throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
