@@ -1,6 +1,6 @@
 Catalog.create 'annotations', Annotation,
   main: Template.annotations
-  empty: Template.noAnnotations
+  count: Template.annotationsCount
   loading: Template.annotationsLoading
 ,
   active: 'annotationsActive'

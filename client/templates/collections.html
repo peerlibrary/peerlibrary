@@ -4,7 +4,7 @@
   <div class="row">
     <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
-      {{> noCollections}}
+      {{> collectionsCount}}
       {{> collectionsList documents}}
       {{> collectionsLoading}}
     </div>
@@ -22,7 +22,10 @@
   {{/if}}
 </template>
 
-<template name="noCollections">
+<template name="collectionsCount">
+  {{#if documentsCount}}
+    <p class="status">Displaying {{countDescription}}:</p>
+  {{/if}}
   {{#if noDocuments}}
     <p class="status">
       {{#if documentsFilter}}
@@ -45,6 +48,10 @@
   {{else}}
     {{#if moreDocuments}}
       <button class="load-more">Load more</button>
+    {{else}}
+      {{#if documentsCount}}
+        <p class="status">End of results reached.</p>
+      {{/if}}
     {{/if}}
   {{/if}}
 </template>

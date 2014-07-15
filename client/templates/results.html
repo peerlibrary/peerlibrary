@@ -1,9 +1,8 @@
 <template name="results">
   <div class="row">
-    <div class="results-list col12">
+    <div class="results-list catalog col12">
       {{> resultsCount}}
       {{> resultsSearchInvitation}}
-      {{> noResults}}
       {{#if publications}}
         <ol class="item-list">
           {{#each publications}}
@@ -19,32 +18,33 @@
 
 <template name="resultsCount">
   {{#if publications}}
-    <div class="results-count">Found {{publications}} publications:</div>
+    <p class="status">Found {{publicationsCountDescription}}:</p>
   {{/if}}
   {{#if persons}}
-    <div class="results-count">Found {{persons}} people:</div>
+    <p class="status">Found {{personsCountDescription}}:</p>
   {{/if}}
-</template>
-
-<template name="noResults">
   {{#if noResults}}
-    <div class="no-results">No publications or people found.</div>
+    <p class="status">No publications or people found.</p>
   {{/if}}
 </template>
 
 <template name="resultsLoad">
   {{#if loading}}
-    <div class="results-loading">Loading …</div>
+    <p class="status">Loading …</p>
   {{else}}
     {{#if more}}
       <button class="load-more">Load more</button>
+    {{else}}
+      {{#if publications}}
+        <p class="status">End of results reached.</p>
+       {{/if}}
     {{/if}}
   {{/if}}
 </template>
 
 <template name="resultsSearchInvitation">
   {{#if searchInvitation}}
-    <div class="search-invitation">
+    <div class="search-invitation status">
       <p>Type in the search query</p>
       {{! TODO: Add this text when controls on the right actually work }}
       {{! <p>Refine your search with controls on the right.</p> }}

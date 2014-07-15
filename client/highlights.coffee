@@ -1,6 +1,6 @@
 Catalog.create 'highlights', Highlight,
   main: Template.highlights
-  empty: Template.noHighlights
+  count: Template.highlightsCount
   loading: Template.highlightsLoading
 ,
   active: 'highlightsActive'

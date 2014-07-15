@@ -1,6 +1,6 @@
 Catalog.create 'groups', Group,
   main: Template.groups
-  empty: Template.noGroups
+  count: Template.groupsCount
   loading: Template.groupsLoading
 ,
   active: 'groupsActive'

@@ -3,7 +3,7 @@
   <div class="row">
     <div class="col12 catalog">
       {{> catalogControls catalogSettings}}
-      {{> noPublications}}
+      {{> publicationsCount}}
       {{> publicationsList documents}}
       {{> publicationsLoading}}
     </div>
@@ -21,7 +21,10 @@
   {{/if}}
 </template>
 
-<template name="noPublications">
+<template name="publicationsCount">
+  {{#if documentsCount}}
+    <p class="status">Displaying {{countDescription}}:</p>
+  {{/if}}
   {{#if noDocuments}}
     <p class="status">
       {{#if documentsFilter}}
@@ -44,6 +47,10 @@
   {{else}}
     {{#if moreDocuments}}
       <button class="load-more">Load more</button>
+    {{else}}
+      {{#if documentsCount}}
+        <p class="status">End of results reached.</p>
+      {{/if}}
     {{/if}}
   {{/if}}
 </template>

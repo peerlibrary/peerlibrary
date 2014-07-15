@@ -3,7 +3,7 @@ globals = @
 
 Catalog.create 'publications', Publication,
   main: Template.publications
-  empty: Template.noPublications
+  count: Template.publicationsCount
   loading: Template.publicationsLoading
 ,
   active: 'publicationsActive'

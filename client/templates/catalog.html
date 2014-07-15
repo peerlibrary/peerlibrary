@@ -1,21 +1,21 @@
 <template name="catalogControls">
   <div class="controls">
-    {{> catalogSort}}
     {{> catalogFilter}}
+    {{> catalogSort}}
   </div>
 </template>
 
 <template name="catalogFilter">
   <div class="filter control">
     <i class="icon-search"></i>
-    <input name="filter" type="text" placeholder="Filter {{documentsName}}" autocomplete="off" autofocus="autofocus"/>
+    <input name="filter" type="text" placeholder="Filter {{documentsName}}" autocomplete="off" />
   </div>
 </template>
 
 <template name="catalogSort">
   <div class="sort control">
     <i class="icon-sort"></i>
-    <span class="dropdown-trigger">
+    <span class="dropdown-trigger right-aligned">
       Sort by {{field}}
       {{> catalogSortSelection}}
     </span>

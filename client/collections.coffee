@@ -1,6 +1,6 @@
 Catalog.create 'collections', Collection,
   main: Template.collections
-  empty: Template.noCollections
+  count: Template.collectionsCount
   loading: Template.collectionsLoading
 ,
   active: 'collectionsActive'

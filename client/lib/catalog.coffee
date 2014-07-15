@@ -113,17 +113,23 @@ class @Catalog
     templates.count?.documentsCount = ->
       Session.get variables.count
 
-    templates.empty.noDocuments = ->
+    templates.count?.countDescription = ->
+      documentClass.verboseNameWithCount Session.get(variables.count)
+
+    templates.count?.noDocuments = ->
       Session.get(variables.ready) and not Session.get(variables.count)
 
-    templates.empty.documentsFilter = ->
-      Session.get(variables.filter)
+    templates.count?.documentsFilter = ->
+      Session.get variables.filter
 
     templates.loading.documentsLoading = ->
-      Session.get(variables.loading)
+      Session.get variables.loading
 
     templates.loading.moreDocuments = ->
       Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
+
+    templates.loading.documentsCount = ->
+      Session.get variables.count
 
     templates.loading.events
       'click .load-more': (e, template) ->

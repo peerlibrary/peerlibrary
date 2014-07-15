@@ -1,6 +1,6 @@
 Catalog.create 'persons', Person,
   main: Template.persons
-  empty: Template.noPersons
+  count: Template.personsCount
   loading: Template.personsLoading
 ,
   active: 'personsActive'
