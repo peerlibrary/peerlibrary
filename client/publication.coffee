@@ -1453,7 +1453,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
   ]
 
   for admin in getNewAnnotationAdminGroups()
-    return if _.find rolesList, (item) ->
+    continue if _.find rolesList, (item) ->
       item.personOrGroup._id is admin
 
     rolesList.push
@@ -1461,7 +1461,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       admin: true
 
   for admin in getNewAnnotationAdminPersons()
-    return if _.find rolesList, (item) ->
+    continue if _.find rolesList, (item) ->
       item.personOrGroup._id is admin
 
     rolesList.push
@@ -1469,7 +1469,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       admin: true
 
   for maintainer in getNewAnnotationMaintainerGroups()
-    return if _.find rolesList, (item) ->
+    continue if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer
 
     rolesList.push
@@ -1477,7 +1477,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
       maintainer: true
 
   for maintainer in getNewAnnotationMaintainerPersons()
-    return if _.find rolesList, (item) ->
+    continue if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer
 
     rolesList.push
@@ -1492,7 +1492,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
 
       if existing
         existing.cantRemove = true
-        return
+        continue
 
       rolesList.push
         personOrGroup: Group.documents.findOne group, fields: searchResult: 0
@@ -1500,7 +1500,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
         cantRemove: true
 
     for reader in getNewAnnotationReadGroups()
-      return if _.find rolesList, (item) ->
+      continue if _.find rolesList, (item) ->
         item.personOrGroup._id is reader
 
       rolesList.push
@@ -1508,7 +1508,7 @@ Template.newAnnotationRolesControlList.rolesList = ->
         readAccess: true
 
     for reader in getNewAnnotationReadPersons()
-      return if _.find rolesList, (item) ->
+      continue if _.find rolesList, (item) ->
         item.personOrGroup._id is reader
 
       rolesList.push

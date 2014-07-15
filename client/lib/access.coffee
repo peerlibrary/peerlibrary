@@ -120,6 +120,9 @@ Template.rolesControl.showControl = ->
   rolesCount = @adminGroups?.length + @adminPersons?.length + @maintainerGroups?.length + @maintainerPersons?.length
   rolesCount += @readGroups?.length + @readPersons?.length if @access is ACCESS.PRIVATE
 
+  console.log @
+  console.log rolesCount
+
   return rolesCount > 0
 
 Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
@@ -139,7 +142,7 @@ Template.rolesControlList.rolesList = ->
   maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
   maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
   for maintainer in maintainers
-    return if _.find rolesList, (item) ->
+    continue if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer._id
 
     rolesList.push
@@ -151,7 +154,7 @@ Template.rolesControlList.rolesList = ->
     readers = readers.concat @readGroups if @readGroups
     readers = readers.concat @readPersons if @readPersons
     for reader in readers
-      return if _.find rolesList, (item) ->
+      continue if _.find rolesList, (item) ->
         item.personOrGroup._id is reader._id
 
       rolesList.push

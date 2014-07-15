@@ -53,10 +53,6 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
   document = accessDocuments[documentName].documents.findOne documentId
   throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
 
-  wasAdmin = (_.where document["admin#{personOrGroupName}s"], {_id: personOrGroupId}).length > 0
-  wasMaintainer = (_.where document["maintainer#{personOrGroupName}s"], {_id: personOrGroupId}).length > 0
-  hadReadAccess = (_.where document["read#{personOrGroupName}s"], {_id: personOrGroupId}).length > 0
-
   changesCount = 0
 
   # For private documents, grant read access together with admin/maintainer privileges.
@@ -76,17 +72,17 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
     createAddToSetCommand('admin', personOrGroupName, personOrGroupId)
 
   # Only clear read access for private documents when specifically clearing all rights
-  if document.access is ACCESS.PRIVATE and hadReadAccess and role < ROLES.READ_ACCESS
+  if document.access is ACCESS.PRIVATE and role < ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
     createInSetQuery(documentId, 'read', personOrGroupName, personOrGroupId)),
     createRemoveFromSetCommand('read', personOrGroupName, personOrGroupId)
 
-  if wasMaintainer and role isnt ROLES.MAINTAINER
+  if role isnt ROLES.MAINTAINER
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
     createInSetQuery(documentId, 'maintainer', personOrGroupName, personOrGroupId)),
     createRemoveFromSetCommand('maintainer', personOrGroupName, personOrGroupId)
 
-  if wasAdmin and role isnt ROLES.ADMIN
+  if role isnt ROLES.ADMIN
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
     createInSetQuery(documentId, 'admin', personOrGroupName, personOrGroupId)),
     createRemoveFromSetCommand('admin', personOrGroupName, personOrGroupId)
