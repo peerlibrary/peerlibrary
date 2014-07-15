@@ -48,7 +48,6 @@ Template.groupCatalogItem.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
 Template.groupCatalogItem.public = ->
-  console.log @
   @access is ACCESS.OPEN
 
 Template.groupCatalogItem.private = ->

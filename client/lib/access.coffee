@@ -3,10 +3,7 @@ onAccessDropdownHidden = (event) ->
   $button = $(this).closest('.access-button')
   $button.addClass('tooltip')
 
-Template.accessButton.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
-
-Template.accessButton.events
+accessButtonEventHandlers =
   'click .dropdown-trigger': (e, template) ->
     # Make sure only the trigger toggles the dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
@@ -26,6 +23,11 @@ Template.accessButton.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.accessButton.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+
+Template.accessButton.events accessButtonEventHandlers
+
 Template.accessButton.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
@@ -40,6 +42,16 @@ Template.accessButton.documentName = ->
     documentName = @constructor.Meta._name
 
   documentName.toLowerCase()
+
+Template.accessIconButton.rendered = Template.accessButton.rendered
+
+Template.accessIconButton.events accessButtonEventHandlers
+
+Template.accessIconButton.canModifyAccess = Template.accessButton.canModifyAccess
+
+Template.accessIconButton.public = Template.accessButton.public
+
+Template.accessIconButton.documentName = Template.accessButton.documentName
 
 Template.accessControl.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
@@ -110,7 +122,6 @@ Template.rolesControl.showControl = ->
 Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
 
 Template.rolesControlList.rolesList = ->
-
   rolesList = []
 
   admins = []

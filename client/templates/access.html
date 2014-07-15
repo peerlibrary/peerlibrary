@@ -13,6 +13,21 @@
   </div>
 </template>
 
+<template name="accessIconButton">
+  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i>
+    {{else}}
+      <i class="icon-private"></i>
+    {{/if}}
+    <div class="dropdown-anchor">
+      <div class="dropdown">
+        {{> accessControl}}
+      </div>
+    </div>
+  </div>
+</template>
+
 <template name="accessControl">
   <div class="access-menu control">
     {{#if canModifyAccess}}

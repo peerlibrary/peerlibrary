@@ -1175,6 +1175,11 @@ Template.publicationAnnotationsItem.events
     # location.
     else if $(e.target).closest('.annotations-list .local.annotation').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    # Also don't select or deselect on access menu, because selecting makes the
+    # template redraw and we lose the state of the dropdown
+    # TODO: Save the state of the dropdown and recreate the state on render
+    else if $(e.target).closest('.access-button').length
+      return
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1345,10 +1350,10 @@ onAnnotationAccessDropdownHidden = (event) ->
   $button = $(this).closest('.access-button')
   $button.find('span').addClass('tooltip')
 
-Template.annotationAccessButton.rendered = ->
+Template.newAnnotationAccessButton.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
 
-Template.annotationAccessButton.events
+Template.newAnnotationAccessButton.events
   'click .dropdown-trigger': (e, template) ->
     # Make sure only the trigger toggles the dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
@@ -1369,11 +1374,8 @@ Template.annotationAccessButton.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.annotationAccessButtonText.public = ->
-  if @local
-    getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
-  else
-    @access is Annotation.ACCESS.PUBLIC
+Template.newAnnotationAccessButtonText.public = ->
+  getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
 
 Template.newAnnotationAccessForm.events
   'change .access input:radio': (e, template) ->

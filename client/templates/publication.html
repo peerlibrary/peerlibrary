@@ -240,6 +240,7 @@
         {{/if}}
         <div class="annotation-footer">
           {{> personInlineItem author}}
+          <span class="permissions">{{> accessIconButton}}</span>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
@@ -294,7 +295,9 @@
           }}
         </div>
         <div class="form-control">
-          {{> annotationAccessButton}}
+          {{#if local}}
+            {{> newAnnotationAccessButton}}
+          {{/if}}
           <button type="button" class="btn blue save">Save</button>
         </div>
       </div>
@@ -371,24 +374,20 @@
   </div>
 </template>
 
-<template name="annotationAccessButton">
+<template name="newAnnotationAccessButton">
   <div class="access-button dropdown-trigger">
-    {{> annotationAccessButtonText}}
+    {{> newAnnotationAccessButtonText}}
     <div class="dropdown-anchor">
       <div class="right-aligned dropdown">
         <h3>Permissions</h3>
-        {{#if local}}
-          {{> newAnnotationAccessControl}}
-        {{else}}
-          {{> accessControl}}
-        {{/if}}
+        {{> newAnnotationAccessControl}}
       </div>
     </div>
   </div>
 </template>
 
-<template name="annotationAccessButtonText">
-  <span class="tooltip" title="{{#if local}}{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}{{else}}{{#if public}}Everyone can see the annotation.{{else}}Only the users listed can see the annotation.{{/if}}{{/if}}">
+<template name="newAnnotationAccessButtonText">
+  <span class="tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public annotation
     {{else}}
@@ -658,9 +657,6 @@
           {{/with}}
         {{/each}}
       </p>
-      {{#if canModifyAccess}}
-        {{> accessControl}}
-      {{/if}}
     </div>
   </div>
 </template>
