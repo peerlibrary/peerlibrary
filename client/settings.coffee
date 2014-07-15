@@ -27,8 +27,13 @@ Template.settingsPassword.events =
 
     # Update password
     Accounts.changePassword currentPass, newPass, (error) ->
-      Notify.meteorError error, true if error
-      Notify.success "Password changed sucessfully" unless error
+      if error
+        Notify.meteorError error, true
+      else
+        Notify.success "Password changed sucessfully"
+        $('#current-password').val('')
+        $('#new-password').val('')
+        $('#new-password-confirm').val('')
 
     return # make sure CoffeeScript does not return anything
 
