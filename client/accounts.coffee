@@ -97,14 +97,16 @@ Template._enrollAccountDialog.events
     e.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click #login-buttons-enroll-account-button': (e, template) ->
-    changingPasswordInEnrollAccount = true
+  'click #pl-login-buttons-enroll-account-button': (e, template) ->
+    e.preventDefault()
+    enrollAccount()
     return # Make sure CoffeeScript does not return anything
 
-  'keypress #enroll-account-password': (e, template) ->
-    changingPasswordInEnrollAccount = true if event.keyCode is 13 # Enter key
+  'keypress #pl-enroll-account-password': (e, template) ->
+    enrollAccount() if e.keyCode is 13 # Enter key
     return # Make sure CoffeeScript does not return anything
 
+  # The rest of the cancel button functionality is handled by Meteor
   'click #login-buttons-cancel-enroll-account': (e, template) ->
     changingPasswordInEnrollAccount = false
     return # Make sure CoffeeScript does not return anything
@@ -138,3 +140,34 @@ Deps.autorun ->
     else
       Notify.success "Signed out."
     lastPersonId = personId
+
+enrollAccount = ->
+  changingPasswordInEnrollAccount = true
+
+  username = $('#pl-enroll-account-username').val()
+  password = $('#pl-enroll-account-password').val()
+
+  token = Accounts._loginButtonsSession.get 'enrollAccountToken'
+  Accounts.resetPasswordWithUsername token, password, username, (error) ->
+    if error
+      Accounts._loginButtonsSession.errorMessage error.reason or "Unknown error"
+    else
+      Accounts._loginButtonsSession.set 'enrollAccountToken', null
+
+# We extend Meteor's Accounts.resetPassword functionality with username so that
+# user can choose username in the enroll form
+Accounts.resetPasswordWithUsername = (token, password, username, callback) ->
+  throw new Error "Need to pass token" unless token
+  throw new Error "Need to pass new password" unless password
+  throw new Error "Need to pass username" unless username
+
+  if password.length <= 6
+    callback new Meteor.Error 400, "Password must be at least 6 characters long"
+    return
+
+  verifier = SRP.generateVerifier password
+  Accounts.callLoginMethod
+    methodName: 'reset-password-with-username'
+    methodArguments: [token, verifier, username]
+    userCallback: callback
+

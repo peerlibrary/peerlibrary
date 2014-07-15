@@ -174,34 +174,3 @@ Template.inviteDialog.events
         return false # We've handled the error ourselves, so don't show the notification
 
     return # Make sure CoffeeScript does not return anything
-
-Template._enrollAccountDialog.events
-  # TODO: Handle keypress
-  'click #pl-login-buttons-enroll-account-button': (e, template) ->
-    e.preventDefault()
-
-    username = $('#pl-enroll-account-username').val()
-    password = $('#pl-enroll-account-password').val()
-
-    # TODO: Maybe this sould be done on some central place
-    if password.length < 6
-      Accounts._loginButtonsSession.errorMessage "Password must be at least 6 characters long"
-      return # Make sure CoffeeScript does not return anything
-
-    Meteor.call 'validate-username', username, (error) ->
-      if error
-        Accounts._loginButtonsSession.errorMessage error.reason or "Unkonwn error"
-      else
-        token = Accounts._loginButtonsSession.get 'enrollAccountToken'
-        Accounts.resetPassword token, password, (error) ->
-          if error
-            Accounts._loginButtonsSession.errorMessage error.reason or "Unknown error"
-          else
-            Meteor.call 'set-username', username, (error) ->
-              if error
-                Accounts._loginButtonsSession.errorMessage error.reason or "Unkonwn error"
-              else
-                Accounts._loginButtonsSession.set 'enrollAccountToken', null
-                Accounts._enableAutoLogin()
-    return # Make sure CoffeeScript does not return anything
-
