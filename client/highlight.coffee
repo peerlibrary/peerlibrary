@@ -17,4 +17,5 @@ Handlebars.registerHelper 'highlightReference', (highlightId, highlight, options
   assert highlightId, highlight._id if highlight
 
   _id: highlightId # TODO: Remove when we will be able to access parent template context
+  noLink: highlight?.noLink # TODO: Remove when we will be able to access parent template context
   text: "h:#{ highlightId }"

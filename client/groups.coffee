@@ -1,40 +1,27 @@
+Catalog.create 'groups', Group,
+  main: Template.groups
+  empty: Template.noGroups
+  loading: Template.groupsLoading
+,
+  active: 'groupsActive'
+  ready: 'currentGroupsReady'
+  loading: 'currentGroupsLoading'
+  count: 'currentGroupsCount'
+  filter: 'currentGroupsFilter'
+  limit: 'currentGroupsLimit'
+  sort: 'currentGroupsSort'
+
 Deps.autorun ->
   if Session.equals 'groupsActive', true
-    Meteor.subscribe 'groups'
+    Meteor.subscribe 'my-groups'
 
-groupSearchQuery = null
-groupSearchQueryDependency = new Deps.Dependency()
-
-Template.groups.searchQuery = ->
-  groupSearchQuery
-
-Template.groups.groups = ->
-  groupSearchQueryDependency.depend()
-
-  selector = {}
-
-  # TODO: Move filtering of the groups to server, escape query
-  if groupSearchQuery
-    selector =
-      name:
-        $regex: ".*#{groupSearchQuery}.*"
-        $options: "i"
-
-  Group.documents.find selector,
-    sort: [
-      ['membersCount', 'desc']
-      ['name', 'asc']
-    ]
+Template.groups.catalogSettings = ->
+  documentClass: Group
+  variables:
+    filter: 'currentGroupsFilter'
+    sort: 'currentGroupsSort'
 
 Template.groups.events
-  'keyup .groups-directory .search-input': (e, template) ->
-    val = $(template.findAll '.groups-directory .search-input').val()
-
-    groupSearchQuery = val
-    groupSearchQueryDependency.changed()
-
-    return # Make sure CoffeeScript does not return anything
-
   'submit .add-group': (e, template) ->
     e.preventDefault()
 
@@ -48,9 +35,6 @@ Template.groups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupListing.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
-
 Template.myGroups.myGroups = ->
   Group.documents.find
     _id:
@@ -59,3 +43,19 @@ Template.myGroups.myGroups = ->
     sort: [
       ['name', 'asc']
     ]
+
+Editable.template Template.groupCatalogItemName, ->
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+,
+  (name) ->
+    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+      return Notify.meteorError error, true if error
+,
+  "Enter group name"
+,
+  true
+
+Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
+
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

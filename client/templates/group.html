@@ -1,11 +1,11 @@
 <template name="group">
   {{#if loading}}
-    <div class="simple loading">
+    <div class="loading">
       <h2>Loading</h2>
     </div>
   {{else}}
-    {{#if notfound}}
-      <div class="simple notfound">
+    {{#if notFound}}
+      <div class="not-found">
         <h2>404 Not found</h2>
         <p>Group not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
@@ -39,7 +39,7 @@
 <template name="groupMembersList">
   <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
     {{#each members}}
-      {{> personMember}}
+      {{> member}}
     {{/each}}
   </ol>
 </template>
@@ -72,7 +72,7 @@
 
 <template name="groupMembersAddControlResults">
   {{#if results.count}}
-    <ul class="group-member-results add-control-results member-list">
+    <ul class="group-member-results add-control-results">
       {{#each results}}
         {{> groupMembersAddControlResultsItem}}
       {{/each}}
@@ -81,55 +81,13 @@
 </template>
 
 <template name="groupMembersAddControlResultsItem">
-  {{> personMemberAdd}}
+  {{> memberAdd}}
 </template>
 
 <template name="groupMembersAddControlLoading">
   {{#if loading}}
-    <div class="results-loading add-control-results">Loading...</div>
+    <div class="results-loading add-control-results">Loading …</div>
   {{/if}}
-</template>
-
-<template name="personMember">
-  <li class="member person">
-    <img src="{{avatar}}" class="avatar" />
-    <h4 class="member-name">
-      <a href="{{personPathFromId _id slug}}" title="{{displayName}}">{{displayName}}</a>
-    </h4>
-    <button class="remove-button icon-cancel"></button>
-  </li>
-</template>
-
-<template name="groupMember">
-  <li class="member group">
-    <i class="icon-group avatar"></i>
-    <h4 class="member-name">
-      <a href="{{groupPathFromId _id slug}}" title="{{name}}">{{name}}</a>
-    </h4>
-    <button class="remove-button icon-cancel"></button>
-  </li>
-</template>
-
-<template name="personMemberAdd">
-  <li>
-    <button class="add-button">
-      <div class="member person">
-        <img src="{{avatar}}" class="avatar" />
-        <div class="member-name">{{displayName}}</div>
-      </div>
-    </button>
-  </li>
-</template>
-
-<template name="groupMemberAdd">
-  <li>
-    <button class="add-button">
-      <div class="member group">
-        <i class="icon-group avatar"></i>
-        <div class="member-name">{{name}}</div>
-      </div>
-    </button>
-  </li>
 </template>
 
 <template name="groupDetails">

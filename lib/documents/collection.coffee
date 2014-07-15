@@ -12,33 +12,37 @@ class @Collection extends ReadAccessDocument
   # authorPerson:
   #   _id: author's person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # authorGroup:
   #   _id: author's group id
   #   slug
   #   name
+  # authorName: either authorPerson.displayName or authorGroup.name
   # name: the name of the collection
   # slug: unique slug for URL
   # publications: list of
   #   _id: publication's id
+  # publicationsCount: number of publications in this collection
   # referencingAnnotations: list of (reverse field from Annotation.references.collections)
   #   _id: annotation id
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Collection'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authorPerson: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], false
+      authorPerson: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], false
       authorGroup: @ReferenceField Group, ['slug', 'name'], false
+      authorName: @GeneratedField 'self', ['authorPerson', 'authorGroup']
       slug: @GeneratedField 'self', ['name']
       publications: [@ReferenceField Publication]
+      publicationsCount: @GeneratedField 'self', ['publications']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['authorPerson._id', 'authorGroup._id', 'name', 'publications._id']
       personLastActivity: RelatedLastActivityTrigger Person, ['authorPerson._id'], (doc, oldDoc) -> doc.authorPerson?._id
@@ -48,6 +52,32 @@ class @Collection extends ReadAccessDocument
         newPublications = (publication._id for publication in doc.publications or [])
         oldPublications = (publication._id for publication in oldDoc.publications or [])
         _.difference newPublications, oldPublications
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+      ]
+    ,
+      name: "name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['name', 'asc']
+      ]
+    ,
+      name: "author"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['authorName', 'asc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "publications"
+      sort: [
+        ['publicationsCount', 'desc']
+      ]
+    ]
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in

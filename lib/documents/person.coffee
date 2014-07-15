@@ -1,3 +1,6 @@
+EMAIL_FIELDS =
+  'user.emails': 1
+
 class @Person extends AccessDocument
   # maintainerPersons: list of persons who have maintainer permissions
   # maintainerGroups: list of groups who have maintainer permissions
@@ -14,6 +17,7 @@ class @Person extends AccessDocument
   # gravatarHash: hash for Gravatar
   # givenName
   # familyName
+  # displayName: combination of givenName, familyName, user.username, email, and slug
   # isAdmin: boolean, is user an administrator or not
   # invited:
   #   by: a person who invited this person
@@ -34,12 +38,13 @@ class @Person extends AccessDocument
   @Meta
     name: 'Person'
     fields: =>
-      maintainerPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField 'self', ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField 'self', ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       slug: @GeneratedField 'self', ['user.username']
+      displayName: @GeneratedField 'self', ['displayName', 'givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:
@@ -57,45 +62,83 @@ class @Person extends AccessDocument
         oldPublications = (publication._id for publication in oldDoc.library or [])
         _.difference newPublications, oldPublications
 
-  displayName: (dontRefetch) =>
-    # When used in the template without providing the dontRefetch, a Handlebars argument is passed in that place (it is always the last argument)
-    dontRefetch = false unless _.isBoolean dontRefetch
-    if @givenName and @familyName
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+      ]
+    ,
+      name: "join date (newest first)"
+      sort: [
+        ['createdAt', 'desc']
+      ]
+    ,
+      name: "join date (oldest first)"
+      sort: [
+        ['createdAt', 'asc']
+      ]
+    ,
+      name: "displayed name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['displayName', 'asc']
+      ]
+    ,
+      name: "given name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['givenName', 'asc']
+        ['familyName', 'asc']
+      ]
+    ,
+      name: "family name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['familyName', 'asc']
+        ['givenName', 'asc']
+      ]
+    ,
+      name: "username"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['user', 'desc']
+        ['user.username', 'asc']
+      ]
+    ]
+
+  getDisplayName: =>
+    if @displayName
+      return @displayName
+    else if @givenName and @familyName
       return "#{ @givenName } #{ @familyName }"
     else if @givenName
       return @givenName
+    else if @familyName
+      return @familyName
     else if @user?.username
       return @user.username
     else if @email()
       return @email()
-    else if not dontRefetch # To prevent infinite loop
-      # Maybe we have access to a person document with more fields
-      person = @constructor.documents.findOne @_id
-      person.slug = @slug unless not person or person.slug
-      return person.displayName true if person
-
-    @slug
-
-  @displayNameFields: ->
-    _.extend @emailFields(),
-      givenName: 1
-      familyName: 1
-      'user.username': 1
-      slug: 1
+    else
+      return @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.emails?[0]?.address
 
   @emailFields: ->
-    'user.emails': 1
+    EMAIL_FIELDS
 
   avatar: (size) =>
     # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
     size = 24 unless _.isNumber size
+
+    defaultAvatar = if @gravatarHash then 'identicon' else Meteor.absoluteUrl 'images/spacer.gif',
+      rootUrl: if Meteor.settings?.public?.production then null else 'https://peerlibrary.org'
+
     # TODO: We should specify default URL to the image of an avatar which is generated from name initials
-    # TODO: gravatarHash does not appear
-    "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }"
+    "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }&d=#{ defaultAvatar }"
 
   hasReadAccess: (person) =>
     throw new Error "Not needed, documents are public"

@@ -42,6 +42,8 @@ class @ArXivPDF extends ArXivPDF
 randomTimestamp = ->
   moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
 
+updateBlogCache = @updateBlogCache
+
 Meteor.methods
   'sample-data': ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
@@ -573,6 +575,21 @@ Meteor.methods
         Log.error "#{ error }"
 
     Log.info "Done (#{ count })"
+
+  'sync-blog': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    @unblock()
+
+    if not Meteor.settings.tumblr
+      Log.error "Tumblr settings missing"
+      throw new Meteor.Error 500, "Tumblr settings missing"
+
+    Log.info "Syncing blog posts"
+
+    updateTumblr()
+
+    Log.info "Done"
 
 Meteor.publish 'arxiv-pdfs', ->
   return unless @personId

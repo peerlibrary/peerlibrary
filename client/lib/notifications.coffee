@@ -1,5 +1,5 @@
 # Local (client-only) document for notifications
-class @Notify extends Document
+class @Notify extends BaseDocument
   # type: type of the notification (debug, warn, error)
   # timestamp: timestamp when was notification inserted
   # message: message of the notification

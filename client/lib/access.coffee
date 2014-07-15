@@ -157,7 +157,7 @@ grantAccess = (document, personOrGroup) ->
   Meteor.call methodName, documentName, document._id, personOrGroup._id, (error, count) =>
     return Notify.meteorError error, true if error
 
-    Notify.success "#{ personOrGroup.constructor.Meta._name } added." if count
+    Notify.success "#{ _.capitalize personOrGroup.constructor.verboseName() } added." if count
 
 Template.privateAccessControlNoResults.events
   'click .add-and-invite': (e, template) ->
@@ -248,7 +248,7 @@ Template.privateAccessControlList.events
     Meteor.call methodName, documentName, @_parent._id, @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
-      Notify.success "#{ @constructor.Meta._name } removed." if count
+      Notify.success "#{ _.capitalize @constructor.verboseName() } removed." if count
 
     return # Make sure CoffeeScript does not return anything
 

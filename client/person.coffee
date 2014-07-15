@@ -80,7 +80,7 @@ Handlebars.registerHelper 'personReference', (personId, person, options) ->
   if person
     _id: personId # TODO: Remove when we will be able to access parent template context
     text: "@#{ person.slug }"
-    title: person.displayName()
+    title: person.displayName
   else
     _id: personId # TODO: Remove when we will be able to access parent template context
     text: "@#{ personId }"

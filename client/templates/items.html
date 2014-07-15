@@ -1,0 +1,38 @@
+<!-- Common for all items
+Individual items found in files under their respective name -->
+
+<template name="accessIcon">
+  <i class="{{iconName}}"></i>
+</template>
+
+<template name="accessText">
+  {{#if open}}open access{{/if}}
+  {{#if closed}}closed access{{/if}}
+  {{#if private}}private{{/if}}
+</template>
+
+<template name="accessDescription">
+  {{#if open}}Everyone has access to the publication.{{/if}}
+  {{#if closed}}The publication is public, but only those who import the PDF have access to its content.{{/if}}
+  {{#if private}}Only the users who import the PDF or are listed have access to the publication.{{/if}}
+</template>
+
+<!-- MEMBERS
+Used when inline items appear in contexts of lists and need add/remove controls -->
+
+<template name="member">
+  <li class="member">
+    {{#if documentIsPerson}}{{> personInlineItem}}{{/if}}
+    {{#if documentIsGroup}}{{> groupInlineItem}}{{/if}}
+    <button class="remove-button icon-cancel"></button>
+  </li>
+</template>
+
+<template name="memberAdd">
+  <li class="member">
+    <button class="add-button">
+      {{#if documentIsPerson}}{{> personInlineItem noLinkDocument}}{{/if}}
+      {{#if documentIsGroup}}{{> groupInlineItem noLinkDocument}}{{/if}}
+    </button>
+  </li>
+</template>

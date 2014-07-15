@@ -22,12 +22,12 @@ class @Group extends ReadAccessDocument
   @Meta
     name: 'Group'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField 'self', ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
-      members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
+      members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['name', 'members._id']
@@ -36,6 +36,28 @@ class @Group extends ReadAccessDocument
         newMembers = (member._id for member in doc.members or [])
         oldMembers = (member._id for member in oldDoc.members or [])
         _.difference newMembers, oldMembers
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "members count"
+      sort: [
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['name', 'asc']
+      ]
+    ]
 
   _hasReadAccess: (person) =>
     access = super

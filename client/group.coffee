@@ -33,23 +33,12 @@ Template.group.loading = ->
   groupSubscribing() # To register dependency
   not groupHandle?.ready()
 
-Template.group.notfound = ->
+Template.group.notFound = ->
   groupSubscribing() # To register dependency
   groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
-
-Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
-,
-  (name) ->
-    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-      return Notify.meteorError error, true if error
-,
-  "Enter group name"
-,
-  true
 
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()

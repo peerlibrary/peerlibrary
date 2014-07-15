@@ -15,6 +15,7 @@ class @Publication extends Publication
           [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
+
       fields.fullText.generator = (fields) ->
         return [null, null] unless fields.cached
         return [null, null] if fields.processed
@@ -35,6 +36,9 @@ class @Publication extends Publication
           Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
 
           return [null, null]
+
+      fields.annotationsCount.generator = (fields) ->
+        [fields._id, fields.annotations?.length or 0]
 
       fields
 
@@ -203,6 +207,7 @@ class @Publication extends Publication
       source: 1
       mediaType: 1
       access: 1
+      annotationsCount: 1
       readPersons: 1
       readGroups: 1
       maintainerPersons: 1
@@ -220,7 +225,11 @@ class @Publication extends Publication
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
       'access'
+      'annotationsCount'
     ]
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS = @PUBLISH_SEARCH_RESULTS_FIELDS
 
 registerForAccess Publication
 
@@ -432,6 +441,41 @@ Meteor.methods
     ),
       $set:
         title: title
+
+Meteor.publish 'publications', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'title') if filter
+
+  sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'publications', [filter, sortIndex],
+      cursor: Publication.documents.find restrictedFindQuery,
+        limit: limit
+        fields: Publication.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+      added: (id, fields) =>
+        fields.hasAbstract = !!fields.abstract
+        delete fields.abstract
+        fields
+      changed: (id, fields) =>
+        if 'abstract' of fields
+          fields.hasAbstract = !!fields.abstract
+          delete fields.abstract
+        fields
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Publication.readAccessPersonFields()
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
   check slug, NonEmptyString

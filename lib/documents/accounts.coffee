@@ -1,4 +1,4 @@
-class @User extends Document
+class @User extends BaseDocument
   # createdAt: time of creation
   # updatedAt: time of the last change
   # lastActivity: time of the last user account activity (login, password change, etc.)

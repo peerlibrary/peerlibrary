@@ -11,9 +11,25 @@ class @Collection extends Collection
         else
           [fields._id, '']
 
+      fields.publicationsCount.generator = (fields) ->
+        [fields._id, fields.publications?.length or 0]
+
+      fields.authorName.generator = (fields) ->
+        [fields._id, fields.authorPerson?.displayName or fields.authorGroup?.name or '']
+
+      fields
+
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
     fields: {} # All
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    authorPerson: 1
+    authorGroup: 1
+    name: 1
+    slug: 1
+    publicationsCount: 1
 
 registerForAccess Collection
 
@@ -243,3 +259,29 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
+
+Meteor.publish 'collections', (limit, filter, sortIndex) ->
+  check limit, PositiveNumber
+  check filter, OptionalOrNull String
+  check sortIndex, OptionalOrNull Number
+  check sortIndex, Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'name') if filter
+
+  sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Collection.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'collections', [filter, sortIndex],
+      cursor: Collection.documents.find restrictedFindQuery,
+        limit: limit
+        fields: Collection.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Collection.readAccessPersonFields()

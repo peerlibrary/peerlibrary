@@ -12,15 +12,14 @@ class @Annotation extends ReadAccessDocument
   # author:
   #   _id: person id
   #   slug
-  #   givenName
-  #   familyName
+  #   displayName
   #   gravatarHash
-  #   user
-  #     username
   # body: in HTML
   # publication:
   #   _id: publication's id
-  # references: made in the body of annotation or comments
+  #   slug
+  #   title
+  # references: made in the body of the annotation
   #   highlights: list of
   #     _id
   #   annotations: list of
@@ -30,13 +29,10 @@ class @Annotation extends ReadAccessDocument
   #     slug
   #     title
   #   persons: list of
-  #     _id
+  #     _id: person id
   #     slug
-  #     givenName
-  #     familyName
+  #     displayName
   #     gravatarHash
-  #     user
-  #       username
   #   groups: list of
   #     _id
   #     slug
@@ -59,6 +55,9 @@ class @Annotation extends ReadAccessDocument
   #     _id
   #     name: ISO 639-1 dictionary
   #     slug: ISO 639-1 dictionary
+  # comments: list of (reverse field from Comment.annotation)
+  #   _id: comment id
+  # commentsCount: number of comments for this annotation
   # referencingAnnotations: list of (reverse field from Annotation.references.annotations)
   #   _id: annotation id
   # license: license information, if known
@@ -68,21 +67,24 @@ class @Annotation extends ReadAccessDocument
   #   name
   # local (client only): if it exists this is just a temporary annotation on the client side, 1 (automatically created, LOCAL.AUTOMATIC), 2 (user changed the content, LOCAL.CHANGED)
   # editing (client only): is this annotation being edited
+  # searchResult (client only): the last search query this document is a result for, if any, used only in search results
+  #   _id: id of the query, an _id of the SearchResult object for the query
+  #   order: order of the result in the search query, lower number means higher
 
   @Meta
     name: 'Annotation'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      author: @ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']
-      publication: @ReferenceField Publication, [], true, 'annotations'
+      author: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
+      publication: @ReferenceField Publication, ['slug', 'title'], true, 'annotations'
       references:
         highlights: [@ReferenceField Highlight, [], true, 'referencingAnnotations']
         annotations: [@ReferenceField 'self', [], true, 'referencingAnnotations']
         publications: [@ReferenceField Publication, ['slug', 'title'], true, 'referencingAnnotations']
-        persons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
+        persons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'referencingAnnotations']
         groups: [@ReferenceField Group, ['slug', 'name'], true, 'referencingAnnotations']
         # TODO: Are we sure that we want a reverse field for tags? This could become a huge list for popular tags.
         tags: [@ReferenceField Tag, ['name', 'slug'], true, 'referencingAnnotations']
@@ -94,6 +96,7 @@ class @Annotation extends ReadAccessDocument
         tag: @ReferenceField Tag, ['name', 'slug']
       ]
       inside: [@ReferenceField Group, ['slug', 'name']]
+      commentsCount: @GeneratedField 'self', ['comments']
     # We do not see referencing something as an event which should update lastActivity of a referenced document.
     # Additionally, we update lastActivity when there is a constructive change, like adding to a group, and not when
     # document is being removed. When value changes we update just the related lastActivity of a new value, not old one.
@@ -109,6 +112,25 @@ class @Annotation extends ReadAccessDocument
         newGroups = (group._id for group in doc.inside or [])
         oldGroups = (group._id for group in oldDoc.inside or [])
         _.difference newGroups, oldGroups
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+      ]
+    ,
+      name: "author"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['author.displayName', 'asc']
+      ]
+    ,
+      name: "comments"
+      sort: [
+        ['commentsCount', 'desc']
+      ]
+    ]
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
