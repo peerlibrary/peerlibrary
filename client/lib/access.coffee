@@ -348,7 +348,7 @@ grantAccess = (document, personOrGroup) ->
     _parent: document
     personOrGroup: personOrGroup
 
-  changeRole data, if document.access is ACCESS.PRIVATE then ROLES.MAINTAINER else ROLES.READ_ACCESS
+  changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
 Template.rolesControlNoResults.events
   'click .add-and-invite': (e, template) ->
