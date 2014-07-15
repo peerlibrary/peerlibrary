@@ -3,6 +3,7 @@
 
 setSession = (session) ->
   session = _.defaults session or {},
+    # TODO: All these variables should be encoded in the URL somehow, or they should not be reset when routing (use Session.setDefault; we are using it already, we should put all together; or should we use independent reactive variables instead of Session for such variables?)
     indexActive: false
     currentSearchQuery: null
     currentSearchQueryCountPublications: 0
@@ -19,6 +20,7 @@ setSession = (session) ->
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
+    currentPublicationLimitAnnotationsToViewport: false
     currentHighlightId: null
     currentAnnotationId: null
     currentCommentId: null

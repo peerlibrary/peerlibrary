@@ -203,13 +203,13 @@
 
 <template name="publicationAnnotations">
   <ul class="annotations-list">
-    {{#if realAnnotations}}
+    {{#if realAnnotationsExist}}
       {{> annotationSignInInvite}}
     {{/if}}
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
     {{/each}}
-    {{#unless realAnnotations}}
+    {{#unless realAnnotationsExist}}
       {{> annotationInvite}}
     {{/unless}}
   </ul>
@@ -515,7 +515,11 @@
     <div class="vertical-align-outer">
       <div class="vertical-align-inner">
         <p class="no-annotations hint balance-text">
-          There are no annotations yet.
+          {{#if nonFilteredAnnotationsExist}}
+            There are no annotations yet for the displayed part of the publication.
+          {{else}}
+            There are no annotations yet.
+          {{/if}}
           {{#if currentPersonId}}
             Create the first above.
           {{else}}
@@ -523,7 +527,7 @@
           {{/if}}
         </p>
         <p class="hint balance-text">
-          {{#unless highlights}}
+          {{#unless highlightsExist}}
             There are no highlights yet.
             {{#if currentPersonId}}
               Select text in the publication to create one.
@@ -665,10 +669,16 @@
   <div class="annotations-control">
     {{#if currentPersonId}}
       {{! TODO: Temporary disabled, not yet finalized code
-      <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
       }}
       {{> contextMenu}}
       {{> groupsFilter}}
+    {{/if}}
+    {{#if filteredAnnotationsCount}}
+      <div class="filteredCount">
+        {{filteredAnnotationsCount}} annotations filtered out
+        {{! TODO: Add a button to cancel any filtering }}
+      </div>
     {{/if}}
   </div>
 </template>

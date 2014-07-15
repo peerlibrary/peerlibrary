@@ -25,7 +25,7 @@ currentViewport = new Variable
   bottom: null
 
 # Variable containing currently realized (added to the DOM) highlights
-@currentHighlights = new KeysEqualityVariable {}
+@currentHighlights = new Variable {}
 
 ANNOTATION_DEFAULTS =
   access: Annotation.defaultAccess()
@@ -736,32 +736,37 @@ Template.publicationDisplay.cached = ->
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
-  @_displayRendered = false
+  @_displayWrapper = null
 
 Template.publicationDisplay.rendered = ->
-  return if @_displayRendered
-  @_displayRendered = true
+  # We want to rendered the publication only if display wrapper DOM element has changed,
+  # so we store a random ID in the DOM element so that we can check if it is an old or
+  # new DOM element. We ignore rendered callbacks which happen for example because
+  # display wrapper's child templates were rendered (eg., when one hovers over a highlight).
+  return if @_displayWrapper?[0]?._displayWrapperId and @_displayWrapper[0]._displayWrapperId is @findAll('.display-wrapper')?[0]._displayWrapperId
+  @_displayWrapper = @findAll '.display-wrapper'
+  @_displayWrapper?[0]?._displayWrapperId = Random.id()
 
-  Deps.nonreactive =>
-    @_displayHandle = Deps.autorun =>
-      publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
+  @_displayHandle?.stop()
+  @_displayHandle = Deps.autorun =>
+    publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
-      return unless publication
+    return unless publication
 
-      # Maybe we don't yet have whole publication object available
-      try
-        unless publication.url()
-          return
-      catch error
+    # Maybe we don't yet have whole publication object available
+    try
+      unless publication.url()
         return
+    catch error
+      return
 
-      publication.show $(@findAll '.display-wrapper')
-      Deps.onInvalidate publication.destroy
+    publication.show $(@_displayWrapper)
+    Deps.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
   @_displayHandle?.stop()
   @_displayHandle = null
-  @_displayRendered = false
+  @_displayWrapper = null
 
 makePercentage = (x) ->
   100 * Math.max(Math.min(x, 1), 0)
@@ -935,6 +940,14 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
+Template.annotationsControl.filteredAnnotationsCount = ->
+  isolateValue ->
+    LocalAnnotation.documents.find(
+      local:
+        $exists: false
+      'publication._id': Session.get 'currentPublicationId'
+    ).count() - displayedAnnotations(false).count()
+
 ###
 TODO: Temporary disabled, not yet finalized code
 
@@ -969,41 +982,64 @@ Template.annotationsControl.events
     return # Make sure CoffeeScript does not return anything
 ###
 
-Template.annotationInvite.highlights = ->
+Template.annotationInvite.highlightsExist = ->
   isolateValue ->
-    !!_.size(currentHighlights())
+    !!Highlight.documents.find(
+      'publication._id': Session.get 'currentPublicationId'
+    ).count()
 
-viewportAnnotations = (local) ->
-  visibleHighlights = isolateValue ->
-    viewport = currentViewport()
-    highlights = currentHighlights()
+Template.annotationInvite.nonFilteredAnnotationsExist = ->
+  isolateValue ->
+    !!LocalAnnotation.documents.find(
+      local:
+        $exists: false
+      'publication._id': Session.get 'currentPublicationId'
+    ).count()
 
-    insideViewport = (area) ->
-      viewport.top <= area.top + area.height and viewport.bottom >= area.top
-
-    _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
-
-  insideGroups = isolateValue ->
-    getNewAnnotationWorkInsideGroups()
-
+displayedAnnotations = (local) ->
   conditions = [
-    # We display all annotations which are not linked to any highlight
-    local:
-      $exists: false
-    'references.highlights':
-      $in: [null, []]
-  ,
-    # We display those which have a corresponding highlight visible
-    local:
-      $exists: false
-    'references.highlights._id':
-      $in: visibleHighlights
-  ,
     # We display those which the user is editing (otherwise user could lose edited content)
     local:
       $exists: false
     editing: true
   ]
+
+  insideGroups = isolateValue ->
+    getNewAnnotationWorkInsideGroups()
+
+  unless Session.get 'currentPublicationLimitAnnotationsToViewport'
+    # When not limited by the viewport, simply display all non-local annotations
+    conditions.push
+      local:
+        $exists: false
+  else
+    isPublicationCached = isolateValue ->
+      Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
+
+    # If user has access to publication's full text content, then we
+    # limit annotations to only those with currently visible highlights
+    if isPublicationCached
+      visibleHighlights = isolateValue ->
+        viewport = currentViewport()
+        highlights = currentHighlights()
+
+        insideViewport = (area) ->
+          viewport.top <= area.top + area.height and viewport.bottom >= area.top
+
+        _.uniq (highlightId for highlightId, boundingBoxes of highlights when _.some boundingBoxes, insideViewport).sort(), true
+
+      # We display those which have a corresponding highlight visible
+      conditions.push
+        local:
+          $exists: false
+        'references.highlights._id':
+          $in: visibleHighlights
+
+    else
+      # When publication's full text content is not available, display all non-local annotations
+      conditions.push
+        local:
+          $exists: false
 
   if local
     conditions.push
@@ -1028,11 +1064,11 @@ viewportAnnotations = (local) ->
     ]
 
 Template.publicationAnnotations.annotations = ->
-  viewportAnnotations true
+  displayedAnnotations true
 
-Template.publicationAnnotations.realAnnotations = ->
+Template.publicationAnnotations.realAnnotationsExist = ->
   isolateValue ->
-    !!viewportAnnotations(false).count()
+    !!displayedAnnotations(false).count()
 
 # Reference to the current local annotation template, so we can access it from global event handlers
 localAnnotationEditorTemplate = null
