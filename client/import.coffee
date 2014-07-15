@@ -113,9 +113,10 @@ Deps.autorun ->
       sha256: 1
   return unless document
 
-  ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update document._id,
     $set:
       state: 'importing'
+  assert.equal updatedCount, 1
 
   Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
     if error
@@ -147,6 +148,7 @@ computeChecksum = (file, callback) ->
 
   hash.update file.content, (error) ->
     if error
+      Notify.error "Crypto error: #{ error.toString() }", null, true
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
@@ -174,10 +176,11 @@ Deps.autorun ->
       _id: 1
   return unless document
 
-  ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update document._id,
     $set:
       status: "Preprocessing"
       state: 'preprocessing'
+  assert.equal updatedCount, 1
 
   reader = new FileReader()
   reader.onload = ->
@@ -198,6 +201,7 @@ Deps.autorun ->
             state: 'preprocessed'
 
   reader.onerror = (error) ->
+    Notify.error "FileReader error: #{ error.toString() }", null, true
     ImportingFile.documents.update document._id,
       $set:
         state: 'errored'
