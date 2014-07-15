@@ -131,13 +131,13 @@ Deps.autorun ->
 
 Deps.autorun ->
   # Subscribe to people and group data that appear in permissions for new annotations
-  Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationReadPersons()
-  Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationMaintainerPersons()
-  Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationAdminPersons()
-  Meteor.subscribe 'groups-by-id', getNewAnnotationReadGroups()
-  Meteor.subscribe 'groups-by-id', getNewAnnotationMaintainerGroups()
-  Meteor.subscribe 'groups-by-id', getNewAnnotationAdminGroups()
-  Meteor.subscribe 'groups-by-id', getNewAnnotationWorkInsideGroups()
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationReadPersons()
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationMaintainerPersons()
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationAdminPersons()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationReadGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationMaintainerGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationAdminGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationWorkInsideGroups()
 
 class @Publication extends Publication
   @Meta
@@ -1100,7 +1100,7 @@ Template.publicationAnnotations.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-  $(document).on 'click.publicationAnnotations keyup.publicationAnnotations', (e) =>
+  $(document).on 'mouseup.publicationAnnotations keyup.publicationAnnotations', (e) =>
     # We collapse a local editor if there was no change to the content
     # and user is not actively editing it (like having a dialog open)
 
@@ -1414,6 +1414,7 @@ Template.newAnnotationAccessForm.events
     return # Make sure CoffeeScript does not return anything
 
   'mouseenter .access .selection': (e, template) ->
+    # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
     accessHover = $(e.currentTarget).find('input').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
@@ -1421,6 +1422,7 @@ Template.newAnnotationAccessForm.events
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (e, template) ->
+    # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
     accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')

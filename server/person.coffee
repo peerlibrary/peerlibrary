@@ -62,7 +62,7 @@ class @Person extends Person
       'inGroups'
     ]
 
-Meteor.publish 'persons-by-id-or-slug', (idsOrSlugs) ->
+Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
   check idsOrSlugs, Match.OneOf(NonEmptyString, [NonEmptyString])
 
   idsOrSlugs = [idsOrSlugs] unless _.isArray idsOrSlugs

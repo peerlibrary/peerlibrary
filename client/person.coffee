@@ -3,7 +3,7 @@ Deps.autorun ->
 
   if slug
     # We also search by id because we may have to redirect to canonical URL
-    Meteor.subscribe 'persons-by-id-or-slug', slug
+    Meteor.subscribe 'persons-by-ids-or-slugs', slug
     Meteor.subscribe 'publications-by-author-slug', slug
 
 Deps.autorun ->

@@ -6,7 +6,7 @@ groupSubscribing = new Variable false
 Deps.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
-    groupHandle = Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+    groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
   else
     groupSubscribing.set false
     groupHandle = null
