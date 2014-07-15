@@ -5,14 +5,16 @@ onAccessDropdownHidden = (event) ->
 
 accessButtonEventHandlers =
   'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
 
     $anchor = $(template.firstNode).find('.dropdown-anchor').first()
     $anchor.toggle()
 
     if $anchor.is(':visible')
-      # Temporarily remove and disable tooltips on the button.
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content
       $button = $(template.findAll '.access-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
@@ -126,16 +128,16 @@ Template.rolesControlList.rolesList = ->
   rolesList = []
 
   admins = []
-  admins = admins.concat(@adminGroups) if @adminGroups
-  admins = admins.concat(@adminPersons) if @adminPersons
+  admins = admins.concat @adminGroups if @adminGroups
+  admins = admins.concat @adminPersons if @adminPersons
   for admin in admins
     rolesList.push
       personOrGroup: admin
       admin: true
 
   maintainers = []
-  maintainers = maintainers.concat(@maintainerGroups) if @maintainerGroups
-  maintainers = maintainers.concat(@maintainerPersons) if @maintainerPersons
+  maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
+  maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
   for maintainer in maintainers
     return if _.find rolesList, (item) ->
       item.personOrGroup._id is maintainer._id
@@ -146,8 +148,8 @@ Template.rolesControlList.rolesList = ->
 
   if @access is ACCESS.PRIVATE
     readers = []
-    readers = readers.concat(@readGroups) if @readGroups
-    readers = readers.concat(@readPersons) if @readPersons
+    readers = readers.concat @readGroups if @readGroups
+    readers = readers.concat @readPersons if @readPersons
     for reader in readers
       return if _.find rolesList, (item) ->
         item.personOrGroup._id is reader._id
@@ -204,7 +206,8 @@ changeRole = (data, newRole) ->
 
 Template.rolesControlRoleEditor.events
   'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
 
     $(template.findAll '.dropdown-anchor').toggle()
@@ -289,7 +292,7 @@ Template.rolesControlAdd.rendered = ->
 
       existingRoles = _.pluck(@data.adminPersons, '_id').concat(_.pluck(@data.adminGroups, '_id'),
         _.pluck(@data.maintainerPersons, '_id'), _.pluck(@data.maintainerGroups, '_id'))
-      existingRoles = existingRoles.concat(_.pluck(@data.readPersons, '_id'), _.pluck(@data.readGroups, '_id')) if (@data.access is ACCESS.PRIVATE)
+      existingRoles = existingRoles.concat(_.pluck(@data.readPersons, '_id'), _.pluck(@data.readGroups, '_id')) if @data.access is ACCESS.PRIVATE
 
       Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
         onReady: =>
@@ -342,9 +345,7 @@ grantAccess = (document, personOrGroup) ->
     _parent: document
     personOrGroup: personOrGroup
 
-  switch document.access
-    when ACCESS.PRIVATE then changeRole data, ROLES.READ_ACCESS
-    else changeRole data, ROLES.MAINTAINER
+  changeRole data, if document.access is ACCESS.PRIVATE then ROLES.MAINTAINER else ROLES.READ_ACCESS
 
 Template.rolesControlNoResults.events
   'click .add-and-invite': (e, template) ->

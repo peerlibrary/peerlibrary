@@ -97,7 +97,8 @@ Template.publicationCatalogItemLibraryMenu.events
       $item = $toolbar.parents('.catalog-item')
       $item.addClass('active').css('z-index','10')
 
-      # Temporarily remove and disable tooltips on the button
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content
       $button = $(template.findAll '.toolbar-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()

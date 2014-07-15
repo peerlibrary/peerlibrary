@@ -81,25 +81,25 @@ filterExistingPersons = (persons) ->
   _.pluck persons, '_id'
 
 getNewAnnotationWorkInsideGroups = ->
-  filterExistingGroups(Session.get('newAnnotationWorkInsideGroups') or ANNOTATION_DEFAULTS.workInsideGroups)
+  filterExistingGroups Session.get('newAnnotationWorkInsideGroups') or ANNOTATION_DEFAULTS.workInsideGroups
 
 getNewAnnotationReadPersons = ->
-  filterExistingPersons(Session.get('newAnnotationReadPersons') or ANNOTATION_DEFAULTS.readPersons)
+  filterExistingPersons Session.get('newAnnotationReadPersons') or ANNOTATION_DEFAULTS.readPersons
 
 getNewAnnotationReadGroups = ->
-  filterExistingGroups(Session.get('newAnnotationReadGroups') or ANNOTATION_DEFAULTS.readGroups)
+  filterExistingGroups Session.get('newAnnotationReadGroups') or ANNOTATION_DEFAULTS.readGroups
 
 getNewAnnotationMaintainerPersons = ->
-  filterExistingPersons(Session.get('newAnnotationMaintainerPersons') or ANNOTATION_DEFAULTS.maintainerPersons)
+  filterExistingPersons Session.get('newAnnotationMaintainerPersons') or ANNOTATION_DEFAULTS.maintainerPersons
 
 getNewAnnotationMaintainerGroups = ->
-  filterExistingGroups(Session.get('newAnnotationMaintainerGroups') or ANNOTATION_DEFAULTS.maintainerGroups)
+  filterExistingGroups Session.get('newAnnotationMaintainerGroups') or ANNOTATION_DEFAULTS.maintainerGroups
 
 getNewAnnotationAdminPersons = ->
-  filterExistingPersons(Session.get('newAnnotationAdminPersons') or ANNOTATION_DEFAULTS.adminPersons)
+  filterExistingPersons Session.get('newAnnotationAdminPersons') or ANNOTATION_DEFAULTS.adminPersons
 
 getNewAnnotationAdminGroups = ->
-  filterExistingGroups(Session.get('newAnnotationAdminGroups') or ANNOTATION_DEFAULTS.adminGroups)
+  filterExistingGroups Session.get('newAnnotationAdminGroups') or ANNOTATION_DEFAULTS.adminGroups
 
 # Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
@@ -130,24 +130,13 @@ Deps.autorun ->
       Session.set 'newAnnotationWorkInsideGroups', groups
 
 Deps.autorun ->
+  # Subscribe to people and group data that appear in permissions for new annotations
   Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationReadPersons()
-
-Deps.autorun ->
   Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationMaintainerPersons()
-
-Deps.autorun ->
   Meteor.subscribe 'persons-by-id-or-slug', getNewAnnotationAdminPersons()
-
-Deps.autorun ->
   Meteor.subscribe 'groups-by-id', getNewAnnotationReadGroups()
-
-Deps.autorun ->
   Meteor.subscribe 'groups-by-id', getNewAnnotationMaintainerGroups()
-
-Deps.autorun ->
   Meteor.subscribe 'groups-by-id', getNewAnnotationAdminGroups()
-
-Deps.autorun ->
   Meteor.subscribe 'groups-by-id', getNewAnnotationWorkInsideGroups()
 
 class @Publication extends Publication
@@ -564,7 +553,8 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Deps.autorun ->
-  return unless Session.get 'currentPublicationId'
+  publicationSubscribing() # To register dependency
+  return unless publicationHandle?.ready()
 
   # Enough is to check if user is logged in. Check if user has
   # read access to the publication is made on the server side.
@@ -1382,7 +1372,7 @@ Template.annotationEditor.events
     return # Make sure CoffeeScript does not return anything
 
 onAnnotationAccessDropdownHidden = (event) ->
-  # Return the access button to default state.
+  # Return the access button to default state
   $button = $(this).closest('.access-button')
   $button.find('span').addClass('tooltip')
 
@@ -1391,14 +1381,16 @@ Template.newAnnotationAccessButton.rendered = ->
 
 Template.newAnnotationAccessButton.events
   'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
 
     $anchor = $(template.firstNode).find('.dropdown-anchor').first()
     $anchor.toggle()
 
     if $anchor.is(':visible')
-      # Temporarily remove and disable tooltips on the button.
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content
       $button = $(template.findAll '.access-button')
       $tooltip = $button.find('.tooltip')
       tooltipId = $tooltip.attr('aria-describedby')
@@ -1575,7 +1567,8 @@ changeRole = (data, role) ->
 
 Template.newAnnotationRolesControlRoleEditor.events
   'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), e.target
 
     $(template.findAll '.dropdown-anchor').toggle()
