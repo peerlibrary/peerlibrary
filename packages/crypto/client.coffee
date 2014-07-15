@@ -121,7 +121,6 @@ Crypto =
       queue = @cryptoWorker.queue
       @cryptoWorker = new FallbackCryptoWorker @, @size, @onProgress, @chunkSize
       @cryptoWorker.addQueue queue
-      @cryptoWorker.nextInQueue()
 
 class BaseCryptoWorker
   constructor: (@instance, @size, @onProgress, @chunkSize) ->
@@ -164,6 +163,7 @@ class BaseCryptoWorker
   addQueue: (queue) =>
     @totalSizeQueued += item.size or 0 for item in queue
     @queue = @queue.concat queue
+    @nextInQueue()
 
   nextInQueue: =>
     return if @busy
@@ -186,10 +186,8 @@ class BaseCryptoWorker
       return
 
     if @current.message is 'ping'
-      @worker.postMessage
-        message: 'ping'
-        data: @current.data
-      return
+      @ping()
+     return
 
     assert.equal @current.message, 'update'
 
@@ -215,6 +213,9 @@ class BaseCryptoWorker
     throw new Error "Not implemented!"
 
   finalize: (params) ->
+    throw new Error "Not implemented!"
+
+  ping: ->
     throw new Error "Not implemented!"
 
   destroy: ->
@@ -248,6 +249,11 @@ class WebCryptoWorker extends BaseCryptoWorker
   finalize: =>
     @worker.postMessage
       message: 'finalize'
+
+  ping: =>
+    @worker.postMessage
+      message: 'ping'
+      data: @current.data
 
   destroy: =>
     @worker.terminate()
