@@ -115,9 +115,10 @@ Template.rolesControl.destroyed = ->
 Template.rolesControl.showControl = ->
   return true if Template.accessControl.canModifyAccess.call @
 
-  @adminGroups?.length > 0 or @adminPersons?.length > 0 or
-  @maintainerGroups?.length > 0 or @maintainerPersons?.length > 0 or
-  @access is ACCESS.PRIVATE and (@readGroups?.length > 0 or @readPersons?.length > 0)
+  rolesCount = @adminGroups?.length + @adminPersons?.length + @maintainerGroups?.length + @maintainerPersons?.length
+  rolesCount += @readGroups?.length + @readPersons?.length if @access is ACCESS.PRIVATE
+
+  return rolesCount > 0
 
 Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
 
