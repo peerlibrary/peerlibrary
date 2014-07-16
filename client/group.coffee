@@ -40,6 +40,49 @@ Template.group.notFound = ->
 Template.group.group = ->
   Group.documents.findOne Session.get 'currentGroupId'
 
+Template.groupMembership.isMember = ->
+  person = Meteor.person()
+  return false unless person?.inGroups
+  groupId = Session.get 'currentGroupId'
+  for group in person.inGroups
+    if group._id == groupId
+      return true
+  return false
+
+Template.groupMembership.isPendingMember = ->
+  person = Meteor.person()
+  return false unless person?.pendingGroups
+  groupId = Session.get 'currentGroupId'
+  for group in person.pendingGroups
+    if group._id == groupId
+      return true
+  return false
+
+Template.groupMembership.open = ->
+  Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'open'
+
+Template.groupMembership.closed = ->
+  Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'closed'
+
+Template.groupMembership.events
+  'click .join-group': (e, template) ->
+    console.log "Join group clicked"
+    Meteor.call 'join-group', Session.get 'currentGroupId', (error) ->
+      console.log "In callback"
+      return Notify.meteorError error, true if error
+      # TODO: Notify about success
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .leave-group': (e, template) ->
+    console.log "Leave group clicked"
+    Meteor.call 'leave-group', Session.get 'currentGroupId', (error) ->
+      console.log "In callback"
+      return Notify.meteorError error, true if error
+      # TODO: Notify about success
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 

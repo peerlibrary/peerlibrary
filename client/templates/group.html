@@ -16,6 +16,7 @@
           <h2>Group Activity</h2>
         </div>
         <div class="col4 push12 sidebar group-members-panel">
+          {{> groupMembership group}}
           {{> groupMembers group}}
           {{> groupDetails group}}
         </div>
@@ -28,20 +29,62 @@
   <h1>{{name}}</h1>
 </template>
 
+<template name="groupMembership">
+  {{#if currentPersonId}}
+    <h2 class="directory-title">Group membership</h2>
+    {{#if isMember}}
+      {{> groupExistingMembership}}
+    {{else}}
+      {{#if isPendingMember}}
+        {{> groupPendingMembership}}
+      {{else}}
+        {{> groupNoMembership}}
+      {{/if}}
+    {{/if}}
+    <br/><br/>
+  {{/if}}
+</template>
+
+<template name="groupNoMembership">
+  {{#if closed}}
+    This group is closed. You can't become a member nor apply for membership
+  {{else}}
+    <button class="join-group">{{#if open}}Become a member{{else}}Apply for membership{{/if}}</button>
+  {{/if}}
+</template>
+
+<template name="groupPendingMembership">
+  You have applied for membership in this group. Please wait for one of the group admins to approve your membership.
+  <button class="leave-group">Revoke application</button>
+</template>
+
+<template name="groupExistingMembership">
+  <button class="leave-group">Leave group</button>
+</template>
+
 <template name="groupMembers">
-  <h2 class="directory-title">Members</h2>
   {{> groupMembersList}}
   {{#if canModifyMembership}}
+    {{> groupPendingMembers}}
     {{> groupMembersAddControl}}
   {{/if}}
 </template>
 
 <template name="groupMembersList">
+  <h3> Members </h3>
   <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
     {{#each members}}
       {{> member}}
     {{/each}}
   </ol>
+</template>
+
+<template name="groupPendingMembers">
+  <h3> Membership applications </h3>
+  {{#each pendingMembers}}
+    {{> member}}
+    <button class="approve-group-member">Approve</button>
+  {{/each}}
 </template>
 
 <template name="groupMembersAddControl">
