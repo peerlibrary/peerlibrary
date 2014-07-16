@@ -187,7 +187,7 @@ class BaseCryptoWorker
 
     if @current.message is 'ping'
       @ping @current.data
-     return
+      return
 
     assert.equal @current.message, 'update'
 
