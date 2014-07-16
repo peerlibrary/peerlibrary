@@ -13,6 +13,11 @@ class @Group extends ReadAccessDocument
   # name: name of the group
   # members: list of people in the group
   # membersCount: number of people in the group
+  # pendingMembers: list of people with pending membership in the group
+  # membershipPolicy: defines a way to become member of the group, one of the following strings
+  #                   closed: only admins can add members
+  #                   conditional: anyone can apply for membership, admins have to approve it (TODO: Name this better)
+  #                   open: open group, anyone can join
   # referencingAnnotations: list of (reverse field from Annotation.references.groups)
   #   _id: annotation id
   # searchResult (client only): the last search query this document is a result for, if any, used only in search results
@@ -28,6 +33,7 @@ class @Group extends ReadAccessDocument
       adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
       members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'inGroups']
+      pendingMembers: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'pendingGroups']
       membersCount: @GeneratedField 'self', ['members']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['name', 'members._id']

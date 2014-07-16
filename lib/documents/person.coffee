@@ -25,6 +25,8 @@ class @Person extends AccessDocument
   #   message: optional message for invitation email
   # inGroups: list of (reverse field from Group.members)
   #   _id: id of a group the person is in
+  # pendingGroups: list of (reverse fields from Groups.pendingMembers)
+  #   _id: id of a group the person is pending member of (waiting approval)
   # publications: list of (reverse field from Publication.authors)
   #   _id: authored publication id
   # library: list of
