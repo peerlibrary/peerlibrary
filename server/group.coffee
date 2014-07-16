@@ -68,7 +68,8 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'add-to-group': (groupId, memberId) ->
     check groupId, DocumentId
-    check memberId, DocumentId
+    if memberId
+      check memberId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -92,6 +93,16 @@ Meteor.methods
       $addToSet:
         members:
           _id: member._id
+
+    # We remove pending membership without checking if it exists because query checks
+    Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+      'pendingMembers._id': member._id
+    ),
+      $pull:
+        pendingMembers:
+          _id: member._id
+    # TODO: If this query actually made an update, notify new member
 
   # TODO: Use this code on the client side as well
   'remove-from-group': (groupId, memberId) ->
@@ -138,6 +149,69 @@ Meteor.methods
     ),
       $set:
         name: name
+
+  # Adds member to open group or pending member to conditional group
+  'join-group': (groupId) ->
+    check groupId, DocumentId
+
+    console.log "Join group called"
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
+
+    console.log "Group policy is '" + group.membershipPolicy + "'"
+
+    throw new Meteor.Error 400, "You are not allowed to join this group." if group.membershipPolicy is 'closed'
+
+    if group.membershipPolicy is 'open'
+      newItem = members: _id: person._id
+    else
+      # TODO: Notify admins from observer
+      newItem = pendingMembers: _id: person._id
+
+    Group.documents.update
+      _id: group._id
+    ,
+      $addToSet: newItem
+
+  # Removes member from group or pending member from group
+  'leave-group': (groupId) ->
+    check groupId, DocumentId
+
+    console.log "Leave group called"
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    group = Group.documents.findOne Group.requireReadAccessSelector(person,
+      _id: groupId
+    )
+    throw new Meteor.Error 400, "Invalid group." unless group
+
+    console.log "Group policy is '" + group.membershipPolicy + "'"
+
+    # Check if person is member or pending member
+    existingMember = _.some group.members, (e) -> e._id is person._id
+    pendingMember = _.some group.pendingMembers, (e) -> e._id is person._id
+
+    if existingMember
+      removeItem = members: _id: person._id
+    else if pendingMember
+      removeItem = pendingMembers: _id: person._id
+    else
+      throw new Meteor.Error 400, "You are not a member of this gorup."
+
+    # TODO: Check if person is last remaining admin. In that case person must not be allowed to leave the group.
+
+    Group.documents.update
+      _id: group._id
+    ,
+      $pull: removeItem
 
 Meteor.publish 'groups-by-id', (groupId) ->
   check groupId, DocumentId
