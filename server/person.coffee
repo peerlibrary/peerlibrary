@@ -33,6 +33,7 @@ class @Person extends Person
       familyName: 1
       isAdmin: 1
       inGroups: 1
+      pendingGroups: 1
       work: 1
       education: 1
       publications: 1
@@ -48,6 +49,7 @@ class @Person extends Person
       'gravatarHash'
       'isAdmin'
       'inGroups'
+      'pendingGroups'
     ]
 
   # A subset of public fields used for catalog results
