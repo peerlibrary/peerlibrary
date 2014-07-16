@@ -88,6 +88,9 @@
             {{> publicationCatalogItemThumbnail}}
           {{/each}}
         </ul>
+        <div class="page-tooltip">
+          <div class="ui-tooltip"></div>
+        </div>
       </div>
     {{/if}}
 
@@ -183,5 +186,5 @@
 </template>
 
 <template name="publicationCatalogItemThumbnail">
-  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
+  <li><img src="{{this}}" width="95" height="125" alt=""></li>
 </template>

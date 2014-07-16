@@ -56,6 +56,25 @@
         left 4px
         z-index 0
 
+      .page-tooltip
+        position absolute
+        left -50px
+        right -50px
+        bottom 141px
+        text-align center
+        visibility hidden
+        opacity 0
+        transition all 0.5s
+
+        .ui-tooltip
+          position relative
+          display inline-block
+
+      &:hover
+        .page-tooltip
+          visibility visible
+          opacity 1
+
     &:hover .scrubber
       border-color box-shadow-shadow
 

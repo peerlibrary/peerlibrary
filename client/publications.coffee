@@ -134,6 +134,9 @@ Editable.template Template.publicationCatalogItemTitle, ->
 Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.publicationCatalogItemThumbnail.events
+  'mouseenter li': (e, template) ->
+    $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
+
   'click li': (e, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
