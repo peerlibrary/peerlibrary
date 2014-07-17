@@ -1204,7 +1204,7 @@ Template.publicationAnnotationsItem.events
     # Also don't select or deselect on access menu, because selecting makes the
     # template redraw and we lose the state of the dropdown
     # TODO: Save the state of the dropdown and recreate the state on render
-    else if $(e.target).closest('.access-button').length
+    else if $(e.target).closest('.access-control').length
       return
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
