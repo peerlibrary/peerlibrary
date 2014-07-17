@@ -21,8 +21,8 @@
     "urlify2": {},
     "fs": {},
     "meteor-file": {
-      "branch": "master",
-      "git": "https://github.com/EventedMind/meteor-file.git"
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-file.git"
     },
     "digest": {},
     "peerdb": {},
@@ -42,6 +42,7 @@
     "kadira": {},
     "directcollection": {},
     "url-utils": {},
-    "segfault-handler": {}
+    "segfault-handler": {},
+    "crypto": {}
   }
 }
