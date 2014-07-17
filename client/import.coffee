@@ -87,46 +87,53 @@ importFile = (file) ->
     fileContent = @result
 
     testPDF file, fileContent, ->
-      # TODO: Compute SHA in chunks
-      # TODO: Compute SHA in a web worker?
-      hash = new Crypto.SHA256()
-      hash.update fileContent
-      sha256 = hash.finalize()
-
-      alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
-      if alreadyImporting
-        ImportingFile.documents.update file._id,
-          $set:
-            finished: true
-            status: "File is already importing"
-            # publicationId might not yet be available, but let's try
-            publicationId: alreadyImporting.publicationId
-        return
-
-      ImportingFile.documents.update file._id,
-        $set:
-          sha256: sha256
-
-      Meteor.call 'create-publication', file.name, sha256, (error, result) ->
+      hash = new Crypto.SHA256
+        onProgress: (progress) ->
+          #TODO: update progressbar
+      hash.update fileContent, (error, result) ->
+        #TODO: handle errors
         if error
-          ImportingFile.documents.update file._id,
-            $set:
-              errored: true
-              status: error.toString()
-          return
+          console.log "Import error: " + error.message
+      hash.finalize (error, result) ->
+        #TODO: handle errors
+        if error
+          console.log "Import error: " + error.message
+        sha256 = result
 
-        if result.already
+        alreadyImporting = ImportingFile.documents.findOne(sha256: sha256)
+        if alreadyImporting
           ImportingFile.documents.update file._id,
             $set:
               finished: true
-              status: "File already imported"
-              publicationId: result.publicationId
+              status: "File is already importing"
+              # publicationId might not yet be available, but let's try
+              publicationId: alreadyImporting.publicationId
           return
 
-        if result.verify
-          verifyFile file, fileContent, result.publicationId, result.samples
-        else
-          uploadFile file, result.publicationId
+        ImportingFile.documents.update file._id,
+          $set:
+            sha256: sha256
+
+        Meteor.call 'create-publication', file.name, sha256, (error, result) ->
+          if error
+            ImportingFile.documents.update file._id,
+              $set:
+                errored: true
+                status: error.toString()
+            return
+
+          if result.already
+            ImportingFile.documents.update file._id,
+              $set:
+                finished: true
+                status: "File already imported"
+                publicationId: result.publicationId
+            return
+
+          if result.verify
+            verifyFile file, fileContent, result.publicationId, result.samples
+          else
+            uploadFile file, result.publicationId
 
   ImportingFile.documents.insert
     name: file.name
@@ -150,7 +157,7 @@ importFile = (file) ->
 
       # TODO: Remove the following workaround for a bug
       # Deps.flush does not seem to really do it, so we have to use Meteor.setTimeout to workaround
-      # See: https://github.com/meteor/meteor/issues/1619
+      # See https://github.com/meteor/meteor/issues/1619
       Meteor.setTimeout ->
         # TODO: We should read in chunks, not whole file
         reader.readAsArrayBuffer file
