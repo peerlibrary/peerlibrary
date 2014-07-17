@@ -148,7 +148,7 @@ computeChecksum = (file, callback) ->
 
   hash.update file.content, (error) ->
     if error
-      Notify.error "Crypto error: #{ error.toString() }", null, true
+      Notify.error "Crypto error: #{ error.toString?() or error }", null, true, error.stack
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
@@ -201,7 +201,7 @@ Deps.autorun ->
             state: 'preprocessed'
 
   reader.onerror = (error) ->
-    Notify.error "FileReader error: #{ error.toString() }", null, true
+    Notify.error "FileReader error: #{ error.toString?() or error }", null, true, error.stack
     ImportingFile.documents.update document._id,
       $set:
         state: 'errored'
