@@ -1,7 +1,3 @@
-[submodule "packages/blob/Blob"]
-	path = packages/blob/Blob
-	url = git://github.com/peerlibrary/Blob.js.git
-	branch = peerlibrary
 [submodule "packages/dom-text-mapper/dom-text-mapper"]
 	path = packages/dom-text-mapper/dom-text-mapper
 	url = git://github.com/peerlibrary/dom-text-mapper.git
@@ -38,6 +34,3 @@
 	path = packages/scribe/scribe-plugin-toolbar
 	url = https://github.com/peerlibrary/scribe-plugin-toolbar.git
 	branch = dist
-[submodule "packages/crypto/digest.js"]
-	path = packages/crypto/digest.js
-	url = https://github.com/peerlibrary/digest.js

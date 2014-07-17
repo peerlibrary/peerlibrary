@@ -42,6 +42,7 @@
     "kadira": {},
     "directcollection": {},
     "url-utils": {},
-    "segfault-handler": {}
+    "segfault-handler": {},
+    "crypto": {}
   }
 }

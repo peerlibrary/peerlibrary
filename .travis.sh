@@ -11,14 +11,8 @@ while read package; do
     continue
   fi
   echo "Testing $package"
-  if [[ "$package" == "meteor-file" || "$package" == "crypto" ]]; then
-    # A special case for meteor-file and crypto which requires Blob polyfill on PhantomJS
-    PACKAGES="blob;$package" make test
-    exit_code=$?
-  else
-    PACKAGES="$package" make test
-    exit_code=$?
-  fi
+  PACKAGES="$package" make test
+  exit_code=$?
   if [ $exit_code -ne 0 ]; then
     EXIT_CODE=$exit_code
   fi
