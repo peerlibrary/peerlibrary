@@ -1,8 +1,27 @@
 @import 'variables.import'
 
-.access-menu
-  .roles-control
+.access-control
+  display inline-block
 
+  .access-button
+    display inline-block
+    padding 5px
+    border 1px solid transparent
+    background none
+    width auto
+    font-size 14px
+
+    &:hover
+      border 1px solid box-shadow-border
+
+.access-menu
+  .selections
+    margin-left 0
+
+  .hint
+    margin-bottom 0
+
+  .roles-control
     .roles-control-list
       padding 0
       list-style none
@@ -35,6 +54,8 @@
           margin-bottom 0
 
         .role
+          padding-right 12px
+          position relative
           display table-cell
           font-weight 300
           font-size 13px
@@ -42,57 +63,88 @@
           white-space nowrap
 
           .icon-down
+            position absolute
+            right -12px
+            top 3px
             font-size 9px
 
       &.read-only
+        margin-bottom 0
+
         li
           .item
             .inline-item
               max-width 130px
 
-    .add-control .member
-      display block
-      width 100%
+            .role
+              padding-right 0
 
-.access-button.dropdown-trigger
-  display inline-block
+  .add-control .member
+    display block
+    width 100%
 
+.read-only.access-control
+  .access-name
+    display none
+
+.sidebar
+  .control.access-menu
+    width 255px
+
+.control.access-menu.dropdown
+  width 255px
+
+.dropdown-trigger
   .dropdown-anchor
-    .dropdown
-      width 235px
+    .access-menu.dropdown
       padding 10px
 
-      .access-menu
-        .selections
-          margin-left 0
+.dropdown.access-menu
+  .selections
+    margin 0 0 10px 0
 
-        .hint
-          margin-bottom 0
+    .selection
+      position relative
+      border 1px solid transparent
+      margin 0
+      padding 3px 3px 3px 25px
+      cursor pointer
 
-        .roles-control
-          .roles-control-list
-            .role
-              padding-right 12px
-              position relative
+      &::before
+        position absolute
+        left 7px
+        top 8px
 
-              .icon-down
-                position absolute
-                right -12px
-                top 3px
+      input
+        display none
 
-              .dropdown
-                width auto
-                padding 5px 0
+      .access-icon
+        cursor pointer
+        font-size 18px
+        vertical-align middle
 
-            &.read-only
-              margin-bottom 0
+      &:hover
+        border 1px solid box-shadow-border
+        background box-shadow-background
 
-              .role
-                padding-right 0
+  .access-name
+    margin-bottom 10px
 
-  &.read-only
-    .access-name
-      display none
+    .access-icon
+      font-size 18px
+
+  .description
+    font-weight 300
+    display none
+
+  .displayed.description
+    display block
+
+  .add-control.control
+    width 100%
+
+    .add-access
+      width 100%
 
 .meta-menu
   .access-menu
@@ -154,58 +206,3 @@
           .dropdown
             button
               color black
-
-.sidebar
-.dropdown
-  .access-menu
-    .selections
-      margin 0 0 10px -10px
-
-      .selection
-        position relative
-        border 1px solid transparent
-        margin 0
-        padding 3px 3px 3px 25px
-        cursor pointer
-
-        &::before
-          position absolute
-          left 7px
-          top 8px
-
-        input
-          display none
-
-        .access-icon
-          cursor pointer
-          font-size 18px
-          vertical-align middle
-
-        &:hover
-          border 1px solid box-shadow-border
-          background white
-
-    .access-name
-      margin-bottom 10px
-
-      .access-icon
-        font-size 18px
-
-    .description
-      font-weight 300
-      display none
-
-    .displayed.description
-      display block
-
-    .private-access-control
-      .add-control.control
-        width 100%
-
-        input
-          width 100%
-
-.sidebar
-  .access-button
-    display inline-block
-    padding 5px

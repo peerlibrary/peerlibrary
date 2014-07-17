@@ -618,7 +618,7 @@ Template.publicationAccessControlPrivacyInfo.closed = Template.publicationAccess
 Template.publicationAccessControlPrivacyInfo.private = Template.publicationAccessControlPrivacyForm.private
 
 # We copy over event handlers from accessControl template (which are general enough to work)
-for spec, callbacks of Template.accessControlPrivacyForm._tmpl_data.events
+for spec, callbacks of Template.accessMenuPrivacyForm._tmpl_data.events
   for callback in callbacks
     eventMap = {}
     eventMap[spec] = callback
@@ -1373,26 +1373,21 @@ Template.annotationEditor.events
 
 onAnnotationAccessDropdownHidden = (event) ->
   # Return the access button to default state
-  $button = $(this).closest('.access-button')
-  $button.find('span').addClass('tooltip')
+  $button = $(this).closest('.dropdown-trigger').find('.access-button')
+  $button.addClass('tooltip')
 
-Template.newAnnotationAccessButton.rendered = ->
+Template.newAnnotationAccessControl.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
 
 Template.newAnnotationAccessButton.events
-  'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown, by
-    # excluding clicks inside the content of this dropdown
-    return if $.contains template.find('.dropdown-anchor'), e.target
-
-    $anchor = $(template.firstNode).find('.dropdown-anchor').first()
+  'click .access-button': (e, template) ->
+    $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
     $anchor.toggle()
 
     if $anchor.is(':visible')
       # Temporarily remove and disable tooltips on the button, because the same
       # information as in the tooltip is displayed in the dropdown content
-      $button = $(template.findAll '.access-button')
-      $tooltip = $button.find('.tooltip')
+      $tooltip = $(template.findAll '.tooltip')
       tooltipId = $tooltip.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $tooltip.removeClass('tooltip')
@@ -1402,7 +1397,7 @@ Template.newAnnotationAccessButton.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.newAnnotationAccessButtonText.public = ->
+Template.newAnnotationAccessButton.public = ->
   getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
 
 Template.newAnnotationAccessForm.events

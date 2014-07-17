@@ -1,15 +1,11 @@
 onAccessDropdownHidden = (event) ->
   # Return the access button to default state.
-  $button = $(this).closest('.access-button')
+  $button = $(this).closest('.dropdown-trigger').find('.access-button')
   $button.addClass('tooltip')
 
 accessButtonEventHandlers =
-  'click .dropdown-trigger': (e, template) ->
-    # Make sure only the trigger toggles the dropdown, by
-    # excluding clicks inside the content of this dropdown
-    return if $.contains template.find('.dropdown-anchor'), e.target
-
-    $anchor = $(template.firstNode).find('.dropdown-anchor').first()
+  'click .access-button': (e, template) ->
+    $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
     $anchor.toggle()
 
     if $anchor.is(':visible')
@@ -25,13 +21,13 @@ accessButtonEventHandlers =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.accessButton.rendered = ->
+Template.accessControl.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
-Template.accessButton.events accessButtonEventHandlers
-
-Template.accessButton.canModifyAccess = ->
+Template.accessControl.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.accessButton.events accessButtonEventHandlers
 
 Template.accessButton.public = ->
   @access is @constructor.ACCESS.PUBLIC
@@ -45,20 +41,20 @@ Template.accessButton.documentName = ->
 
   documentName.toLowerCase()
 
+Template.accessIconControl.canModifyAccess = Template.accessControl.canModifyAccess
+
 Template.accessIconButton.rendered = Template.accessButton.rendered
 
 Template.accessIconButton.events accessButtonEventHandlers
-
-Template.accessIconButton.canModifyAccess = Template.accessButton.canModifyAccess
 
 Template.accessIconButton.public = Template.accessButton.public
 
 Template.accessIconButton.documentName = Template.accessButton.documentName
 
-Template.accessControl.canModifyAccess = ->
+Template.accessMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.accessControlPrivacyForm.events
+Template.accessMenuPrivacyForm.events
   'change .access input:radio': (e, template) ->
     access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
@@ -91,19 +87,19 @@ Template.accessControlPrivacyForm.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.accessControlPrivacyForm.public = ->
+Template.accessMenuPrivacyForm.public = ->
   @access is @constructor.ACCESS.PUBLIC
 
-Template.accessControlPrivacyForm.private = ->
+Template.accessMenuPrivacyForm.private = ->
   @access is @constructor.ACCESS.PRIVATE
 
-Template.accessControlPrivacyForm.documentName = Template.accessButton.documentName
+Template.accessMenuPrivacyForm.documentName = Template.accessButton.documentName
 
-Template.accessControlPrivacyInfo.public = Template.accessControlPrivacyForm.public
+Template.accessMenuPrivacyInfo.public = Template.accessMenuPrivacyForm.public
 
-Template.accessControlPrivacyInfo.private = Template.accessControlPrivacyForm.private
+Template.accessMenuPrivacyInfo.private = Template.accessMenuPrivacyForm.private
 
-Template.accessControlPrivacyInfo.documentName = Template.accessControlPrivacyForm.documentName
+Template.accessMenuPrivacyInfo.documentName = Template.accessMenuPrivacyForm.documentName
 
 Template.rolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
@@ -117,8 +113,11 @@ Template.rolesControl.destroyed = ->
 Template.rolesControl.showControl = ->
   return true if Template.accessControl.canModifyAccess.call @
 
-  rolesCount = @adminGroups?.length + @adminPersons?.length + @maintainerGroups?.length + @maintainerPersons?.length
-  rolesCount += @readGroups?.length + @readPersons?.length if @access is ACCESS.PRIVATE
+  rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
+  rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
+
+  console.log @
+  console.log rolesCount
 
   return rolesCount > 0
 

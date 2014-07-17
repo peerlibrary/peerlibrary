@@ -478,13 +478,9 @@ annotations-control-height = 30px
     padding 18px 0 0 0
     text-align right
 
-    .access-button
-      display inline-block
+    .access-control
       margin 0 20px
       text-align left
-
-      .hint
-        margin-bottom 0
 
     button.save
       margin-right 0
@@ -562,7 +558,7 @@ annotations-control-height = 30px
         background-color #f7f7f7
         border-top 1px solid #e3e3e3
 
-        .person.inline-item
+        > .person.inline-item
           margin-right 10px
           display inline-block
           vertical-align middle
@@ -575,6 +571,10 @@ annotations-control-height = 30px
 
             img
               border-radius 4px
+
+        .access-control
+          .access-button
+            padding 0
 
         .timestamp
           color #444

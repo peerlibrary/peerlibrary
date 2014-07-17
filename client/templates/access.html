@@ -1,45 +1,53 @@
+<template name="accessControl">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> accessButton}}
+    <div class="dropdown-anchor">
+      {{> accessMenu}}
+    </div>
+  </div>
+</template>
+
 <template name="accessButton">
-  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="{{#if public}}Everyone can see the {{documentName}}.{{else}}Only the users listed can see the {{documentName}}.{{/if}}">
+  <button class="access-button tooltip" title="{{#if public}}Everyone can see the {{documentName}}.{{else}}Only the users listed can see the {{documentName}}.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public {{documentName}}
     {{else}}
       <i class="icon-private"></i> Private {{documentName}}
     {{/if}}
+  </button>
+</template>
+
+<template name="accessIconControl">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> accessIconButton}}
     <div class="dropdown-anchor">
-      <div class="dropdown">
-        {{> accessControl}}
-      </div>
+      {{> accessMenu}}
     </div>
   </div>
 </template>
 
 <template name="accessIconButton">
-  <div class="access-button dropdown-trigger tooltip {{#unless canModifyAccess}}read-only{{/unless}}" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
+  <button class="access-button tooltip" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
     {{#if public}}
       <i class="icon-public"></i>
     {{else}}
       <i class="icon-private"></i>
     {{/if}}
-    <div class="dropdown-anchor">
-      <div class="dropdown">
-        {{> accessControl}}
-      </div>
-    </div>
-  </div>
+  </button>
 </template>
 
-<template name="accessControl">
-  <div class="access-menu control">
+<template name="accessMenu">
+  <div class="access-menu dropdown control">
     {{#if canModifyAccess}}
-        {{> accessControlPrivacyForm}}
+      {{> accessMenuPrivacyForm}}
     {{else}}
-        {{> accessControlPrivacyInfo}}
+      {{> accessMenuPrivacyInfo}}
     {{/if}}
     {{> rolesControl}}
   </div>
 </template>
 
-<template name="accessControlPrivacyForm">
+<template name="accessMenuPrivacyForm">
   <div class="access {{documentName}}-access">
     <div class="selections">
 
@@ -63,7 +71,7 @@
   </div>
 </template>
 
-<template name="accessControlPrivacyInfo">
+<template name="accessMenuPrivacyInfo">
   <div class="access {{documentName}}-access">
     {{#if public}}
       <div class="access-name">

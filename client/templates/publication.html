@@ -240,7 +240,7 @@
         {{/if}}
         <div class="annotation-footer">
           {{> personInlineItem author}}
-          <span class="permissions">{{> accessIconButton}}</span>
+          <span class="permissions">{{> accessIconControl}}</span>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
@@ -296,7 +296,7 @@
         </div>
         <div class="form-control">
           {{#if local}}
-            {{> newAnnotationAccessButton}}
+            {{> newAnnotationAccessControl}}
           {{/if}}
           <button type="button" class="btn blue save">Save</button>
         </div>
@@ -374,34 +374,32 @@
   </div>
 </template>
 
-<template name="newAnnotationAccessButton">
-  <div class="access-button dropdown-trigger">
-    {{> newAnnotationAccessButtonText}}
+<template name="newAnnotationAccessControl">
+  <div class="access-control dropdown-trigger">
+    {{> newAnnotationAccessButton}}
     <div class="dropdown-anchor">
-      <div class="right-aligned dropdown">
-        <h3>Permissions</h3>
-        {{> newAnnotationAccessControl}}
-      </div>
+      {{> newAnnotationAccessMenu}}
     </div>
   </div>
 </template>
 
-<template name="newAnnotationAccessButtonText">
-  <span class="tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
+<template name="newAnnotationAccessButton">
+  <button class="access-button tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public annotation
     {{else}}
       <i class="icon-private"></i> Private annotation
     {{/if}}
-  </span>
+  </button>
 </template>
 
-<template name="newAnnotationAccessControl">
-  <div class="access-menu control">
+<template name="newAnnotationAccessMenu">
+  <div class="access-menu control right-aligned dropdown">
+    <h3>Permissions</h3>
     {{> newAnnotationAccessForm}}
     {{> newAnnotationRolesControl}}
+    <p class="hint">You can always change and customize annotation permissions later.</p>
   </div>
-  <p class="hint">You can always change and customize annotation permissions later.</p>
 </template>
 
 <template name="newAnnotationAccessForm">

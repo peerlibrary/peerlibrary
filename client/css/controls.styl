@@ -140,11 +140,11 @@ button.default:hover
   /* For focused style */
   padding 4px
   border 1px solid transparent
-  border-radius 5px
 
-.edit:hover, .meta-menu .edit:hover
-  background none
-  color blue-accent
+  &:hover
+    background none
+    border-color box-shadow-border
+    color blue-accent
 
 .editable:hover
   .edit
@@ -169,12 +169,16 @@ h1
       background none
       padding 5px
       height 34px
-      text-align left
 
       .inline-item
+        display block
+        padding-left 30px
+
         .avatar
           width 24px
           text-align center
+          position absolute
+          left 0
 
           img
             position absolute
@@ -257,9 +261,10 @@ h1
 
   .add-control-results
     padding 10px
-    margin 0
 
+  .access-results
   .group-member-results
+    margin 0
     padding 0
 
 /* Meta menus and jQuery UI widgets
@@ -336,7 +341,7 @@ h1
   .edit:hover
     color #ccc
 
-.add-control
+  .add-control
     background white
     border-radius 2px
 
