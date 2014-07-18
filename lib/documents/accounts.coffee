@@ -1,9 +1,10 @@
 USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
-class @User extends Document
+class @User extends BaseDocument
   # createdAt: time of creation
-  # updatedAt: time of last change
+  # updatedAt: time of the last change
+  # lastActivity: time of the last user account activity (login, password change, etc.)
   # username: user's username
   # emails: list of
   #   address: e-mail address
@@ -19,6 +20,7 @@ class @User extends Document
       person: @ReferenceField Person
     triggers: =>
       updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
+      lastActivity: LastActivityTrigger ['services']
 
   @validateUsername = (username) ->
     throw new Meteor.Error 400, "Username must be at least 3 characters long." unless username and username.length >= 3

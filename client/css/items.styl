@@ -1,0 +1,239 @@
+@import 'variables.import'
+
+/* Inline items
+=============== */
+
+.inline-item
+  position relative
+  vertical-align middle
+  box-sizing border-box
+  max-width 100%
+  font-size 13px
+  line-height 2em
+  height 24px
+  overflow hidden
+  text-overflow ellipsis
+
+  .avatar
+    display inline-block
+    height 100%
+    margin-right 0.38em
+
+    &.only-icon::after
+      content ""
+      display inline-block
+
+    img
+      position relative
+      z-index 1
+      vertical-align top
+      padding-right 1px
+      border-radius 2px
+
+    &::before
+      position absolute
+      left 0
+      top 50%
+      margin -0.4em 0 0
+      z-index 0
+
+    &.icon-person::before
+      /* This is fine tuned so the icons appear consistent in size */
+      font-size 1.07em
+
+    &.icon-group::before
+      /* This is fine tuned so the icons appear consistent in size */
+      font-size 1.53em
+
+  .name
+    font-weight bold
+
+.inline-item:hover
+  text-decoration none
+
+  .name
+    text-decoration underline
+
+/* Catalog items
+================ */
+
+.item-list
+  list-style none
+  padding 0 5px
+  margin 0
+
+  .catalog-item
+    position relative
+    background white
+    padding 20px 20px 10px
+    margin 10px 0
+    border-radius 2px
+    box-shadow 0 0 0 1px box-shadow-border
+    transition box-shadow 0.2s
+
+    &:hover
+      box-shadow 0 0 0 1px box-shadow-shadow
+
+      .toolbar
+        visibility visible
+        opacity 1
+
+    &.active
+      z-index 10
+
+      .toolbar.actionable
+        z-index 2
+
+    .toolbar
+      float right
+      position relative
+      top -6px
+      right -10px
+      margin 0 0 20px 20px
+      transition all 0.2s
+      visibility hidden
+      opacity 0
+
+      &.actionable
+        z-index 2
+
+      .toolbar-button
+        background none
+        border none
+        padding 2px
+        font-size 20px
+        color box-shadow-shadow
+        outline none
+
+        &:hover
+          color blue-accent
+          opacity 1
+
+      &.displayed
+        visibility visible
+        opacity 1
+
+    .details
+      > *
+        margin 0 0 10px 0
+
+      &::after
+        content ""
+        clear both
+        display block
+
+      h2
+        a
+          text-decoration none
+
+      .actions
+        display inline-block
+
+        button
+          background none
+          border none
+          padding 0
+          color blue-accent
+          font-size 14px
+          line-height 1.2em
+
+          &:hover
+            text-decoration underline
+
+    .extra-details
+      > *
+        margin 0 0 10px 0
+
+    .full-item-link
+      display block
+      position absolute
+      left 0
+      right 0
+      top 0
+      bottom 0
+
+    .actionable, .tooltip
+      position relative
+      z-index 1
+
+    .edit
+      display inline-block
+      visibility hidden
+      opacity 0
+
+    &:hover
+      .edit
+        visibility visible
+        opacity 1
+
+  .editable-control
+    width 100%
+
+  .ui-draggable.catalog-item:hover
+  .ui-sortable-handle.catalog-item:hover
+    box-shadow 0 0 0 1px box-shadow-shadow, 0 2px 5px box-shadow-shadow
+
+  .droppable-active
+    box-shadow inset 0 0 0 1px rgba(14,41,57,0.12), inset 0 0 5px rgba(14,41,57,0.34)
+
+  .droppable-hover
+    background blue
+
+.sidebar
+  .item-list
+    .catalog-item
+      padding 10px 15px 1px
+
+      .details
+        > *
+          display none
+
+        h2
+          display block
+          margin-bottom 4px
+
+        .show-in-sidebar
+          display block
+
+          i
+            display none
+
+/* Members
+========== */
+
+.member-list
+  padding 0
+  list-style none
+
+  .member
+    position relative
+    display inline-block
+    max-width 100%
+    margin 0 10px 10px 0
+
+    .inline-item
+      padding-right 24px
+
+    .remove-button
+      display block
+      position absolute
+      right 0
+      top 1px
+      width 24px
+      height 24px
+      padding 0
+      border none
+      background none
+      font-size 14px
+
+      &:hover
+        color blue-accent
+        background none
+
+.read-only.member-list
+  .member
+    .inline-item
+      padding-right 0
+
+    .remove-button
+      display none

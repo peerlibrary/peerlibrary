@@ -18,6 +18,6 @@ if Meteor.settings?.sympa?.username and Meteor.settings?.sympa?.password
 
       return '' unless person.email()
 
-      "#{ person.email() } #{ person.displayName() }\n"
+      "#{ person.email() } #{ person.displayName }\n"
 
     [200, {'Content-Type': 'text/plain'}, lines.join('')]

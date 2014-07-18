@@ -1,4 +1,4 @@
-class @LoggedError extends Document
+class @LoggedError extends BaseDocument
   # errorMsg: the error message
   # url: url that error ocurred on (can be also just a string "eval" or "anonymous" or even null)
   # lineNumber: line number in the code where error occured on (can be null as well)

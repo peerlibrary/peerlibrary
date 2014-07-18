@@ -37,6 +37,18 @@
       "src": "fontawesome"
     },
     {
+      "uid": "178053298e3e5b03551d754d4b9acd8b",
+      "css": "publication",
+      "code": 59422,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "c95735c17a10af81448c7fed98a04546",
+      "css": "collection",
+      "code": 59423,
+      "src": "fontawesome"
+    },
+    {
       "uid": "559647a6f430b3aeadbecd67194451dd",
       "css": "menu",
       "code": 59396,
@@ -76,6 +88,12 @@
       "uid": "4e88371fb8857dacc1f66afe6314e426",
       "css": "math",
       "code": 59410,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "0cd2582b8c93719d066ee0affd02ac78",
+      "css": "sort",
+      "code": 59418,
       "src": "fontawesome"
     },
     {
@@ -127,15 +145,45 @@
       "src": "elusive"
     },
     {
+      "uid": "6ad86a953a5a76086c5568366863bbca",
+      "css": "person",
+      "code": 59416,
+      "src": "elusive"
+    },
+    {
       "uid": "ad194658d0e68d781eb334d9c1099d6e",
       "css": "private",
       "code": 59397,
       "src": "elusive"
     },
     {
+      "uid": "630529f03c319c01101aa167181b650e",
+      "css": "tag",
+      "code": 59419,
+      "src": "elusive"
+    },
+    {
       "uid": "937a0ad3f6e25611bff801445d6a4885",
       "css": "tags",
       "code": 59406,
+      "src": "elusive"
+    },
+    {
+      "uid": "62b0580ee8edc3a3edfbf68a47c852d5",
+      "css": "highlight",
+      "code": 59417,
+      "src": "elusive"
+    },
+    {
+      "uid": "23710230c21b4af140947e3604cc67a5",
+      "css": "annotation",
+      "code": 59420,
+      "src": "elusive"
+    },
+    {
+      "uid": "afdb6de29702e88d79539d600c42d4a8",
+      "css": "comment",
+      "code": 59421,
       "src": "elusive"
     },
     {

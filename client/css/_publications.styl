@@ -1,0 +1,100 @@
+@import 'variables.import'
+
+.publication.inline-item
+  margin-left -4px
+
+  .icon-publication
+    font-size 1.2em
+    vertical-align middle
+
+.item-list
+  .publication.catalog-item
+    .thumbnail
+      position relative
+      float right
+      cursor pointer
+      display inline-block
+      width 95px
+      height 125px
+      margin 0 0 10px 20px
+
+      .scrubber
+        position relative
+        z-index 2
+        margin 0
+        width 95px
+        height 125px
+        padding 0
+        background-color white
+        border solid 1px box-shadow-border
+        border-radius 2px
+        transition border-color 0.2s
+
+        li
+          display none
+          width 100%
+
+          img
+            width 100%
+            height auto
+            float right
+
+      &.medium::before, &.long::before, &.long::after
+        content ""
+        position absolute
+        z-index 1
+        top 2px
+        left 2px
+        width 100%
+        height 100%
+        border solid 1px box-shadow-border
+        border-radius 2px
+        background-color white
+
+      &.long::after
+        top 4px
+        left 4px
+        z-index 0
+
+    &:hover .scrubber
+      border-color box-shadow-shadow
+
+    .authors
+      list-style none
+      margin 0
+      padding 0
+      display inline
+
+      li
+        display inline-block
+        margin 0 10px 10px 0
+
+        .inline-item
+          font-size 14px
+
+    .library-menu.dropdown
+      padding 10px
+      right 0
+      left auto
+      width 300px
+
+      .icon
+        display none
+
+    .abstract
+      display none
+
+      .abstract-content
+        margin 10px 0 0 0
+
+    .article-summary
+      .article-summary-data
+        display inline-block
+        float left
+        width 85%
+
+        .authors span::after
+          content ","
+
+        .authors span:last-child::after
+          content ""

@@ -9,12 +9,14 @@ Meteor.startup ->
   initializingAnnotations = true
   initializingGroups = true
   initializingCollections = true
+  initializingBlogPosts = true
   countPublications = 0
   countPersons = 0
   countHighlights = 0
   countAnnotations = 0
   countGroups = 0
   countCollections = 0
+  countBlogPosts = 0
   minPublicationDate = null
   maxPublicationDate = null
 
@@ -125,6 +127,18 @@ Meteor.startup ->
       countCollections--
       Statistics.documents.update statisticsDataId, $set: countCollections: countCollections if !initializingCollections
 
+  BlogPost.documents.find({},
+    fields:
+      _id: 1 # We want only id
+  ).observeChanges
+    added: (id) =>
+      countBlogPosts++
+      Statistics.documents.update statisticsDataId, $set: countBlogPosts: countBlogPosts if !initializingBlogPosts
+
+    removed: (id) =>
+      countBlogPosts--
+      Statistics.documents.update statisticsDataId, $set: countBlogPosts: countBlogPosts if !initializingBlogPosts
+
   Statistics.documents.insert
     _id: statisticsDataId
     countPublications: countPublications
@@ -133,6 +147,7 @@ Meteor.startup ->
     countAnnotations: countAnnotations
     countGroups: countGroups
     countCollections: countCollections
+    countBlogPosts: countBlogPosts
     minPublicationDate: minPublicationDate?.toDate()
     maxPublicationDate: maxPublicationDate?.toDate()
 
@@ -142,6 +157,7 @@ Meteor.startup ->
   initializingAnnotations = false
   initializingGroups = false
   initializingCollections = false
+  initializingBlogPosts = false
 
 # We map local collection to the collection clients use
 Meteor.publish 'statistics', ->

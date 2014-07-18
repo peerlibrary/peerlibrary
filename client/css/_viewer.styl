@@ -2,17 +2,19 @@
 
 section.publication
   padding-top header-height
+  margin-top 0
 
   .container
     margin 0
     width 100%
 
 section.publication
-  .simple
+  .loading
+  .not-found
     margin-left auto
     margin-right auto
     width 94%
-    margin-top simple-margin-top - header-height
+    margin-top section-margin-top - header-height
 
 /* Meta menu
 ============ */
@@ -78,7 +80,7 @@ meta-menu-icon-font-size = 20px
       .edit:hover
         color inherit
 
-      .icon-edit:before
+      .icon-edit::before
         position absolute
         top 1px
         right 0
@@ -111,7 +113,7 @@ meta-menu-icon-font-size = 20px
 /* Library operations menu
 ========================== */
 
-.library-menu
+.library-menu.meta-menu
   top meta-menu-top + (meta-menu-height + 2 * meta-menu-padding + meta-menu-margin)
 
   .icon
@@ -124,7 +126,7 @@ meta-menu-icon-font-size = 20px
     display none
     margin-left 5px
 
-.library-menu:hover
+.library-menu.meta-menu:hover
   z-index 101
 
   .library-menu-button
@@ -384,6 +386,15 @@ annotations-control-height = 30px
     span:last-child::after
       content ""
 
+  .filteredCount
+    color white
+    line-height annotations-control-height
+    margin-left 35px
+    padding-right 5px
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
 .annotations-editor
   height auto
   z-index 90
@@ -554,22 +565,24 @@ annotations-control-height = 30px
         background-color #f7f7f7
         border-top 1px solid #e3e3e3
 
-        .avatar
-          width 30px
+        .person.inline-item
+          margin-right 10px
+          display inline-block
+          vertical-align middle
           height 30px
-          margin 0
-          border-radius 4px
-          display inline-block
+          line-height 29px
 
-        .author-avatar:hover
-          text-decoration none
+          .avatar
+            font-size 16px
+            margin-right 10px
 
-        .author-name
-          margin 0 10px
-          display inline-block
+            img
+              border-radius 4px
 
         .timestamp
           color #444
+          display inline-block
+          vertical-align middle
 
         .edit-button, .cancel-button
           display inline-block
@@ -741,7 +754,7 @@ annotations-control-height = 30px
       margin 0
       border-radius 4px
 
-    .annotation-wrapper:after
+    .annotation-wrapper::after
       content ''
       position absolute
       border-style solid
@@ -753,7 +766,7 @@ annotations-control-height = 30px
       left -9px
       top 18px
 
-    .annotation-wrapper:before
+    .annotation-wrapper::before
       content ''
       position absolute
       border-style solid

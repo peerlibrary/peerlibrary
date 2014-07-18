@@ -1,4 +1,4 @@
-class @ArXivPDF extends Document
+class @ArXivPDF extends BaseDocument
   # key: key (filename) of the tar file containing PDFs
   # lastModified: last modified timestamp of the file
   # eTag: eTag for the file as provided by S3

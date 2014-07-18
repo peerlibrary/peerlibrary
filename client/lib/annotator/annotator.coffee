@@ -388,7 +388,7 @@ class @Annotator extends Annotator
       @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
-      # immediatelly send a mouse enter event to make sure related annotation has
+      # immediately send a mouse enter event to make sure related annotation has
       # a hovered state. Even if _selectHighlight not really happened because of
       # a click, it is still a nice effect to emphasize the invitation.
       Meteor.defer ->
@@ -405,8 +405,26 @@ class @Annotator extends Annotator
   _getRenderedHighlights: =>
     highlights = {}
     for highlight in @getHighlights()
+      boundingBox = highlight.getBoundingBox()
+      # Sometimes when rendering highlight coordinates are not yet known so we skip those highlights
+      continue unless _.isFinite(boundingBox.left) and _.isFinite(boundingBox.top)
       if highlights[highlight.annotation._id]
-        highlights[highlight.annotation._id].push highlight.getBoundingBox()
+        highlights[highlight.annotation._id].push boundingBox
       else
-        highlights[highlight.annotation._id] = [highlight.getBoundingBox()]
+        highlights[highlight.annotation._id] = [boundingBox]
+    for highlightId, boundingBoxes of highlights
+      # We sort to assure array order does not change if values do not change,
+      # so that reactive variable change is not triggered, if there is only
+      # difference in highlights order returned by getHighlights
+      highlights[highlightId] = boundingBoxes.sort (a, b) ->
+        if a.left isnt b.left
+          a.left - b.left
+        else if a.top isnt b.top
+          a.top - b.top
+        else if a.width isnt b.width
+          a.width - b.width
+        else if a.height isnt b.height
+          a.height - b.height
+        else
+          0
     highlights
