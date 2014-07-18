@@ -97,12 +97,12 @@ Template._enrollAccountDialog.events
     e.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click #pl-login-buttons-enroll-account-button': (e, template) ->
+  'click #login-buttons-enroll-account-with-username-button': (e, template) ->
     e.preventDefault()
     enrollAccount()
     return # Make sure CoffeeScript does not return anything
 
-  'keypress #pl-enroll-account-password': (e, template) ->
+  'keypress #enroll-account-with-username-password': (e, template) ->
     enrollAccount() if e.keyCode is 13 # Enter key
     return # Make sure CoffeeScript does not return anything
 
@@ -144,8 +144,8 @@ Deps.autorun ->
 enrollAccount = ->
   changingPasswordInEnrollAccount = true
 
-  username = $('#pl-enroll-account-username').val()
-  password = $('#pl-enroll-account-password').val()
+  username = $('#enroll-account-with-username-username').val()
+  password = $('#enroll-account-with-username-password').val()
 
   token = Accounts._loginButtonsSession.get 'enrollAccountToken'
   Accounts.resetPasswordWithUsername token, password, username, (error) ->
