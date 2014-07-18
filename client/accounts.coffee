@@ -155,19 +155,17 @@ enrollAccount = ->
       Accounts._loginButtonsSession.set 'enrollAccountToken', null
 
 # We extend Meteor's Accounts.resetPassword functionality with username so that
-# user can choose username in the enroll form
+# user must choose username in the enroll form
 Accounts.resetPasswordWithUsername = (token, password, username, callback) ->
-  throw new Error "Need to pass token" unless token
-  throw new Error "Need to pass new password" unless password
-  throw new Error "Need to pass username" unless username
+  try
+    throw new Meteor.Error 400, "Invalid token." unless token
+    User.validateUsername username
+    User.validatePassword password
 
-  if password.length <= 6
-    callback new Meteor.Error 400, "Password must be at least 6 characters long"
-    return
-
-  verifier = SRP.generateVerifier password
-  Accounts.callLoginMethod
-    methodName: 'reset-password-with-username'
-    methodArguments: [token, verifier, username]
-    userCallback: callback
-
+    verifier = SRP.generateVerifier password
+    Accounts.callLoginMethod
+      methodName: 'reset-password-with-username'
+      methodArguments: [token, verifier, username]
+      userCallback: callback
+  catch error
+    callback error
