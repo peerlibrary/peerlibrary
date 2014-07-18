@@ -13,6 +13,7 @@ setSession = (session) ->
     searchFocused: false
     adminActive: false
     libraryActive: false
+    settingsActive: false
     currentCollectionId: null
     currentCollectionSlug: null
     currentPublicationId: null
