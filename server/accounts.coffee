@@ -88,7 +88,7 @@ Accounts.onCreateUser (options, user) ->
   # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
 
   # Check username unless onCreateUser is called because user has been invited
-  validateUsername user.username unless options.secret
+  User.validateUsername user.username unless options.secret
 
   throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
