@@ -10,12 +10,13 @@ Template.footer.indexFooter = ->
 Template.footer.noIndexFooter = ->
   'no-index-footer' if not Template.footer.indexFooter()
 
-Session.setDefault 'backgroundPaused', false
+Meteor.startup ->
+  Session.setDefault 'backgroundPaused', false
 
-Template.backgroundPauseButton.events
-  'click': (e, template) ->
+Template.backgroundPause.events
+  'click button': (e, template) ->
     Session.set('backgroundPaused', not Session.get 'backgroundPaused')
     return # Make sure CoffeeScript does not return anything
 
-Template.backgroundPauseButton.backgroundPaused = ->
+Template.backgroundPause.backgroundPaused = ->
   Session.get 'backgroundPaused'
