@@ -82,3 +82,10 @@ Template.adminFSM.events
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
+
+Template.adminBlog.events
+  'click button.sync-blog': (e, template) ->
+    Meteor.call 'sync-blog', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything

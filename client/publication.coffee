@@ -1,5 +1,5 @@
 # Used for global variable assignments in local scopes
-root = @
+globals = @
 
 @SCALE = 1.25
 
@@ -504,21 +504,12 @@ Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
 
-Template.publication.notfound = ->
+Template.publication.notFound = ->
   publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
-
-Editable.template Template.publicationMetaMenuTitle, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
-,
-  (title) ->
-    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
-      return Notify.meteorError error, true if error
-,
-  "Enter publication title"
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (e, template) ->
@@ -649,7 +640,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionListing.countDescription
+Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionCatalogItem.countDescription
 
 Template.publicationDisplay.cached = ->
   publicationSubscribing() # To register dependency
@@ -801,7 +792,7 @@ Template.publicationScroller.rendered = ->
     # Sync the position of the scroller viewport
     setViewportPosition $viewport
 
-    root.startViewerOnPage = null
+    globals.startViewerOnPage = null
 
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
@@ -1098,6 +1089,12 @@ Template.publicationAnnotationsItem.selected = ->
 
 Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
+
+Template.publicationAnnotationsItem.author = ->
+  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  @author.avatarSize = 30
+  @author
 
 Template.annotationTags.rendered = ->
   # TODO: Make links work
@@ -1415,7 +1412,7 @@ Template.contextMenuGroupListing.workingInside = ->
   _.contains getAnnotationDefaults().groups, @_id
 
 Template.footer.publicationDisplayed = ->
-  'publication-displayed' unless Template.publication.loading() or Template.publication.notfound()
+  'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
 
 # TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
 addParsedLinkReactiveVariable = (data) ->

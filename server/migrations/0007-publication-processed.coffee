@@ -1,64 +1,35 @@
 class Migration extends Document.MajorMigration
   name: "Converting processed field to a timestamp"
 
-  forward: (db, collectionName, currentSchema, newSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema}, {processed: 1}
-      document = null
-      async.doWhilst (callback) =>
-        cursor.nextObject (error, doc) =>
-          return callback error if error
-          document = doc
-          return callback null unless document
+  forward: (document, collection, currentSchema, newSchema) =>
+    count = 0
 
-          return callback null if _.isDate document.processed
+    collection.findEach {_schema: currentSchema}, {_schema: 1, processed: 1}, (document) =>
+      return if _.isDate document.processed
 
-          if document.processed
-            collection.update {_schema: currentSchema, _id: document._id, processed: document.processed}, {$set: {processed: moment.utc().toDate()}}, (error, count) =>
-              return callback error if error
+      # If true value
+      if document.processed
+        count += collection.update document, {$set: {processed: moment.utc().toDate(), _schema: newSchema}}
+      else
+        count += collection.update document, {$unset: {processed: ''}, $set: {_schema: newSchema}}
 
-              callback null
-          else
-            collection.update {_schema: currentSchema, _id: document._id, processed: document.processed}, {$unset: {processed: ''}}, (error, count) =>
-              return callback error if error
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
-              callback null
-      ,
-        =>
-          document
-      ,
-        (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, newSchema, callback
+  backward: (document, collection, currentSchema, oldSchema) =>
+    count = 0
 
-  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      cursor = collection.find {_schema: currentSchema}, {processed: 1}
-      document = null
-      async.doWhilst (callback) =>
-        cursor.nextObject (error, doc) =>
-          return callback error if error
-          document = doc
-          return callback null unless document
+    collection.findEach {_schema: currentSchema}, {_schema: 1, processed: 1}, (document) =>
+      if _.isDate document.processed
+        count += collection.update document, {$set: {processed: true, _schema: oldSchema}}
+      else
+        count += collection.update document, {$unset: {processed: ''}, $set: {_schema: oldSchema}}
 
-          if _.isDate document.processed
-            collection.update {_schema: currentSchema, _id: document._id, processed: document.processed}, {$set: {processed: true}}, (error, count) =>
-              return callback error if error
-
-              callback null
-          else
-            collection.update {_schema: currentSchema, _id: document._id, processed: document.processed}, {$unset: {processed: ''}}, (error, count) =>
-              return callback error if error
-
-              callback null
-      ,
-        =>
-          document
-      ,
-        (error) =>
-          return callback error if error
-          super db, collectionName, currentSchema, oldSchema, callback
+    counts = super
+    counts.migrated += count
+    counts.all += count
+    counts
 
 Publication.addMigration new Migration()

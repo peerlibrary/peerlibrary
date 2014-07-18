@@ -34,9 +34,12 @@ Template.collection.loading = ->
   collectionSubscribing() # To register dependency
   not collectionHandle?.ready()
 
-Template.collection.notfound = ->
+Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
+
+Template.collection.collection = ->
+  Collection.documents.findOne Session.get('currentCollectionId')
 
 Editable.template Template.collectionName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
@@ -48,9 +51,6 @@ Editable.template Template.collectionName, ->
   "Enter collection name"
 ,
   true
-
-Template.collection.collection = ->
-  Collection.documents.findOne Session.get('currentCollectionId')
 
 Template.collectionPublications.publications = ->
   order = _.pluck @publications, '_id'
@@ -140,5 +140,6 @@ Handlebars.registerHelper 'collectionReference', (collectionId, collection, opti
   assert collectionId, comment._id if collection
 
   _id: collectionId # TODO: Remove when we will be able to access parent template context
+  noLink: collection?.noLink # TODO: Remove when we will be able to access parent template context
   text: "c:#{ collectionId }"
   title: collection?.name or collection?.slug

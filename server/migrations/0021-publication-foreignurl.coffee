@@ -1,11 +1,5 @@
-class Migration extends Document.MinorMigration
+class Migration extends Document.AddOptionalFieldsMigration
   name: "Adding foreignUrl field"
-
-  backward: (db, collectionName, currentSchema, oldSchema, callback) =>
-    db.collection collectionName, (error, collection) =>
-      return callback error if error
-      collection.update {_schema: currentSchema}, {$unset: {foreignUrl: ''}}, {multi: true}, (error, count) =>
-        return callback error if error
-        super db, collectionName, currentSchema, oldSchema, callback
+  fields: ['foreignUrl']
 
 Publication.addMigration new Migration()

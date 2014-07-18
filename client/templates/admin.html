@@ -1,13 +1,12 @@
 <template name="admin">
-  <div class="simple">
-    {{> adminCheck}}
-    {{> adminDevelopment}}
-    {{> adminPublications}}
-    {{> adminDatabase}}
-    {{> adminErrors}}
-    {{> adminSources}}
-    {{> adminFacts}}
-  </div>
+  {{> adminCheck}}
+  {{> adminDevelopment}}
+  {{> adminPublications}}
+  {{> adminDatabase}}
+  {{> adminErrors}}
+  {{> adminSources}}
+  {{> adminBlog}}
+  {{> adminFacts}}
 </template>
 
 <template name="adminCheck">
@@ -89,6 +88,13 @@
   <div class="admin-buttons">
     <button class="sync-fsm-metadata">Sync FSM metadata</button>
     <button class="sync-fsm-cache">Sync FSM cache</button>
+  </div>
+</template>
+
+<template name="adminBlog">
+  <h2>Blog</h2>
+  <div class="admin-buttons">
+    <button class="sync-blog">Sync blog</button>
   </div>
 </template>
 

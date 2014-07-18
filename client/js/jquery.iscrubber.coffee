@@ -3,21 +3,23 @@
 
   Created by Marco Martins
   https://github.com/skarface/iscrubber.git
+
+  Note: We have modified the code and style to fit PeerLibrary's needs and standards
 ###
 
 $.fn.iscrubber = (customOptions) ->
 
   $.fn.iscrubber.defaultOptions =
-    showItem: 1
+    showItem: 0
     leaveToFirst: true
 
-  # Set the options.
+  # Set the options
   options = $.extend({}, $.fn.iscrubber.defaultOptions, customOptions)
 
-  # scrub function
+  # Scrub function
   scrub = (elements, itemToShow) ->
     elements.css('display', 'none')
-    $(elements[itemToShow-1]).css('display', 'block')
+    elements.eq(itemToShow).css('display', 'block')
 
   this.each ->
     $this = $(this)
@@ -25,30 +27,34 @@ $.fn.iscrubber = (customOptions) ->
     return if $this.data('iscrubber-enabled')
     $this.data('iscrubber-enabled', true)
 
-    # get elements
+    # Get elements
     elements = $this.find('li')
 
-    # set correct width from children and add minimal css require
+    # Set correct width from children and add minimal css require
     width = elements.first().width()
     $this.width(width).css('padding', 0)
 
-    # get trigger width => (scrubber width / number of children)
-    trigger = width / $this.children().length
+    # Get trigger width for each page (scrubber width / number of children)
+    count = $this.children().length
+    pageTriggerWidth = $this.outerWidth() / count
 
-    # show first element
+    # Show first element
     scrub(elements, options.showItem)
 
-    # bind event when mouse moves over scrubber
+    # Bind event when mouse moves over scrubber
     $this.on 'mousemove.iscrubber', (e) ->
-      # get x mouse position
-      x = e.pageX - $this.offset().left
+      # Get x mouse position and take 1px border into account
+      x = e.pageX - $this.offset().left + 1
 
-      # get the index of image to display on top
-      index = Math.ceil(x/trigger)
-      index = 1 if index == 0
+      # Get the index of image to display on top
+      index = Math.floor(x / pageTriggerWidth)
+
+      # Make sure the index is within bounds (0 <= index < count)
+      index = Math.min(Math.max(0, index), count - 1)
+
       scrub(elements, index)
 
-    # bind event when mouse leaves scrubber
+    # Bind event when mouse leaves scrubber
     $this.on 'mouseleave.iscrubber', ->
       scrub(elements, options.showItem) if options.leaveToFirst is true
 
