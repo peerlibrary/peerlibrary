@@ -3,9 +3,9 @@
   {{#if person}}
     <h1>{{person.displayName}} personal settings</h1>
     {{#if usernameNotSet}}
-      {{>settingsUsername}}<br/><br/>
+      {{> settingsUsername}}<br/><br/>
     {{/if}}
-    {{>settingsPassword}}
+    {{> settingsPassword}}
   {{/if}}
 </template>
 
@@ -13,6 +13,7 @@
   <form id="set-username">
     <label for="username">Username</label>
     <input type="text" id="username" /><br/>
+    {{> settingsMessages messages}}
     <button class="set-username">Set username</button>
   </form>
 </template>
@@ -25,6 +26,16 @@
     <input type="password" id="new-password" /><br/>
     <label for="new-password-confirm">Confirm new password</label>
     <input type="password" id="new-password-confirm" /><br/>
+    {{> settingsMessages messages}}
     <button class="change-password">Change password</button>
-  </form>
+    </form>
+</template>
+
+<template name="settingsMessages">
+  {{#if errorMessage}}
+    <div class = "message error-message">{{errorMessage}}</div>
+  {{/if}}
+  {{#if infoMessage}}
+    <div class = "message info-message">{{infoMessage}}</div>
+  {{/if}}
 </template>
