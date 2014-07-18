@@ -41,7 +41,8 @@ Meteor.methods
     check verifier, Object
     check username, String
 
-    validateUsername username
+    User.validateUsername username
+    # We call Meteor's internal resetPassword method
     newUser = Meteor.call 'resetPassword', token, verifier
     Meteor.call 'set-username', username
 
@@ -49,17 +50,18 @@ Meteor.methods
 
   'set-username': (username) ->
     check username, String
-    validateUsername username
+    User.validateUsername username
 
-    user = User.documents.findOne
-      _id: Meteor.userId()
-    throw new Meteor.Error 400, "Username already set" if user?.username
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
 
-    Meteor.users.update
+    updatedCount = User.documents.update
       _id: Meteor.userId()
+      username:
+        $exists: false
     ,
       $set:
         username: username
+    throw new Meteor.Error 400, "Username already set" unless updatedCount is 1
 
     return # Make sure CoffeeScript does not return anything
 
