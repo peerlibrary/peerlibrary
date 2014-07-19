@@ -1648,6 +1648,8 @@ Template.newAnnotationRolesControlAdd.rendered = ->
       existingRoles = [Meteor.personId()].concat getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups()
       existingRoles = existingRoles.concat getNewAnnotationReadPersons(), getNewAnnotationReadGroups(), getNewAnnotationWorkInsideGroups() if getNewAnnotationAccess() is ACCESS.PRIVATE
 
+      # We are using all roles, both persons and groups, together, because
+      # it is very improbable that there would be duplicate _ids
       Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
         onReady: =>
           @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading

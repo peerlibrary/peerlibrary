@@ -293,6 +293,8 @@ Template.rolesControlAdd.rendered = ->
         _.pluck(@data.maintainerPersons, '_id'), _.pluck(@data.maintainerGroups, '_id'))
       existingRoles = existingRoles.concat(_.pluck(@data.readPersons, '_id'), _.pluck(@data.readGroups, '_id')) if @data.access is ACCESS.PRIVATE
 
+      # We are using all roles, both persons and groups, together, because
+      # it is very improbable that there would be duplicate _ids
       Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
         onReady: =>
           @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
