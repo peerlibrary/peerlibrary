@@ -101,40 +101,40 @@ Meteor.methods
     personGroups = _.pluck person.inGroups, '_id'
     throw new Meteor.Error 400, "Invalid work-inside groups." if _.difference(workInsideGroups, personGroups).length
 
-    throw new Meteor.Error 400, "Invalid work-inside groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid work-inside groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
         $in: workInsideGroups
-    )).count() isnt workInsideGroups.length
+    ).count() isnt workInsideGroups.length
 
     throw new Meteor.Error 400, "Invalid read persons." if Person.documents.find(
       _id:
         $in: readPersons
     ).count() isnt readPersons.length
 
-    throw new Meteor.Error 400, "Invalid read groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid read groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
         $in: readGroups
-    )).count() isnt readGroups.length
+    ).count() isnt readGroups.length
 
     throw new Meteor.Error 400, "Invalid maintainer persons." if Person.documents.find(
       _id:
         $in: maintainerPersons
     ).count() isnt maintainerPersons.length
 
-    throw new Meteor.Error 400, "Invalid maintainer groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid maintainer groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
         $in: maintainerGroups
-    )).count() isnt maintainerGroups.length
+    ).count() isnt maintainerGroups.length
 
     throw new Meteor.Error 400, "Invalid admin persons." if Person.documents.find(
       _id:
         $in: adminPersons
     ).count() isnt adminPersons.length
 
-    throw new Meteor.Error 400, "Invalid admin groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid admin groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
         $in: adminGroups
-    )).count() isnt adminGroups.length
+    ).count() isnt adminGroups.length
 
     workInsideGroups = (_id: groupId for groupId in workInsideGroups)
     readPersons = (_id: personId for personId in readPersons)
