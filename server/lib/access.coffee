@@ -14,7 +14,7 @@ createNotInSetQuery = (documentId, set, personOrGroupName, personOrGroupId) ->
   query =
     _id: documentId
 
-  query["#{set}#{personOrGroupName}s._id"] =
+  query["#{ set }#{ personOrGroupName }s._id"] =
     $ne: personOrGroupId
 
   query
@@ -23,7 +23,7 @@ createAddToSetCommand = (set, personOrGroupName, personOrGroupId) ->
   command =
     $addToSet: {}
 
-  command.$addToSet["#{set}#{personOrGroupName}s"] =
+  command.$addToSet["#{ set }#{ personOrGroupName }s"] =
     _id: personOrGroupId
 
   command
@@ -32,7 +32,7 @@ createInSetQuery = (documentId, set, personOrGroupName, personOrGroupId) ->
   query =
     _id: documentId
 
-  query["#{set}#{personOrGroupName}s._id"] = personOrGroupId
+  query["#{ set }#{ personOrGroupName }s._id"] = personOrGroupId
 
   query
 
@@ -40,7 +40,7 @@ createRemoveFromSetCommand = (set, personOrGroupName, personOrGroupId) ->
   command =
     $pull: {}
 
-  command.$pull["#{set}#{personOrGroupName}s"] =
+  command.$pull["#{ set }#{ personOrGroupName }s"] =
     _id: personOrGroupId
 
   command
