@@ -1552,7 +1552,7 @@ changeRole = (data, role) ->
   if role is ROLES.ADMIN
     Session.set "newAnnotationAdmin#{personOrGroupName}s", _.union roles["admin#{personOrGroupName}s"], [personOrGroupId]
 
-  # Only clear read access for private documents when specifically clearing all rights
+  # Only clear read access for private documents when specifically clearing all permissions
   if access is ACCESS.PRIVATE and hadReadAccess and role < ROLES.READ_ACCESS
     Session.set "newAnnotationRead#{personOrGroupName}s", _.without roles["read#{personOrGroupName}s"], personOrGroupId
 

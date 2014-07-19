@@ -174,7 +174,7 @@ changeRole = (data, newRole) ->
   return if oldRole is newRole
 
   notification = ->
-    Notify.success "Rights changed."
+    Notify.success "Permissions changed."
 
   unless oldRole
     notification = ->

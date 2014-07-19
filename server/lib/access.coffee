@@ -71,7 +71,7 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
     createNotInSetQuery(documentId, 'admin', personOrGroupName, personOrGroupId)),
     createAddToSetCommand('admin', personOrGroupName, personOrGroupId)
 
-  # Only clear read access for private documents when specifically clearing all rights
+  # Only clear read access for private documents when specifically clearing all permissions
   if document.access is ACCESS.PRIVATE and role < ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
     createInSetQuery(documentId, 'read', personOrGroupName, personOrGroupId)),
