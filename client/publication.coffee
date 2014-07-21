@@ -1112,13 +1112,9 @@ Template.publicationAnnotations.created = ->
     return if $(e.target).hasClass('ui-icon-closethick') > 0
 
     # Find the current local annotation
-    localAnnotations = LocalAnnotation.documents.find
+    localAnnotation = LocalAnnotation.documents.findOne
       local:
         $exists: true
-    .fetch()
-
-    assert localAnnotations.length > 0
-    localAnnotation = localAnnotations[0]
 
     # We do nothing if editor is already collapsed
     return unless localAnnotation.editing
