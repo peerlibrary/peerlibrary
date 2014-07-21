@@ -58,33 +58,52 @@ Template.groupMembership.isPendingMember = ->
       return true
   return false
 
-Template.groupMembership.open = ->
+Template.groupNoMembership.open = ->
   Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'open'
 
-Template.groupMembership.closed = ->
+Template.groupNoMembership.closed = ->
   Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'closed'
 
 Template.groupMembership.events
   'click .join-group': (e, template) ->
-    console.log "Join group clicked"
-    Meteor.call 'join-group', Session.get 'currentGroupId', (error) ->
-      console.log "In callback"
+    Meteor.call 'join-group', Session.get('currentGroupId'), (error, count) =>
       return Notify.meteorError error, true if error
-      # TODO: Notify about success
+
+      return unless count
+
+      groupName = Group.documents.findOne(_id: Session.get 'currentGroupId').name
+      Notify.success "You are now a member of #{ groupName }"
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (e, template) ->
-    console.log "Leave group clicked"
-    Meteor.call 'leave-group', Session.get 'currentGroupId', (error) ->
-      console.log "In callback"
+    Meteor.call 'leave-group', Session.get('currentGroupId'), (error, count) =>
       return Notify.meteorError error, true if error
-      # TODO: Notify about success
+
+      return unless count
+
+      groupName = Group.documents.findOne(_id: Session.get 'currentGroupId').name
+      Notify.success "You are no longer member of #{ groupName }"
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .cancel-membership-request': (e, template) ->
+    Meteor.call 'cancel-membership-request', Session.get('currentGroupId'), (error, count) =>
+      return Notify.meteorError error, true if error
+
+      return unless count
+
+      Notify.success "Your membership request has been canceled"
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.groupMembers.pendingMembers = ->
+  group = Group.documents.findOne
+    _id: Session.get 'currentGroupId'
+  group.pendingMembers?.length > 0
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -97,11 +116,35 @@ Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyM
 
 Template.groupMembersList.events
   'click .remove-button': (e, template) ->
-
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
-      Notify.success "Member removed." if count
+      return unless count
+
+      Notify.success "Member removed."
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.groupPendingMembers.events =
+  'click .approve-membership-request': (e, template) ->
+    Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      return unless count
+
+      Notify.success "Request approved"
+      # TODO: Send email
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-button': (e, template) ->
+    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return Notify.meteorError error, true if error
+
+      return unless count
+
+      Notify.success "Request denied"
+      # TODO: Send email
 
     return # Make sure CoffeeScript does not return anything
 
@@ -259,6 +302,20 @@ Template.groupDetails.events
 
       Notify.success "Group removed."
       Meteor.Router.toNew Meteor.Router.groupsPath()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .set-membership-policy': (e, template) ->
+    policy = $('.group-membership-policy').val()
+    console.log "Setting policy '" + policy + "'"
+    Meteor.call 'group-set-membership-policy', @_id, policy, (error, count) =>
+      console.log "Got callback. Error: " + error + ", Count: " + count
+      Notify.meteorError error, true if error
+
+      return unless count
+
+      console.log "Notifying success"
+      Notify.success "Membership policy changed."
 
     return # Make sure CoffeeScript does not return anything
 
