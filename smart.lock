@@ -23,8 +23,8 @@
       "urlify2": {},
       "fs": {},
       "meteor-file": {
-        "git": "https://github.com/EventedMind/meteor-file.git",
-        "branch": "master"
+        "git": "https://github.com/peerlibrary/meteor-file.git",
+        "branch": "peerlibrary"
       },
       "digest": {},
       "peerdb": {},
@@ -44,7 +44,8 @@
       "kadira": {},
       "directcollection": {},
       "url-utils": {},
-      "segfault-handler": {}
+      "segfault-handler": {},
+      "crypto": {}
     },
     "packages": {
       "router": {
@@ -113,9 +114,9 @@
         "commit": "621152ae48435802219aff8bc38b4895731d152d"
       },
       "meteor-file": {
-        "git": "https://github.com/EventedMind/meteor-file.git",
-        "branch": "master",
-        "commit": "84b694ead89f2db737797304a78e8b7826fde422"
+        "git": "https://github.com/peerlibrary/meteor-file.git",
+        "branch": "peerlibrary",
+        "commit": "bb72cb741abc589976500f00f3585e8b2f9b8e25"
       },
       "digest": {
         "git": "https://github.com/peerlibrary/meteor-digest.git",
@@ -182,6 +183,11 @@
         "tag": "v0.1.2",
         "commit": "27731dafb031b359fc5609fc7a8dc6bd3796e229"
       },
+      "crypto": {
+        "git": "https://github.com/peerlibrary/meteor-crypto.git",
+        "tag": "v0.1.1",
+        "commit": "9e7e7096c45bb4de46a62d61d497a23198de463a"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -191,6 +197,16 @@
         "git": "https://github.com/tmeasday/meteor-HTML5-History-API.git",
         "tag": "v4.1.2",
         "commit": "b5fca79f9ae8936e5f748a04f475295f4fa1cc7a"
+      },
+      "blob": {
+        "git": "https://github.com/peerlibrary/meteor-blob.git",
+        "tag": "v0.1.1",
+        "commit": "59d4545bc73325987f4efc6ab74f995da8b2014c"
+      },
+      "async": {
+        "git": "https://github.com/peerlibrary/meteor-async.git",
+        "tag": "v0.9.0-1",
+        "commit": "419ddf9711474738cddc6fa3c086a0875be3a5d1"
       }
     }
   }

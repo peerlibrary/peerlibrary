@@ -27,12 +27,13 @@
 </template>
 
 <template name="importingFilesItem">
-  <tr>
+  <tr class="{{state}}">
     <td class="imports-cell name-cell">
       {{name}}
     </td>
     <td class="imports-cell progress-cell">
-      <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
+      <div class="import-progress-bar" style="width: {{preprocessingProgress}}%"></div>
+      <div class="import-progress-bar" style="width: {{uploadProgress}}%"></div>
     </td>
     <td class="imports-cell status-cell">
       {{status}}
