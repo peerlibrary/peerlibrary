@@ -43,20 +43,12 @@ Template.group.group = ->
 Template.groupMembership.isMember = ->
   person = Meteor.person()
   return false unless person?.inGroups
-  groupId = Session.get 'currentGroupId'
-  for group in person.inGroups
-    if group._id == groupId
-      return true
-  return false
+  _.some person.inGroups, (group) -> group._id is Session.get 'currentGroupId'
 
 Template.groupMembership.isPendingMember = ->
   person = Meteor.person()
   return false unless person?.pendingGroups
-  groupId = Session.get 'currentGroupId'
-  for group in person.pendingGroups
-    if group._id == groupId
-      return true
-  return false
+  _.some person.pendingGroups, (group) -> group._id is Session.get 'currentGroupId'
 
 Template.groupNoMembership.open = ->
   Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'open'
