@@ -1,11 +1,16 @@
 <template name="importOverlay">
   {{#if importOverlayActive}}
-    <div class="drop-overlay">
+    <div class="drop-overlay imports-overlay">
       <div class="content">
-        <h1>Drop files here</h1>
-        {{#each importingFiles}}
-          {{> importingFilesItem}}
-        {{/each}}
+        <h1>Importing files</h1>
+        <p class="hint">Drop files to import them.</p>
+      </div>
+      <div class="imports">
+        <table class="imports-table">
+          {{#each importingFiles}}
+            {{> importingFilesItem}}
+          {{/each}}
+        <table>
       </div>
     </div>
   {{/if}}
@@ -13,7 +18,7 @@
 
 <template name="signInOverlay">
   {{#if signInOverlayActive}}
-    <div class="drop-overlay">
+    <div class="drop-overlay signin-overlay">
       <div class="content">
         <h1>Please sign in before importing</h1>
       </div>
@@ -22,6 +27,23 @@
 </template>
 
 <template name="importingFilesItem">
-  <div>Name: {{name}}, Status: {{status}}</div>
-  <div class="import-progress-bar" style="width: {{uploadProgress}}%" class="{{#if finished}}finished{{/if}} {{#if errored}}errored{{/if}}"></div>
-</template>
+  <tr class="{{state}}">
+    <td class="imports-cell name-cell">
+      {{name}}
+    </td>
+    <td class="imports-cell progress-cell">
+      <div class="import-progress-bar" style="width: {{preprocessingProgress}}%"></div>
+      <div class="import-progress-bar" style="width: {{uploadProgress}}%"></div>
+    </td>
+    <td class="imports-cell status-cell">
+      {{status}}
+    </td>
+    <td class="imports-cell cancel-cell">
+      {{#unless hideCancel}}
+        <button class="cancel-button">
+          <i class="icon-cancel cancel-white"></i>
+        </button>
+      {{/unless}}
+    </td>
+  </tr>
+</template> 

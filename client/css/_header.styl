@@ -28,7 +28,6 @@ header
     background transparent
     display inline-block
     padding 0 20px
-    transition 0.2s
 
   a:hover
     background white
@@ -52,7 +51,6 @@ ul.top-menu
       padding 0 20px
       user-select none
       cursor pointer
-      transition 0.2s
 
     span.search-button
       color blue-accent
@@ -219,45 +217,28 @@ span.cursor
     color blue-accent
 
 header.logged-in
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
+
+    .dropdown-anchor
+      display block
+      bottom -2px
+
+    .dropdown-anchor::after
+    .dropdown-anchor::before
+      left auto
+      right 24px
+
   #login-dropdown-list
-    background white 
-    border-color rgb(210,210,210)
-    border-style solid
-    border-width 1px
-    border-radius 3px
     position  absolute
+    border-radius 3px
     width 180px
-    padding 5px 0
-    top 55px
     right 10px
+    left auto
     font-size 14px
     line-height 20px
-
-  #login-dropdown-list:after
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px
-    border-color #FFFFFF transparent
-    display block
-    width 0
-    z-index 1
-    margin-left -10px
-    top -8px
-    left 161px
-
-  #login-dropdown-list:before
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px;
-    border-color rgb(210,210,210) transparent
-    display block
-    width 0
-    z-index 0
-    margin-left -10px
-    top -9px
-    left 161px
 
   .menu-item
     padding 5px 0
@@ -266,7 +247,6 @@ header.logged-in
     font-weight bold
     color blue-accent
     cursor pointer
-    transition all 0.15s ease-in 0s
 
     a
       color blue-accent
@@ -277,25 +257,24 @@ header.logged-in
       color white
       a
         color white
-  
+
   .menu-item a:hover
     color white
     background blue-accent
 
-  .login-link-and-dropdown-list
-    cursor pointer
-    a
-      cursor pointer
-
 header.index-header.logged-in
-  #login-dropdown-list
-    top 56px
-    right 24px
+  .login-link-and-dropdown-list
+    .dropdown-anchor
+      right 14px
 
-  #login-dropdown-list:after
+      &::after
+      &::before
+        right 34px
+
+  #login-dropdown-list::after
     left 149px
 
-  #login-dropdown-list:before
+  #login-dropdown-list::before
     left 149px
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
@@ -314,11 +293,11 @@ header.index-header.logged-in
 
 /* Auth form buttons
 ==================== */
-
-.avatar
-  width 24px
-  height 24px
-  margin-left 12px
+header
+  .avatar
+    width 24px
+    height 24px
+    margin-left 12px
 
 /* Import button
 ================ */
@@ -396,7 +375,6 @@ header.index-header
       background bg-blue
       border 1px solid border-blue
       border-radius 3px
-      transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
       background hover-blue

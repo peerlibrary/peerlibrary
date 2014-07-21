@@ -1,0 +1,85 @@
+<template name="annotations">
+  <h1>Annotations</h1>
+
+  <div class="row">
+    <div class="col12 catalog">
+      {{> catalogControls catalogSettings}}
+      {{> noAnnotations}}
+      {{> annotationsList documents}}
+      {{> annotationsLoading}}
+    </div>
+    {{> myAnnotations}}
+  </div>
+</template>
+
+<template name="annotationsList">
+  {{#if this}}
+    <ol class="item-list">
+      {{#each this}}
+        {{> annotationCatalogItem}}
+      {{/each}}
+    </ol>
+  {{/if}}
+</template>
+
+<template name="noAnnotations">
+  {{#if noDocuments}}
+    <p class="status">
+      {{#if documentsFilter}}
+        The filter matches no annotations.
+      {{else}}
+        There are no annotations yet.
+        {{#if currentPersonId}}
+          Create the first by annotating one of the publications.
+        {{else}}
+          Sign in and create the first.
+        {{/if}}
+      {{/if}}
+    </p>
+  {{/if}}
+</template>
+
+<template name="annotationsLoading">
+  {{#if documentsLoading}}
+    <p class="status">Loading …</p>
+  {{else}}
+    {{#if moreDocuments}}
+      <button class="load-more">Load more</button>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="myAnnotations">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's annotations? }}
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="annotationInlineItem">
+  {{#with annotationReference _id this}}
+    <a class="inline-item annotation"{{#unless noLink}} href="{{annotationPathFromId _id}}"{{/unless}}>
+      <i class="avatar only-icon icon-annotation" title="Annotation"></i>
+      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
+    </a>
+  {{/with}}
+</template>
+
+<template name="annotationCatalogItem">
+  <li class="catalog-item annotation">
+    <div class="details">
+      <p class="actionable">{{> personInlineItem author}} annotated {{> publicationInlineItem publication}}</p>
+      <blockquote>
+        {{{body}}}
+      </blockquote>
+
+      {{#if commentsCount}}
+        <p><i class="icon-comment"></i> {{commentsCountDescription}}</p>
+      {{/if}}
+    </div>
+
+    <a class="full-item-link" href="{{annotationIdPath _id}}"></a>
+  </li>
+</template>

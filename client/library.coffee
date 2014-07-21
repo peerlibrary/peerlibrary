@@ -18,12 +18,12 @@ Template.libraryPublications.myPublications = ->
       $in: _.pluck person.library, '_id'
 
 Template.libraryPublications.rendered = ->
-  $(@findAll '.result-item').draggable
+  $(@findAll '.catalog-item').draggable
     opacity: 0.5
     revert: true
     revertDuration: 0
     cursor: 'move'
-    zIndex: 1
+    zIndex: 2
     start: (e, ui) ->
       collections = $('.library-collections-wrapper')
       # When we start to drag a publication, we display collections fixed so they are in view, ready to be dropped onto.
@@ -34,36 +34,11 @@ Template.libraryPublications.rendered = ->
     stop: (e, ui) ->
       $('.library-collections-wrapper').removeClass('fixed')
 
-Template.collections.myCollections = ->
-  return unless Meteor.personId()
+Template.libraryMyCollections.myCollections = Template.myCollections.myCollections
 
-  Collection.documents.find
-    'authorPerson._id': Meteor.personId()
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
-
-Template.addNewCollection.events
-  'submit .add-collection': (e, template) ->
-    e.preventDefault()
-
-    name = $(template.findAll '.name').val().trim()
-    return unless name
-
-    Meteor.call 'create-collection', name, (error, collectionId) =>
-      return Notify.meteorError error, true if error
-
-      # Clear the collection name from the form
-      $(template.findAll '.name').val('')
-
-      Notify.success "Collection created."
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.collections.rendered = ->
-  $(@findAll '.collection-listing').droppable
-    accept: '.result-item'
+Template.libraryMyCollections.rendered = ->
+  $(@findAll '.catalog-item').droppable
+    accept: '.publication.catalog-item'
     activeClass: 'droppable-active'
     hoverClass: 'droppable-hover'
     tolerance: 'pointer'
@@ -75,6 +50,3 @@ Template.collections.rendered = ->
         return Notify.meteorError error, true if error
 
         Notify.success "Publication added to collection." if count
-
-Template.collectionListing.countDescription = ->
-  if @publications?.length is 1 then "1 publication" else "#{ @publications?.length or 0 } publications"

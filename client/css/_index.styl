@@ -1,3 +1,5 @@
+@import 'variables.import'
+
 .landing
   canvas
     width 100%
@@ -37,7 +39,7 @@
   position fixed
   bottom 0
   left 50%
-  margin-left -242px
+  margin-left -363px
   list-style none
 
   li
@@ -51,6 +53,14 @@
     padding 20px 0
     vertical-align middle
     border-right 2px solid rgba(40,40,40,0.2)
+
+    a
+      color black
+      transition color 0.2s
+
+    a:hover
+      color blue-accent
+      text-decoration none
 
     .label, .value
       display block

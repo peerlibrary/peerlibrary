@@ -1,6 +1,7 @@
 Deps.autorun ->
   if Session.get 'indexActive'
     Meteor.subscribe 'statistics'
+    Meteor.subscribe 'latest-blog-post'
 
 Template.indexStatistics.publications = ->
   Statistics.documents.findOne()?.countPublications or 0
@@ -13,6 +14,12 @@ Template.indexStatistics.highlights = ->
 
 Template.indexStatistics.annotations = ->
   Statistics.documents.findOne()?.countAnnotations or 0
+
+Template.indexStatistics.groups = ->
+  Statistics.documents.findOne()?.countGroups or 0
+
+Template.indexStatistics.collections = ->
+  Statistics.documents.findOne()?.countCollections or 0
 
 Template.index.searchActive = ->
   Session.get 'searchActive'
@@ -36,3 +43,12 @@ Template.indexMain.destroyed = ->
   @_background.destroy()
   @_background = null
   @_backgroundRendered = false
+
+Template.indexLatestBlogPost.latestBlogPost = ->
+  BlogPost.documents.findOne()
+
+Template.indexLatestBlogPost.blogPostsCount = ->
+  Statistics.documents.findOne()?.countBlogPosts or 0
+
+Template.indexLatestBlogPost.blogUrl = ->
+  Meteor.settings?.public?.blogUrl

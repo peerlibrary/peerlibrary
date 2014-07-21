@@ -1,22 +1,24 @@
 <template name="_loginButtonsLoggedInDropdown">
-  <div class="login-link-and-dropdown-list">
+  <div class="login-link-and-dropdown-list dropdown-trigger">
     <a class="login-link-text" id="login-name-link">
       {{currentPerson.displayName}} <img src="{{currentPerson.avatar}}" class="avatar" />
     </a>
 
     {{#if dropdownVisible}}
-      <div id="login-dropdown-list" class="accounts-dialog">
-        <div class="login-close-text-clear"></div>
+      <div class="dropdown-anchor">
+        <div id="login-dropdown-list" class="accounts-dialog dropdown">
+          <div class="login-close-text-clear"></div>
 
-        {{#if inMessageOnlyFlow}}
-          {{> _loginButtonsMessages}}
-        {{else}}
-          {{#if inChangePasswordFlow}}
-            {{> _loginButtonsChangePassword}}
+          {{#if inMessageOnlyFlow}}
+            {{> _loginButtonsMessages}}
           {{else}}
-            {{> _loginButtonsLoggedInDropdownActions}}
+            {{#if inChangePasswordFlow}}
+              {{> _loginButtonsChangePassword}}
+            {{else}}
+              {{> _loginButtonsLoggedInDropdownActions}}
+            {{/if}}
           {{/if}}
-        {{/if}}
+        </div>
       </div>
     {{/if}}
   </div>
@@ -30,7 +32,7 @@
         makes the position of "Close" match the position of this text.
       }}
       <a class="login-link-text" id="login-sign-in-link">Sign in</a>
-      <div id="login-dropdown-list" class="accounts-dialog">
+      <div id="login-dropdown-list" class="accounts-dialog dropdown">
         {{#if loggingIn}}
           {{> _loginButtonsLoggingIn}}
         {{/if}}

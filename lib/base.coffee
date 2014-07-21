@@ -1,7 +1,9 @@
-@INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
+@INITIAL_SEARCH_LIMIT = 5
+@INITIAL_CATALOG_LIMIT = 10
 
 setSession = (session) ->
   session = _.defaults session or {},
+    # TODO: All these variables should be encoded in the URL somehow, or they should not be reset when routing (use Session.setDefault; we are using it already, we should put all together; or should we use independent reactive variables instead of Session for such variables?)
     indexActive: false
     currentSearchQuery: null
     currentSearchQueryCountPublications: 0
@@ -18,6 +20,7 @@ setSession = (session) ->
     currentPublicationId: null
     currentPublicationSlug: null
     currentPublicationProgress: null
+    currentPublicationLimitAnnotationsToViewport: false
     currentHighlightId: null
     currentAnnotationId: null
     currentCommentId: null
@@ -26,7 +29,48 @@ setSession = (session) ->
     currentTagSlug: null
     currentGroupId: null
     currentGroupSlug: null
+    publicationsActive: false
+    currentPublicationsFilter: null
+    currentPublicationsCount: 0
+    currentPublicationsLoading: false
+    currentPublicationsReady: false
+    currentPublicationsLimit: INITIAL_CATALOG_LIMIT
+    currentPublicationsSort: 0
+    personsActive: false
+    currentPersonsFilter: null
+    currentPersonsCount: 0
+    currentPersonsLoading: false
+    currentPersonsReady: false
+    currentPersonsLimit: INITIAL_CATALOG_LIMIT
+    currentPersonsSort: 0
+    collectionsActive: false
+    currentCollectionsFilter: null
+    currentCollectionsCount: 0
+    currentCollectionsLoading: false
+    currentCollectionsReady: false
+    currentCollectionsLimit: INITIAL_CATALOG_LIMIT
+    currentCollectionsSort: 0
     groupsActive: false
+    currentGroupsFilter: null
+    currentGroupsCount: 0
+    currentGroupsLoading: false
+    currentGroupsReady: false
+    currentGroupsLimit: INITIAL_CATALOG_LIMIT
+    currentGroupsSort: 0
+    annotationsActive: false
+    currentAnnotationsFilter: null
+    currentAnnotationsCount: 0
+    currentAnnotationsLoading: false
+    currentAnnotationsReady: false
+    currentAnnotationsLimit: INITIAL_CATALOG_LIMIT
+    currentAnnotationsSort: 0
+    highlightsActive: false
+    currentHighlightsFilter: null
+    currentHighlightsCount: 0
+    currentHighlightsLoading: false
+    currentHighlightsReady: false
+    currentHighlightsLimit: INITIAL_CATALOG_LIMIT
+    currentHighlightsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null
@@ -159,6 +203,13 @@ else
           currentPublicationSlug: publicationSlug
         'publication'
 
+    '/p':
+      as: 'publications'
+      to: ->
+        setSession
+          publicationsActive: true
+        'publications'
+
     '/t/:tagId/:tagSlug?':
       as: 'tag'
       documentId: 'tagId'
@@ -212,6 +263,13 @@ else
           currentPersonSlug: personSlug
         'person'
 
+    '/u':
+      as: 'persons'
+      to: ->
+        setSession
+          personsActive: true
+        'persons'
+
     '/h/:highlightId':
       as: 'highlightId'
       documentId: 'highlightId'
@@ -221,6 +279,13 @@ else
         redirectHighlightId highlightId
         'redirecting'
 
+    '/h':
+      as: 'highlights'
+      to: ->
+        setSession
+          highlightsActive: true
+        'highlights'
+
     '/a/:annotationId':
       as: 'annotationId'
       documentId: 'annotationId'
@@ -229,6 +294,13 @@ else
         setSession()
         redirectAnnotationId annotationId
         'redirecting'
+
+    '/a':
+      as: 'annotations'
+      to: ->
+        setSession
+          annotationsActive: true
+        'annotations'
 
     '/m/:commentId':
       as: 'commentId'
@@ -260,6 +332,13 @@ else
           currentCollectionId: collectionId
           currentCollectionSlug: collectionSlug
         'collection'
+
+    '/c':
+      as: 'collections'
+      to: ->
+        setSession
+          collectionsActive: true
+        'collections'
 
     '/admin':
       as: 'admin'

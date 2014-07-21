@@ -1,6 +1,3 @@
-# Used for global variable assignments in local scopes
-root = @
-
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->
@@ -103,39 +100,6 @@ Template.resultsLoad.events =
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
 
-Template.publicationSearchResult.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
-
-    if template._publicationHandle
-      # We ignore the click if handle is not yet ready
-      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
-    else
-      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
-        Deps.afterFlush =>
-          $(template.findAll '.abstract').slideToggle('fast')
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.publicationSearchResult.created = ->
-  @_publicationHandle = null
-
-Template.publicationSearchResult.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
-Template.publicationSearchResult.destroyed = ->
-  @_publicationHandle?.stop()
-  @_publicationHandle = null
-
-Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
-
-Template.publicationSearchResultThumbnail.events
-  'click li': (e, template) ->
-    root.startViewerOnPage = @page
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication = @publication
-    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
-
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null
   @_dateRangeHandle = null
@@ -221,13 +185,6 @@ Template.sidebarSearch.events =
     e.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
-
-Template.accessIcon.iconName = ->
-  switch @access
-    when Publication.ACCESS.OPEN then 'icon-public'
-    when Publication.ACCESS.CLOSED then 'icon-closed'
-    when Publication.ACCESS.PRIVATE then 'icon-private'
-    else assert false
 
 # We do not want location to be updated for every key press, because this really makes browser history hard to navigate
 # TODO: This might make currentSearchQuery be overriden with old value if it happens that exactly after 500 ms user again presses a key, but location is changed to old value which sets currentSearchQuery and thus input field back to old value

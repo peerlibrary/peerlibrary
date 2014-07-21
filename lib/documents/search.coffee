@@ -1,6 +1,6 @@
-class @SearchResult extends Document
+class @SearchResult extends BaseDocument
   # name: name of the search
-  # query: query string as provided by the client
+  # query: query identifier as provided by the client
   # count*: number of search results for the given cursor in the query (for each cursor there will be one field)
 
   @Meta

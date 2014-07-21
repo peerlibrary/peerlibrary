@@ -1,7 +1,3 @@
-[submodule "packages/blob/Blob"]
-	path = packages/blob/Blob
-	url = git://github.com/peerlibrary/Blob.js.git
-	branch = peerlibrary
 [submodule "packages/dom-text-mapper/dom-text-mapper"]
 	path = packages/dom-text-mapper/dom-text-mapper
 	url = git://github.com/peerlibrary/dom-text-mapper.git

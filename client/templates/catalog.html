@@ -1,0 +1,37 @@
+<template name="catalogControls">
+  <div class="controls">
+    {{> catalogSort}}
+    {{> catalogFilter}}
+  </div>
+</template>
+
+<template name="catalogFilter">
+  <div class="filter control">
+    <i class="icon-search"></i>
+    <input name="filter" type="text" placeholder="Filter {{documentsName}}" autocomplete="off" autofocus="autofocus"/>
+  </div>
+</template>
+
+<template name="catalogSort">
+  <div class="sort control">
+    <i class="icon-sort"></i>
+    <span class="dropdown-trigger">
+      Sort by {{field}}
+      {{> catalogSortSelection}}
+    </span>
+  </div>
+</template>
+
+<template name="catalogSortSelection">
+  <div class="dropdown-anchor">
+    <ul class="dropdown">
+      {{#each options}}
+        {{> catalogSortOption}}
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="catalogSortOption">
+  <li class="menu-item"><button>{{name}}</button></li>
+</template>

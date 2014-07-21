@@ -36,8 +36,6 @@ Meteor.methods
             _id: person._id
           message: message?.trim() or null
 
-    console.log "Sending email"
-
     Accounts.sendEnrollmentEmail userId
 
     invited._id
@@ -94,6 +92,7 @@ Accounts.onCreateUser (options, user) ->
   user.person =
     _id: personId
 
+  createdAt = moment.utc().toDate()
   person =
     _id: personId
     user:
@@ -102,6 +101,8 @@ Accounts.onCreateUser (options, user) ->
       username: user.username
     slug: Person.Meta.fields.slug.generator(_id: personId, user: user)[1]
     gravatarHash: Person.Meta.fields.gravatarHash.generator(user)[1]
+    createdAt: createdAt
+    updatedAt: createdAt
 
   _.extend person, _.pick(options.profile or {}, 'givenName', 'familyName')
 
@@ -176,7 +177,7 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   person = Meteor.person user._id
 
   wrap """
-  Hello #{ person.displayName() }!
+  Hello #{ person.displayName }!
 
   This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this email.
 
@@ -203,6 +204,9 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   url = url.replace '#/', ''
 
   invited = Meteor.person user._id
+  # Invitation can be very quickly after person creation, so maybe displayName
+  # generator has not yet run, so let's make sure we have displayName
+  invited.displayName = invited.getDisplayName() unless invited.displayName
 
   assert invited.invited?.by._id
 
@@ -215,9 +219,9 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   parts = []
 
   parts.push """
-  Hello #{ invited.displayName() }!
+  Hello #{ invited.displayName }!
 
-  #{ person.displayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName() } is inviting you to join the conversation with them
+  #{ person.displayName } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName } is inviting you to join the conversation with them
   """
 
   message = invited.invited.message
