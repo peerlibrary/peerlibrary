@@ -118,9 +118,6 @@ Template.rolesControl.showControl = ->
   rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
   rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
 
-  console.log @
-  console.log rolesCount
-
   return rolesCount > 0
 
 Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
