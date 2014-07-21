@@ -31,7 +31,7 @@
 
 <template name="groupMembership">
   {{#if currentPersonId}}
-    <h2 class="directory-title">Group membership</h2>
+    <h3 class="directory-title">Group membership</h3>
     {{#if isMember}}
       {{> groupExistingMembership}}
     {{else}}
@@ -47,15 +47,15 @@
 
 <template name="groupNoMembership">
   {{#if closed}}
-    This group is closed. You can't become a member nor apply for membership
+    This group is closed. You can't join nor request membership.
   {{else}}
-    <button class="join-group">{{#if open}}Become a member{{else}}Apply for membership{{/if}}</button>
+    <button class="join-group">{{#if open}}Join group{{else}}Request membership{{/if}}</button>
   {{/if}}
 </template>
 
 <template name="groupPendingMembership">
-  You have applied for membership in this group. Please wait for one of the group admins to approve your membership.
-  <button class="leave-group">Revoke application</button>
+  You have requested membership in this group. Please wait for one of the group admins to approve your request.
+  <button class="cancel-membership-request">Cancel request</button>
 </template>
 
 <template name="groupExistingMembership">
@@ -65,7 +65,9 @@
 <template name="groupMembers">
   {{> groupMembersList}}
   {{#if canModifyMembership}}
-    {{> groupPendingMembers}}
+    {{#if pendingMembers}}
+      {{> groupPendingMembers}}
+    {{/if}}
     {{> groupMembersAddControl}}
   {{/if}}
 </template>
@@ -83,7 +85,7 @@
   <h3> Membership applications </h3>
   {{#each pendingMembers}}
     {{> member}}
-    <button class="approve-group-member">Approve</button>
+    <button class="approve-membership-request">Approve</button>
   {{/each}}
 </template>
 
@@ -142,5 +144,17 @@
         {{! TODO: Add confirmation or undo for this action }}
       </p>
     {{/if}}
+    <p>
+      Group membership policy is currently {{membershipPolicy}}.
+    </p>
+    <p>
+      Set it to:
+      <select class="group-membership-policy">
+        <option value="conditional"> Conditional </option>
+        <option value="open"> Open </option>
+        <option value="closed"> Closed </option>
+      </select>
+      <button class="set-membership-policy">Set</button>
+    </p>
   {{/if}}
 </template>
