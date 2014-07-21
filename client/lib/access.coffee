@@ -10,7 +10,9 @@ accessButtonEventHandlers =
 
     if $anchor.is(':visible')
       # Temporarily remove and disable tooltips on the button, because the same
-      # information as in the tooltip is displayed in the dropdown content
+      # information as in the tooltip is displayed in the dropdown content. We need
+      # to remove the element manually, since we can't selectively disable/destroy
+      # it just on this element through jQeury UI.
       $button = $(template.findAll '.access-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
