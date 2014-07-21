@@ -188,7 +188,7 @@ Meteor.methods
 
     Group.documents.update
       _id: group._id
-      'pendingMembers._id' : person._id
+      'pendingMembers._id': person._id
     ,
       $pull:
         pendingMembers:
