@@ -307,14 +307,11 @@ Template.groupDetails.events
 
   'click .set-membership-policy': (e, template) ->
     policy = $('.group-membership-policy').val()
-    console.log "Setting policy '" + policy + "'"
     Meteor.call 'group-set-membership-policy', @_id, policy, (error, count) =>
-      console.log "Got callback. Error: " + error + ", Count: " + count
       Notify.meteorError error, true if error
 
       return unless count
 
-      console.log "Notifying success"
       Notify.success "Membership policy changed."
 
     return # Make sure CoffeeScript does not return anything
