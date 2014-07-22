@@ -82,10 +82,17 @@ class @Background
   constructor: ->
     @renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
     @computeRatio()
+    @clearBackground()
 
+    # We randomize start time so that it is not always the same, which
+    # also helps when background is paused that it looks different every time
+    @randomizedStart = Math.random() * 10000 + 10000
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle = null
 
   destroy: =>
     @renderer = null
@@ -94,6 +101,10 @@ class @Background
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle.stop() if @autorunHandle
+    @autorunHandle = null
 
   computeRatio: =>
     devicePixelRatio = window.devicePixelRatio or 1
@@ -105,6 +116,14 @@ class @Background
                         context.oBackingStorePixelRatio or 1
 
     @ratio = devicePixelRatio / backingStoreRatio
+
+  clearBackground: =>
+    # Used also in variables.import.styl, keep in sync
+    stage = new PIXI.Stage 0xf6f8f8
+    graphics = new PIXI.Graphics()
+    stage.addChild graphics
+    graphics.clear()
+    @renderer.render stage
 
   render: =>
     @resizeView()
@@ -180,9 +199,29 @@ class @Background
   draw: (time) =>
     return unless @renderer
 
-    vector.update time for key, vector of @vectors
-    triangle.draw() for key, triangle of @triangles
+    if not Session.get('backgroundPaused') and @autorunHandle
+      # Cleanup after resume (again, just to be sure)
+      @autorunHandle.stop()
+      @autorunHandle = null
 
+    @pausedDelay += time - @pausedTime if @pausedTime isnt 0
+    @pausedTime = 0
+
+    vector.update time - @pausedDelay + @randomizedStart for key, vector of @vectors
+    triangle.draw() for key, triangle of @triangles
     @renderer.render @stage
+
+    if Session.get 'backgroundPaused'
+      # Remember the time when we were paused
+      @pausedTime = time
+      # And react to the change of backgroundPaused
+      @autorunHandle = Deps.autorun =>
+        unless Session.get 'backgroundPaused'
+          # Cleanup after resume
+          @autorunHandle.stop()
+          @autorunHandle = null
+          # Restart the loop
+          frame @draw
+      return
 
     frame @draw
