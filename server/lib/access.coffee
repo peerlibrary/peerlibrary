@@ -55,7 +55,7 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
 
   changesCount = 0
 
-  # For private documents, grant read access together with admin/maintainer privileges.
+  # For private documents, grant read access together with admin/maintainer privileges
   if document.access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
       createNotInSetQuery documentId, 'read', personOrGroupName, personOrGroupId
