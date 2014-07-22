@@ -155,8 +155,7 @@ Meteor.publish 'groups-by-ids', (groupIds) ->
     Person.documents.find
       _id: @personId
     ,
-      fields: _.extend Group.readAccessPersonFields(),
-        library: 1
+      fields: _.extend Group.readAccessPersonFields()
 
 Meteor.publish 'my-groups', ->
   @related (person) ->
