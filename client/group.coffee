@@ -7,6 +7,8 @@ Deps.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
     groupHandle = Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+    Meteor.subscribe 'my-join-requests', Session.get 'currentGroupId'
+    Meteor.subscribe 'my-leave-requests', Session.get 'currentGroupId'
   else
     groupSubscribing.set false
     groupHandle = null
@@ -47,45 +49,35 @@ Template.groupMembership.isMember = ->
 
 Template.groupMembership.isPendingMember = ->
   person = Meteor.person()
-  return false unless person?.pendingGroups
-  _.some person.pendingGroups, (group) -> group._id is Session.get 'currentGroupId'
+  group = Group.documents.findOne(_id: Session.get 'currentGroupId')
+  return false unless person and group
+  _.some group.joinRequests, (person) -> person._id is Meteor.personId()
 
 Template.groupNoMembership.open = ->
-  Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'open'
+  Group.documents.findOne(_id: Session.get 'currentGroupId').joinPolicy is Group.POLICY.OPEN
 
 Template.groupNoMembership.closed = ->
-  Group.documents.findOne(_id: Session.get 'currentGroupId').membershipPolicy is 'closed'
+  Group.documents.findOne(_id: Session.get 'currentGroupId').joinPolicy is Group.POLICY.CLOSED
 
 Template.groupMembership.events
   'click .join-group': (e, template) ->
-    Meteor.call 'join-group', Session.get('currentGroupId'), (error, count) =>
+    console.log "Join group clicked"
+    Meteor.call 'request-to-join-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
-
-      return unless count
-
-      groupName = Group.documents.findOne(_id: Session.get 'currentGroupId').name
-      Notify.success "You are now a member of #{ groupName }"
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (e, template) ->
-    Meteor.call 'leave-group', Session.get('currentGroupId'), (error, count) =>
+    console.log "Leave group clicked"
+    Meteor.call 'request-to-leave-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
-
-      return unless count
-
-      groupName = Group.documents.findOne(_id: Session.get 'currentGroupId').name
-      Notify.success "You are no longer member of #{ groupName }"
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .cancel-membership-request': (e, template) ->
-    Meteor.call 'cancel-membership-request', Session.get('currentGroupId'), (error, count) =>
+  'click .cancel-request-to-join-group': (e, template) ->
+    console.log "Cancel request clicked"
+    Meteor.call 'cancel-request-to-join-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
-
-      return unless count
-
-      Notify.success "Your membership request has been canceled"
 
     return # Make sure CoffeeScript does not return anything
 
@@ -117,7 +109,7 @@ Template.groupMembersList.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupPendingMembers.events =
+Template.groupRequests.events =
   'click .approve-membership-request': (e, template) ->
     Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error

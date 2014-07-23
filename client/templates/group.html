@@ -55,7 +55,7 @@
 
 <template name="groupPendingMembership">
   You have requested membership in this group. Please wait for one of the group admins to approve your request.
-  <button class="cancel-membership-request">Cancel request</button>
+  <button class="cancel-request-to-join-group">Cancel request</button>
 </template>
 
 <template name="groupExistingMembership">
@@ -65,9 +65,7 @@
 <template name="groupMembers">
   {{> groupMembersList}}
   {{#if canModifyMembership}}
-    {{#if pendingMembers}}
-      {{> groupPendingMembers}}
-    {{/if}}
+    {{> groupRequests}}
     {{> groupMembersAddControl}}
   {{/if}}
 </template>
@@ -81,12 +79,26 @@
   </ol>
 </template>
 
-<template name="groupPendingMembers">
-  <h3> Membership applications </h3>
-  {{#each pendingMembers}}
-    {{> member}}
-    <button class="approve-membership-request">Approve</button>
-  {{/each}}
+<template name="groupRequests">
+  Join requests count: {{joinRequestsCount}}<br/>
+  Leave requests count: {{leaveRequestsCount}}<br/>
+  <br/>
+
+  {{#if joinRequestsCount}}
+    <h3> Requests to join group </h3>
+    {{#each joinRequests}}
+      {{> member}}
+      <button class="approve-request-to-join">Approve</button>
+    {{/each}}
+  {{/if}}
+
+  {{#if leaveRequestsCount}}
+    <h3> Requests to leave group </h3>
+    {{#each leaveRequests}}
+      {{> member}}
+      <button class="approve-request-to-leave">Approve</button>
+    {{/each}}
+  {{/if}}
 </template>
 
 <template name="groupMembersAddControl">
