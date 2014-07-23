@@ -13,11 +13,18 @@ class @Group extends ReadAccessDocument
   # name: name of the group
   # members: list of people in the group
   # membersCount: number of people in the group
-  # pendingMembers: list of people with pending membership in the group
-  # membershipPolicy: defines a way to become member of the group, one of the following strings
-  #                   closed: only admins can add members
-  #                   conditional: anyone can apply for membership, admins have to approve it (TODO: Name this better)
-  #                   open: open group, anyone can join
+  # joinRequests: list of people with pending requests to join group
+  # joinRequestsCount: number of people with pending requests to join group
+  # leaveRequests: list of people with pending requests to leave group
+  # leaveRequestsCount: number of people with pending requests to leave group
+  # joinPolicy: defines a way to become member of the group
+  #   0: (only admins can add members, POLICY.CLOSED)
+  #   1: (anyone can request membership, admins have to approve it, POLICY.APPROVAL)
+  #   2: (anyone who has access to the group can join, POLICY.OPEN) #TODO: Update permissions specification
+  # leavePolicy: defines a way to leave the group
+  #   0: (only admins can remove members, POLICY.CLOSED)
+  #   1: (members can request to leave group, admins have to approve it, POLICY.APPROVAL)
+  #   2: (members can leave group at will, POLICY.OPEN)
   # referencingAnnotations: list of (reverse field from Annotation.references.groups)
   #   _id: annotation id
   # searchResult (client only): the last search query this document is a result for, if any, used only in search results
@@ -33,8 +40,12 @@ class @Group extends ReadAccessDocument
       adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
       members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'inGroups']
-      pendingMembers: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'pendingGroups']
+      joinRequests: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
+      leaveRequests: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       membersCount: @GeneratedField 'self', ['members']
+      joinRequestsCount: @GeneratedField 'self', ['joinRequests'], (fields) -> [fields._id, fields.joinRequests?.length or 0]
+      leaveRequestsCount: @GeneratedField 'self', ['leaveRequests'], (fields) -> [fields._id, fields.leaveRequests?.length or 0]
+     
     triggers: =>
       updatedAt: UpdatedAtTrigger ['name', 'members._id']
       # TODO: For now we are updating last activity of all persons in a group, but we might consider removing this and leave it to the "trending" view
@@ -64,6 +75,11 @@ class @Group extends ReadAccessDocument
         ['name', 'asc']
       ]
     ]
+
+  @POLICY:
+    CLOSED: 0
+    APPROVAL: 1
+    OPEN: 2
 
   _hasReadAccess: (person) =>
     access = super
