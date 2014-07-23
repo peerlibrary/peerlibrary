@@ -24,12 +24,16 @@
 
 <template name="personsCount">
   {{#if documentsCount}}
-    <p class="status">Displaying {{countDescription}}:</p>
+    {{#if documentsFilter}}
+    <p class="status">Filter matches {{countDescription}}</p>
+    {{else}}
+    <p class="status">Displaying {{countDescription}}</p>
+    {{/if}}
   {{/if}}
   {{#if noDocuments}}
     <p class="status">
       {{#if documentsFilter}}
-        The filter matches no people.
+        Filter matches no people.
       {{else}}
         There are no people yet. Sign up and become the first.
       {{/if}}
@@ -45,7 +49,7 @@
       <button class="load-more">Load more</button>
     {{else}}
       {{#if documentsCount}}
-        <p class="status">End of results reached.</p>
+        <p class="status">No more people to display.</p>
       {{/if}}
     {{/if}}
   {{/if}}

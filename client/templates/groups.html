@@ -23,12 +23,16 @@
 
 <template name="groupsCount">
   {{#if documentsCount}}
-    <p class="status">Displaying {{countDescription}}:</p>
+    {{#if documentsFilter}}
+      <p class="status">Filter matches {{countDescription}}</p>
+    {{else}}
+      <p class="status">Displaying {{countDescription}}</p>
+    {{/if}}
   {{/if}}
   {{#if noDocuments}}
     <p class="status">
       {{#if documentsFilter}}
-        The filter matches no groups.
+        Filter matches no groups.
       {{else}}
         There are no groups yet.
         {{#if currentPersonId}}
@@ -49,7 +53,7 @@
       <button class="load-more">Load more</button>
     {{else}}
       {{#if documentsCount}}
-        <p class="status">End of results reached.</p>
+        <p class="status">No more groups to display.</p>
       {{/if}}
     {{/if}}
   {{/if}}

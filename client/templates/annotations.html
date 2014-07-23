@@ -24,12 +24,16 @@
 
 <template name="annotationsCount">
   {{#if documentsCount}}
-    <p class="status">Displaying {{countDescription}}:</p>
+    {{#if documentsFilter}}
+      <p class="status">Filter matches {{countDescription}}</p>
+    {{else}}
+      <p class="status">Displaying {{countDescription}}</p>
+    {{/if}}
   {{/if}}
   {{#if noDocuments}}
     <p class="status">
       {{#if documentsFilter}}
-        The filter matches no annotations.
+        Filter matches no annotations.
       {{else}}
         There are no annotations yet.
         {{#if currentPersonId}}
@@ -50,7 +54,7 @@
       <button class="load-more">Load more</button>
     {{else}}
       {{#if documentsCount}}
-        <p class="status">End of results reached.</p>
+        <p class="status">No more annotations to display.</p>
       {{/if}}
     {{/if}}
   {{/if}}
