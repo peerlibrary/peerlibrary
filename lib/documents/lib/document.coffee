@@ -2,6 +2,11 @@
   PRIVATE: 0
   PUBLIC: 1
 
+@ROLES =
+  ADMIN: 3
+  MAINTAINER: 2
+  READ_ACCESS: 1
+
 class @BaseDocument extends Document
   @Meta
     abstract: true
