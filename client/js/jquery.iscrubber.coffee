@@ -1,6 +1,6 @@
 ###
   jQuery iScrubber plugin 1.1.0
-  
+
   @preserve
   Created by Marco Martins
   https://github.com/skarface/iscrubber.git
