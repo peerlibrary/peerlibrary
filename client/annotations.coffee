@@ -17,5 +17,25 @@ Template.annotations.catalogSettings = ->
     filter: 'currentAnnotationsFilter'
     sort: 'currentAnnotationsSort'
 
+Template.annotationCatalogItem.events =
+  'mousedown': (e, template) ->
+    # Save mouse position so we can later detect selection actions in click handler
+    template.data._previousMousePosition =
+      pageX: e.pageX
+      pageY: e.pageY
+
+  'click': (e, template) ->
+    # Don't redirect if user interacted with one of the actionable controls on the item
+    return if $(e.target).closest('.actionable').length > 0
+
+    e.previousMousePosition = template.data._previousMousePosition
+    template.data._previousMousePosition = null
+
+    # Don't redirect if this might have been a selection
+    return if e.previousMousePosition and (Math.abs(e.previousMousePosition.pageX - e.pageX) > 1 or Math.abs(e.previousMousePosition.pageY - e.pageY) > 1)
+
+    # Redirect user to the annotation
+    Meteor.Router.toNew Meteor.Router.annotationIdPath template.data._id
+
 Template.annotationCatalogItem.commentsCountDescription = ->
   Comment.verboseNameWithCount @commentsCount
