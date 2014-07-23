@@ -57,7 +57,8 @@ Template.publicationCatalogItem.created = ->
   @_publicationHandle = null
 
 Template.publicationCatalogItem.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
+  $(@findAll '.scrubber').iscrubber
+    direction: 'combined'
 
 Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
