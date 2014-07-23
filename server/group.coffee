@@ -58,8 +58,10 @@ Meteor.methods
       members: [
         _id: person._id
       ]
-      membershipPolicy: 'conditional'
-      pendingMemers: []
+      joinPolicy: Group.POLICY.APPROVAL
+      leavePolicy: Group.POLICY.OPEN
+      joinRequests: []
+      leaveRequests: []
 
     group = Group.applyDefaultAccess person._id, group
 
@@ -77,37 +79,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'add-to-group': (groupId, memberId) ->
-    check groupId, DocumentId
-    check memberId, DocumentId if memberId
-    person = getValidPerson()
-    group = getValidGroup groupId, person
-
-    member = Person.documents.findOne
-      _id: memberId
-    return 0 unless member
-
-    # We remove pending membership without checking because query checks
-    Group.documents.update Group.requireAdminAccessSelector(person,
-      _id: group._id
-      'pendingMembers._id': member._id
-    ),
-      $pull:
-        pendingMembers:
-          _id: member._id
-
-    # We do not check here if user is already a member of the group because query checks
-    # TODO: Notify new member
-    Group.documents.update Group.requireAdminAccessSelector(person,
-      _id: group._id
-      'members._id':
-        $ne: member._id
-    ),
-      $addToSet:
-        members:
-          _id: member._id
-
-  # TODO: Use this code on the client side as well
-  'remove-from-group': (groupId, memberId) ->
+    console.log "Add to group method called"
     check groupId, DocumentId
     check memberId, DocumentId
     person = getValidPerson()
@@ -117,28 +89,93 @@ Meteor.methods
       _id: memberId
     return 0 unless member
 
-    # TODO: What is return value here?
+    # We remove request to join without checking because query checks
+    requestApproved = Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+      'joinRequests._id': member._id
+    ),
+      $pull:
+        joinRequests:
+          _id: member._id
+    # TODO: If request was approved send e-mail to new member
+
+    # We do not check here if user is already a member of the group because query checks
+    Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+      'members._id':
+        $ne: member._id
+    ),
+      $addToSet:
+        members:
+          _id: member._id
+
+  'deny-request-to-join-group': (groupId, memberId) ->
+    console.log "Deny request to join group method called"
+    check groupId, DocumentId
+    check memberId, DocumentId
+    person = getValidPerson()
+    group = getValidGroup groupId, person
+
+    # We do not check here if member with given id exists because query checks
+    requestDenied = Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+      'joinRequests': memberId
+    ),
+      $pull:
+        joinRequests:
+          _id: memberId
+    # TODO: if requestDenied send e-mail to member
+    requestDenied
+
+
+  # TODO: Use this code on the client side as well
+  'remove-from-group': (groupId, memberId) ->
+    console.log "Remove from group called"
+    check groupId, DocumentId
+    check memberId, DocumentId
+    person = getValidPerson()
+    group = getValidGroup groupId, person
+
+    # We remove request to leave without checking because query checks
+    requestApproved = Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+      'leaveRequest._id': memberId
+    ),
+      $pull:
+        leaveRequests:
+          _id: memberId
+    # TODO: if request was approved send e-mail to member
 
     # We do not check here if user is really a member of the group because query checks
     Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
-      'members._id': member._id
+      'members._id': memberId
     ),
       $pull:
         members:
-          _id: member._id
+          _id: memberId
 
-    # We do not check here if user is really a pending member of the group, query checks
-    Group.documents.update Group.requireAdminAccessSelector(person,
+  'deny-request-to-leave-group': (groupId, memberId) ->
+    console.log "Deny request to leave group called"
+    check groupId, DocumentId
+    check memberId, DocumentId
+    person = getValidPerson()
+    group = getValidGroup groupId, person
+
+    # We do not check here if member with given id exists because query checks
+    requestDenied = Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
-      'pendingMembers._id': member._id
+      'membersPendingToLeave': memberId
     ),
       $pull:
-        pendingMembers:
-          _id: member._id
+        membersPendingToLeave:
+          _id: memberId
+    # TODO: if requestDenied send e-mail to member
+    requestDenied
 
   # TODO: Use this code on the client side as well
   'group-set-name': (groupId, name) ->
+    console.log "Group set name called"
     check groupId, DocumentId
     check name, NonEmptyString
     person = getValidPerson()
@@ -150,63 +187,114 @@ Meteor.methods
       $set:
         name: name
 
-  'group-set-membership-policy': (groupId, policy) ->
+  'group-set-join-policy': (groupId, policy) ->
+    console.log "Group set join policy called"
     check groupId, DocumentId
-    check policy, NonEmptyString
+    check policy, MatchAccess Group.POLICY
     person = getValidPerson()
     group = getValidGroup groupId, person
-    throw new Meteor.Error 400, "Invalid policy" if policy not in ['open', 'closed', 'conditional']
 
-    Group.documents.update Group.requireMaintainerAccessSelector(person,
+    Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
     ),
       $set:
-        membershipPolicy: policy
+        joinPolicy: policy
 
-  # Adds member to open group or pending member to conditional group
-  'join-group': (groupId) ->
+  'group-set-leave-policy': (groupId, policy) ->
+    console.log "Group set leave policy called"
+    check groupId, DocumentId
+    check policy, MatchAccess Group.POLICY
+    person = getValidPerson()
+    group = getValidGroup groupId, person
+
+    Group.documents.update Group.requireAdminAccessSelector(person,
+      _id: group._id
+    ),
+      $set:
+        leavePolicy: policy
+
+  'request-to-join-group': (groupId) ->
+    console.log "Request to join group called"
     check groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
-    throw new Meteor.Error 400, "You are not allowed to join this group." if group.membershipPolicy is 'closed'
+    throw new Meteor.Error 400, "You are not allowed to join this group." if group.joinPolicy is Group.POLICY.CLOSED
 
-    if group.membershipPolicy is 'open'
-      newItem = members: _id: person._id
+    console.log "Join policy is " + group.joinPolicy
+    if group.joinPolicy is Group.POLICY.OPEN
+      Group.documents.update
+        _id: group._id
+      ,
+        $addToSet:
+          members:
+            _id: person._id
     else
-      # TODO: Notify admins from observer
-      newItem = pendingMembers: _id: person._id
+      requestAdded = Group.documents.update
+        _id: group._id
+        'joinRequests._id':
+          $ne: person._id
+      ,
+        $addToSet:
+          joinRequests:
+            _id: person._id
+      # TODO: If requestAdded send e-mail to admins
+      console.log "Request added" if requestAdded
+      requestAdded
 
-    Group.documents.update
-      _id: group._id
-    ,
-      $addToSet: newItem
-
-  'cancel-membership-request': (groupId) ->
+  'cancel-request-to-join-group': (groupId) ->
+    console.log "Cancel request to join group called"
     check groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
 
     Group.documents.update
       _id: group._id
-      'pendingMembers._id': person._id
+      'joinRequests._id': person._id
     ,
       $pull:
-        pendingMembers:
+        joinRequests:
           _id: person._id
 
-  # Removes member from group
-  'leave-group': (groupId) ->
+  'request-to-leave-group': (groupId) ->
+    console.log "Request to leave group called"
     check groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
+    throw new Meteor.Error 400, "You are not allowed to leave this group." if group.leavePolicy is Group.POLICY.CLOSED
     throw new Meteor.Error 400, "You are the last remaining administrator of this group." if group.adminPersons.length is 1 and group.adminPersons[0]._id is person._id
+
+    console.log "Group leave policy is " + group.leavePolicy
+    if group.leavePolicy is Group.POLICY.OPEN
+      Group.documents.update
+        _id: group._id
+      ,
+        $pull:
+          members:
+            _id: person._id
+    else
+      requestAdded = Group.documents.update
+        _id: group._id
+        'leaveRequests._id':
+          $ne: person._id
+      ,
+        $addToSet:
+          leaveRequests:
+            _id: person._id
+      # TODO: If requestAdded send e-mail to admins
+      requestAdded
+
+  'cancel-request-to-leave-group': (groupId) ->
+    console.log "Cancel request to leave group called"
+    check groupId, DocumentId
+    person = getValidPerson()
+    group = getValidGroup groupId, person
 
     Group.documents.update
       _id: group._id
-      'members._id': person._id
+      'leaveRequests._id': person._id
     ,
       $pull:
-        members:
+        leaveRequests:
           _id: person._id
 
 Meteor.publish 'groups-by-id', (groupId) ->
@@ -236,6 +324,42 @@ Meteor.publish 'my-groups', ->
       _id: @personId
     ,
       fields: _.extend Group.readAccessPersonFields()
+
+Meteor.publish 'my-join-requests', (groupId) ->
+  check groupId, DocumentId
+
+  @related (person) ->
+    return unless person?._id
+
+    Group.documents.find Group.requireReadAccessSelector(person,
+      _id: groupId,
+      'joinRequests._id': person._id
+    ),
+      fields: _.extend Group.PUBLISH_FIELDS().fields,
+        'joinRequests.$': 1
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
+
+Meteor.publish 'my-leave-requests', (groupId) ->
+  check groupId, DocumentId
+
+  @related (person) ->
+    return unless person?._id
+
+    Group.documents.find Group.requireReadAccessSelector(person,
+      _id: groupId,
+      'leaveRequests._id': person._id
+    ),
+      fields: _.extend Group.PUBLISH_FIELDS().fields,
+        'leaveRequests.$': 1
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'groups', (limit, filter, sortIndex) ->
   check limit, PositiveNumber
