@@ -14,7 +14,20 @@
       <li><a href="http://lists.peerlibrary.org/lists/info/news" class="newsletter">Newsletter</a></li>
       <li><a href="mailto:hello@peerlibrary.org">Contact</a></li>
     </ul>
+    {{> backgroundPause}}
   </footer>
+</template>
+
+<template name="backgroundPause">
+  <div class="background-pause">
+    <button>
+      {{#if backgroundPaused}}
+        Resume Background
+      {{else}}
+        Pause Background
+      {{/if}}
+    </button>
+  </div>
 </template>
 
 <template name="baseFooter">
