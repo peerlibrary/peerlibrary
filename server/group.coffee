@@ -119,7 +119,7 @@ Meteor.methods
     # We do not check here if member with given id exists because query checks
     requestDenied = Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
-      'joinRequests': memberId
+      'joinRequests._id': memberId
     ),
       $pull:
         joinRequests:
@@ -135,6 +135,7 @@ Meteor.methods
     check memberId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
+    throw new Meteor.Error 400, "Member is last remaining administrator of this group." if group.adminPersons.length is 1 and group.adminPersons[0]._id is memberId
 
     # We remove request to leave without checking because query checks
     requestApproved = Group.documents.update Group.requireAdminAccessSelector(person,
@@ -238,7 +239,6 @@ Meteor.methods
           joinRequests:
             _id: person._id
       # TODO: If requestAdded send e-mail to admins
-      console.log "Request added" if requestAdded
       requestAdded
 
   'cancel-request-to-join-group': (groupId) ->
