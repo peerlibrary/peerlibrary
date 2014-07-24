@@ -31,17 +31,15 @@
 
 <template name="groupMembership">
   {{#if currentPersonId}}
-    <h3 class="directory-title">Group membership</h3>
-    {{#if isMember}}
-      {{> groupExistingMembership}}
-    {{else}}
+    {{#unless isMember}}
+      <h3 class="directory-title">Group membership</h3>
       {{#if isPendingMember}}
         {{> groupPendingMembership}}
       {{else}}
         {{> groupNoMembership}}
       {{/if}}
-    {{/if}}
-    <br/><br/>
+      <br/><br/>
+    {{/unless}}
   {{/if}}
 </template>
 
@@ -56,10 +54,6 @@
 <template name="groupPendingMembership">
   You have requested membership in this group. Please wait for one of the group admins to approve your request.
   <button class="cancel-request-to-join-group">Cancel request</button>
-</template>
-
-<template name="groupExistingMembership">
-  <button class="leave-group">Leave group</button>
 </template>
 
 <template name="groupMembers">
@@ -80,24 +74,22 @@
 </template>
 
 <template name="groupRequests">
-  Join requests count: {{joinRequestsCount}}<br/>
-  Leave requests count: {{leaveRequestsCount}}<br/>
-  <br/>
-
   {{#if joinRequestsCount}}
     <h3> Requests to join group </h3>
-    {{#each joinRequests}}
-      {{> member}}
-      <button class="approve-request-to-join">Approve</button>
-    {{/each}}
+    <ol class="members member-list join-requests">
+      {{#each joinRequests}}
+        {{> request}}
+      {{/each}}
+    </ol>
   {{/if}}
 
   {{#if leaveRequestsCount}}
     <h3> Requests to leave group </h3>
-    {{#each leaveRequests}}
-      {{> member}}
-      <button class="approve-request-to-leave">Approve</button>
-    {{/each}}
+    <ol class="members member-list leave-requests">
+      {{#each leaveRequests}}
+        {{> member}}
+      {{/each}}
+    </ol>
   {{/if}}
 </template>
 
@@ -150,23 +142,27 @@
 <template name="groupDetails">
   {{#if canModify}}
     <h3>Tools</h3>
+    <p>
+      Join group policy:
+      <select class="group-join-policy">
+        <option value="{{POLICY.APPROVAL}}" {{#if isCurrentJoinPolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
+        <option value="{{POLICY.OPEN}}" {{#if isCurrentJoinPolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
+        <option value="{{POLICY.CLOSED}}" {{#if isCurrentJoinPolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
+      </select>
+    </p>
+    <p>
+      Leave group policy:
+      <select class="group-leave-policy">
+        <option value="{{POLICY.APPROVAL}}" {{#if isCurrentLeavePolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
+        <option value="{{POLICY.OPEN}}" {{#if isCurrentLeavePolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
+        <option value="{{POLICY.CLOSED}}" {{#if isCurrentLeavePolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
+      </select>
+    </p>
     {{#if canRemove}}
       <p>
         <button class="delete-group">Delete group</button>
         {{! TODO: Add confirmation or undo for this action }}
       </p>
     {{/if}}
-    <p>
-      Group membership policy is currently {{membershipPolicy}}.
-    </p>
-    <p>
-      Set it to:
-      <select class="group-membership-policy">
-        <option value="conditional"> Conditional </option>
-        <option value="open"> Open </option>
-        <option value="closed"> Closed </option>
-      </select>
-      <button class="set-membership-policy">Set</button>
-    </p>
   {{/if}}
 </template>
