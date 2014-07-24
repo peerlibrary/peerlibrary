@@ -45,7 +45,7 @@ class @Group extends ReadAccessDocument
       membersCount: @GeneratedField 'self', ['members']
       joinRequestsCount: @GeneratedField 'self', ['joinRequests'], (fields) -> [fields._id, fields.joinRequests?.length or 0]
       leaveRequestsCount: @GeneratedField 'self', ['leaveRequests'], (fields) -> [fields._id, fields.leaveRequests?.length or 0]
-     
+
     triggers: =>
       updatedAt: UpdatedAtTrigger ['name', 'members._id']
       # TODO: For now we are updating last activity of all persons in a group, but we might consider removing this and leave it to the "trending" view
