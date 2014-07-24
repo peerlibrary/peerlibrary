@@ -70,12 +70,16 @@
 <template name="personInlineItem">
   {{#spaceless}}
     <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
-      <i class="avatar icon-person" title="{{status}}">
-        <img src="{{avatar avatarSize}}"/>
-      </i>
+      {{> personAvatar}}
       <span class="name" title="{{displayName}}">{{displayName}}</span>
     </a>
   {{/spaceless}}
+</template>
+
+<template name="personAvatar">
+  <i class="avatar icon-person" title="{{status}}">
+    <img src="{{avatar avatarSize}}"/>
+  </i>
 </template>
 
 <template name="personCatalogItem">

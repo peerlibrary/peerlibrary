@@ -1307,6 +1307,12 @@ Template.annotationCommentsListItem.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.annotationCommentsListItem.author = ->
+  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  @author.avatarSize = 30
+  @author
+
 Template.annotationCommentEditor.created = ->
   @_scribe = null
 
@@ -1362,6 +1368,12 @@ Template.annotationCommentEditor.events
       $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
+
+Template.annotationCommentEditor.currentPerson = ->
+  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  _.extend Meteor.person(),
+    avatarSize: 30
 
 Template.annotationMetaMenu.events
   'click .remove-button': (e, template) ->

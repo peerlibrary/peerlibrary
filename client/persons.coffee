@@ -17,7 +17,7 @@ Template.persons.catalogSettings = ->
     filter: 'currentPersonsFilter'
     sort: 'currentPersonsSort'
 
-Template.personInlineItem.status = ->
+Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"
 
 Template.personCatalogItem.events =

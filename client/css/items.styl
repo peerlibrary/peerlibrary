@@ -1,5 +1,39 @@
 @import 'variables.import'
 
+/* Avatars
+========== */
+
+.avatar
+  position relative
+  display inline-block
+  text-align center
+
+  &.only-icon::after
+    content ""
+    display inline-block
+
+  img
+    position relative
+    z-index 1
+    vertical-align top
+    margin-right 1px
+    border-radius 3px
+
+  &::before
+    position absolute
+    left 50%
+    top 50%
+    margin -0.4em -0.5em 0
+    z-index 0
+
+  &.icon-person::before
+    /* This is fine tuned so the icons appear consistent in size */
+    font-size 1.07em
+
+  &.icon-group::before
+    /* This is fine tuned so the icons appear consistent in size */
+    font-size 1.53em
+
 /* Inline items
 =============== */
 
@@ -15,35 +49,8 @@
   text-overflow ellipsis
 
   .avatar
-    display inline-block
     height 100%
     margin-right 0.38em
-
-    &.only-icon::after
-      content ""
-      display inline-block
-
-    img
-      position relative
-      z-index 1
-      vertical-align top
-      padding-right 1px
-      border-radius 2px
-
-    &::before
-      position absolute
-      left 0
-      top 50%
-      margin -0.4em 0 0
-      z-index 0
-
-    &.icon-person::before
-      /* This is fine tuned so the icons appear consistent in size */
-      font-size 1.07em
-
-    &.icon-group::before
-      /* This is fine tuned so the icons appear consistent in size */
-      font-size 1.53em
 
   .name
     font-weight bold
