@@ -15,8 +15,13 @@ class @Person extends Person
         [fields._id, new Person(fields).getDisplayName()]
 
       fields.gravatarHash.generator = (fields) ->
-        address = fields.emails?[0]?.address
-        return [null, undefined] unless fields.person?._id and address
+        # Hash should come from user's email
+        source = fields.emails?[0]?.address
+
+        # Alternatively, if no email, use the display name
+        source = fields.person?.displayName unless source
+
+        return [null, undefined] unless fields.person?._id and source
         [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
 
       fields
