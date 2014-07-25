@@ -80,12 +80,12 @@
 
 <template name="annotationCatalogItem">
   <li class="catalog-item annotation">
-    <div class="details">
-      <p class="actionable">{{> personInlineItem author}} annotated {{> publicationInlineItem publication}}</p>
-      <blockquote>
-        {{{body}}}
-      </blockquote>
+    <blockquote class="body">
+      {{{body}}}
+    </blockquote>
 
+    <div class="details">
+      <p><i class="icon-person"></i> Annotated by <span class="actionable">{{> personInlineItem author}}</span> in <span class="actionable">{{> publicationInlineItem publication}}</span></p>
       {{#if commentsCount}}
         <p><i class="icon-comment"></i> {{commentsCountDescription}}</p>
       {{/if}}

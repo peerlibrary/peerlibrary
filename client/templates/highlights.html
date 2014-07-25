@@ -81,10 +81,10 @@
 <template name="highlightCatalogItem">
   <li class="catalog-item highlight">
     <div class="details">
-      <p class="actionable">{{> personInlineItem author}} highlighted in {{> publicationInlineItem publication}}</p>
       <blockquote>
         {{quote}}
       </blockquote>
+      <p class="actionable"><i class="icon-person"></i> Highlighted by {{> personInlineItem author}} in {{> publicationInlineItem publication}}</p>
     </div>
   </li>
 </template>
