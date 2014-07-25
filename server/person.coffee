@@ -22,7 +22,7 @@ class @Person extends Person
         source = fields.person?.displayName unless source
 
         return [null, undefined] unless fields.person?._id and source
-        [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+        [fields.person._id, crypto.createHash('md5').update(source).digest('hex')]
 
       fields
 
