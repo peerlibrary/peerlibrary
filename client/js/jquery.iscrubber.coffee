@@ -75,7 +75,7 @@ $.fn.iscrubber = (customOptions) ->
       switch activeDirection
         when DIRECTION.HORIZONTAL
           index = Math.ceil((e.pageX - $this.offset().left) / horizontalTrigger)
-        when activeDirection
+        when DIRECTION.VERTICAL
           index = Math.ceil((e.pageY - $this.offset().top) / verticalTrigger)
 
       index = Math.min(Math.max(index, 1), numberOfChildren)
