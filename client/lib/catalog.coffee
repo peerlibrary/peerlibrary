@@ -110,16 +110,16 @@ class @Catalog
         ]
         limit: Session.get variables.limit
 
-    templates.count?.documentsCount = ->
+    templates.count.documentsCount = ->
       Session.get variables.count
 
-    templates.count?.countDescription = ->
+    templates.count.countDescription = ->
       documentClass.verboseNameWithCount Session.get(variables.count)
 
-    templates.count?.noDocuments = ->
+    templates.count.noDocuments = ->
       Session.get(variables.ready) and not Session.get(variables.count)
 
-    templates.count?.documentsFilter = ->
+    templates.count.documentsFilter = ->
       Session.get variables.filter
 
     templates.loading.documentsLoading = ->
