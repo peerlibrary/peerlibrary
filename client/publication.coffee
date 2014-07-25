@@ -1127,7 +1127,7 @@ Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
 
 Template.publicationAnnotationsItem.author = ->
-  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
   # TODO: Change when Meteor allows sending parameters to templates
   @author.avatarSize = 30
   @author
@@ -1308,7 +1308,7 @@ Template.annotationCommentsListItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentsListItem.author = ->
-  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
   # TODO: Change when Meteor allows sending parameters to templates
   @author.avatarSize = 30
   @author
@@ -1370,7 +1370,7 @@ Template.annotationCommentEditor.events
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentEditor.currentPerson = ->
-  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
   # TODO: Change when Meteor allows sending parameters to templates
   _.extend Meteor.person(),
     avatarSize: 30
