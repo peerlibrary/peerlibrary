@@ -109,10 +109,10 @@
     <div class="details">
       {{> publicationCatalogItemTitle}}
 
-      <ol class="authors actionable">
+      <ol class="authors">
         {{#if authors.length}}
           {{#each authors}}
-            <li>{{> personInlineItem}}</li>
+            <li class="actionable">{{> personInlineItem}}</li>
           {{/each}}
         {{else}}
           <li><i>&lt;author metadata missing&gt;</i></li>
