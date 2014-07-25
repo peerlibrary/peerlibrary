@@ -36,8 +36,11 @@
       <button class="load-more">Load more</button>
     {{else}}
       {{#if publications}}
-        <p class="status">End of results reached.</p>
+        <p class="status">No more publications to display.</p>
        {{/if}}
+      {{#if persons}}
+        <p class="status">No more people to display.</p>
+      {{/if}}
     {{/if}}
   {{/if}}
 </template>
