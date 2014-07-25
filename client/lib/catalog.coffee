@@ -87,6 +87,9 @@ class @Catalog
         # Trigger scrolling to automatically start loading more results until whole screen is filled
         $(window).trigger('scroll')
 
+      # Focus on the filter
+      $(this.find '.filter input').focus()
+
     assert not templates.main.destroyed
     templates.main.destroyed = ->
       $(window).off '.directory'
