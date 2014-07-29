@@ -32,6 +32,11 @@ Template._loginButtons.events
     e.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
+# Autofocus username when login form is rendered
+Template._loginButtonsLoggedOutPasswordService.rendered = ->
+  console.log "Rendered fired"
+  $('#login-username-or-email').focus()
+
 $(document).on 'keyup', (e) ->
   if e.keyCode is 27 # Escape key
     Accounts._loginButtonsSession.closeDropdown()
