@@ -22,21 +22,21 @@ class @User extends BaseDocument
       updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
       lastActivity: LastActivityTrigger ['services']
 
-  @validateUsername = (username) ->
-    throw new Meteor.Error 400, "Username must be at least 3 characters long." unless username and username.length >= 3
+  @validateUsername = (username, field) ->
+    throw new FormError 400, "Username must be at least 3 characters long.", field unless username and username.length >= 3
 
-    throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test username
+    throw new FormError 400, "Username must contain only a-zA-Z0-9_- characters.", field unless USERNAME_REGEX.test username
 
-    throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test username
+    throw new FormError 400, "Username already exists.", field if FORBIDDEN_USERNAME_REGEX.test username
 
     # Check for unique username in a case insensitive manner.
     # We do not have to escape username because we have already
     # checked that it contains only a-zA-Z0-9_- characters.
-    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ username }$", 'i'
+    throw new FormError 400, "Username already exists.", field if User.documents.findOne username: new RegExp "^#{ username }$", 'i'
 
     # Username must not match any existing Person _id otherwise our queries for
     # Person documents querying both _id and slug would return multiple documents
-    throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: username
+    throw new FormError 400, "Username already exists.", field if Person.documents.findOne _id: username
 
-  @validatePassword = (password) ->
-    throw new Meteor.Error 400, "Password must be at least 6 characters long." unless password and password.length >= 6
+  @validatePassword = (password, field) ->
+    throw new FormError 400, "Password must be at least 6 characters long.", field unless password and password.length >= 6
