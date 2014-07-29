@@ -34,8 +34,11 @@ Template._loginButtons.events
 
 # Autofocus username when login form is rendered
 Template._loginButtonsLoggedOutPasswordService.rendered = ->
-  console.log "Rendered fired"
   $('#login-username-or-email').focus()
+
+# Autofocus e-mail when forgot password form is rendered
+Template._forgotPasswordForm.rendered = ->
+  $('#forgot-password-email').focus()
 
 $(document).on 'keyup', (e) ->
   if e.keyCode is 27 # Escape key
