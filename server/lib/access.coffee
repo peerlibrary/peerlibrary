@@ -45,45 +45,40 @@ createRemoveFromSetCommand = (set, personOrGroup, personOrGroupId) ->
 
   command
 
-setRole = (documentName, documentId, personOrGroup, personOrGroupId, role) ->
-  person = Meteor.person()
-  throw new Meteor.Error 401, "User not signed in." unless person
-
-  # TODO: Optimize, not all fields are necessary
-  document = accessDocuments[documentName].documents.findOne documentId
-  throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
+setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroupId, role) ->
+  assert currentPerson
 
   changesCount = 0
 
   # For private documents, grant read access together with admin/maintainer privileges
-  if document.access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+  if document.access is ACCESS.PRIVATE and role isnt null and role >= ROLES.READ_ACCESS
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createNotInSetQuery documentId, 'read', personOrGroup, personOrGroupId
     ), createAddToSetCommand 'read', personOrGroup, personOrGroupId
 
   if role is ROLES.MAINTAINER
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createNotInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
     ), createAddToSetCommand 'maintainer', personOrGroup, personOrGroupId
 
   if role is ROLES.ADMIN
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createNotInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
     ), createAddToSetCommand 'admin', personOrGroup, personOrGroupId
 
   # Only clear read access for private documents when specifically clearing all permissions
-  if document.access is ACCESS.PRIVATE and role < ROLES.READ_ACCESS
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+  if document.access is ACCESS.PRIVATE and role is null
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createInSetQuery documentId, 'read', personOrGroup, personOrGroupId
     ), createRemoveFromSetCommand 'read', personOrGroup, personOrGroupId
 
   if role isnt ROLES.MAINTAINER
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
     ), createRemoveFromSetCommand 'maintainer', personOrGroup, personOrGroupId
 
   if role isnt ROLES.ADMIN
-    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
       createInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
     ), createRemoveFromSetCommand 'admin', personOrGroup, personOrGroupId
 
@@ -97,14 +92,12 @@ Meteor.methods
     check personId, DocumentId
     check role, Match.Where (role) ->
       check role, Match.OneOf null, Match.Integer
-      return null <= role <= ROLES.ADMIN
+      return role is null or 0 <= role <= ROLES.ADMIN
 
-    person = Person.documents.findOne
-      _id: personId
-    # No need for hasReadAccess because persons are public
-    throw new Meteor.Error 400, "Invalid person." unless person
+    currentPerson = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless currentPerson
 
-    setRole documentName, documentId, 'Person', personId, role
+    !!setRole currentPerson, documentName, documentId, 'Person', personId, role
 
   'set-role-for-group': (documentName, documentId, groupId, role) ->
     check documentName, RegisteredForAccess
@@ -112,16 +105,12 @@ Meteor.methods
     check groupId, DocumentId
     check role, Match.Where (role) ->
       check role, Match.OneOf null, Match.Integer
-      return null <= role <= ROLES.ADMIN
+      return role is null or 0 <= role <= ROLES.ADMIN
 
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
+    currentPerson = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless currentPerson
 
-    group = Group.documents.findOne
-      _id: groupId
-    throw new Meteor.Error 400, "Invalid group." unless group?.hasReadAccess person
-
-    setRole documentName, documentId, 'Group', groupId, role
+    !!setRole currentPerson, documentName, documentId, 'Group', groupId, role
 
   'set-access': (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
@@ -131,12 +120,8 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
-
     if access is ACCESS.PRIVATE
-      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+      !!accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access
@@ -145,7 +130,7 @@ Meteor.methods
           access: access
 
     else
-      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+      !!accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access

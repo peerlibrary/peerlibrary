@@ -68,10 +68,10 @@ Template.accessMenuPrivacyForm.events
     else
       documentName = @constructor.Meta._name
 
-    Meteor.call 'set-access', documentName, @_id, access, (error, count) ->
+    Meteor.call 'set-access', documentName, @_id, access, (error, changed) ->
       return Notify.meteorError error, true if error
 
-      Notify.success "Access changed." if count
+      Notify.success "Access changed." if changed
 
     return # Make sure CoffeeScript does not return anything
 
@@ -197,10 +197,10 @@ changeRole = (data, newRole) ->
     documentName = data._parent.constructor.Meta._name
 
   # TODO: When will be possible to better access parent data context from event handler, we should use that
-  Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, count) =>
+  Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, changed) =>
     return Notify.meteorError error, true if error
 
-    notification() if count
+    notification() if changed
 
 Template.rolesControlRoleEditor.events
   'click .dropdown-trigger': (e, template) ->
