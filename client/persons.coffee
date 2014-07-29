@@ -36,7 +36,7 @@ Template.personCatalogItem.events =
     return if e.previousMousePosition and (Math.abs(e.previousMousePosition.pageX - e.pageX) > 1 or Math.abs(e.previousMousePosition.pageY - e.pageY) > 1)
 
     # Redirect user to the person
-    Meteor.Router.toNew Meteor.Router.personPath template.data.slug
+    Meteor.Router.toNew template.data.path()
 
 Template.personCatalogItem.avatarSize = ->
   100

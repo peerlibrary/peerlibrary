@@ -33,7 +33,8 @@ Template.annotationCatalogItem.events =
     return if e.previousMousePosition and (Math.abs(e.previousMousePosition.pageX - e.pageX) > 1 or Math.abs(e.previousMousePosition.pageY - e.pageY) > 1)
 
     # Redirect user to the annotation
-    Meteor.Router.toNew Meteor.Router.annotationIdPath template.data._id
+    console.log template.data
+    Meteor.Router.toNew template.data.path()
 
 Template.annotationCatalogItem.commentsCountDescription = ->
   Comment.verboseNameWithCount @commentsCount

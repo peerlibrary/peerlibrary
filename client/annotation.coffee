@@ -1,3 +1,24 @@
+class @Annotation extends Annotation
+  @Meta
+    name: 'Annotation'
+    replaceParent: true
+
+  # If we have the annotation and the publication available on the client,
+  # we can create full path directly, otherwise we have to use annotationIdPath
+  @pathFromId: (annotationId) ->
+    annotation = LocalAnnotation.documents.findOne annotationId
+
+    return Meteor.Router.annotationIdPath annotationId unless annotation
+
+    publication = Publication.documents.findOne annotation.publication._id
+
+    return Meteor.Router.annotationIdPath annotationId unless publication
+
+    Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+
+  path: ->
+    Annotation.pathFromId @_id
+
 # A special client-only document which mirrors Annotation document. Anything
 # added to it will not be stored to the server, but any changes to Annotation
 # document will be refleced in this client-only document.
@@ -63,18 +84,7 @@ Meteor.startup ->
   tags: []
   body: ''
 
-# If we have the annotation and the publication available on the client,
-# we can create full path directly, otherwise we have to use annotationIdPath
-Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
-  annotation = LocalAnnotation.documents.findOne annotationId
-
-  return Meteor.Router.annotationIdPath annotationId unless annotation
-
-  publication = Publication.documents.findOne annotation.publication._id
-
-  return Meteor.Router.annotationIdPath annotationId unless publication
-
-  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+Handlebars.registerHelper 'annotationPathFromId', LocalAnnotation.pathFromId
 
 # Optional annotation document
 Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->

@@ -69,7 +69,7 @@
 
 <template name="personInlineItem">
   {{#spaceless}}
-    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{personPathFromId _id slug}}"{{/unless}}>
+    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{path}}"{{/unless}}>
       {{> personAvatar}}
       <span class="name" title="{{displayName}}">{{displayName}}</span>
     </a>

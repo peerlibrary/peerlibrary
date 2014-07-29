@@ -1,3 +1,30 @@
+class @Person extends Person
+  @Meta
+    name: 'Person'
+    replaceParent: true
+
+  # We allow passing the person slug if caller knows it.
+  # If you do not know if you have an ID or a slug, you can pass
+  # it in as an ID and hopefully something useful will come out.
+  @pathFromId = (personId, slug) ->
+    person = Person.documents.findOne
+      $or: [
+        slug: personId
+      ,
+        _id: personId
+      ]
+
+    return Meteor.Router.personPath person.slug if person
+
+    # Even if did not find any person document, we still prefer slug over ID
+    return Meteor.Router.personPath slug if slug
+
+    # Otherwise use ID (which is maybe a slug) and let it be resolved later
+    Meteor.Router.personPath personId
+
+  path: ->
+    Person.pathFromId @_id, @slug
+
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -45,24 +72,7 @@ Handlebars.registerHelper 'currentPerson', (options) ->
 Handlebars.registerHelper 'currentPersonId', (options) ->
   Meteor.personId()
 
-# We allow passing the person slug if caller knows it.
-# If you do not know if you have an ID or a slug, you can pass
-# it in as an ID and hopefully something useful will come out.
-Handlebars.registerHelper 'personPathFromId', (personId, slug, options) ->
-  person = Person.documents.findOne
-    $or: [
-      slug: personId
-    ,
-      _id: personId
-    ]
-
-  return Meteor.Router.personPath person.slug if person
-
-  # Even if did not find any person document, we still prefer slug over ID
-  return Meteor.Router.personPath slug if slug
-
-  # Otherwise use ID (which is maybe a slug) and let it be resolved later
-  Meteor.Router.personPath personId
+Handlebars.registerHelper 'personPathFromId', Person.pathFromId
 
 # Optional person document.
 # If you do not know if you have an ID or a slug, you can pass
