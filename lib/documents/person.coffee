@@ -237,13 +237,17 @@ class @Person extends AccessDocument
     @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
+    document = super
+
     # We need to know _id to be able to add it to adminPersons
     assert document._id
 
+    # TODO: Temporary, while we do not yet have karma points
     if personId and personId not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
     if document._id not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push

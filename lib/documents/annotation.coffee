@@ -1,4 +1,4 @@
-class @Annotation extends ReadAccessDocument
+class @Annotation extends BasicAccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -185,15 +185,12 @@ class @Annotation extends ReadAccessDocument
   @applyDefaultAccess: (personId, document) ->
     document = super
 
-    if personId and personId not in _.pluck document.adminPersons, '_id'
-      document.adminPersons ?= []
-      document.adminPersons.push
-        _id: personId
-
     if document.author?._id and document.author._id not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: document.author._id
+
+    document = @_applyDefaultAccess personId, document
 
     # Grant read access to all groups inside which this annotation was shared
     document.inside ?= []

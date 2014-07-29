@@ -45,6 +45,10 @@ createRemoveFromSetCommand = (set, personOrGroup, personOrGroupId) ->
 
   command
 
+# When access is private, maintainers and admins should also be added to read access list
+# so that if access is changed to public and then their maintainer or admin permission is
+# revoked, they still retain read access if document is after all that switched back to
+# private access. This logic is matched in BasicAccessDocument._applyDefaultAccess method.
 setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroupId, role) ->
   assert currentPerson
 

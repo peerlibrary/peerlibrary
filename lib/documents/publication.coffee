@@ -1,4 +1,4 @@
-class @Publication extends ReadAccessDocument
+class @Publication extends BasicAccessDocument
   # access: 0 (private, Publication.ACCESS.PRIVATE), 1 (closed, Publication.ACCESS.CLOSED), 2 (open, Publication.ACCESS.OPEN)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -349,9 +349,12 @@ class @Publication extends ReadAccessDocument
   @applyDefaultAccess: (personId, document) ->
     document = super
 
+    # TODO: Temporary, while we do not yet have karma points
     if personId and personId not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
+    document = @_applyDefaultAccess personId, document
 
     document
