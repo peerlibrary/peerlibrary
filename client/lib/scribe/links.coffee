@@ -182,11 +182,11 @@ Scribe.plugins['link-prompt-command'] = (template) ->
         # be dragged around the page freely, but it is clipped by the
         # annotation list.
 
-        $dialogWrapper.on 'mouseenter', (e) =>
+        $dialogWrapper.on 'mouseenter', (event) =>
           $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [annotationId] if annotationId
           return # Make sure CoffeeScript does not return anything
 
-        $dialogWrapper.on 'mouseleave', (e, highlightId) =>
+        $dialogWrapper.on 'mouseleave', (event, highlightId) =>
           $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [annotationId] if annotationId
           return # Make sure CoffeeScript does not return anything
 

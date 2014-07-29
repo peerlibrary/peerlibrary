@@ -76,9 +76,9 @@ Template.collectionPublications.rendered = ->
     opacity: 0.5
     cursor: 'ns-resize'
     axis: 'y'
-    update: (e, ui) ->
+    update: (event, ui) ->
       newOrder = []
-      $(e.target).children('li').each (index, element) ->
+      $(event.target).children('li').each (index, element) ->
         newOrder.push $(element).data('publication-id')
 
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
@@ -91,7 +91,7 @@ Template.collectionDetails.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionDetails.events
-  'click .delete-collection': (e, template) ->
+  'click .delete-collection': (event, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
       Notify.meteorError error, true if error
 
@@ -110,7 +110,7 @@ Template.publicationLibraryMenuButtons.inCurrentCollection = ->
     'publications._id': @_id
 
 Template.publicationLibraryMenuButtons.events
-  'click .remove-from-current-collection': (e, template) ->
+  'click .remove-from-current-collection': (event, template) ->
     return unless Meteor.personId()
 
     collection = Collection.documents.findOne
