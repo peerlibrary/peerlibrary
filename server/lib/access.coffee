@@ -10,42 +10,42 @@ RegisteredForAccess = Match.Where (documentName) ->
   check documentName, String
   accessDocuments.hasOwnProperty documentName
 
-createNotInSetQuery = (documentId, set, personOrGroupName, personOrGroupId) ->
+createNotInSetQuery = (documentId, set, personOrGroup, personOrGroupId) ->
   query =
     _id: documentId
 
-  query["#{ set }#{ personOrGroupName }s._id"] =
+  query["#{ set }#{ personOrGroup }s._id"] =
     $ne: personOrGroupId
 
   query
 
-createAddToSetCommand = (set, personOrGroupName, personOrGroupId) ->
+createAddToSetCommand = (set, personOrGroup, personOrGroupId) ->
   command =
     $addToSet: {}
 
-  command.$addToSet["#{ set }#{ personOrGroupName }s"] =
+  command.$addToSet["#{ set }#{ personOrGroup }s"] =
     _id: personOrGroupId
 
   command
 
-createInSetQuery = (documentId, set, personOrGroupName, personOrGroupId) ->
+createInSetQuery = (documentId, set, personOrGroup, personOrGroupId) ->
   query =
     _id: documentId
 
-  query["#{ set }#{ personOrGroupName }s._id"] = personOrGroupId
+  query["#{ set }#{ personOrGroup }s._id"] = personOrGroupId
 
   query
 
-createRemoveFromSetCommand = (set, personOrGroupName, personOrGroupId) ->
+createRemoveFromSetCommand = (set, personOrGroup, personOrGroupId) ->
   command =
     $pull: {}
 
-  command.$pull["#{ set }#{ personOrGroupName }s"] =
+  command.$pull["#{ set }#{ personOrGroup }s"] =
     _id: personOrGroupId
 
   command
 
-setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) ->
+setRole = (documentName, documentId, personOrGroup, personOrGroupId, role) ->
   person = Meteor.person()
   throw new Meteor.Error 401, "User not signed in." unless person
 
@@ -58,34 +58,34 @@ setRole = (documentName, documentId, personOrGroupName, personOrGroupId, role) -
   # For private documents, grant read access together with admin/maintainer privileges
   if document.access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createNotInSetQuery documentId, 'read', personOrGroupName, personOrGroupId
-    ), createAddToSetCommand 'read', personOrGroupName, personOrGroupId
+      createNotInSetQuery documentId, 'read', personOrGroup, personOrGroupId
+    ), createAddToSetCommand 'read', personOrGroup, personOrGroupId
 
   if role is ROLES.MAINTAINER
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createNotInSetQuery documentId, 'maintainer', personOrGroupName, personOrGroupId
-    ), createAddToSetCommand 'maintainer', personOrGroupName, personOrGroupId
+      createNotInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
+    ), createAddToSetCommand 'maintainer', personOrGroup, personOrGroupId
 
   if role is ROLES.ADMIN
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createNotInSetQuery documentId, 'admin', personOrGroupName, personOrGroupId
-    ), createAddToSetCommand 'admin', personOrGroupName, personOrGroupId
+      createNotInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
+    ), createAddToSetCommand 'admin', personOrGroup, personOrGroupId
 
   # Only clear read access for private documents when specifically clearing all permissions
   if document.access is ACCESS.PRIVATE and role < ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createInSetQuery documentId, 'read', personOrGroupName, personOrGroupId
-    ), createRemoveFromSetCommand 'read', personOrGroupName, personOrGroupId
+      createInSetQuery documentId, 'read', personOrGroup, personOrGroupId
+    ), createRemoveFromSetCommand 'read', personOrGroup, personOrGroupId
 
   if role isnt ROLES.MAINTAINER
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createInSetQuery documentId, 'maintainer', personOrGroupName, personOrGroupId
-    ), createRemoveFromSetCommand 'maintainer', personOrGroupName, personOrGroupId
+      createInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
+    ), createRemoveFromSetCommand 'maintainer', personOrGroup, personOrGroupId
 
   if role isnt ROLES.ADMIN
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      createInSetQuery documentId, 'admin', personOrGroupName, personOrGroupId
-    ), createRemoveFromSetCommand 'admin', personOrGroupName, personOrGroupId
+      createInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
+    ), createRemoveFromSetCommand 'admin', personOrGroup, personOrGroupId
 
   changesCount
 
