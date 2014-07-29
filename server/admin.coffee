@@ -158,8 +158,8 @@ Meteor.methods
       finishPDF = ->
         ArXivPDF.documents.update fileObj._id, $set: processingEnd: moment.utc().toDate()
 
-      Meteor.bindEnvironment processPDF, ((e) -> throw e), @
-      Meteor.bindEnvironment finishPDF, ((e) -> throw e), @
+      Meteor.bindEnvironment processPDF, ((error) -> throw error), @
+      Meteor.bindEnvironment finishPDF, ((error) -> throw error), @
 
       processTar = blocking (key, fun, cb) ->
         finished = false
