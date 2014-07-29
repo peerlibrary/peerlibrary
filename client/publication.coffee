@@ -553,8 +553,9 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Deps.autorun ->
-  publicationSubscribing() # To register dependency
-  return unless publicationHandle?.ready()
+  # The publication needs to loaded before we allow to annotate it.
+  return unless Session.get 'currentPublicationId'
+  return unless Publication.documents.findOne Session.get 'currentPublicationId'
 
   # Enough is to check if user is logged in. Check if user has
   # read access to the publication is made on the server side.
