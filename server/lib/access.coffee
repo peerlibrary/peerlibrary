@@ -51,9 +51,10 @@ setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroup
   changesCount = 0
 
   # For private documents, grant read access together with admin/maintainer privileges
-  if document.access is ACCESS.PRIVATE and role isnt null and role >= ROLES.READ_ACCESS
+  if role isnt null and role >= ROLES.READ_ACCESS
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
-      createNotInSetQuery documentId, 'read', personOrGroup, personOrGroupId
+      _.extend createNotInSetQuery(documentId, 'read', personOrGroup, personOrGroupId),
+        access: ACCESS.PRIVATE
     ), createAddToSetCommand 'read', personOrGroup, personOrGroupId
 
   if role is ROLES.MAINTAINER
@@ -67,9 +68,10 @@ setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroup
     ), createAddToSetCommand 'admin', personOrGroup, personOrGroupId
 
   # Only clear read access for private documents when specifically clearing all permissions
-  if document.access is ACCESS.PRIVATE and role is null
+  if role is null
     changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
-      createInSetQuery documentId, 'read', personOrGroup, personOrGroupId
+      _.extend createInSetQuery(documentId, 'read', personOrGroup, personOrGroupId),
+        access: ACCESS.PRIVATE
     ), createRemoveFromSetCommand 'read', personOrGroup, personOrGroupId
 
   if role isnt ROLES.MAINTAINER
