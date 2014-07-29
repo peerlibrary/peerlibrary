@@ -253,7 +253,7 @@ class @ReadAccessDocument extends AccessDocument
       readGroups: 1
 
   @defaultAccess: ->
-    @ACCESS.PUBLIC
+    @ACCESS.PRIVATE
 
   @applyDefaultAccess: (personId, document) ->
     document = super

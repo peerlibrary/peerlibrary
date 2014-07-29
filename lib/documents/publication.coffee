@@ -346,9 +346,6 @@ class @Publication extends ReadAccessDocument
       adminPersons: 1
       adminGroups: 1
 
-  @defaultAccess: ->
-    @ACCESS.OPEN
-
   @applyDefaultAccess: (personId, document) ->
     document = super
 

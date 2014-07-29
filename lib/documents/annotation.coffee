@@ -182,9 +182,6 @@ class @Annotation extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
-  @defaultAccess: ->
-    @ACCESS.PRIVATE
-
   @applyDefaultAccess: (personId, document) ->
     document = super
 
