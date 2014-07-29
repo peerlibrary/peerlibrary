@@ -2,7 +2,7 @@
   <br/><br/><br/>
   {{#if person}}
     <h1>{{person.displayName}} personal settings</h1>
-    {{#if usernameNotSet}}
+    {{#if usernameExists}}
       {{> settingsUsername}}<br/><br/>
     {{/if}}
     {{> settingsPassword}}
@@ -11,31 +11,59 @@
 
 <template name="settingsUsername">
   <form id="set-username">
-    <label for="username">Username</label>
-    <input type="text" id="username" /><br/>
-    {{> settingsMessages messages}}
-    <button class="set-username">Set username</button>
+    <div class="form-control-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" {{#unless isValid "username"}}class="invalid"{{/unless}} />
+      {{#with message "username"}}
+        {{> formMessage}}<br/>
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <button class="set-username">Set username</button>
+      {{> formMessage message}}
+    </div>
   </form>
 </template>
 
 <template name="settingsPassword">
   <form id="set-password">
-    <label for="current-password">Current password</label>
-    <input type="password" id="current-password" /><br/>
-    <label for="new-password">New password</label>
-    <input type="password" id="new-password" /><br/>
-    <label for="new-password-confirm">Confirm new password</label>
-    <input type="password" id="new-password-confirm" /><br/>
-    {{> settingsMessages messages}}
-    <button class="change-password">Change password</button>
-    </form>
+    <div class="form-control-group">
+      <label for="current-password">Current password</label>
+      <input type="password" id="current-password" {{#unless isValid "current-password"}}class="invalid"{{/unless}} />
+      {{#with message "current-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <label for="new-password">New password</label>
+      <input type="password" id="new-password" {{#unless isValid "new-password"}}class="invalid"{{/unless}} />
+      {{#with message "new-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <label for="new-password-confirmation">Confirm new password</label>
+      <input type="password" id="new-password-confirmation" {{#unless isValid "new-password-confirmation"}}class="invalid"{{/unless}} />
+      {{#with message "new-password-confirmation"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <button class="change-password">Change password</button>
+      {{> formMessage message}}
+    </div>
+  </form>
 </template>
 
-<template name="settingsMessages">
+<template name="formMessage">
   {{#if errorMessage}}
-    <div class = "message error-message">{{errorMessage}}</div>
+    <div class = "form-message error">{{errorMessage}}</div>
   {{/if}}
   {{#if infoMessage}}
-    <div class = "message info-message">{{infoMessage}}</div>
+    <div class = "form-message info">{{infoMessage}}</div>
   {{/if}}
 </template>
