@@ -34,15 +34,16 @@ jobQueue = ->
   return if queueRunning
   queueRunning = true
 
-  while job = JobQueue.Meta.collection.getWork _.keys Job.types
-    try
-      result = new Job.types[job.type](job.data).run()
-    catch error
-      job.fail error
-      continue
-    job.done result
+  Meteor.defer ->
+    while job = JobQueue.Meta.collection.getWork _.keys Job.types
+      try
+        result = new Job.types[job.type](job.data).run()
+      catch error
+        job.fail error
+        continue
+      job.done result
 
-  queueRunning = false
+    queueRunning = false
 
 Meteor.startup ->
   # TODO: Use Meteor's logging package for logging
