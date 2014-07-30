@@ -22,8 +22,8 @@ Template.groups.catalogSettings = ->
     sort: 'currentGroupsSort'
 
 Template.groups.events
-  'submit .add-group': (e, template) ->
-    e.preventDefault()
+  'submit .add-group': (event, template) ->
+    event.preventDefault()
 
     name = $(template.findAll '.name').val().trim()
     return unless name

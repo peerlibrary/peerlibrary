@@ -9,10 +9,10 @@ Template.catalogSort.field = ->
   @documentClass.PUBLISH_CATALOG_SORT[index].name
 
 Template.catalogSort.events
-  'click .dropdown-trigger': (e, template) ->
+  'click .dropdown-trigger': (event, template) ->
     # Make sure only the trigger toggles the dropdown, by
     # excluding clicks inside the content of this dropdown
-    return if $.contains template.find('.dropdown-anchor'), e.target
+    return if $.contains template.find('.dropdown-anchor'), event.target
 
     $(template.findAll '.dropdown-anchor').toggle()
 
@@ -28,14 +28,14 @@ Template.catalogSortSelection.options = ->
     sorting
 
 Template.catalogSortOption.events
-  'click button': (e, template) ->
+  'click button': (event, template) ->
     Session.set @_parent.variables.sort, @_index
     $(template.firstNode).closest('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
 Template.catalogFilter.events
-  'keyup .filter input': (e, template) ->
+  'keyup .filter input': (event, template) ->
     filter = $(template.findAll '.filter input').val()
     Session.set template.data.variables.filter, filter
 
@@ -127,8 +127,8 @@ class @Catalog
       Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
 
     templates.loading.events
-      'click .load-more': (e, template) ->
-        e.preventDefault()
+      'click .load-more': (event, template) ->
+        event.preventDefault()
         limitIncreasing = false # We want to force loading more in every case
         increaseLimit LIMIT_INCREASE_STEP
 

@@ -4,7 +4,7 @@ onAccessDropdownHidden = (event) ->
   $button.addClass('tooltip')
 
 accessButtonEventHandlers =
-  'click .access-button': (e, template) ->
+  'click .access-button': (event, template) ->
     $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
     $anchor.toggle()
 
@@ -57,7 +57,7 @@ Template.accessMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessMenuPrivacyForm.events
-  'change .access input:radio': (e, template) ->
+  'change .access input:radio': (event, template) ->
     access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
     return if access is @access
@@ -75,14 +75,14 @@ Template.accessMenuPrivacyForm.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseenter .access .selection': (e, template) ->
-    accessHover = $(e.currentTarget).find('input').val()
+  'mouseenter .access .selection': (event, template) ->
+    accessHover = $(event.currentTarget).find('input').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseleave .access .selections': (e, template) ->
+  'mouseleave .access .selections': (event, template) ->
     accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
@@ -203,34 +203,34 @@ changeRole = (data, newRole) ->
     notification() if changed
 
 Template.rolesControlRoleEditor.events
-  'click .dropdown-trigger': (e, template) ->
+  'click .dropdown-trigger': (event, template) ->
     # Make sure only the trigger toggles the dropdown, by
     # excluding clicks inside the content of this dropdown
-    return if $.contains template.find('.dropdown-anchor'), e.target
+    return if $.contains template.find('.dropdown-anchor'), event.target
 
     $(template.findAll '.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .administrator-button': (e, template) ->
+  'click .administrator-button': (event, template) ->
     changeRole @, ROLES.ADMIN
     $(template.findAll '.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .maintainer-button': (e, template) ->
+  'click .maintainer-button': (event, template) ->
     changeRole @, ROLES.MAINTAINER
     $(template.findAll '.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .read-access-button': (e, template) ->
+  'click .read-access-button': (event, template) ->
     changeRole @, ROLES.READ_ACCESS
     $(template.findAll '.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .remove-button': (e, template) ->
+  'click .remove-button': (event, template) ->
     changeRole @, null
     $(template.findAll '.dropdown-anchor').hide()
 
@@ -249,8 +249,8 @@ Template.rolesControlRoleEditor.canModifyAccess = ->
   @_parent.hasAdminAccess Meteor.person @_parent.constructor.adminAccessPersonFields()
 
 Template.rolesControlAdd.events
-  'change .add-access, keyup .add-access': (e, template) ->
-    e.preventDefault()
+  'change .add-access, keyup .add-access': (event, template) ->
+    event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
     @_query.set $(template.findAll '.add-access').val()
@@ -348,7 +348,7 @@ grantAccess = (document, personOrGroup) ->
   changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
 Template.rolesControlNoResults.events
-  'click .add-and-invite': (e, template) ->
+  'click .add-and-invite': (event, template) ->
 
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
@@ -424,8 +424,7 @@ Template.rolesControlResultsItem.ifPerson = (options) ->
     options.inverse @
 
 Template.rolesControlResultsItem.events
-  'click .add-button': (e, template) ->
-
+  'click .add-button': (event, template) ->
     # TODO: When will be possible to better access parent data context from event handler, we should use that
     grantAccess @_parent, @
 
