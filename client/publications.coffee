@@ -21,8 +21,8 @@ Template.publications.catalogSettings = ->
     sort: 'currentPublicationsSort'
 
 Template.publicationCatalogItem.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
+  'click .preview-link': (event, template) ->
+    event.preventDefault()
 
     if template._publicationHandle
       # We ignore the click if handle is not yet ready
@@ -95,7 +95,7 @@ Template.publicationCatalogItemLibraryMenu.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
 
 Template.publicationCatalogItemLibraryMenu.events
-  'click .toolbar-button': (e, template) ->
+  'click .toolbar-button': (event, template) ->
 
     $anchor = $(template.findAll '.dropdown-anchor')
     $anchor.toggle()
@@ -152,11 +152,11 @@ Editable.template Template.publicationCatalogItemTitle, ->
 Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.publicationCatalogItemThumbnail.events
-  'mouseenter li': (e, template) ->
+  'mouseenter li': (event, template) ->
     # Update page tooltip with current scrubbed over page
     $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
 
-  'click li': (e, template) ->
+  'click li': (event, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
     publication = @publication

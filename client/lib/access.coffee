@@ -1,5 +1,5 @@
 Template.accessControl.events
-  'change .access input:radio': (e, template) ->
+  'change .access input:radio': (event, template) ->
     access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
 
     return if access is @access
@@ -17,14 +17,14 @@ Template.accessControl.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseenter .access .selection': (e, template) ->
-    accessHover = $(e.currentTarget).find('input').val()
+  'mouseenter .access .selection': (event, template) ->
+    accessHover = $(event.currentTarget).find('input').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
-  'mouseleave .access .selections': (e, template) ->
+  'mouseleave .access .selections': (event, template) ->
     accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
     $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
@@ -56,8 +56,8 @@ Template.privateAccessControl.destroyed = ->
   @_personsInvitedHandle = null
 
 Template.privateAccessControlAdd.events
-  'change .add-access, keyup .add-access': (e, template) ->
-    e.preventDefault()
+  'change .add-access, keyup .add-access': (event, template) ->
+    event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
     @_query.set $(template.findAll '.add-access').val()
@@ -160,7 +160,7 @@ grantAccess = (document, personOrGroup) ->
     Notify.success "#{ _.capitalize personOrGroup.constructor.verboseName() } added." if count
 
 Template.privateAccessControlNoResults.events
-  'click .add-and-invite': (e, template) ->
+  'click .add-and-invite': (event, template) ->
 
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
@@ -230,7 +230,7 @@ Template.privateAccessControlResults.results = ->
     result
 
 Template.privateAccessControlList.events
-  'click .remove-button': (e, template) ->
+  'click .remove-button': (event, template) ->
     if @ instanceof Person
       methodName = 'revoke-read-access-for-person'
     else if @ instanceof Group
@@ -273,7 +273,7 @@ Template.privateAccessControlResultsItem.ifPerson = (options) ->
     options.inverse @
 
 Template.privateAccessControlResultsItem.events
-  'click .add-button': (e, template) ->
+  'click .add-button': (event, template) ->
 
     # TODO: When will be possible to better access parent data context from event handler, we should use that
     grantAccess @_parent, @

@@ -27,5 +27,7 @@ Meteor.publish 'latest-blog-post', ->
       'tumblr.timestamp': -1
     fields: BlogPost.PUBLISH_FIELDS().fields
 
-BlogPost.Meta.collection._ensureIndex 'foreignId',
+BlogPost.Meta.collection._ensureIndex
+  foreignId: 1
+,
   unique: 1

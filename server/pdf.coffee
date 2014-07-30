@@ -3,7 +3,7 @@ fs = Npm.require 'fs'
 DEBUG = false
 
 bindEnvironemnt = (f) ->
-  Meteor.bindEnvironment f, (e) -> throw e
+  Meteor.bindEnvironment f, (error) -> throw error
 
 PDF =
   process: (pdfFile, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback) ->

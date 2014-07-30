@@ -70,7 +70,7 @@ class @VisibleTimeout extends @PausableTimeout
 Meteor.startup ->
   pausedTimeouts = []
 
-  Visibility.change (e, state) ->
+  Visibility.change (event, state) ->
     if state is 'hidden'
       pausedTimeouts = _.values visibleTimeouts
       timeout.pause() for timeout in pausedTimeouts

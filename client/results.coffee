@@ -99,8 +99,8 @@ Template.resultsLoad.publications = ->
   Session.get 'currentSearchQueryCountPublications'
 
 Template.resultsLoad.events =
-  'click .load-more': (e, template) ->
-    e.preventDefault()
+  'click .load-more': (event, template) ->
+    event.preventDefault()
     searchLimitIncreasing = false # We want to force loading more in every case
     increaseSearchLimit 10
 
@@ -170,28 +170,28 @@ sidebarIntoQuery = (template) ->
   general: $(template.findAll '#general').val()
 
 Template.sidebarSearch.events =
-  'blur #general': (e, template) ->
+  'blur #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'change #general': (e, template) ->
+  'change #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'keyup #general': (e, template) ->
+  'keyup #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'paste #general': (e, template) ->
+  'paste #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'cut #general': (e, template) ->
+  'cut #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'submit #sidebar-search': (e, template) ->
-    e.preventDefault()
+  'submit #sidebar-search': (event, template) ->
+    event.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
