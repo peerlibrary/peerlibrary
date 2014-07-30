@@ -109,7 +109,7 @@ Template._enrollAccountDialog.events
     event.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
- 'click #login-buttons-enroll-account-with-username-button': (event, template) ->
+  'click #login-buttons-enroll-account-with-username-button': (event, template) ->
     event.preventDefault()
     enrollAccount()
     return # Make sure CoffeeScript does not return anything
