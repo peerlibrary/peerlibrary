@@ -6,17 +6,17 @@ DIALOG_VARIABLES =
   INVITE: 'inviteDialogActive'
 
 # To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
-$(document).on 'click focus keypress', (e) ->
+$(document).on 'click focus keypress', (event) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   for key, variable of DIALOG_VARIABLES
-    Session.set variable, false unless variable is e.originalEvent?.preserveDialogVariable
+    Session.set variable, false unless variable is event.originalEvent?.preserveDialogVariable
 
   return # Make sure CoffeeScript does not return anything
 
 # Close all dialogs with escape key
-$(document).on 'keyup', (e) ->
-  if e.keyCode is 27
+$(document).on 'keyup', (event) ->
+  if event.keyCode is 27
     Session.set variable, false for key, variable of DIALOG_VARIABLES
 
   return # Make sure CoffeeScript does not return anything
@@ -25,12 +25,12 @@ $(document).on 'keyup', (e) ->
 # ===========================
 
 Template.footer.events
-  'click .newsletter': (e, template) ->
+  'click .newsletter': (event, template) ->
     # Return if not a normal click (maybe user wants to open a link in a tab)
-    return if e.altKey or e.ctrlKey or e.metaKey or e.shiftKey
-    return unless e.which is 1 # Left mouse button
+    return if event.altKey or event.ctrlKey or event.metaKey or event.shiftKey
+    return unless event.which is 1 # Left mouse button
 
-    e.preventDefault()
+    event.preventDefault()
     Session.set 'newsletterDialogActive', true
     Session.set 'newsletterDialogError', null
 
@@ -44,8 +44,8 @@ Template.footer.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .newsletter, focus .newsletter, keypress .newsletter': (e, template) ->
-    e.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
+  'click .newsletter, focus .newsletter, keypress .newsletter': (event, template) ->
+    event.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
 Template.newsletterDialog.displayed = ->
@@ -62,12 +62,12 @@ Template.newsletterDialog.events
 # We have to bind directly to newsletter-dialog to intercept click on the parent
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but newsletter-dialog handler is.
-  'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (e, template) ->
-    e.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
+  'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (event, template) ->
+    event.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
-  'submit .newsletter-subscribe': (e, template) ->
-    e.preventDefault()
+  'submit .newsletter-subscribe': (event, template) ->
+    event.preventDefault()
     return if Session.get 'newsletterDialogSubscribing'
 
     email = $(template.findAll '#newsletter-dialog-email').val()
@@ -102,7 +102,7 @@ Template.newsletterDialog.events
 # =============
 
 Template._loginButtonsLoggedInDropdownActions.events
-  'click .invite-button': (e, template) ->
+  'click .invite-button': (event, template) ->
     Session.set 'inviteDialogActive', true
     Session.set 'inviteDialogError', null
 
@@ -114,8 +114,8 @@ Template._loginButtonsLoggedInDropdownActions.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .invite-button, focus .invite-button, keypress .invite-button': (e, template) ->
-    e.preserveDialogVariable = DIALOG_VARIABLES.INVITE
+  'click .invite-button, focus .invite-button, keypress .invite-button': (event, template) ->
+    event.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
 Template.inviteDialog.displayed = ->
@@ -132,12 +132,12 @@ Template.inviteDialog.events
 # We have to bind directly to invite-dialog to intercept click on the parent
 # element of all and not directly on child elements. For example, when input is
 # disabled, its click handler is not called, but invite-dialog handler is.
-  'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (e, template) ->
-    e.preserveDialogVariable = DIALOG_VARIABLES.INVITE
+  'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (event, template) ->
+    event.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
-  'submit .invite-send': (e, template) ->
-    e.preventDefault()
+  'submit .invite-send': (event, template) ->
+    event.preventDefault()
     return if Session.get 'inviteDialogSending'
 
     email = $(template.findAll '#invite-dialog-email').val().trim()

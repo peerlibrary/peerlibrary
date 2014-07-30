@@ -89,12 +89,12 @@ class @Annotator extends Annotator
   _setupDocumentEvents: =>
     # Overridden
 
-    $(document).on 'mousedown.annotator': (e) =>
+    $(document).on 'mousedown.annotator': (event) =>
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
-      if e.which is 1 and $(e.target).closest('.display-page').length
-        inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
+      if event.which is 1 and $(event.target).closest('.display-page').length
+        inAnySelectedHighlight = @_inAnySelectedHighlight event.clientX, event.clientY
 
         # If mousedown happened outside any selected highlight, we deselect highlights,
         # but we leave location unchanged so that on a new possible new highlight we
@@ -105,10 +105,10 @@ class @Annotator extends Annotator
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
-        @checkForStartSelection e
+        @checkForStartSelection event
 
       # Left mouse button and mousedown happened on an annotation
-      else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
+      else if event.which is 1 and $(event.target).closest('.annotations-list .annotation').length
         # If mousedown happened inside an annotation, we deselect highlights,
         # but we leave location unchanged so that we update location to the
         # annotation location without going through a publication-only location.
@@ -120,7 +120,7 @@ class @Annotator extends Annotator
 
       return # Make sure CoffeeScript does not return anything
 
-    $(document).on 'mousemove.annotator': (e) =>
+    $(document).on 'mousemove.annotator': (event) =>
       # We started moving for a new selection, so deselect any selected highlight
       if @mouseIsDown and @mouseStartingInsideSelectedHighlight
         # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible

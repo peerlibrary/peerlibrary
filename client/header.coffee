@@ -1,38 +1,38 @@
 Template.header.events =
-  'click .top-menu .search': (e, template) ->
+  'click .top-menu .search': (event, template) ->
     # Only if focused on no-index header
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .search-input': (e, template) ->
+  'click .search-input': (event, template) ->
     # Only if focused on no-index header
     if Template.header.noIndexHeader()
       Session.set 'searchFocused', true
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .search-button': (e, template) ->
+  'click .search-button': (event, template) ->
     Session.set 'searchActive', true
     generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-  'blur .search-input': (e, template) ->
+  'blur .search-input': (event, template) ->
     Session.set 'searchFocused', false
     generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-  'change .search-input': (e, template) ->
+  'change .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup .search-input': (e, template) ->
+  'keyup .search-input': (event, template) ->
     val = $(template.findAll '.search-input').val()
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
@@ -44,22 +44,22 @@ Template.header.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'paste .search-input': (e, template) ->
+  'paste .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-  'cut .search-input': (e, template) ->
+  'cut .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
     generalQueryChange $(template.findAll '.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-  'submit #search': (e, template) ->
-    e.preventDefault()
+  'submit #search': (event, template) ->
+    event.preventDefault()
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
@@ -83,10 +83,11 @@ Template.searchInput.created = ->
   @_searchQueryHandle = null
 
 Template.searchInput.rendered = ->
-  # We make sure search input is focused if we know it should be focused (to make sure focus is retained between redraws)
-  # Additionally, HTML5 autofocus does not work properly when routing back to / after initial load, so we focus if we are displaying index header
-  # Don't try to focus if reset password is in progress
-  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get 'resetPasswordToken'
+  # We make sure search input is focused if we know it should be focused (to make sure focus is
+  # retained between redraws). We don't use HTML5 autofocus because it takes focus away from dialogs.
+  # We focus search if we are displaying index header. Don't try to focus if reset password or enroll
+  # user is in progress.
+  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
     $(@findAll '.search-input').focus()
 
   @_searchQueryHandle?.stop()

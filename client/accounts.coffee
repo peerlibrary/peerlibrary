@@ -15,10 +15,10 @@ changingPasswordInResetPassword = false
 changingPasswordInEnrollAccount = false
 
 # To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
-$(document).on 'click focus keypress', (e) ->
+$(document).on 'click focus keypress', (event) ->
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
-  unless e.originalEvent?.accountsDialogBoxEvent
+  unless event.originalEvent?.accountsDialogBoxEvent
     Accounts._loginButtonsSession.closeDropdown()
     Accounts._loginButtonsSession.set 'resetPasswordToken', null
     Accounts._loginButtonsSession.set 'enrollAccountToken', null
@@ -28,12 +28,24 @@ $(document).on 'click focus keypress', (e) ->
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template._loginButtons.events
-  'click #login-buttons, focus #login-buttons, keypress #login-buttons': (e, template) ->
-    e.accountsDialogBoxEvent = true
+  'click #login-buttons, focus #login-buttons, keypress #login-buttons': (event, template) ->
+    event.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-$(document).on 'keyup', (e) ->
-  if e.keyCode is 27 # Escape key
+# Autofocus username when login form is rendered
+Template._loginButtonsLoggedOutPasswordService.rendered = ->
+  $('#login-username-or-email').focus()
+
+# Autofocus e-mail when forgot password form is rendered
+Template._forgotPasswordForm.rendered = ->
+  $('#forgot-password-email').focus()
+
+# Autofocus password when enroll user form is rendered
+Template._enrollAccountDialog.rendered = ->
+  $('#enroll-account-password').focus()
+
+$$(document).on 'keyup', (event) ->
+  if event.keyCode is 27 # Escape key
     Accounts._loginButtonsSession.closeDropdown()
     Accounts._loginButtonsSession.set 'resetPasswordToken', null
     Accounts._loginButtonsSession.set 'enrollAccountToken', null
@@ -43,28 +55,28 @@ $(document).on 'keyup', (e) ->
 
 # Don't allow dropping files while password reset is in progress
 Template._resetPasswordDialog.events
-  'dragover, dragleave': (e, template) ->
-    e.preventDefault()
+  'dragover, dragleave': (event, template) ->
+    event.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
-  'drop .hide-background': (e, template) ->
-    e.stopPropagation()
-    e.preventDefault()
+  'drop .hide-background': (event, template) ->
+    event.stopPropagation()
+    event.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
-  'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (e, template) ->
-    e.accountsDialogBoxEvent = true
+  'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (event, template) ->
+    event.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click #login-buttons-reset-password-button': (e, template) ->
+  'click #login-buttons-reset-password-button': (event, template) ->
     changingPasswordInResetPassword = true
     return # Make sure CoffeeScript does not return anything
 
-  'keypress #reset-password-new-password': (e, template) ->
+  'keypress #reset-password-new-password': (event, template) ->
     changingPasswordInResetPassword = true if event.keyCode is 13 # Enter key
     return # Make sure CoffeeScript does not return anything
 
-  'click #login-buttons-cancel-reset-password': (e, template) ->
+  'click #login-buttons-cancel-reset-password': (event, template) ->
     changingPasswordInResetPassword = false
     return # Make sure CoffeeScript does not return anything
 
@@ -84,30 +96,30 @@ Deps.autorun ->
 
 # Don't allow dropping files while account enrollment is in progress
 Template._enrollAccountDialog.events
-  'dragover, dragleave': (e, template) ->
-    e.preventDefault()
+  'dragover, dragleave': (event, template) ->
+    event.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
-  'drop .hide-background': (e, template) ->
-    e.stopPropagation()
-    e.preventDefault()
+  'drop .hide-background': (event, template) ->
+    event.stopPropagation()
+    event.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
-  'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (e, template) ->
-    e.accountsDialogBoxEvent = true
+  'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (event, template) ->
+    event.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click #login-buttons-enroll-account-with-username-button': (e, template) ->
-    e.preventDefault()
+ 'click #login-buttons-enroll-account-with-username-button': (event, template) ->
+    event.preventDefault()
     enrollAccount()
     return # Make sure CoffeeScript does not return anything
 
-  'keypress #enroll-account-with-username-password': (e, template) ->
-    enrollAccount() if e.keyCode is 13 # Enter key
+  'keypress #enroll-account-with-username-password': (event, template) ->
+    enrollAccount() if event.keyCode is 13 # Enter key
     return # Make sure CoffeeScript does not return anything
 
   # The rest of the cancel button functionality is handled by Meteor
-  'click #login-buttons-cancel-enroll-account': (e, template) ->
+  'click #login-buttons-cancel-enroll-account': (event, template) ->
     changingPasswordInEnrollAccount = false
     return # Make sure CoffeeScript does not return anything
 
