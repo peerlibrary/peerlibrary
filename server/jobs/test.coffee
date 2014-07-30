@@ -1,4 +1,4 @@
-class TestJob extends Job
+class @TestJob extends Job
   run: ->
     console.log "Running test", @
 

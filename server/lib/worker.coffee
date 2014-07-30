@@ -1,22 +1,3 @@
-IGNORED_PROPERTIES = [
-  'constructor'
-  'allow'
-  'deny'
-  'find'
-  'findOne'
-  'insert'
-  'update'
-  'remove'
-  'upsert'
-]
-
-# We copy JobCollection public methods to JobQueue document for easy access
-for propertyName, propertyValue of JobQueue.Meta.collection.constructor.prototype
-  do (propertyName, propertyValue) ->
-    if _.isFunction(propertyValue) and not _.startsWith(propertyName, '_') and propertyName not in IGNORED_PROPERTIES
-      JobQueue[propertyName] = (args...) ->
-        @Meta.collection[propertyName].apply @Meta.collection, args
-
 # Here we override jobCollection's Job class. We are not using => but -> so
 # that it is easy to serialize job's payload and that it is not combined
 # with instance methods made by =>.
@@ -28,6 +9,13 @@ class @Job
 
   run: ->
     throw new Error "Not implemented"
+
+  enqueue: (options) ->
+    job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
+
+    # TODO: Process options
+
+    job.save()
 
   type: ->
     @constructor.type()
@@ -46,24 +34,23 @@ jobQueue = ->
   return if queueRunning
   queueRunning = true
 
-  while job = JobQueue.getWork _.keys Job.types
-    new Job.types[job.type](job.data).run()
-    job.done()
+  while job = JobQueue.Meta.collection.getWork _.keys Job.types
+    try
+      result = new Job.types[job.type](job.data).run()
+    catch error
+      job.fail error
+      continue
+    job.done result
 
   queueRunning = false
 
 Meteor.startup ->
   # TODO: Use Meteor's logging package for logging
-  JobQueue.setLogStream process.stdout
+  JobQueue.Meta.collection.setLogStream process.stdout
   # TODO: Allow configuration to run only on workers
   # TODO: Set promote interval based on number of workers
-  JobQueue.startJobs()
+  JobQueue.Meta.collection.startJobs()
   Log.info "Worker enabled"
-
-  # TODO: Remove
-  JobQueue.Meta.collection.allow
-    admin: (userId, method, params) ->
-      true
 
   JobQueue.Meta.collection.find(
     status: 'ready'
