@@ -444,7 +444,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     )
     @_$highlightsControl.find('.meta-menu .meta-content .delete').off '.highlight'
 
-  _clickHandler: (e) =>
+  _clickHandler: (event) =>
     @anchor.annotator._selectHighlight @annotation._id
 
     return # Make sure CoffeeScript does not return anything
@@ -454,30 +454,30 @@ class CanvasTextHighlight extends Annotator.Highlight
   # We check if related is a child of highlight or control, and not checking only for one of those.
   # This is necessary so that mouseleave event is not made when user moves mouse from a highlight
   # to a control. jQuery's mouseleave is made because target is not the same as $highlightAndControl.
-  _hoverHandler: (e) =>
+  _hoverHandler: (event) =>
     $highlightAndControl = @_$highlight.add(@_$highlightsControl)
 
-    target = e.target
-    related = e.relatedTarget
+    target = event.target
+    related = event.relatedTarget
 
     # No relatedTarget if the mouse left/entered the browser window
     if not related or (not $highlightAndControl.is(related) and not $highlightAndControl.has(related).length)
-      if e.type is 'mouseover'
-        e.type = 'mouseenter-highlight'
-        $(target).trigger e
-        e.type = 'mouseover'
-      else if e.type is 'mouseout'
-        e.type = 'mouseleave-highlight'
-        $(target).trigger e
-        e.type = 'mouseout'
+      if event.type is 'mouseover'
+        event.type = 'mouseenter-highlight'
+        $(target).trigger event
+        event.type = 'mouseover'
+      else if event.type is 'mouseout'
+        event.type = 'mouseleave-highlight'
+        $(target).trigger event
+        event.type = 'mouseout'
 
-  _mouseenterHandler: (e) =>
+  _mouseenterHandler: (event) =>
     @_mouseHovering = true
 
     @hover false
     return # Make sure CoffeeScript does not return anything
 
-  _mouseleaveHandler: (e) =>
+  _mouseleaveHandler: (event) =>
     @_mouseHovering = false
 
     if @_$highlight.hasClass 'selected'
@@ -487,7 +487,7 @@ class CanvasTextHighlight extends Annotator.Highlight
 
     return # Make sure CoffeeScript does not return anything
 
-  _highlightControlBlur: (e) =>
+  _highlightControlBlur: (event) =>
     # This event triggers when highlight control (its input) is not focused anymore
     return if @_$highlightsControl.find('.meta-menu').is(':hover')
     @_hideControl()
@@ -527,11 +527,11 @@ class CanvasTextHighlight extends Annotator.Highlight
     # We do not want to create a possible cycle, so trigger only if not called by _annotationMouseleaveHandler
     $('.annotations-list .annotation').trigger 'highlightMouseleave', [@annotation._id] unless noControl
 
-  _annotationMouseenterHandler: (e, annotationId) =>
+  _annotationMouseenterHandler: (event, annotationId) =>
     @hover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 
-  _annotationMouseleaveHandler: (e, annotationId) =>
+  _annotationMouseleaveHandler: (event, annotationId) =>
     @unhover true if annotationId in _.pluck @annotation.referencingAnnotations, '_id'
     return # Make sure CoffeeScript does not return anything
 

@@ -240,16 +240,16 @@ hideOverlay = ->
 
   Session.set 'signInOverlayActive', false
 
-$(document).on 'dragstart', (e) ->
+$(document).on 'dragstart', (event) ->
   # We want to prevent dragging of everything except jQuery UI controls
-  return if $(e.target).is('.ui-draggable')
+  return if $(event.target).is('.ui-draggable')
 
-  e.preventDefault()
+  event.preventDefault()
 
   return # Make sure CoffeeScript does not return anything
 
-$(document).on 'dragenter', (e) ->
-  e.preventDefault()
+$(document).on 'dragenter', (event) ->
+  event.preventDefault()
 
   # Don't allow importing while password reset is in progress
   return if  Accounts._loginButtonsSession.get 'resetPasswordToken'
@@ -262,18 +262,18 @@ $(document).on 'dragenter', (e) ->
 
   if Meteor.personId()
     Session.set 'importOverlayActive', true
-    e.originalEvent.dataTransfer.effectAllowed = 'copy'
-    e.originalEvent.dataTransfer.dropEffect = 'copy'
+    event.originalEvent.dataTransfer.effectAllowed = 'copy'
+    event.originalEvent.dataTransfer.dropEffect = 'copy'
   else
     Session.set 'signInOverlayActive', true
-    e.originalEvent.dataTransfer.effectAllowed = 'none'
-    e.originalEvent.dataTransfer.dropEffect = 'none'
+    event.originalEvent.dataTransfer.effectAllowed = 'none'
+    event.originalEvent.dataTransfer.dropEffect = 'none'
 
   return # Make sure CoffeeScript does not return anything
 
 Template.importButton.events =
-  'click .import': (e, template) ->
-    e.preventDefault()
+  'click .import': (event, template) ->
+    event.preventDefault()
 
     if Meteor.personId()
       $(template.findAll '.import-file-input').click()
@@ -282,29 +282,29 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'change input.import-file-input': (e, template) ->
-    e.preventDefault()
+  'change input.import-file-input': (event, template) ->
+    event.preventDefault()
 
-    return if e.target.files?.length is 0
+    return if event.target.files?.length is 0
 
     Session.set 'importOverlayActive', true
-    _.each e.target.files, importFile
+    _.each event.target.files, importFile
 
     # Replaces file input with a new version which does not have any file
     # selected. This assures that change event is triggered even if the user
     # selects the same file. It is not really reasonable to do that, but
     # it is still better that we do something than simply nothing because
     # no event is triggered.
-    $(e.target, template).replaceWith($(e.target).clone())
+    $(event.target, template).replaceWith($(event.target).clone())
 
     return # Make sure CoffeeScript does not return anything
 
 Template.importingFilesItem.events =
-  'click .cancel-button': (e) ->
-    e.preventDefault()
+  'click .cancel-button': (event) ->
+    event.preventDefault()
     # We stop event propagation to prevent the
     # cancel from bubbling up to hide the overlay
-    e.stopPropagation()
+    event.stopPropagation()
 
     ImportingFile.documents.update @_id,
       $set:
@@ -322,8 +322,8 @@ Template.importingFilesItem.state = ->
   return @state
 
 Template.searchInput.events =
-  'click .drop-files-to-import': (e, template) ->
-    e.preventDefault()
+  'click .drop-files-to-import': (event, template) ->
+    event.preventDefault()
 
     $('ul.top-menu .import').click()
 
@@ -331,75 +331,75 @@ Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'
 
 Template.signInOverlay.events =
-  'dragover': (e, template) ->
-    e.preventDefault()
-    e.dataTransfer.effectAllowed = 'none'
-    e.dataTransfer.dropEffect = 'none'
+  'dragover': (event, template) ->
+    event.preventDefault()
+    event.dataTransfer.effectAllowed = 'none'
+    event.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
-  'dragleave': (e, template) ->
-    e.preventDefault()
+  'dragleave': (event, template) ->
+    event.preventDefault()
 
     unless DRAGGING_OVER_DOM
       Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
-  'drop': (e, template) ->
-    e.stopPropagation()
-    e.preventDefault()
+  'drop': (event, template) ->
+    event.stopPropagation()
+    event.preventDefault()
     Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
-  'click': (e, template) ->
-    e.preventDefault()
+  'click': (event, template) ->
+    event.preventDefault()
     Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.events =
-  'dragover': (e, template) ->
-    e.preventDefault()
-    e.dataTransfer.effectAllowed = 'copy'
-    e.dataTransfer.dropEffect = 'copy'
+  'dragover': (event, template) ->
+    event.preventDefault()
+    event.dataTransfer.effectAllowed = 'copy'
+    event.dataTransfer.dropEffect = 'copy'
 
     return # Make sure CoffeeScript does not return anything
 
-  'dragleave': (e, template) ->
-    e.preventDefault()
+  'dragleave': (event, template) ->
+    event.preventDefault()
 
     if ImportingFile.documents.find().count() == 0 and not DRAGGING_OVER_DOM
       Session.set 'importOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
 
-  'drop': (e, template) ->
-    e.stopPropagation()
-    e.preventDefault()
+  'drop': (event, template) ->
+    event.stopPropagation()
+    event.preventDefault()
 
     unless Meteor.personId()
       Session.set 'importOverlayActive', false
       return
 
-    _.each e.dataTransfer.files, importFile
+    _.each event.dataTransfer.files, importFile
 
     return # Make sure CoffeeScript does not return anything
 
-  'click': (e, template) ->
+  'click': (event, template) ->
     # We are stopping propagation in click on cancel
     # button but it still propagates so we cancel here
     # TODO: Check if this is still necessary in the new version of Meteor
-    return if e.isPropagationStopped()
+    return if event.isPropagationStopped()
 
     hideOverlay()
 
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.rendered = ->
-  $(document).off('.importOverlay').on 'keyup.importOverlay', (e) =>
-    hideOverlay() if e.keyCode is 27 # Escape key
+  $(document).off('.importOverlay').on 'keyup.importOverlay', (event) =>
+    hideOverlay() if event.keyCode is 27 # Escape key
     return # Make sure CoffeeScript does not return anything
 
 Template.importOverlay.destroyed = ->

@@ -32,8 +32,8 @@ Template.myCollections.myCollections = ->
     ]
 
 Template.addNewCollection.events
-  'submit .add-collection': (e, template) ->
-    e.preventDefault()
+  'submit .add-collection': (event, template) ->
+    event.preventDefault()
 
     name = $(template.findAll '.name').val().trim()
     return unless name
