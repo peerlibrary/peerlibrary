@@ -100,6 +100,30 @@ class @Publication extends Publication
       when 'tei' then @showTEI()
       else Notify.error "Unsupported media type: #{ @mediaType }", null, true
 
+  # We allow passing the publication slug if caller knows it
+  @pathFromId: (publicationId, slug) ->
+    publication = Publication.documents.findOne publicationId
+
+    return Meteor.Router.publicationPath publication._id, publication.slug if publication
+
+    Meteor.Router.publicationPath publicationId, slug
+
+  path: ->
+    Publication.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document
+  # Optional publication document
+  @reference: (publicationId, publication) ->
+    publication = Publication.documents.findOne publicationId unless publication
+    assert publicationId, publication._id if publication
+
+    _id: publicationId # TODO: Remove when we will be able to access parent template context
+    text: "p:#{ publicationId }"
+    title: publication?.title
+
+  reference: ->
+    Publication.reference @_id, @
+
   showPDF: =>
     assert.strictEqual @_pages, null
 
@@ -1526,19 +1550,6 @@ Template.editorLinkPrompt.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the publication slug if caller knows it
-Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options) ->
-  publication = Publication.documents.findOne publicationId
+Handlebars.registerHelper 'publicationPathFromId', Publication.pathFromId
 
-  return Meteor.Router.publicationPath publication._id, publication.slug if publication
-
-  Meteor.Router.publicationPath publicationId, slug
-
-# Optional publication document
-Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
-  publication = Publication.documents.findOne publicationId unless publication
-  assert publicationId, publication._id if publication
-
-  _id: publicationId # TODO: Remove when we will be able to access parent template context
-  text: "p:#{ publicationId }"
-  title: publication?.title
+Handlebars.registerHelper 'publicationReference', Publication.reference

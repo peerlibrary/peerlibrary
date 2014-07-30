@@ -19,6 +19,18 @@ class @Annotation extends Annotation
   path: ->
     Annotation.pathFromId @_id
 
+  # Helper object with properties useful to refer to this document
+  # Optional annotation document
+  @reference: (annotationId, annotation) ->
+    annotation = Annotation.documents.findOne annotationId unless annotation
+    assert annotationId, annotation._id if annotation
+
+    _id: annotationId # TODO: Remove when we will be able to access parent template context
+    text: "a:#{ annotationId }"
+
+  reference: ->
+    Annotation.reference @_id, @
+
 # A special client-only document which mirrors Annotation document. Anything
 # added to it will not be stored to the server, but any changes to Annotation
 # document will be refleced in this client-only document.
@@ -86,11 +98,4 @@ Meteor.startup ->
 
 Handlebars.registerHelper 'annotationPathFromId', LocalAnnotation.pathFromId
 
-# Optional annotation document
-Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->
-  annotation = Annotation.documents.findOne annotationId unless annotation
-  assert annotationId, annotation._id if annotation
-
-  _id: annotationId # TODO: Remove when we will be able to access parent template context
-  noLink: annotation?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "a:#{ annotationId }"
+Handlebars.registerHelper 'annotationReference', Annotation.reference

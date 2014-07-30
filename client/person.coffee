@@ -25,6 +25,31 @@ class @Person extends Person
   path: ->
     Person.pathFromId @_id, @slug
 
+  # Helper object with properties useful to refer to this document
+  # Optional person document
+  # If you do not know if you have an ID or a slug, you can pass
+  # it in as an ID and hopefully something useful will come out.
+  @reference: (personId, person) ->
+    unless person
+      person = Person.documents.findOne
+        $or: [
+          slug: personId
+        ,
+          _id: personId
+        ]
+    assert personId, person._id if person
+
+    if person
+      _id: personId # TODO: Remove when we will be able to access parent template context
+      text: "@#{ person.slug }"
+      title: person.displayName
+    else
+      _id: personId # TODO: Remove when we will be able to access parent template context
+      text: "@#{ personId }"
+
+  reference: ->
+    Person.reference @_id, @
+
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -74,23 +99,4 @@ Handlebars.registerHelper 'currentPersonId', (options) ->
 
 Handlebars.registerHelper 'personPathFromId', Person.pathFromId
 
-# Optional person document.
-# If you do not know if you have an ID or a slug, you can pass
-# it in as an ID and hopefully something useful will come out.
-Handlebars.registerHelper 'personReference', (personId, person, options) ->
-  unless person
-    person = Person.documents.findOne
-      $or: [
-        slug: personId
-      ,
-        _id: personId
-      ]
-  assert personId, person._id if person
-
-  if person
-    _id: personId # TODO: Remove when we will be able to access parent template context
-    text: "@#{ person.slug }"
-    title: person.displayName
-  else
-    _id: personId # TODO: Remove when we will be able to access parent template context
-    text: "@#{ personId }"
+Handlebars.registerHelper 'personReference', Person.reference

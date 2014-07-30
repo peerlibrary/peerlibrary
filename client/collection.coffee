@@ -1,3 +1,32 @@
+class @Collection extends Collection
+  @Meta
+    name: 'Collection'
+    replaceParent: true
+
+  # We allow passing the collection slug if caller knows it
+  @pathFromId: (collectionId, slug) ->
+    collection = Collection.documents.findOne collectionId
+
+    return Meteor.Router.collectionPath collection._id, collection.slug if collection
+
+    Meteor.Router.collectionPath collectionId, slug
+
+  path: ->
+    Collection.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document
+  # Optional collection document
+  @reference: (collectionId, collection) ->
+    collection = Collection.documents.findOne collectionId unless collection
+    assert collectionId, collection._id if collection
+
+    _id: collectionId # TODO: Remove when we will be able to access parent template context
+    text: "c:#{ collectionId }"
+    title: collection?.name or collection?.slug
+
+  reference: ->
+    Collection.reference @_id, @
+
 collectionHandle = null
 
 # Mostly used just to force reevaluation of collectionHandle
@@ -126,20 +155,6 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the collection slug if caller knows it
-Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) ->
-  collection = Collection.documents.findOne collectionId
+Handlebars.registerHelper 'collectionPathFromId', Collection.pathFromId
 
-  return Meteor.Router.collectionPath collection._id, collection.slug if collection
-
-  Meteor.Router.collectionPath collectionId, slug
-
-# Optional collection document
-Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
-  collection = Collection.documents.findOne collectionId unless collection
-  assert collectionId, comment._id if collection
-
-  _id: collectionId # TODO: Remove when we will be able to access parent template context
-  noLink: collection?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "c:#{ collectionId }"
-  title: collection?.name or collection?.slug
+Handlebars.registerHelper 'collectionReference', Collection.reference

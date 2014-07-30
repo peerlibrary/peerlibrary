@@ -70,12 +70,10 @@
 </template>
 
 <template name="highlightInlineItem">
-  {{#with highlightReference _id this}}
-    <a class="inline-item highlight"{{#unless noLink}} href="{{highlightPathFromId _id}}"{{/unless}}>
-      <i class="avatar only-icon icon-highlight" title="Highlight"></i>
-      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
-    </a>
-  {{/with}}
+  <a class="inline-item highlight"{{#unless noLink}} href="{{path}}"{{/unless}}>
+    <i class="avatar only-icon icon-highlight" title="Highlight"></i>
+    <span class="name"{{#if reference.title}} title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
+  </a>
 </template>
 
 <template name="highlightCatalogItem">

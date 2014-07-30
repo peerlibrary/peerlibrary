@@ -1,21 +1,37 @@
-# If we have the highlight and the publication available on the client,
-# we can create full path directly, otherwise we have to use highlightIdPath
-Handlebars.registerHelper 'highlightPathFromId', (highlightId, options) ->
-  highlight = Highlight.documents.findOne highlightId
+class @Highlight extends Highlight
+  @Meta
+    name: 'Highlight'
+    replaceParent: true
 
-  return Meteor.Router.highlightIdPath highlightId unless highlight
+  @pathFromId: (highlightId) ->
+    # If we have the highlight and the publication available on the client,
+    # we can create full path directly, otherwise we have to use highlightIdPath
+    highlight = Highlight.documents.findOne highlightId
 
-  publication = Publication.documents.findOne highlight.publication._id
+    return Meteor.Router.highlightIdPath highlightId unless highlight
 
-  return Meteor.Router.highlightIdPath highlightId unless publication
+    publication = Publication.documents.findOne highlight.publication._id
 
-  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+    return Meteor.Router.highlightIdPath highlightId unless publication
 
-# Optional highlight document
-Handlebars.registerHelper 'highlightReference', (highlightId, highlight, options) ->
-  highlight = Highlight.documents.findOne highlightId unless highlight
-  assert highlightId, highlight._id if highlight
+    Meteor.Router.highlightPath publication._id, publication.slug, highlightId
 
-  _id: highlightId # TODO: Remove when we will be able to access parent template context
-  noLink: highlight?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "h:#{ highlightId }"
+  path: ->
+    Highlight.pathFromId @_id
+
+  # Helper object with properties useful to refer to this document
+  # Optional highlight document
+  @reference: (highlightId, highlight) ->
+    highlight = Highlight.documents.findOne highlightId unless highlight
+    assert highlightId, highlight._id if highlight
+
+    _id: highlightId # TODO: Remove when we will be able to access parent template context
+    text: "h:#{ highlightId }"
+
+  reference: ->
+    Highlight.reference @_id, @
+
+
+Handlebars.registerHelper 'highlightPathFromId', Highlight.pathFromId
+
+Handlebars.registerHelper 'highlightReference', Highlight.reference

@@ -86,7 +86,7 @@
 </template>
 
 <template name="groupInlineItem">
-  <a class="inline-item group" {{#unless noLink}}href="{{groupPathFromId _id slug}}"{{/unless}}>
+  <a class="inline-item group" {{#unless noLink}}href="{{path}}"{{/unless}}>
     <i class="avatar only-icon icon-group" title="Group"></i>
     <span class="name" title="{{name}}">{{name}}</span>
   </a>
@@ -103,7 +103,7 @@
 
 <template name="groupCatalogItemName">
   <h2>
-    <a href="{{groupPathFromId _id slug}}" class="actionable">
+    <a href="{{path}}" class="actionable">
       {{name}}
     </a>
   </h2>

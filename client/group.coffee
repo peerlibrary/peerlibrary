@@ -1,3 +1,32 @@
+class @Group extends Group
+  @Meta
+    name: 'Group'
+    replaceParent: true
+
+  # We allow passing the group slug if caller knows it
+  @pathFromId: (groupId, slug) ->
+    group = Group.documents.findOne groupId
+
+    return Meteor.Router.groupPath group._id, group.slug if group
+
+    Meteor.Router.groupPath groupId, slug
+
+  path: ->
+    Group.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document
+  # Optional group document
+  @reference: (groupId, group) ->
+    group = Group.documents.findOne groupId unless group
+    assert groupId, group._id if group
+
+    _id: groupId # TODO: Remove when we will be able to access parent template context
+    text: "g:#{ groupId }"
+    title: group?.name or group?.slug
+
+  reference: ->
+    Group.reference @_id, @
+
 groupHandle = null
 
 # Mostly used just to force reevaluation of groupHandle
@@ -219,19 +248,6 @@ Template.groupDetails.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the group slug if caller knows it
-Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
-  group = Group.documents.findOne groupId
+Handlebars.registerHelper 'groupPathFromId', Group.pathFromId
 
-  return Meteor.Router.groupPath group._id, group.slug if group
-
-  Meteor.Router.groupPath groupId, slug
-
-# Optional group document
-Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
-  group = Group.documents.findOne groupId unless group
-  assert groupId, group._id if group
-
-  _id: groupId # TODO: Remove when we will be able to access parent template context
-  text: "g:#{ groupId }"
-  title: group?.name or group?.slug
+Handlebars.registerHelper 'groupReference', Group.reference

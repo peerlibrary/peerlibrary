@@ -70,7 +70,7 @@
 
 <template name="publicationInlineItem">
   {{#spaceless}}
-    <a class="inline-item publication" {{#unless noLink}}href="{{publicationPathFromId _id slug}}"{{/unless}}>
+    <a class="inline-item publication" {{#unless noLink}}href="{{path}}"{{/unless}}>
       <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
         {{#if title}}
@@ -139,7 +139,7 @@
         {{#if hasAbstract}}
           <button class="preview-link">Abstract</button> &middot;
         {{/if}}
-        <a href="{{publicationPathFromId _id slug}}">Full text</a>
+        <a href="{{path}}">Full text</a>
       </div>
     </div>
 
@@ -171,7 +171,7 @@
 <template name="publicationCatalogItemTitle">
   <h2 class="{{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
     {{#spaceless}}
-      <a class="actionable" href="{{publicationPathFromId _id slug}}">
+      <a class="actionable" href="{{path}}">
         {{#if title}}
           {{title}}
         {{else}}
