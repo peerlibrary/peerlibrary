@@ -60,21 +60,21 @@ Template.groupNoMembership.closed = ->
   Group.documents.findOne(_id: Session.get 'currentGroupId').joinPolicy is Group.POLICY.CLOSED
 
 Template.groupMembership.events
-  'click .join-group': (e, template) ->
+  'click .join-group': (event, template) ->
     console.log "Join group clicked"
     Meteor.call 'request-to-join-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .leave-group': (e, template) ->
+  'click .leave-group': (event, template) ->
     console.log "Leave group clicked"
     Meteor.call 'request-to-leave-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .cancel-request-to-join-group': (e, template) ->
+  'click .cancel-request-to-join-group': (event, template) ->
     console.log "Cancel request clicked"
     Meteor.call 'cancel-request-to-join-group', Session.get('currentGroupId'), (error) =>
       return Notify.meteorError error, true if error
@@ -99,40 +99,40 @@ Template.groupMembersList.destroyed = ->
 Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
 
 Template.groupMembersList.events
-  'click .remove-button': (e, template) ->
+  'click .remove-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupRequests.events =
-  'click .join-requests .approve-button': (e, template) ->
+  'click .join-requests .approve-button': (event, template) ->
     Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .join-requests .remove-button': (e, template) ->
+  'click .join-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-join-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .leave-requests .approve-button': (e, template) ->
+  'click .leave-requests .approve-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .leave-requests .remove-button': (e, template) ->
+  'click .leave-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-leave-group', Session.get('currentGroupId'), @_id, (error, count) =>
       return Notify.meteorError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControl.events
-  'change .add-group-member, keyup .add-group-member': (e, template) ->
-    e.preventDefault()
+  'change .add-group-member, keyup .add-group-member': (event, template) ->
+    event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
     @_query.set $(template.findAll '.add-group-member').val()
@@ -214,7 +214,7 @@ addMemberToGroup = (personId) ->
     Notify.success "Member added." if count
 
 Template.groupMembersAddControlNoResults.events
-  'click .add-and-invite': (e, template) ->
+  'click .add-and-invite': (event, template) ->
 
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
@@ -259,7 +259,7 @@ Template.groupMembersAddControlResults.results = ->
     limit: personsLimit
 
 Template.groupMembersAddControlResultsItem.events
-  'click .add-button': (e, template) ->
+  'click .add-button': (event, template) ->
 
     return unless @_id
 
@@ -289,7 +289,7 @@ Template.groupDetails.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupDetails.events
-  'click .delete-group': (e, template) ->
+  'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
       Notify.meteorError error, true if error
 
@@ -300,7 +300,7 @@ Template.groupDetails.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'change .group-join-policy': (e, template) ->
+  'change .group-join-policy': (event, template) ->
     policy = parseInt $('.group-join-policy').val()
     console.log "New join policy: " + policy
     Meteor.call 'group-set-join-policy', @_id, policy, (error, count) =>
@@ -308,7 +308,7 @@ Template.groupDetails.events
 
     return # Make sure CoffeeScript does not return anything
 
-  'change .group-leave-policy': (e, template) ->
+  'change .group-leave-policy': (event, template) ->
     policy = parseInt $('.group-join-policy').val()
     console.log "New leave policy: " + policy
     Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
