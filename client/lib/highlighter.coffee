@@ -145,13 +145,13 @@ class Page
 
     Math.sqrt(distanceX * distanceX + distanceY * distanceY)
 
-  _eventToPosition: (e) =>
+  _eventToPosition: (event) =>
     $canvas = @$displayPage.find('canvas')
 
     offset = $canvas.offset()
 
-    left: e.pageX - offset.left
-    top: e.pageY - offset.top
+    left: event.pageX - offset.left
+    top: event.pageY - offset.top
 
   _overTextSegment: (position) =>
     segmentIndex = -1
@@ -254,8 +254,8 @@ class Page
       marginTop: -top
       padding: padding
 
-  padTextSegments: (e) =>
-    position = @_eventToPosition e
+  padTextSegments: (event) =>
+    position = @_eventToPosition event
 
     # First check if we are directly above a text segment. We could combine this
     # with _findLastLeftUpTextSegment below, but we also want to handle the case
