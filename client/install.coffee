@@ -18,8 +18,8 @@ Template.installWizard.rendered = ->
     $(@findAll '#install-password-input').focus()
 
 Template.installWizard.events
-  'submit form.password': (e, template) ->
-    e.preventDefault()
+  'submit form.password': (event, template) ->
+    event.preventDefault()
 
     return if Session.get 'installInProgress'
     Session.set 'installInProgress', true

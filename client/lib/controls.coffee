@@ -1,6 +1,6 @@
 # To close dropdowns when clicking, focusing, or pressing a key somewhere outside
-$(document).on 'click focus keypress dragstart', (e) ->
-  closestTrigger = $(e.target).closest('.dropdown-trigger').get(0)
+$(document).on 'click focus keypress dragstart', (event) ->
+  closestTrigger = $(event.target).closest('.dropdown-trigger').get(0)
 
   # We only operate on dropdowns in the main section, since we don't want to affect
   # the one in the header. That one is hidden through templates instead of javascript.
@@ -15,8 +15,8 @@ $(document).on 'click focus keypress dragstart', (e) ->
   return # Make sure CoffeeScript does not return anything
 
 # Close all dropdowns with escape key
-$(document).on 'keyup', (e) ->
-  if e.keyCode is 27
+$(document).on 'keyup', (event) ->
+  if event.keyCode is 27
     # We only operate on dropdowns in the main section, since we don't want to affect
     # the one in the header. That one is hidden through templates instead of javascript.
     $('section .dropdown-anchor:visible').hide().trigger('dropdown-hidden')
