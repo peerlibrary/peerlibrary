@@ -45,7 +45,8 @@
       "directcollection": {},
       "url-utils": {},
       "segfault-handler": {},
-      "crypto": {}
+      "crypto": {},
+      "jobCollection": {}
     },
     "packages": {
       "router": {
@@ -187,6 +188,11 @@
         "git": "https://github.com/peerlibrary/meteor-crypto.git",
         "tag": "v0.1.1",
         "commit": "9e7e7096c45bb4de46a62d61d497a23198de463a"
+      },
+      "jobCollection": {
+        "git": "https://github.com/vsivsi/meteor-job-collection.git",
+        "tag": "v0.0.16",
+        "commit": "3cdcfe6dab492da36257927b7b5ca4166542ce91"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

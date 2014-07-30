@@ -43,6 +43,7 @@
     "directcollection": {},
     "url-utils": {},
     "segfault-handler": {},
-    "crypto": {}
+    "crypto": {},
+    "jobCollection": {}
   }
 }
