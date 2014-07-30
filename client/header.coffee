@@ -83,10 +83,11 @@ Template.searchInput.created = ->
   @_searchQueryHandle = null
 
 Template.searchInput.rendered = ->
-  # We make sure search input is focused if we know it should be focused (to make sure focus is retained between redraws)
-  # Additionally, HTML5 autofocus does not work properly when routing back to / after initial load, so we focus if we are displaying index header
-  # Don't try to focus if reset password is in progress
-  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get 'resetPasswordToken'
+  # We make sure search input is focused if we know it should be focused (to make sure focus is
+  # retained between redraws). We don't use HTML5 autofocus because it takes focus away from dialogs.
+  # We focus search if we are displaying index header. Don't try to focus if reset password or enroll
+  # user is in progress.
+  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
     $(@findAll '.search-input').focus()
 
   @_searchQueryHandle?.stop()
