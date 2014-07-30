@@ -135,7 +135,7 @@ class @Person extends AccessDocument
     size = 24 unless _.isNumber size
 
     defaultAvatar = if @gravatarHash then 'identicon' else Meteor.absoluteUrl 'images/spacer.gif',
-      rootUrl: if Meteor.settings?.public?.production then null else 'https://peerlibrary.org'
+      if Meteor.settings?.public?.production then {} else rootUrl: 'https://peerlibrary.org'
 
     # TODO: We should specify default URL to the image of an avatar which is generated from name initials
     "https://secure.gravatar.com/avatar/#{ @gravatarHash }?s=#{ size }&d=#{ defaultAvatar }"

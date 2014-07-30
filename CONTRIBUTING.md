@@ -4,6 +4,7 @@ Contibuting to PeerLibrary
 General ways to contribute to the development of PeerLibrary:
 * Report bugs or tell us about features you are missing by opening [tickets](https://github.com/peerlibrary/peerlibrary/issues/new) or commenting them.
 * Contribute to the PeerLibrary source code.
+* Code review an open [pull request](https://github.com/peerlibrary/peerlibrary/pulls).
 * Help us test PeerLibrary.
 * Read (and contribute to) our [wiki](https://github.com/peerlibrary/peerlibrary/wiki) and other documentation.
 * If you have your favorite open access journal or repository not yet integrated into PeerLibrary, add support for it. This goes especially for possible non-English open access journals or repositories we might not even know about. You can just [open a ticket for it](https://github.com/peerlibrary/peerlibrary/issues/new) to let us know.
@@ -51,5 +52,12 @@ Before submitting a pull request, make sure that it follows these guidelines:
  * Tests (if pull request is fixing a bug, tests should fail without the pull request and succeed with it; if pull request is adding a new feature, tests should test all aspects of this new feature)
 * Consider writing a [blog post](http://blog.peerlibrary.org/) about you pull request as well. You have all rights to brag about it!
 
-If you are working on a big ticket item, please check in on our [development mailing list](http://lists.peerlibrary.org/lists/info/dev) first, or at least comment/open a related ticket first describing your plan. We would hate to have to steer you in a different direction after you have already put in a lot of hard work.
+If you are planing to work on something big, please announce that by commenting/opening a related ticket first and describe your plan. We would hate to have to steer you in a different direction after you have already put in a lot of hard work.
 
+Code review a pull request
+--------------------------
+
+In our [development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) we are using pull requests extensively to do a form of pair-programming. The idea is mostly to have at least two people see each line of the code before it goes in. Please help us maintain good quality of PeerLibrary soure code by reading and reviewing [pull requests](https://github.com/peerlibrary/peerlibrary/pulls).
+
+Reviewing pull requests is also a great way to learn more about our codebase and learn from others how they are tackling programming in PeerLibrary. You can also just do a code review and ask questions, why is something like that and not
+different, questions if you do not understand something (maybe a code comment is then missing?). Moreover, read comments from others and learn ways to think about the code and project.
