@@ -13,7 +13,7 @@ General ways to contribute to the development of PeerLibrary:
 Reporting bugs
 --------------
 
-If you have found a bug in PeerLibrary, file a bug report in [our issue tracker](https://github.com/peerlibrary/peerlibrary/issues/new). If the issue contains sensitive information or raises a security concern, e-mail security at peerlibrary.org instead, which will page the security team.
+If you have found a bug in PeerLibrary, file a bug report in [our issue tracker](https://github.com/peerlibrary/peerlibrary/issues/new). If the issue contains sensitive information or raises a security concern, email security at peerlibrary.org instead, which will page the security team.
 
 PeerLibrary has many moving parts, and it is often difficult to reproduce a bug based on a vague description. If you want somebody to be able to fix a bug (or verify a fix that you have contributed), the best way is:
 * Find minimal and exact steps needed to reproduce the bug.
@@ -50,7 +50,7 @@ Before submitting a pull request, make sure that it follows these guidelines:
  * All necessary code changes but not more than those
  * Documentation (can be through code comments and/or end-user documentation/help for new features)
  * Tests (if pull request is fixing a bug, tests should fail without the pull request and succeed with it; if pull request is adding a new feature, tests should test all aspects of this new feature)
-* Make sure your commits are passing tests on [Travis CI](https://travis-ci.org/peerlibrary/peerlibrary). Consider signing up on Travis CI with your GitHub account so that you get e-mail notification when tests are complete.
+* Make sure your commits are passing tests on [Travis CI](https://travis-ci.org/peerlibrary/peerlibrary). Consider signing up on Travis CI with your GitHub account so that you get email notification when tests are complete.
 * Consider writing a [blog post](http://blog.peerlibrary.org/) about you pull request as well. You have all rights to brag about it!
 
 If you are planing to work on something big, please announce that by commenting/opening a related ticket first and describe your plan. We would hate to have to steer you in a different direction after you have already put in a lot of hard work.
