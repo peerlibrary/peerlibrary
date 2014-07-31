@@ -46,7 +46,10 @@
       "url-utils": {},
       "segfault-handler": {},
       "crypto": {},
-      "jobCollection": {}
+      "jobCollection": {
+        "git": "https://github.com/vsivsi/meteor-job-collection.git",
+        "branch": "local_server_methods"
+      }
     },
     "packages": {
       "router": {
@@ -191,8 +194,8 @@
       },
       "jobCollection": {
         "git": "https://github.com/vsivsi/meteor-job-collection.git",
-        "tag": "v0.0.16",
-        "commit": "3cdcfe6dab492da36257927b7b5ca4166542ce91"
+        "branch": "local_server_methods",
+        "commit": "92b0fde7d3ee902e1ead401aecbc9ab242f753c9"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

@@ -11,11 +11,31 @@ class @Job
     throw new Error "Not implemented"
 
   enqueue: (options) ->
+    # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
 
-    # TODO: Process options
+    job.depends options.depends if options?.depends?
+    job.priority options.priority if options?.priority?
+    job.retry options.retry if options?.retry?
+    job.repeat options.repeat if options?.repeat?
+    job.delay options.delay if options?.delay?
+    job.after options.after if options?.after?
 
-    job.save()
+    job.save options
+
+  # You should use .refresh() if you want full queue job document
+  getQueueJob: ->
+    JobQueue.Meta.collection.makeJob
+      _id: @_id
+      runId: @_runId
+      type: @type()
+      data: {}
+
+  log: (message, options) ->
+    @getQueueJob().log message, options
+
+  progress: (completed, total, options) ->
+    @getQueueJob().progress completed, total, options
 
   type: ->
     @constructor.type()
@@ -29,21 +49,31 @@ class @Job
 
     @types[jobClass.type()] = jobClass
 
-queueRunning = false
-jobQueue = ->
-  return if queueRunning
-  queueRunning = true
+jobQueueRunning = false
+runJobQueue = ->
+  return if jobQueueRunning
+  jobQueueRunning = true
 
+  # We defer so that we can return quick so that observe keeps
+  # running. We run here in a loop until there is no more work
+  # when we go back to observe to wait for next ready job.
   Meteor.defer ->
-    while job = JobQueue.Meta.collection.getWork _.keys Job.types
-      try
-        result = new Job.types[job.type](job.data).run()
-      catch error
-        job.fail error
-        continue
-      job.done result
-
-    queueRunning = false
+    try
+      while job = JobQueue.Meta.collection.getWork _.keys Job.types
+        try
+          try
+            j = new Job.types[job.type](job.data)
+            j._id = job._doc._id
+            j._runId = job._doc.runId
+            result = j.run()
+          catch error
+            job.fail error
+            continue
+          job.done result
+        catch error
+          Log.error "Error running a job queue: #{ error.stack or error.toString?() or error }"
+    finally
+      jobQueueRunning = false
 
 Meteor.startup ->
   # TODO: Use Meteor's logging package for logging
@@ -65,10 +95,10 @@ Meteor.startup ->
       _id: 1
   ).observe
     added: (document) ->
-      jobQueue()
+      runJobQueue()
 
     changed: (newDocument, oldDocument) ->
-      jobQueue()
+      runJobQueue()
 
 JobQueue.Meta.collection._ensureIndex
   type: 1

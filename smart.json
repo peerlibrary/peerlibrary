@@ -44,6 +44,9 @@
     "url-utils": {},
     "segfault-handler": {},
     "crypto": {},
-    "jobCollection": {}
+    "jobCollection": {
+      "branch": "local_server_methods",
+      "git": "https://github.com/vsivsi/meteor-job-collection.git"
+    }
   }
 }
