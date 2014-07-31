@@ -18,7 +18,7 @@ class @TumblrJob extends Job
     super
 
     # We throw a fatal error to stop retrying a job if settings are not
-    # available anymore, but they were in the past and a periodic job was added.
+    # available anymore, but they were in the past when job was added
     throw new Job.FatalJobError "Tumblr settings missing" unless Meteor.settings?.tumblr?.baseHostname and Meteor.settings?.tumblr?.apiKey
 
   enqueueOptions: (options) =>

@@ -16,6 +16,8 @@ class @Job
     options
 
   enqueue: (options) =>
+    throw new Error "Unknown job class '#{ @type() }'" unless Job.types[@type()]
+
     # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
 
@@ -77,8 +79,12 @@ runJobQueue = ->
             j._runId = job._doc.runId
             result = j.run()
           catch error
-            job.fail EJSON.toJSONValue(error.stack or error.toString?() or error),
-              fatal: error instanceof FatalJobError
+            if error instanceof Error
+              stack = StackTrace.printStackTrace e: error
+              job.fail EJSON.toJSONValue(value: error.message, stack: stack),
+                fatal: error instanceof FatalJobError
+            else
+              job.fail EJSON.toJSONValue(value: "#{ error }")
             continue
           # TODO: Mark as ready all resolved dependent jobs
           job.done EJSON.toJSONValue result
