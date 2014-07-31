@@ -1,3 +1,7 @@
+FatalJobError = Meteor.makeErrorType 'FatalJobError',
+  (message) ->
+    @message = message or ''
+
 class @Job
   @types = {}
 
@@ -52,6 +56,8 @@ class @Job
 
     @types[jobClass.type()] = jobClass
 
+  @FatalJobError: FatalJobError
+
 jobQueueRunning = false
 runJobQueue = ->
   return if jobQueueRunning
@@ -71,7 +77,8 @@ runJobQueue = ->
             j._runId = job._doc.runId
             result = j.run()
           catch error
-            job.fail EJSON.toJSONValue error.stack or error.toString?() or error
+            job.fail EJSON.toJSONValue(error.stack or error.toString?() or error),
+              fatal: error instanceof FatalJobError
             continue
           # TODO: Mark as ready all resolved dependent jobs
           job.done EJSON.toJSONValue result

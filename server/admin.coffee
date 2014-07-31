@@ -57,7 +57,13 @@ Meteor.methods
   'test-job': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
-    new TestJob({foo: 'bar'}).enqueue()
+    try
+      new TestJob({foo: 'bar'}).enqueue()
+    catch error
+      if error instanceof Meteor.Error
+        throw error
+      else
+        throw new Meteor.Error 500, (error.message? or error.toString?() or "Internal server error"), error.stack
 
   'process-pdfs': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
@@ -584,8 +590,14 @@ Meteor.methods
   'sync-blog': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
-    new TumblrJob().enqueue
-      delay: 0
+    try
+      new TumblrJob().enqueue
+        delay: 0
+    catch error
+      if error instanceof Meteor.Error
+        throw error
+      else
+        throw new Meteor.Error 500, (error.message or error.toString?() or "Internal server error"), error.stack
 
 Meteor.publish 'arxiv-pdfs', ->
   return unless @personId

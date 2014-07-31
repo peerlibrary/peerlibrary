@@ -17,7 +17,7 @@ class @TumblrJob extends Job
   constructor: (data) ->
     super
 
-    throw new Error "Tumblr settings missing" unless Meteor.settings?.tumblr?.baseHostname and Meteor.settings?.tumblr?.apiKey
+    throw new Job.FatalJobError "Tumblr settings missing" unless Meteor.settings?.tumblr?.baseHostname and Meteor.settings?.tumblr?.apiKey
 
   enqueueOptions: (options) =>
     options = super
