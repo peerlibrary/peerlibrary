@@ -12,7 +12,7 @@ RegisteredForAccess = Match.Where (documentName) ->
 
 # TODO: Use this code on the client side as well
 Meteor.methods
-  'grant-read-access-to-person': (documentName, documentId, personId) ->
+  'grant-read-access-to-person': methodWrap (documentName, documentId, personId) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check personId, DocumentId
@@ -40,7 +40,7 @@ Meteor.methods
         readPersons:
           _id: personId
 
-  'grant-read-access-to-group': (documentName, documentId, groupId) ->
+  'grant-read-access-to-group': methodWrap (documentName, documentId, groupId) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check groupId, DocumentId
@@ -67,7 +67,7 @@ Meteor.methods
         readGroups:
           _id: groupId
 
-  'revoke-read-access-for-person': (documentName, documentId, personId) ->
+  'revoke-read-access-for-person': methodWrap (documentName, documentId, personId) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check personId, DocumentId
@@ -94,7 +94,7 @@ Meteor.methods
         readPersons:
           _id: personId
 
-  'revoke-read-access-for-group': (documentName, documentId, groupId) ->
+  'revoke-read-access-for-group': methodWrap (documentName, documentId, groupId) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check groupId, DocumentId
@@ -120,7 +120,7 @@ Meteor.methods
         readGroups:
           _id: groupId
 
-  'set-access': (documentName, documentId, access) ->
+  'set-access': methodWrap (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check access, MatchAccess accessDocuments[documentName].ACCESS
