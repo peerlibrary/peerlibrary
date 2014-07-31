@@ -584,17 +584,8 @@ Meteor.methods
   'sync-blog': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 
-    @unblock()
-
-    if not Meteor.settings.tumblr
-      Log.error "Tumblr settings missing"
-      throw new Meteor.Error 500, "Tumblr settings missing"
-
-    Log.info "Syncing blog posts"
-
-    updateTumblr()
-
-    Log.info "Done"
+    new TumblrJob().enqueue
+      delay: 0
 
 Meteor.publish 'arxiv-pdfs', ->
   return unless @personId

@@ -1,20 +1,17 @@
-# Here we override jobCollection's Job class with something completely different.
-# We are not using => but -> so that it is easy to serialize job's payload and
-# that it is not combined with instance methods made by =>.
 class @Job
   @types = {}
 
   constructor: (data) ->
     _.extend @, data
 
-  run: ->
+  run: =>
     throw new Error "Not implemented"
 
   # Method so that job class can set or override enqueue options
-  enqueueOptions: (options) ->
+  enqueueOptions: (options) =>
     options
 
-  enqueue: (options) ->
+  enqueue: (options) =>
     # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
 
@@ -27,23 +24,23 @@ class @Job
     job.delay options.delay if options?.delay?
     job.after options.after if options?.after?
 
-    job.save options
+    job.save options?.save
 
   # You should use .refresh() if you want full queue job document
-  getQueueJob: ->
+  getQueueJob: =>
     JobQueue.Meta.collection.makeJob
       _id: @_id
       runId: @_runId
       type: @type()
       data: {}
 
-  log: (message, options) ->
+  log: (message, options) =>
     @getQueueJob().log message, options
 
-  progress: (completed, total, options) ->
+  progress: (completed, total, options) =>
     @getQueueJob().progress completed, total, options
 
-  type: ->
+  type: =>
     @constructor.type()
 
   @type: ->

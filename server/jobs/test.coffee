@@ -1,5 +1,5 @@
 class @TestJob extends Job
-  run: ->
+  run: =>
     @log "Test log"
 
     # Return @foo value
