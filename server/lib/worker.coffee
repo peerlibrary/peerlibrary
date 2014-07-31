@@ -68,7 +68,8 @@ runJobQueue = ->
       while job = JobQueue.Meta.collection.getWork _.keys Job.types
         try
           try
-            j = new Job.types[job.type] job.data
+            jobClass = Job.types[job.type]
+            j = new jobClass job.data
             j._id = job._doc._id
             j._runId = job._doc.runId
             result = j.run()
