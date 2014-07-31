@@ -2,7 +2,7 @@
   Meteor.call 'invite-user', email, (message or ''), (error, newPersonId) =>
     if (error)
       showNotification = if onError then onError error else true
-      Notify.meteorError error, true if showNotification
+      Notify.smartError error, true if showNotification
       return
 
     showNotification = if onSuccess then onSuccess newPersonId else true

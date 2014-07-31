@@ -11,7 +11,7 @@ Template.accessControl.events
       documentName = @constructor.Meta._name
 
     Meteor.call 'set-access', documentName, @_id, access, (error, count) ->
-      return Notify.meteorError error, true if error
+      return Notify.smartError error, true if error
 
       Notify.success "Access changed." if count
 
@@ -155,7 +155,7 @@ grantAccess = (document, personOrGroup) ->
     documentName = document.constructor.Meta._name
 
   Meteor.call methodName, documentName, document._id, personOrGroup._id, (error, count) =>
-    return Notify.meteorError error, true if error
+    return Notify.smartError error, true if error
 
     Notify.success "#{ _.capitalize personOrGroup.constructor.verboseName() } added." if count
 
@@ -246,7 +246,7 @@ Template.privateAccessControlList.events
 
     # TODO: When will be possible to better access parent data context from event handler, we should use that
     Meteor.call methodName, documentName, @_parent._id, @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.smartError error, true if error
 
       Notify.success "#{ _.capitalize @constructor.verboseName() } removed." if count
 

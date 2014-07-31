@@ -127,7 +127,7 @@ Editable.template Template.publicationCatalogItemTitle, ->
 ,
   (title) ->
     Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
-      return Notify.meteorError error, true if error
+      return Notify.smartError error, true if error
 ,
   "Enter publication title"
 
