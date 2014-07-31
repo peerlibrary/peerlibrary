@@ -4,6 +4,7 @@
   {{> adminPublications}}
   {{> adminDatabase}}
   {{> adminErrors}}
+  {{> adminJobs}}
   {{> adminSources}}
   {{> adminBlog}}
   {{> adminFacts}}
@@ -48,6 +49,13 @@
       {{> adminErrorsItem}}
     {{/each}}
   </ul>
+</template>
+
+<template name="adminJobs">
+  <h2>Jobs</h2>
+  <div class="admin-buttons">
+    <button class="test-job">Create a test job</button>
+  </div>
 </template>
 
 <template name="adminErrorsItem">

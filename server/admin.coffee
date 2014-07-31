@@ -54,6 +54,11 @@ Meteor.methods
     Meteor.call 'sync-arxiv-metadata'
     Meteor.call 'sync-local-pdf-cache'
 
+  'test-job': ->
+    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+
+    new TestJob({foo: 'bar'}).enqueue()
+
   'process-pdfs': ->
     throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
 

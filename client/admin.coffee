@@ -43,6 +43,13 @@ Template.adminErrors.events
 Template.adminErrors.errors = ->
   LoggedError.documents.find {}
 
+Template.adminJobs.events
+  'click button.test-job': (event, template) ->
+    Meteor.call 'test-job', (error, result) ->
+      Notify.meteorError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (event, template) ->
     Meteor.call 'sync-local-pdf-cache', (error, result) ->
