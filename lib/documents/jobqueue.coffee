@@ -5,6 +5,9 @@ if Meteor.isServer
       # and without _schema field which is added to all PeerDB documents
       _.omit job, '_schema', 'constructor'
 
+    _toLog: (userId, method, message) =>
+      Log.info "#{ method }: #{ message }"
+
 class @JobQueue extends Document
   # TODO: Describe
 

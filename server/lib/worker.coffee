@@ -73,17 +73,15 @@ runJobQueue = ->
             j._runId = job._doc.runId
             result = j.run()
           catch error
-            job.fail error
+            job.fail EJSON.toJSONValue error.stack or error.toString?() or error
             continue
-          job.done result
+          job.done EJSON.toJSONValue result
         catch error
           Log.error "Error running a job queue: #{ error.stack or error.toString?() or error }"
     finally
       jobQueueRunning = false
 
 Meteor.startup ->
-  # TODO: Use Meteor's logging package for logging
-  JobQueue.Meta.collection.setLogStream process.stdout
   # TODO: Allow configuration to run only on workers
   # TODO: Set promote interval based on number of workers
   JobQueue.Meta.collection.startJobs()
