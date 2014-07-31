@@ -2,6 +2,7 @@ Deps.autorun ->
   if Session.equals 'adminActive', true
     Meteor.subscribe 'arxiv-pdfs'
     Meteor.subscribe 'logged-errors'
+    Meteor.subscribe 'job-queue'
 
 Template.adminCheck.isAdmin = ->
   Meteor.person(isAdmin: 1)?.isAdmin
@@ -49,6 +50,12 @@ Template.adminJobs.events
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
+
+Template.adminJobs.jobqueue = ->
+  JobQueue.documents.find {},
+    sort: [
+      ['updated', 'desc']
+    ]
 
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (event, template) ->

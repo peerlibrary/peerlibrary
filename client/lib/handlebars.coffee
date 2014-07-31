@@ -9,3 +9,6 @@ END_TRIM_REGEX = /\s+</mg
 
 Handlebars.registerHelper 'spaceless', (options) ->
   options.fn(@).replace(START_TRIM_REGEX, '>').replace(END_TRIM_REGEX, '<').trim()
+
+Handlebars.registerHelper 'json', (obj) ->
+  JSON.stringify obj

@@ -45,8 +45,8 @@
     "segfault-handler": {},
     "crypto": {},
     "jobCollection": {
-      "branch": "local_server_methods",
-      "git": "https://github.com/vsivsi/meteor-job-collection.git"
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-job-collection.git"
     }
   }
 }

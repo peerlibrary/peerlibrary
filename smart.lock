@@ -47,8 +47,8 @@
       "segfault-handler": {},
       "crypto": {},
       "jobCollection": {
-        "git": "https://github.com/vsivsi/meteor-job-collection.git",
-        "branch": "local_server_methods"
+        "git": "https://github.com/peerlibrary/meteor-job-collection.git",
+        "branch": "peerlibrary"
       }
     },
     "packages": {
@@ -129,8 +129,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.11.2",
-        "commit": "6132bb0004179f288659b8d1c839f1b6a6e32909"
+        "tag": "v0.11.3",
+        "commit": "d418d4936da10be89e6a478c04fac4fd65f40455"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -193,9 +193,9 @@
         "commit": "9e7e7096c45bb4de46a62d61d497a23198de463a"
       },
       "jobCollection": {
-        "git": "https://github.com/vsivsi/meteor-job-collection.git",
-        "branch": "local_server_methods",
-        "commit": "92b0fde7d3ee902e1ead401aecbc9ab242f753c9"
+        "git": "https://github.com/peerlibrary/meteor-job-collection.git",
+        "branch": "peerlibrary",
+        "commit": "2a768e85c57042654b40cf5a3e7cf0261be02b52"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
