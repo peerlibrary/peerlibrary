@@ -1,6 +1,6 @@
-# Here we override jobCollection's Job class. We are not using => but -> so
-# that it is easy to serialize job's payload and that it is not combined
-# with instance methods made by =>.
+# Here we override jobCollection's Job class with something completely different.
+# We are not using => but -> so that it is easy to serialize job's payload and
+# that it is not combined with instance methods made by =>.
 class @Job
   @types = {}
 
