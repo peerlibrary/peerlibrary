@@ -10,9 +10,15 @@ class @Job
   run: ->
     throw new Error "Not implemented"
 
+  # Method so that job class can set or override enqueue options
+  enqueueOptions: (options) ->
+    options
+
   enqueue: (options) ->
     # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
+
+    options = @enqueueOptions options
 
     job.depends options.depends if options?.depends?
     job.priority options.priority if options?.priority?
