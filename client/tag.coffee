@@ -5,19 +5,19 @@ class @Tag extends Tag
 
   # We allow passing the tag slug if caller knows it
   @pathFromId: (tagId, slug) ->
-    tag = Tag.documents.findOne tagId
+    tag = @documents.findOne tagId
 
-    return Meteor.Router.tagPath tag._id, tag.slug if tag
+    return Meteor.Router.tagPath tag._id, (tag.slug ? slug) if tag
 
     Meteor.Router.tagPath tagId, slug
 
   path: ->
-    Tag.pathFromId @_id, @slug
+    @constructor.pathFromId @_id, @slug
 
   # Helper object with properties useful to refer to this document
   # Optional tag document
   @reference: (tagId, tag) ->
-    tag = Tag.documents.findOne tagId unless tag
+    tag = @documents.findOne tagId unless tag
     assert tagId, tag._id if tag
 
     # TODO: We want to display tags customized to the user, but store them with the ID
@@ -26,7 +26,7 @@ class @Tag extends Tag
     text: "##{ tagId }"
 
   reference: ->
-    Tag.reference @_id, @
+    @constructor.reference @_id, @
 
 Deps.autorun ->
   tagId = Session.get 'currentTagId'

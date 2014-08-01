@@ -5,19 +5,19 @@ class @Group extends Group
 
   # We allow passing the group slug if caller knows it
   @pathFromId: (groupId, slug) ->
-    group = Group.documents.findOne groupId
+    group = @documents.findOne groupId
 
-    return Meteor.Router.groupPath group._id, group.slug if group
+    return Meteor.Router.groupPath group._id, (group.slug ? slug) if group
 
     Meteor.Router.groupPath groupId, slug
 
   path: ->
-    Group.pathFromId @_id, @slug
+    @constructor.pathFromId @_id, @slug
 
   # Helper object with properties useful to refer to this document
   # Optional group document
   @reference: (groupId, group) ->
-    group = Group.documents.findOne groupId unless group
+    group = @documents.findOne groupId unless group
     assert groupId, group._id if group
 
     _id: groupId # TODO: Remove when we will be able to access parent template context
@@ -25,7 +25,7 @@ class @Group extends Group
     title: group?.name or group?.slug
 
   reference: ->
-    Group.reference @_id, @
+    @constructor.reference @_id, @
 
 groupHandle = null
 

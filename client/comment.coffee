@@ -3,33 +3,36 @@ class @Comment extends Comment
     name: 'Comment'
     replaceParent: true
 
+  # If we have the comment and the publication available on the client,
+  # we can create full path directly, otherwise we have to use commentIdPath
   @pathFromId: (commentId) ->
-    # If we have the comment and the publication available on the client,
-    # we can create full path directly, otherwise we have to use commentIdPath
-    comment = Comment.documents.findOne commentId
+    comment = @documents.findOne commentId
 
     return Meteor.Router.commentIdPath commentId unless comment
 
-    publication = Publication.documents.findOne comment.publication._id
+    publicationSlug = comment.publication?.slug
+    unless publicationSlug?
+      publication = Publication.documents.findOne comment.publication._id
+      publicationSlug = publication?.slug
 
-    return Meteor.Router.commentIdPath commentId unless publication
+      return Meteor.Router.commentIdPath commentId unless publicationSlug?
 
-    Meteor.Router.commentPath publication._id, publication.slug, commentId
+    Meteor.Router.commentPath comment.publication._id, publicationSlug, commentId
 
   path: ->
-    Comment.pathFromId @_id
+    @constructor.pathFromId @_id
 
   # Helper object with properties useful to refer to this document
   # Optional comment document
   @reference: (commentId, comment) ->
-    comment = Comment.documents.findOne commentId unless comment
+    comment = @documents.findOne commentId unless comment
     assert commentId, comment._id if comment
 
     _id: commentId # TODO: Remove when we will be able to access parent template context
     text: "m:#{ commentId }"
 
   reference: ->
-    Comment.reference @_id, @
+    @constructor.reference @_id, @
 
 Handlebars.registerHelper 'commentPathFromId', Comment.pathFromId
 

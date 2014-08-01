@@ -6,30 +6,33 @@ class @Annotation extends Annotation
   # If we have the annotation and the publication available on the client,
   # we can create full path directly, otherwise we have to use annotationIdPath
   @pathFromId: (annotationId) ->
-    annotation = LocalAnnotation.documents.findOne annotationId
+    annotation = @documents.findOne annotationId
 
     return Meteor.Router.annotationIdPath annotationId unless annotation
 
-    publication = Publication.documents.findOne annotation.publication._id
+    publicationSlug = annotation.publication?.slug
+    unless publicationSlug?
+      publication = Publication.documents.findOne annotation.publication._id
+      publicationSlug = publication?.slug
 
-    return Meteor.Router.annotationIdPath annotationId unless publication
+      return Meteor.Router.annotationIdPath annotationId unless publicationSlug?
 
-    Meteor.Router.annotationPath publication._id, publication.slug, annotationId
+    Meteor.Router.annotationPath annotation.publication._id, publicationSlug, annotationId
 
   path: ->
-    Annotation.pathFromId @_id
+    @constructor.pathFromId @_id
 
   # Helper object with properties useful to refer to this document
   # Optional annotation document
   @reference: (annotationId, annotation) ->
-    annotation = Annotation.documents.findOne annotationId unless annotation
+    annotation = @documents.findOne annotationId unless annotation
     assert annotationId, annotation._id if annotation
 
     _id: annotationId # TODO: Remove when we will be able to access parent template context
     text: "a:#{ annotationId }"
 
   reference: ->
-    Annotation.reference @_id, @
+    @constructor.reference @_id, @
 
 # A special client-only document which mirrors Annotation document. Anything
 # added to it will not be stored to the server, but any changes to Annotation

@@ -102,19 +102,19 @@ class @Publication extends Publication
 
   # We allow passing the publication slug if caller knows it
   @pathFromId: (publicationId, slug) ->
-    publication = Publication.documents.findOne publicationId
+    publication = @documents.findOne publicationId
 
-    return Meteor.Router.publicationPath publication._id, publication.slug if publication
+    return Meteor.Router.publicationPath publication._id, (publication.slug ? slug) if publication
 
     Meteor.Router.publicationPath publicationId, slug
 
   path: ->
-    Publication.pathFromId @_id, @slug
+    @constructor.pathFromId @_id, @slug
 
   # Helper object with properties useful to refer to this document
   # Optional publication document
   @reference: (publicationId, publication) ->
-    publication = Publication.documents.findOne publicationId unless publication
+    publication = @documents.findOne publicationId unless publication
     assert publicationId, publication._id if publication
 
     _id: publicationId # TODO: Remove when we will be able to access parent template context
@@ -122,7 +122,7 @@ class @Publication extends Publication
     title: publication?.title
 
   reference: ->
-    Publication.reference @_id, @
+    @constructor.reference @_id, @
 
   showPDF: =>
     assert.strictEqual @_pages, null

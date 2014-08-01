@@ -5,19 +5,19 @@ class @Collection extends Collection
 
   # We allow passing the collection slug if caller knows it
   @pathFromId: (collectionId, slug) ->
-    collection = Collection.documents.findOne collectionId
+    collection = @documents.findOne collectionId
 
-    return Meteor.Router.collectionPath collection._id, collection.slug if collection
+    return Meteor.Router.collectionPath collection._id, (collection.slug ? slug) if collection
 
     Meteor.Router.collectionPath collectionId, slug
 
   path: ->
-    Collection.pathFromId @_id, @slug
+    @constructor.pathFromId @_id, @slug
 
   # Helper object with properties useful to refer to this document
   # Optional collection document
   @reference: (collectionId, collection) ->
-    collection = Collection.documents.findOne collectionId unless collection
+    collection = @documents.findOne collectionId unless collection
     assert collectionId, collection._id if collection
 
     _id: collectionId # TODO: Remove when we will be able to access parent template context
@@ -25,7 +25,7 @@ class @Collection extends Collection
     title: collection?.name or collection?.slug
 
   reference: ->
-    Collection.reference @_id, @
+    @constructor.reference @_id, @
 
 collectionHandle = null
 

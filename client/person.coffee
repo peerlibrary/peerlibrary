@@ -7,14 +7,14 @@ class @Person extends Person
   # If you do not know if you have an ID or a slug, you can pass
   # it in as an ID and hopefully something useful will come out.
   @pathFromId = (personId, slug) ->
-    person = Person.documents.findOne
+    person = @documents.findOne
       $or: [
         slug: personId
       ,
         _id: personId
       ]
 
-    return Meteor.Router.personPath person.slug if person
+    return Meteor.Router.personPath (person.slug ? slug) if person
 
     # Even if did not find any person document, we still prefer slug over ID
     return Meteor.Router.personPath slug if slug
@@ -23,7 +23,7 @@ class @Person extends Person
     Meteor.Router.personPath personId
 
   path: ->
-    Person.pathFromId @_id, @slug
+    @constructor.pathFromId @_id, @slug
 
   # Helper object with properties useful to refer to this document
   # Optional person document
@@ -31,7 +31,7 @@ class @Person extends Person
   # it in as an ID and hopefully something useful will come out.
   @reference: (personId, person) ->
     unless person
-      person = Person.documents.findOne
+      person = @documents.findOne
         $or: [
           slug: personId
         ,
@@ -48,7 +48,7 @@ class @Person extends Person
       text: "@#{ personId }"
 
   reference: ->
-    Person.reference @_id, @
+    @constructor.reference @_id, @
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
