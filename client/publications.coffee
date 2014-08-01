@@ -21,7 +21,7 @@ Catalog.create catalogSettings
 Template.publications.catalogSettings = ->
   catalogSettings
 
-Template.publicationCatalogItem.events =
+Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->
     event.preventDefault()
 
@@ -35,22 +35,7 @@ Template.publicationCatalogItem.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown': (event, template) ->
-    # Save mouse position so we can later detect selection actions in click handler
-    template.data._previousMousePosition =
-      pageX: event.pageX
-      pageY: event.pageY
-
-  'click': (event, template) ->
-    # Don't redirect if user interacted with one of the actionable controls on the item
-    return if $(event.target).closest('.actionable').length > 0
-
-    # Don't redirect if this might have been a selection
-    event.previousMousePosition = template.data._previousMousePosition
-    return if event.previousMousePosition and (Math.abs(event.previousMousePosition.pageX - event.pageX) > 1 or Math.abs(event.previousMousePosition.pageY - event.pageY) > 1)
-
-    # Redirect user to the publication
-    Meteor.Router.toNew Meteor.Router.publicationPath template.data._id, template.data.slug
+EnableCatalogItemLink Template.publicationCatalogItem
 
 Template.publicationCatalogItem.created = ->
   @_publicationHandle = null

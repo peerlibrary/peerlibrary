@@ -131,8 +131,7 @@
         display block
 
       h2
-        a
-          text-decoration none
+        color blue-accent
 
       .actions
         display inline-block
@@ -152,15 +151,16 @@
       > *
         margin 0 0 10px 0
 
-    .full-item-link
+    a.full-item-link
       display block
       position absolute
       left 0
       right 0
       top 0
       bottom 0
+      z-index 0
 
-    .actionable, .tooltip
+    .actionable, .tooltip, a
       position relative
       z-index 1
 

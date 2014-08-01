@@ -38,16 +38,12 @@
 <template name="personCatalogItem">
   <li class="catalog-item person">
     {{#if gravatarHash}}
-      <div class="avatar actionable">
-        <img src="{{avatar avatarSize}}"/>
-      </div>
+      {{> personAvatar person}}
     {{/if}}
 
     <div class="details">
       <h2>
-        <a href="{{path}}" class="actionable">
-          {{displayName}}
-        </a>
+        {{displayName}}
       </h2>
 
       {{#if publications.length}}
@@ -58,5 +54,7 @@
         <p><i class="icon-group"></i> Member of {{groupsCountDescription}}</p>
       {{/if}}
     </div>
+
+    <a class="full-item-link" href="{{path}}"></a>
   </li>
 </template>

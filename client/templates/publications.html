@@ -61,7 +61,7 @@
       <ol class="authors">
         {{#if authors.length}}
           {{#each authors}}
-            <li class="actionable">{{> personInlineItem}}</li>
+            <li>{{> personInlineItem}}</li>
           {{/each}}
         {{else}}
           <li><i>&lt;author metadata missing&gt;</i></li>
@@ -84,9 +84,9 @@
         <p><i class="icon-annotation"></i> {{annotationsCountDescription}}</p>
       {{/if}}
 
-      <div class="actions actionable">
+      <div class="actions">
         {{#if hasAbstract}}
-          <button class="preview-link">Abstract</button> &middot;
+          <button class="actionable preview-link">Abstract</button> &middot;
         {{/if}}
         <a href="{{path}}">Full text</a>
       </div>
@@ -99,6 +99,8 @@
         </div>
       {{/if}}
     </div>
+
+    <a class="full-item-link" href="{{path}}"></a>
   </li>
 </template>
 
@@ -120,18 +122,16 @@
 <template name="publicationCatalogItemTitle">
   <h2 class="{{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
     {{#spaceless}}
-      <a class="actionable" href="{{path}}">
-        {{#if title}}
-          {{title}}
+      {{#if title}}
+        {{title}}
+      {{else}}
+        {{#if importing.0.filename}}
+          {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.0.filename}}
         {{else}}
-          {{#if importing.0.filename}}
-            {{! Used only in personal library list, elsewhere we display "<title metadata missing>" to invite users to provide metadata }}
-            {{importing.0.filename}}
-          {{else}}
-            <i>&lt;title metadata missing&gt;</i>
-          {{/if}}
+          <i>&lt;title metadata missing&gt;</i>
         {{/if}}
-      </a>
+      {{/if}}
     {{/spaceless}}
   </h2>
 </template>

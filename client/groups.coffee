@@ -54,27 +54,9 @@ Editable.template Template.groupCatalogItemName, ->
 ,
   "Enter group name"
 ,
-  true
+  false
 
-Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
-
-Template.groupCatalogItem.events =
-  'mousedown': (event, template) ->
-    # Save mouse position so we can later detect selection actions in click handler
-    template.data._previousMousePosition =
-      pageX: event.pageX
-      pageY: event.pageY
-
-  'click': (event, template) ->
-    # Don't redirect if user interacted with one of the actionable controls on the item
-    return if $(event.target).closest('.actionable').length > 0
-
-    # Don't redirect if this might have been a selection
-    event.previousMousePosition = template.data._previousMousePosition
-    return if event.previousMousePosition and (Math.abs(event.previousMousePosition.pageX - event.pageX) > 1 or Math.abs(event.previousMousePosition.pageY - event.pageY) > 1)
-
-    # Redirect user to the group
-    Meteor.Router.toNew Meteor.Router.groupPath template.data._id, template.data.slug
+EnableCatalogItemLink Template.groupCatalogItem
 
 Template.groupCatalogItem.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
