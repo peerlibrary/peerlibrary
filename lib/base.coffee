@@ -107,7 +107,7 @@ setSession = (session) ->
 
 notFound = ->
   # TODO: Is there a better/official way?
-  Meteor.Router._page = 'notfound'
+  Meteor.Router._page = 'notFound'
   Meteor.Router._pageDeps.changed()
 
 redirectHighlightId = (highlightId) ->
@@ -387,4 +387,4 @@ Meteor.Router.add
 
   '*': ->
     setSession()
-    'notfound'
+    'notFound'

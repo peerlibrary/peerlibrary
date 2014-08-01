@@ -7,35 +7,35 @@ Template.adminCheck.isAdmin = ->
   Meteor.person(isAdmin: 1)?.isAdmin
 
 Template.adminDevelopment.events
-  'click button.sample-data': (e, template) ->
+  'click button.sample-data': (event, template) ->
     Meteor.call 'sample-data', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
-  'click button.process-pdfs': (e, template) ->
+  'click button.process-pdfs': (event, template) ->
     Meteor.call 'process-pdfs', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
-  'click button.reprocess-pdfs': (e, template) ->
+  'click button.reprocess-pdfs': (event, template) ->
     Meteor.call 'reprocess-pdfs', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminDatabase.events
-  'click button.update-all': (e, template) ->
+  'click button.update-all': (event, template) ->
     Meteor.call 'database-update-all', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminErrors.events
-  'click button.dummy-error': (e, template) ->
+  'click button.dummy-error': (event, template) ->
     # Throws a dummy error on button click, which should be logged
     # and stored in the database by our errors logging code
     throw new Error "Dummy error"
@@ -44,20 +44,20 @@ Template.adminErrors.errors = ->
   LoggedError.documents.find {}
 
 Template.adminSources.events
-  'click button.sync-local-pdf-cache': (e, template) ->
+  'click button.sync-local-pdf-cache': (event, template) ->
     Meteor.call 'sync-local-pdf-cache', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminArXiv.events
-  'click button.sync-arxiv-pdf-cache': (e, template) ->
+  'click button.sync-arxiv-pdf-cache': (event, template) ->
     Meteor.call 'sync-arxiv-pdf-cache', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click button.sync-arxiv-metadata': (e, template) ->
+  'click button.sync-arxiv-metadata': (event, template) ->
     Meteor.call 'sync-arxiv-metadata', (error, result) ->
       Notify.meteorError error if error
 
@@ -71,20 +71,20 @@ Template.adminArXiv.PDFs = ->
     limit: 5
 
 Template.adminFSM.events
-  'click button.sync-fsm-cache': (e, template) ->
+  'click button.sync-fsm-cache': (event, template) ->
     Meteor.call 'sync-fsm-cache', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
-  'click button.sync-fsm-metadata': (e, template) ->
+  'click button.sync-fsm-metadata': (event, template) ->
     Meteor.call 'sync-fsm-metadata', (error, result) ->
       Notify.meteorError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminBlog.events
-  'click button.sync-blog': (e, template) ->
+  'click button.sync-blog': (event, template) ->
     Meteor.call 'sync-blog', (error, result) ->
       Notify.meteorError error if error
 

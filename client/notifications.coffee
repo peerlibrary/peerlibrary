@@ -47,10 +47,10 @@ Template.notificationsOverlayItem.rendered = ->
     3000 # ms
 
   # Pause the timeout while user is hovering over the notification
-  $notification.on 'mouseenter.notification', (e) =>
+  $notification.on 'mouseenter.notification', (event) =>
     @_timeout.pause() if @_timeout
     return # Make sure CoffeeScript does not return anything
-  $notification.on 'mouseleave.notification', (e) =>
+  $notification.on 'mouseleave.notification', (event) =>
     @_timeout.resume() if @_timeout
     return # Make sure CoffeeScript does not return anything
 
@@ -61,9 +61,9 @@ Template.notificationsOverlayItem.destroyed = ->
   @_seen = false
 
 Template.notificationsOverlayItem.events
-  'click .button': (e, template) ->
-    if $(e.target).hasClass('icon-down')
-      e.preventDefault()
+  'click .button': (event, template) ->
+    if $(event.target).hasClass('icon-down')
+      event.preventDefault()
 
       Deps.afterFlush =>
         $(template.findAll '.additional').slideDown
@@ -73,22 +73,22 @@ Template.notificationsOverlayItem.events
             positionNotifications $('.notifications .notification'), true
           complete: =>
             positionNotifications $('.notifications .notification'), false
-            $(e.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
+            $(event.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
 
-    else if $(e.target).hasClass('icon-cancel')
-      Notify.documents.remove @_id unless e.isDefaultPrevented()
+    else if $(event.target).hasClass('icon-cancel')
+      Notify.documents.remove @_id unless event.isDefaultPrevented()
 
     return # Make sure CoffeeScript does not return anything
 
-  'click .stack': (e, template) ->
-    e.preventDefault()
+  'click .stack': (event, template) ->
+    event.preventDefault()
 
     $('.stack').select()
 
     return
 
-  'click': (e, template) ->
-    Notify.documents.remove @_id unless e.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
+  'click': (event, template) ->
+    Notify.documents.remove @_id unless event.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
 
     return # Make sure CoffeeScript does not return anything
 

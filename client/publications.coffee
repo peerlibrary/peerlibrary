@@ -22,8 +22,8 @@ Template.publications.catalogSettings = ->
   catalogSettings
 
 Template.publicationCatalogItem.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
+  'click .preview-link': (event, template) ->
+    event.preventDefault()
 
     if template._publicationHandle
       # We ignore the click if handle is not yet ready
@@ -35,19 +35,19 @@ Template.publicationCatalogItem.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'mousedown': (e, template) ->
+  'mousedown': (event, template) ->
     # Save mouse position so we can later detect selection actions in click handler
     template.data._previousMousePosition =
-      pageX: e.pageX
-      pageY: e.pageY
+      pageX: event.pageX
+      pageY: event.pageY
 
-  'click': (e, template) ->
+  'click': (event, template) ->
     # Don't redirect if user interacted with one of the actionable controls on the item
-    return if $(e.target).closest('.actionable').length > 0
+    return if $(event.target).closest('.actionable').length > 0
 
     # Don't redirect if this might have been a selection
-    e.previousMousePosition = template.data._previousMousePosition
-    return if e.previousMousePosition and (Math.abs(e.previousMousePosition.pageX - e.pageX) > 1 or Math.abs(e.previousMousePosition.pageY - e.pageY) > 1)
+    event.previousMousePosition = template.data._previousMousePosition
+    return if event.previousMousePosition and (Math.abs(event.previousMousePosition.pageX - event.pageX) > 1 or Math.abs(event.previousMousePosition.pageY - event.pageY) > 1)
 
     # Redirect user to the publication
     Meteor.Router.toNew Meteor.Router.publicationPath template.data._id, template.data.slug
@@ -96,7 +96,7 @@ Template.publicationCatalogItemLibraryMenu.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
 
 Template.publicationCatalogItemLibraryMenu.events
-  'click .toolbar-button': (e, template) ->
+  'click .toolbar-button': (event, template) ->
 
     $anchor = $(template.findAll '.dropdown-anchor')
     $anchor.toggle()
@@ -153,11 +153,11 @@ Editable.template Template.publicationCatalogItemTitle, ->
 Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.publicationCatalogItemThumbnail.events
-  'mouseenter li': (e, template) ->
+  'mouseenter li': (event, template) ->
     # Update page tooltip with current scrubbed over page
     $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
 
-  'click li': (e, template) ->
+  'click li': (event, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
     publication = @publication
