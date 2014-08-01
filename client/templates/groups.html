@@ -1,62 +1,11 @@
 <template name="groups">
   <h1>Groups</h1>
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> groupsCount}}
-      {{> groupsList documents}}
-      {{> groupsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> myGroups}}
   </div>
-</template>
-
-<template name="groupsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> groupCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="groupsCount">
-  {{#if documentsCount}}
-    {{#if documentsFilter}}
-      <p class="status">Filter matches {{countDescription}}</p>
-    {{else}}
-      <p class="status">Displaying {{countDescription}}</p>
-    {{/if}}
-  {{/if}}
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        Filter matches no groups.
-      {{else}}
-        There are no groups yet.
-        {{#if currentPersonId}}
-          Create the first using the form on the right.
-        {{else}}
-          Sign in and create the first.
-        {{/if}}
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="groupsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{else}}
-      {{#if documentsCount}}
-        <p class="status">No more groups to display.</p>
-      {{/if}}
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="myGroups">

@@ -1,62 +1,11 @@
 <template name="publications">
   <h1>Publications</h1>
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> publicationsCount}}
-      {{> publicationsList documents}}
-      {{> publicationsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> myPublications}}
   </div>
-</template>
-
-<template name="publicationsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> publicationCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="publicationsCount">
-  {{#if documentsCount}}
-    {{#if documentsFilter}}
-      <p class="status">Filter matches {{countDescription}}</p>
-    {{else}}
-      <p class="status">Displaying {{countDescription}}</p>
-    {{/if}}
-  {{/if}}
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        Filter matches no publications.
-      {{else}}
-        There are no publications yet.
-        {{#if currentPersonId}}
-          Import the first from the menu on top.
-        {{else}}
-          Sign in and import the first.
-        {{/if}}
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="publicationsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{else}}
-      {{#if documentsCount}}
-        <p class="status">No more publications to display.</p>
-      {{/if}}
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="myPublications">

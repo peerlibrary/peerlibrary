@@ -1,58 +1,11 @@
 <template name="persons">
   <h1>People</h1>
-
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> personsCount}}
-      {{> personsList documents}}
-      {{> personsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> personsSidebar}}
   </div>
-</template>
-
-<template name="personsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> personCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="personsCount">
-  {{#if documentsCount}}
-    {{#if documentsFilter}}
-    <p class="status">Filter matches {{countDescription}}</p>
-    {{else}}
-    <p class="status">Displaying {{countDescription}}</p>
-    {{/if}}
-  {{/if}}
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        Filter matches no people.
-      {{else}}
-        There are no people yet. Sign up and become the first.
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="personsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{else}}
-      {{#if documentsCount}}
-        <p class="status">No more people to display.</p>
-      {{/if}}
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="personsSidebar">

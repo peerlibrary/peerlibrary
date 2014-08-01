@@ -1,3 +1,12 @@
+<template name="catalog">
+  <div class="catalog">
+    {{> catalogControls}}
+    {{> catalogCount}}
+    {{> catalogList}}
+    {{> catalogLoading}}
+  </div>
+</template>
+
 <template name="catalogControls">
   <div class="controls">
     {{> catalogFilter}}
@@ -8,7 +17,7 @@
 <template name="catalogFilter">
   <div class="filter control">
     <i class="icon-search"></i>
-    <input name="filter" type="text" placeholder="Filter {{documentsName}}" autocomplete="off" autofocus="autofocus" />
+    <input name="filter" type="text" placeholder="Filter {{documentsName}}" value="{{filter}}" autocomplete="off" autofocus="autofocus" />
   </div>
 </template>
 
@@ -34,4 +43,62 @@
 
 <template name="catalogSortOption">
   <li class="menu-item"><button>{{name}}</button></li>
+</template>
+
+<template name="catalogCount">
+  {{#if ready}}
+    <p class="status">
+      {{#if count}}
+        {{#if filter}}
+          Filter matches {{countDescription}}
+        {{else}}
+          Displaying {{countDescription}}
+        {{/if}}
+      {{else}}
+        {{#if filter}}
+          Filter matches no {{documentsName}}.
+        {{else}}
+          There are no {{documentsName}} yet.
+          {{#if currentPersonId}}
+            {{signedInNoDocumentsMessage}}
+          {{else}}
+            {{signedOutNoDocumentsMessage}}
+          {{/if}}
+        {{/if}}
+      {{/if}}
+    </p>
+  {{/if}}
+</template>
+
+<template name="catalogList">
+  {{#if documents}}
+    <ol class="item-list">
+      {{#each documents}}
+        {{> catalogItem}}
+      {{/each}}
+    </ol>
+  {{/if}}
+</template>
+
+<template name="catalogItem">
+  {{#if documentIsPublication}}{{> publicationCatalogItem}}{{/if}}
+  {{#if documentIsPerson}}{{> personCatalogItem}}{{/if}}
+  {{#if documentIsHighlight}}{{> highlightCatalogItem}}{{/if}}
+  {{#if documentIsAnnotation}}{{> annotationCatalogItem}}{{/if}}
+  {{#if documentIsGroup}}{{> groupCatalogItem}}{{/if}}
+  {{#if documentIsCollection}}{{> collectionCatalogItem}}{{/if}}
+</template>
+
+<template name="catalogLoading">
+  {{#if loading}}
+    <p class="status">Loading …</p>
+  {{else}}
+    {{#if more}}
+      <button class="load-more">Load more</button>
+    {{else}}
+      {{#if count}}
+        <p class="status">No more {{documentsName}} to display.</p>
+      {{/if}}
+    {{/if}}
+  {{/if}}
 </template>

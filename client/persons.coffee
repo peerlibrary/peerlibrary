@@ -1,21 +1,21 @@
-Catalog.create 'persons', Person,
-  main: Template.persons
-  count: Template.personsCount
-  loading: Template.personsLoading
-,
-  active: 'personsActive'
-  ready: 'currentPersonsReady'
-  loading: 'currentPersonsLoading'
-  count: 'currentPersonsCount'
-  filter: 'currentPersonsFilter'
-  limit: 'currentPersonsLimit'
-  sort: 'currentPersonsSort'
-
-Template.persons.catalogSettings = ->
+catalogSettings =
+  subscription: 'persons'
   documentClass: Person
   variables:
+    active: 'personsActive'
+    ready: 'currentPersonsReady'
+    loading: 'currentPersonsLoading'
+    count: 'currentPersonsCount'
     filter: 'currentPersonsFilter'
+    limit: 'currentPersonsLimit'
+    limitIncreasing: 'currentPersonsLimitIncreasing'
     sort: 'currentPersonsSort'
+  signedOutNoDocumentsMessage: "There are no people yet. Sign up and become the first."
+
+Catalog.create catalogSettings
+
+Template.persons.catalogSettings = ->
+  catalogSettings
 
 Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"

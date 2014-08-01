@@ -1,24 +1,25 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-Catalog.create 'publications', Publication,
-  main: Template.publications
-  count: Template.publicationsCount
-  loading: Template.publicationsLoading
-,
-  active: 'publicationsActive'
-  ready: 'currentPublicationsReady'
-  loading: 'currentPublicationsLoading'
-  count: 'currentPublicationsCount'
-  filter: 'currentPublicationsFilter'
-  limit: 'currentPublicationsLimit'
-  sort: 'currentPublicationsSort'
-
-Template.publications.catalogSettings = ->
+catalogSettings =
+  subscription: 'publications'
   documentClass: Publication
   variables:
+    active: 'publicationsActive'
+    ready: 'currentPublicationsReady'
+    loading: 'currentPublicationsLoading'
+    count: 'currentPublicationsCount'
     filter: 'currentPublicationsFilter'
+    limit: 'currentPublicationsLimit'
+    limitIncreasing: 'currentPublicationsLimitIncreasing'
     sort: 'currentPublicationsSort'
+  signedInNoDocumentsMessage: "Import the first from the menu on top."
+  signedOutNoDocumentsMessage: "Sign in and import the first."
+
+Catalog.create catalogSettings
+
+Template.publications.catalogSettings = ->
+  catalogSettings
 
 Template.publicationCatalogItem.events =
   'click .preview-link': (e, template) ->
