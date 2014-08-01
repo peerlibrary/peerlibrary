@@ -1,7 +1,7 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-catalogSettings =
+Template.publications.catalogSettings = ->
   subscription: 'publications'
   documentClass: Publication
   variables:
@@ -15,11 +15,6 @@ catalogSettings =
     sort: 'currentPublicationsSort'
   signedInNoDocumentsMessage: "Import the first from the menu on top."
   signedOutNoDocumentsMessage: "Sign in and import the first."
-
-Catalog.create catalogSettings
-
-Template.publications.catalogSettings = ->
-  catalogSettings
 
 Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->

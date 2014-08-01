@@ -1,4 +1,4 @@
-catalogSettings =
+Template.groups.catalogSettings = ->
   subscription: 'groups'
   documentClass: Group
   variables:
@@ -12,11 +12,6 @@ catalogSettings =
     sort: 'currentGroupsSort'
   signedInNoDocumentsMessage: "Create the first using the form on the right."
   signedOutNoDocumentsMessage: "Sign in and create the first."
-
-Catalog.create catalogSettings
-
-Template.groups.catalogSettings = ->
-  catalogSettings
 
 Deps.autorun ->
   if Session.equals 'groupsActive', true

@@ -1,4 +1,4 @@
-catalogSettings =
+Template.highlights.catalogSettings = ->
   subscription: 'highlights'
   documentClass: Highlight
   variables:
@@ -12,10 +12,5 @@ catalogSettings =
     sort: 'currentHighlightsSort'
   signedInNoDocumentsMessage: "Create the first by highlighting text in one of the publications."
   signedOutNoDocumentsMessage: "Sign in and create the first."
-
-Catalog.create catalogSettings
-
-Template.highlights.catalogSettings = ->
-  catalogSettings
 
 EnableCatalogItemLink Template.highlightCatalogItem

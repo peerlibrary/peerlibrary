@@ -1,4 +1,4 @@
-catalogSettings =
+Template.collections.catalogSettings = ->
   subscription: 'collections'
   documentClass: Collection
   variables:
@@ -12,11 +12,6 @@ catalogSettings =
     sort: 'currentCollectionsSort'
   signedInNoDocumentsMessage: "Create the first using the form on the right."
   signedOutNoDocumentsMessage: "Sign in and create the first."
-
-Catalog.create catalogSettings
-
-Template.collections.catalogSettings = ->
-  catalogSettings
 
 Deps.autorun ->
   if Session.equals 'collectionsActive', true

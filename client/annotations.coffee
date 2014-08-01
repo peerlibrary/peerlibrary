@@ -1,4 +1,4 @@
-catalogSettings =
+Template.annotations.catalogSettings = ->
   subscription: 'annotations'
   documentClass: Annotation
   variables:
@@ -12,11 +12,6 @@ catalogSettings =
     sort: 'currentAnnotationsSort'
   signedInNoDocumentsMessage: "Create the first by annotating one of the publications."
   signedOutNoDocumentsMessage: "Sign in and create the first."
-
-Catalog.create catalogSettings
-
-Template.annotations.catalogSettings = ->
-  catalogSettings
 
 EnableCatalogItemLink Template.annotationCatalogItem
 

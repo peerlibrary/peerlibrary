@@ -1,6 +1,76 @@
 # The ammount by which we increate the limit of returned results
 LIMIT_INCREASE_STEP = 10
 
+# List of all session variables that activate views with catalogs (used to determine infinite scrolling)
+@catalogActiveVariables = []
+
+# Subscribe the client to catalog's documents
+Template.catalog.created = ->
+  variables = @data.variables
+
+  @catalogActiveVariables = _.union catalogActiveVariables, [variables.active]
+
+  # We need a reset signal that will rerun the search
+  # when the ready variable is set to false from the router
+  reset = new Variable false
+  wasReady = new Variable false
+
+  @_resetSignalHandle?.stop()
+  @_resetSignalHandle = Deps.autorun ->
+    # Detect when ready is turned to false
+    ready = Session.get(variables.ready)
+    if wasReady() and not ready
+      reset.set true
+      wasReady.set false
+
+  @_searchParametersHandle?.stop()
+  @_searchParametersHandle = Deps.autorun ->
+    # Every time filter or sort is changed, we reset counts
+    # (We don't want to reset counts on currentLimit change)
+    Session.get variables.filter
+    Session.get variables.sort
+    Session.set variables.ready, false
+    Session.set variables.limit, INITIAL_CATALOG_LIMIT
+    Session.set variables.limitIncreasing, false
+
+  subscriptionHandle = null
+
+  @_subscriptionAutorunHandle?.stop()
+  @_subscriptionAutorunHandle = Deps.autorun =>
+    # Listen for the reset signal, so the search is
+    # rerun when ready is set to false from the outside
+    reset()
+    reset.set false
+    if Session.get(variables.active) and Session.get(variables.limit)
+      Session.set variables.loading, true
+      # Make sure there is only one subscribtion being executed at once
+      subscriptionHandle.stop() if subscriptionHandle
+      subscriptionHandle = Meteor.subscribe @data.subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
+        onReady: =>
+          # Store how many results there are
+          searchResult = SearchResult.documents.findOne
+            name: @data.subscription
+            query: [Session.get(variables.filter), Session.get(variables.sort)]
+          Session.set variables.count, searchResult["count#{@data.documentClass.name}s"]
+
+          Session.set variables.ready, true
+          wasReady.set true
+
+          Session.set variables.loading, false
+        onError: ->
+          # TODO: Should we display some error?
+          Session.set variables.loading, false
+    else
+      Session.set variables.loading, false
+
+Template.catalog.destroyed = ->
+  @_resetSignalHandle?.stop()
+  @_resetSignalHandle = null
+  @_searchParametersHandle?.stop()
+  @_searchParametersHandle = null
+  @_subscriptionAutorunHandle?.stop()
+  @_subscriptionAutorunHandle = null
+
 Template.catalogFilter.documentsName = ->
   @documentClass.verboseNamePlural()
 
@@ -158,64 +228,3 @@ increaseLimit = (pageSize, variables) ->
   if Session.get(variables.limit) < Session.get(variables.count)
     Session.set variables.limitIncreasing, true
     Session.set variables.limit, (Session.get(variables.limit) or 0) + pageSize
-
-# Helper that enables a list of documents with infinite scrolling and filtering
-class @Catalog
-  # List of all session variables that activate views with catalogs (used to determine infinite scrolling)
-  @catalogActiveVariables = []
-
-  # Subscribe the client to catalog's documents
-  @create: (settings) ->
-    variables = settings.variables
-
-    @catalogActiveVariables.push variables.active
-
-    # We need a reset signal that will rerun the search
-    # when the ready variable is set to false from the router
-    reset = new Variable false
-    wasReady = new Variable false
-
-    Deps.autorun ->
-      # Detect when ready is turned to false
-      ready = Session.get(variables.ready)
-      if wasReady() and not ready
-        reset.set true
-        wasReady.set false
-
-    Deps.autorun ->
-      # Every time filter or sort is changed, we reset counts
-      # (We don't want to reset counts on currentLimit change)
-      Session.get variables.filter
-      Session.get variables.sort
-      Session.set variables.ready, false
-      Session.set variables.limit, INITIAL_CATALOG_LIMIT
-      Session.set variables.limitIncreasing, false
-
-    subscriptionHandle = null
-
-    Deps.autorun ->
-      # Listen for the reset signal, so the search is
-      # rerun when ready is set to false from the outside
-      reset()
-      reset.set false
-      if Session.get(variables.active) and Session.get(variables.limit)
-        Session.set variables.loading, true
-        # Make sure there is only one subscribtion being executed at once
-        subscriptionHandle.stop() if subscriptionHandle
-        subscriptionHandle = Meteor.subscribe settings.subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
-          onReady: ->
-            # Store how many results there are
-            searchResult = SearchResult.documents.findOne
-              name: settings.subscription
-              query: [Session.get(variables.filter), Session.get(variables.sort)]
-            Session.set variables.count, searchResult["count#{settings.documentClass.name}s"]
-
-            Session.set variables.ready, true
-            wasReady.set true
-
-            Session.set variables.loading, false
-          onError: ->
-            # TODO: Should we display some error?
-            Session.set variables.loading, false
-      else
-        Session.set variables.loading, false

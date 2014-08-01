@@ -1,4 +1,4 @@
-catalogSettings =
+Template.persons.catalogSettings = ->
   subscription: 'persons'
   documentClass: Person
   variables:
@@ -11,11 +11,6 @@ catalogSettings =
     limitIncreasing: 'currentPersonsLimitIncreasing'
     sort: 'currentPersonsSort'
   signedOutNoDocumentsMessage: "There are no people yet. Sign up and become the first."
-
-Catalog.create catalogSettings
-
-Template.persons.catalogSettings = ->
-  catalogSettings
 
 Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"
