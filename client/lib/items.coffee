@@ -44,11 +44,15 @@ Template.memberAdd.noLinkDocument = ->
         pageX: event.pageX
         pageY: event.pageY
 
-      # Allow user to right click the link
-      return if event.button is 2
-
       # Temporarily hide the link to allow selection
       $(template.find '.full-item-link').hide()
+
+      if event.button is 2
+        # On right clicks, determine if user was trying to interact with selection or the link.
+        # If user didn't right click on an item that holds some part of the selection, show the
+        # link again so they can get a context menu for the link instead.
+        underMouse = document.elementFromPoint event.clientX, event.clientY
+        $(template.find '.full-item-link').show() unless rangy.getSelection().containsNode underMouse, true
 
     'mouseup': (event, template) ->
       # Don't redirect if user interacted with one of the actionable controls or a link on the item
