@@ -81,7 +81,7 @@ Editable.template Template.groupName, ->
 ,
 (name) ->
   Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return Notify.meteorError error, true if error
+    return Notify.fromError error, true if error
 ,
   "Enter group name"
 ,
