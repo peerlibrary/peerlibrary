@@ -6,7 +6,11 @@ class @Person extends Person
   # We allow passing the person slug if caller knows it.
   # If you do not know if you have an ID or a slug, you can pass
   # it in as an ID and hopefully something useful will come out.
-  @pathFromId = (personId, slug) ->
+  @pathFromId = (personId, slug, options) ->
+    assert _.isString personId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
     person = @documents.findOne
       $or: [
         slug: personId
@@ -29,7 +33,11 @@ class @Person extends Person
   # Optional person document
   # If you do not know if you have an ID or a slug, you can pass
   # it in as an ID and hopefully something useful will come out.
-  @reference: (personId, person) ->
+  @reference: (personId, person, options) ->
+    assert _.isString personId
+    # To allow calling template helper with only one argument (person will be options then)
+    person = null unless person instanceof @
+
     unless person
       person = @documents.findOne
         $or: [

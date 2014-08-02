@@ -5,7 +5,9 @@ class @Highlight extends Highlight
 
   # If we have the highlight and the publication available on the client,
   # we can create full path directly, otherwise we have to use highlightIdPath
-  @pathFromId: (highlightId) ->
+  @pathFromId: (highlightId, options) ->
+    assert _.isString highlightId
+
     highlight = @documents.findOne highlightId
 
     return Meteor.Router.highlightIdPath highlightId unless highlight
@@ -24,7 +26,11 @@ class @Highlight extends Highlight
 
   # Helper object with properties useful to refer to this document
   # Optional highlight document
-  @reference: (highlightId, highlight) ->
+  @reference: (highlightId, highlight, options) ->
+    assert _.isString highlightId
+    # To allow calling template helper with only one argument (highlight will be options then)
+    highlight = null unless highlight instanceof @
+
     highlight = @documents.findOne highlightId unless highlight
     assert highlightId, highlight._id if highlight
 

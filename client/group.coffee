@@ -4,7 +4,11 @@ class @Group extends Group
     replaceParent: true
 
   # We allow passing the group slug if caller knows it
-  @pathFromId: (groupId, slug) ->
+  @pathFromId: (groupId, slug, options) ->
+    assert _.isString groupId
+    # To allow calling template helper with only one argument (group will be options then)
+    group = null unless _.isString group
+
     group = @documents.findOne groupId
 
     return Meteor.Router.groupPath group._id, (group.slug ? slug) if group
@@ -16,7 +20,11 @@ class @Group extends Group
 
   # Helper object with properties useful to refer to this document
   # Optional group document
-  @reference: (groupId, group) ->
+  @reference: (groupId, group, options) ->
+    assert _.isString groupId
+    # To allow calling template helper with only one argument (collection will be options then)
+    group = null unless group instanceof @
+
     group = @documents.findOne groupId unless group
     assert groupId, group._id if group
 

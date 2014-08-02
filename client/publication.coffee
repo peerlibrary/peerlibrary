@@ -101,7 +101,11 @@ class @Publication extends Publication
       else Notify.error "Unsupported media type: #{ @mediaType }", null, true
 
   # We allow passing the publication slug if caller knows it
-  @pathFromId: (publicationId, slug) ->
+  @pathFromId: (publicationId, slug, options) ->
+    assert _.isString publicationId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
     publication = @documents.findOne publicationId
 
     return Meteor.Router.publicationPath publication._id, (publication.slug ? slug) if publication
@@ -113,7 +117,11 @@ class @Publication extends Publication
 
   # Helper object with properties useful to refer to this document
   # Optional publication document
-  @reference: (publicationId, publication) ->
+  @reference: (publicationId, publication, options) ->
+    assert _.isString publicationId
+    # To allow calling template helper with only one argument (publication will be options then)
+    publication = null unless publication instanceof @
+
     publication = @documents.findOne publicationId unless publication
     assert publicationId, publication._id if publication
 

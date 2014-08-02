@@ -5,7 +5,9 @@ class @Annotation extends Annotation
 
   # If we have the annotation and the publication available on the client,
   # we can create full path directly, otherwise we have to use annotationIdPath
-  @pathFromId: (annotationId) ->
+  @pathFromId: (annotationId, options) ->
+    assert _.isString annotationId
+
     annotation = @documents.findOne annotationId
 
     return Meteor.Router.annotationIdPath annotationId unless annotation
@@ -24,7 +26,11 @@ class @Annotation extends Annotation
 
   # Helper object with properties useful to refer to this document
   # Optional annotation document
-  @reference: (annotationId, annotation) ->
+  @reference: (annotationId, annotation, options) ->
+    assert _.isString annotationId
+    # To allow calling template helper with only one argument (annotation will be options then)
+    annotation = null unless annotation instanceof @
+
     annotation = @documents.findOne annotationId unless annotation
     assert annotationId, annotation._id if annotation
 

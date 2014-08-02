@@ -1,4 +1,4 @@
 @VERSION = __meteor_runtime_config__.VERSION
 
-Handlebars.registerHelper 'VERSION', (options) =>
+Handlebars.registerHelper 'VERSION', (options) ->
   @VERSION

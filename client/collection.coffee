@@ -4,7 +4,11 @@ class @Collection extends Collection
     replaceParent: true
 
   # We allow passing the collection slug if caller knows it
-  @pathFromId: (collectionId, slug) ->
+  @pathFromId: (collectionId, slug, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
     collection = @documents.findOne collectionId
 
     return Meteor.Router.collectionPath collection._id, (collection.slug ? slug) if collection
@@ -16,7 +20,11 @@ class @Collection extends Collection
 
   # Helper object with properties useful to refer to this document
   # Optional collection document
-  @reference: (collectionId, collection) ->
+  @reference: (collectionId, collection, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (collection will be options then)
+    collection = null unless collection instanceof @
+
     collection = @documents.findOne collectionId unless collection
     assert collectionId, collection._id if collection
 

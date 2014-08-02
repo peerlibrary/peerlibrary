@@ -4,7 +4,11 @@ class @Tag extends Tag
     replaceParent: true
 
   # We allow passing the tag slug if caller knows it
-  @pathFromId: (tagId, slug) ->
+  @pathFromId: (tagId, slug, options) ->
+    assert _.isString tagId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
     tag = @documents.findOne tagId
 
     return Meteor.Router.tagPath tag._id, (tag.slug ? slug) if tag
@@ -16,7 +20,11 @@ class @Tag extends Tag
 
   # Helper object with properties useful to refer to this document
   # Optional tag document
-  @reference: (tagId, tag) ->
+  @reference: (tagId, tag, options) ->
+    assert _.isString tagId
+    # To allow calling template helper with only one argument (tag will be options then)
+    tag = null unless tag instanceof @
+
     tag = @documents.findOne tagId unless tag
     assert tagId, tag._id if tag
 
