@@ -203,8 +203,8 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
     Collection.documents.update Group.requireMaintainerAccessSelector(person,
-        _id: collection._id
-      ),
+      _id: collection._id
+    ),
       $set:
         name: name
 
