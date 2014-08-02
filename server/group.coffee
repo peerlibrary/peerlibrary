@@ -31,7 +31,7 @@ class @Group extends Group
 registerForAccess Group
 
 Meteor.methods
-  'create-group': (name) ->
+  'create-group': methodWrap (name) ->
     check name, NonEmptyString
 
     person = Meteor.person()
@@ -51,7 +51,7 @@ Meteor.methods
     Group.documents.insert group
 
   # TODO: Use this code on the client side as well
-  'remove-group': (groupId) ->
+  'remove-group': methodWrap (groupId) ->
     check groupId, DocumentId
 
     person = Meteor.person()
@@ -67,7 +67,7 @@ Meteor.methods
     )
 
   # TODO: Use this code on the client side as well
-  'add-to-group': (groupId, memberId) ->
+  'add-to-group': methodWrap (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
@@ -95,7 +95,7 @@ Meteor.methods
           _id: member._id
 
   # TODO: Use this code on the client side as well
-  'remove-from-group': (groupId, memberId) ->
+  'remove-from-group': methodWrap (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
@@ -122,7 +122,7 @@ Meteor.methods
           _id: member._id
 
   # TODO: Use this code on the client side as well
-  'group-set-name': (groupId, name) ->
+  'group-set-name': methodWrap (groupId, name) ->
     check groupId, DocumentId
     check name, NonEmptyString
 

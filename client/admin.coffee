@@ -9,28 +9,28 @@ Template.adminCheck.isAdmin = ->
 Template.adminDevelopment.events
   'click button.sample-data': (event, template) ->
     Meteor.call 'sample-data', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
   'click button.process-pdfs': (event, template) ->
     Meteor.call 'process-pdfs', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
   'click button.reprocess-pdfs': (event, template) ->
     Meteor.call 'reprocess-pdfs', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminDatabase.events
   'click button.update-all': (event, template) ->
     Meteor.call 'database-update-all', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -46,20 +46,20 @@ Template.adminErrors.errors = ->
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (event, template) ->
     Meteor.call 'sync-local-pdf-cache', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminArXiv.events
   'click button.sync-arxiv-pdf-cache': (event, template) ->
     Meteor.call 'sync-arxiv-pdf-cache', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click button.sync-arxiv-metadata': (event, template) ->
     Meteor.call 'sync-arxiv-metadata', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -73,19 +73,19 @@ Template.adminArXiv.PDFs = ->
 Template.adminFSM.events
   'click button.sync-fsm-cache': (event, template) ->
     Meteor.call 'sync-fsm-cache', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click button.sync-fsm-metadata': (event, template) ->
     Meteor.call 'sync-fsm-metadata', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.adminBlog.events
   'click button.sync-blog': (event, template) ->
     Meteor.call 'sync-blog', (error, result) ->
-      Notify.meteorError error if error
+      Notify.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
