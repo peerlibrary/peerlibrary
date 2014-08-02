@@ -17,7 +17,7 @@
         </div>
         <div class="col4 push12 sidebar group-members-panel">
           {{> groupMembers group}}
-          {{> groupDetails group}}
+          {{> groupTools group}}
         </div>
       </div>
     {{/if}}
@@ -29,11 +29,11 @@
 </template>
 
 <template name="groupMembers">
-  <h2 class="directory-title">Members</h2>
-  {{> groupMembersList}}
-  {{#if canModifyMembership}}
+  <div class="section">
+    <h2>Members</h2>
+    {{> groupMembersList}}
     {{> groupMembersAddControl}}
-  {{/if}}
+  </div>
 </template>
 
 <template name="groupMembersList">
@@ -45,14 +45,15 @@
 </template>
 
 <template name="groupMembersAddControl">
-  <h3>Add a member</h3>
-  <div class="add-control">
-    <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
-    {{> groupMembersAddControlNoResults}}
-    {{> groupMembersAddControlResults}}
-    {{> groupMembersAddControlLoading}}
-  </div>
-  <p class="hint">Enter an email to add and invite the user.</p>
+  {{#if canModifyMembership}}
+    <h3>Add a member</h3>
+    <div class="add-control control">
+      <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
+      {{> groupMembersAddControlNoResults}}
+      {{> groupMembersAddControlResults}}
+      {{> groupMembersAddControlLoading}}
+    </div>
+  {{/if}}
 </template>
 
 <template name="groupMembersAddControlNoResults">
@@ -90,14 +91,18 @@
   {{/if}}
 </template>
 
-<template name="groupDetails">
-  {{#if canModify}}
-    <h3>Tools</h3>
+<template name="groupTools">
+  <div class="section">
     {{#if canRemove}}
-      <p>
+      <h2>Tools</h2>
+      <div class="section">
         <button class="delete-group">Delete group</button>
         {{! TODO: Add confirmation or undo for this action }}
-      </p>
+      </div>
     {{/if}}
-  {{/if}}
+    <div class="section">
+      <h3>Permissions</h3>
+      {{> accessControl}}
+    </div>
+  </div>
 </template>

@@ -29,22 +29,77 @@ currentViewport = new Variable
 
 ANNOTATION_DEFAULTS =
   access: Annotation.defaultAccess()
-  groups: []
+  workInsideGroups: []
+  readPersons: []
+  readGroups: []
+  maintainerPersons: []
+  maintainerGroups: []
+  adminPersons: []
+  adminGroups: []
 
 Meteor.startup ->
-  Session.setDefault 'annotationDefaults', ANNOTATION_DEFAULTS
+  Session.setDefault 'newAnnotationAccess', ANNOTATION_DEFAULTS.access
+  Session.setDefault 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
+  Session.setDefault 'newAnnotationReadPersons', ANNOTATION_DEFAULTS.readPersons
+  Session.setDefault 'newAnnotationReadGroups', ANNOTATION_DEFAULTS.readGroups
+  Session.setDefault 'newAnnotationMaintainerPersons', ANNOTATION_DEFAULTS.maintainerPersons
+  Session.setDefault 'newAnnotationMaintainerGroups', ANNOTATION_DEFAULTS.maintainerGroups
+  Session.setDefault 'newAnnotationAdminPersons', ANNOTATION_DEFAULTS.adminPersons
+  Session.setDefault 'newAnnotationAdminGroups', ANNOTATION_DEFAULTS.adminGroups
 
-getAnnotationDefaults = ->
-  defaults = _.defaults Session.get('annotationDefaults'), ANNOTATION_DEFAULTS
+setNewAnnotationDefaults = ->
+  Session.set 'newAnnotationAccess', ANNOTATION_DEFAULTS.access
+  Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
+  Session.set 'newAnnotationReadPersons', ANNOTATION_DEFAULTS.readPersons
+  Session.set 'newAnnotationReadGroups', ANNOTATION_DEFAULTS.readGroups
+  Session.set 'newAnnotationMaintainerPersons', ANNOTATION_DEFAULTS.maintainerPersons
+  Session.set 'newAnnotationMaintainerGroups', ANNOTATION_DEFAULTS.maintainerGroups
+  Session.set 'newAnnotationAdminPersons', ANNOTATION_DEFAULTS.adminPersons
+  Session.set 'newAnnotationAdminGroups', ANNOTATION_DEFAULTS.adminGroups
+
+getNewAnnotationAccess = ->
+  Session.get('newAnnotationAccess') or ANNOTATION_DEFAULTS.access
+
+filterExistingGroups = (groups) ->
   groups = Group.documents.find(
     _id:
-      $in: defaults.groups
+      $in: groups
   ,
     fields:
       _id: 1
   ).fetch()
-  defaults.group = _.pluck groups, '_id'
-  defaults
+  _.pluck groups, '_id'
+
+filterExistingPersons = (persons) ->
+  persons = Person.documents.find(
+    _id:
+      $in: persons
+  ,
+    fields:
+      _id: 1
+  ).fetch()
+  _.pluck persons, '_id'
+
+getNewAnnotationWorkInsideGroups = ->
+  filterExistingGroups Session.get('newAnnotationWorkInsideGroups') or ANNOTATION_DEFAULTS.workInsideGroups
+
+getNewAnnotationReadPersons = ->
+  filterExistingPersons Session.get('newAnnotationReadPersons') or ANNOTATION_DEFAULTS.readPersons
+
+getNewAnnotationReadGroups = ->
+  filterExistingGroups Session.get('newAnnotationReadGroups') or ANNOTATION_DEFAULTS.readGroups
+
+getNewAnnotationMaintainerPersons = ->
+  filterExistingPersons Session.get('newAnnotationMaintainerPersons') or ANNOTATION_DEFAULTS.maintainerPersons
+
+getNewAnnotationMaintainerGroups = ->
+  filterExistingGroups Session.get('newAnnotationMaintainerGroups') or ANNOTATION_DEFAULTS.maintainerGroups
+
+getNewAnnotationAdminPersons = ->
+  filterExistingPersons Session.get('newAnnotationAdminPersons') or ANNOTATION_DEFAULTS.adminPersons
+
+getNewAnnotationAdminGroups = ->
+  filterExistingGroups Session.get('newAnnotationAdminGroups') or ANNOTATION_DEFAULTS.adminGroups
 
 # Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
@@ -54,17 +109,35 @@ Deps.autorun ->
 
   unless person
     # If user is not logged in or logs out, reset to defaults
-    Session.set 'annotationDefaults', ANNOTATION_DEFAULTS
+    setNewAnnotationDefaults()
     return
 
+  person.inGroups ?= []
+
   # We have to keep list of default groups updated if user is removed from a group
-  Group.documents.find(_id: $in: _.pluck person.inGroups, '_id').observeChanges
+  Group.documents.find(
+    _id:
+      $in: _.pluck person.inGroups, '_id'
+  ,
+    fields:
+      searchResult: 0
+  ).observeChanges
     removed: (id) ->
       return unless myGroupsHandle?.ready()
 
-      defaults = getAnnotationDefaults()
-      defaults.groups = _.without defaults.groups, id
-      Session.set 'annotationDefaults', defaults
+      groups = getNewAnnotationWorkInsideGroups()
+      groups = _.without groups, id
+      Session.set 'newAnnotationWorkInsideGroups', groups
+
+Deps.autorun ->
+  # Subscribe to people and group data that appear in permissions for new annotations
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationReadPersons()
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationMaintainerPersons()
+  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationAdminPersons()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationReadGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationMaintainerGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationAdminGroups()
+  Meteor.subscribe 'groups-by-ids', getNewAnnotationWorkInsideGroups()
 
 class @Publication extends Publication
   @Meta
@@ -98,7 +171,7 @@ class @Publication extends Publication
     switch @mediaType
       when 'pdf' then @showPDF()
       when 'tei' then @showTEI()
-      else Notify.error "Unsupported media type: #{ @mediaType }", null, true
+      else Notify.error "Unsupported media type: #{ @mediaType }.", null, true
 
   showPDF: =>
     assert.strictEqual @_pages, null
@@ -196,14 +269,14 @@ class @Publication extends Publication
             publicationDOMReady.set true if @_pagesDone is @_pdf.numPages
 
           , (args...) =>
-            # TODO: Handle errors better (call destroy?)
-            Notify.error "Error getting page #{ pageNumber }", args
+            # TODO: Handle errors better (call destroy?, don't pass args as an array)
+            Notify.error "Error getting page #{ pageNumber }.", args
 
       $(window).on 'scroll.publication resize.publication', @checkRender
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      Notify.error "Error showing #{ @_id }", args
+      Notify.error "Error showing #{ @_id }.", args
 
     currentPublication = @
 
@@ -253,8 +326,8 @@ class @Publication extends Publication
       @checkRender()
 
     , (args...) =>
-      # TODO: Handle errors better (call destroy?)
-      Notify.error "Error getting text content for page #{ pdfPage.pageNumber }", args
+      # TODO: Handle errors better (call destroy?, don't pass args as an array)
+      Notify.error "Error getting text content for page #{ pdfPage.pageNumber }.", args
 
   checkRender: =>
     for page in @_pages or []
@@ -349,8 +422,8 @@ class @Publication extends Publication
       @_highlighter.checkRender()
 
     , (args...) =>
-      # TODO: Handle errors better (call destroy?)
-      Notify.error "Error rendering page #{ page.pdfPage.pageNumber }", args
+      # TODO: Handle errors better (call destroy?, don't pass args as an array)
+      Notify.error "Error rendering page #{ page.pdfPage.pageNumber }.", args
 
   showTEI: =>
     # To make sure we are starting with empty slate
@@ -444,7 +517,7 @@ Deps.autorun ->
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
     myGroupsHandle = Meteor.subscribe 'my-groups', ->
       # Make sure we start with the list of groups user is in
-      Session.set 'annotationDefaults', getAnnotationDefaults()
+      Session.set 'newAnnotationWorkInsideGroups', getNewAnnotationWorkInsideGroups()
   else
     publicationSubscribing.set false
     publicationHandle = null
@@ -480,7 +553,9 @@ Deps.autorun ->
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Deps.autorun ->
+  # The publication needs to loaded before we allow to annotate it.
   return unless Session.get 'currentPublicationId'
+  return unless Publication.documents.findOne Session.get 'currentPublicationId'
 
   # Enough is to check if user is logged in. Check if user has
   # read access to the publication is made on the server side.
@@ -530,21 +605,25 @@ Template.publicationMetaMenu.events addAccessEvents
 Template.publicationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.publicationAccessControl.open = ->
+Template.publicationAccessControlPrivacyForm.open = ->
   @access is Publication.ACCESS.OPEN
 
-Template.publicationAccessControl.closed = ->
+Template.publicationAccessControlPrivacyForm.closed = ->
   @access is Publication.ACCESS.CLOSED
 
-Template.publicationAccessControl.private = ->
+Template.publicationAccessControlPrivacyForm.private = ->
   @access is Publication.ACCESS.PRIVATE
 
+Template.publicationAccessControlPrivacyInfo.open = Template.publicationAccessControlPrivacyForm.open
+Template.publicationAccessControlPrivacyInfo.closed = Template.publicationAccessControlPrivacyForm.closed
+Template.publicationAccessControlPrivacyInfo.private = Template.publicationAccessControlPrivacyForm.private
+
 # We copy over event handlers from accessControl template (which are general enough to work)
-for spec, callbacks of Template.accessControl._tmpl_data.events
+for spec, callbacks of Template.accessMenuPrivacyForm._tmpl_data.events
   for callback in callbacks
     eventMap = {}
     eventMap[spec] = callback
-    Template.publicationAccessControl.events eventMap
+    Template.publicationAccessControlPrivacyForm.events eventMap
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -574,7 +653,7 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'add-to-library', @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication added to the library." if count
 
@@ -584,7 +663,7 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication removed from the library." if count
 
@@ -624,7 +703,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
     Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication added to the collection." if count
 
@@ -634,7 +713,7 @@ Template.publicationLibraryMenuCollectionListing.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication removed from the collection." if count
 
@@ -831,7 +910,7 @@ Template.highlightsControl.canRemove = ->
 Template.highlightsControl.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-highlight', @_id, (error, count) =>
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -852,15 +931,6 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
-Template.annotationsControl.inside = ->
-  Group.documents.find
-    _id:
-      $in: getAnnotationDefaults().groups
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
-
 Template.annotationsControl.filteredAnnotationsCount = ->
   isolateValue ->
     LocalAnnotation.documents.find(
@@ -877,7 +947,7 @@ Template.annotationsControl.events
   'click .add': (event, template) ->
     Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
@@ -926,7 +996,7 @@ displayedAnnotations = (local) ->
   ]
 
   insideGroups = isolateValue ->
-    getAnnotationDefaults().groups
+    getNewAnnotationWorkInsideGroups()
 
   unless Session.get 'currentPublicationLimitAnnotationsToViewport'
     # When not limited by the viewport, simply display all non-local annotations
@@ -991,6 +1061,9 @@ Template.publicationAnnotations.realAnnotationsExist = ->
   isolateValue ->
     !!displayedAnnotations(false).count()
 
+# Reference to the current local annotation template, so we can access it from global event handlers
+localAnnotationEditorTemplate = null
+
 Template.publicationAnnotations.created = ->
   $(document).on 'mouseup.publicationAnnotations', (event) =>
     if Session.get 'currentHighlightId'
@@ -1028,6 +1101,39 @@ Template.publicationAnnotations.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
+  $(document).on 'mouseup.publicationAnnotations keyup.publicationAnnotations', (event) =>
+    # We collapse a local editor if there was no change to the content
+    # and user is not actively editing it (like having a dialog open)
+
+    # If focus moved somewhere else in the local annotation (like
+    # click on a toolbar button), we do not do anything
+    return if $(event.target).closest('.local.annotation').length > 0
+
+    # Same if we just closed a dialog
+    return if $(event.target).hasClass('ui-icon-closethick') > 0
+
+    # Find the current local annotation
+    localAnnotation = LocalAnnotation.documents.findOne
+      local:
+        $exists: true
+
+    # We do nothing if editor is already collapsed
+    return unless localAnnotation.editing
+
+    # Do nothing if content was changed, and content is not empty
+    $editor = $('.local.annotation.editing .annotation-content-editor')
+    return if localAnnotation.local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
+
+    # If dialog is open, we do not do anything
+    return if localAnnotationEditorTemplate?._destroyDialog
+
+    # Collapse
+    LocalAnnotation.documents.update localAnnotation._id,
+      $set:
+        local: LocalAnnotation.LOCAL.AUTOMATIC
+      $unset:
+        editing: ''
+
 Template.publicationAnnotations.rendered = ->
   $annotationsList = $(@findAll '.annotations-list')
 
@@ -1047,11 +1153,13 @@ Template.publicationAnnotations.rendered = ->
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   # We have to search for meta menus globally to have
-  # access to other meta menus of other annotations
+  # access to other meta menus of other annotations.
+  # We also offset z-index by 1 because avatar in annotation
+  # edit mode already has z-index 1.
   $metaMenus = $annotationsList.find('.meta-menu')
-  $metaMenus.each (i, metaMenu) =>
+  $metaMenus.each (index, metaMenu) =>
     $(metaMenu).css
-      zIndex: $metaMenus.length - i
+      zIndex: $metaMenus.length - index + 1
 
 Template.publicationAnnotations.destroyed = ->
   $(document).off '.publicationAnnotations'
@@ -1088,8 +1196,13 @@ Template.publicationAnnotationsItem.events
     # IDs are local to the client and we do not want to make user believe annotation
     # is already saved and that ID is permanent, or even that user would link to that
     # location.
-    else if @local
+    else if $(event.target).closest('.annotations-list .local.annotation').length
       Meteor.Router.toNew Meteor.Router.publicationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug')
+    # Also don't select or deselect on access menu, because selecting makes the
+    # template redraw and we lose the state of the dropdown
+    # TODO: Save the state of the dropdown and recreate the state on render
+    else if $(event.target).closest('.access-control').length
+      return
     else
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), @_id
 
@@ -1166,6 +1279,10 @@ Template.annotationEditor.rendered = ->
     $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
   ###
 
+  # Save reference to the template of the local annotation for access in global event handlers
+  if @data.local and @data.editing
+    localAnnotationEditorTemplate = @
+
 Template.annotationEditor.destroyed = ->
   destroyEditor @
   @_scribe = null
@@ -1181,36 +1298,6 @@ Template.annotationEditor.events
     LocalAnnotation.documents.update @_id,
       $set:
         editing: true
-
-    return # Make sure CoffeeScript does not return anything
-
-  # We collapse a local editor if there was no change to the content
-  # and user is not activelly editing it (like having a dialog open)
-  'blur .annotation-content-editor': (event, template) ->
-    # We do nothing if editor is already collapsed
-    return unless @editing
-
-    # We set editing based on the focus only for local annotations
-    return unless @local
-
-    # Do nothing if content was changed, and content is not empty
-    $editor = $(event.currentTarget)
-    return if @local is LocalAnnotation.LOCAL.CHANGED and $editor.text().trim()
-
-    # If focus moved somewhere else in the editor (like
-    # click on a toolbar button), we do not do anything
-    $annotation = $editor.closest('.annotation')
-    return if $annotation.is(event.relatedTarget) or $annotation.has(event.relatedTarget).length
-
-    # If dialog is open, we do not do anything
-    return if template._destroyDialog
-
-    # Collapse
-    LocalAnnotation.documents.update @_id,
-      $set:
-        local: LocalAnnotation.LOCAL.AUTOMATIC
-      $unset:
-        editing: ''
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1254,15 +1341,22 @@ Template.annotationEditor.events
     ###
 
     if @local
-      Meteor.call 'create-annotation', @publication._id, body, getAnnotationDefaults().access, getAnnotationDefaults().groups, (error, annotationId) =>
-        return Notify.meteorError error, true if error
+      access = getNewAnnotationAccess()
+
+      # Only set read permissions for private annotations
+      isPrivate = access is Annotation.ACCESS.PRIVATE
+      readPersons = if isPrivate then getNewAnnotationReadPersons() else []
+      readGroups = if isPrivate then getNewAnnotationReadGroups() else []
+
+      Meteor.call 'create-annotation', @publication._id, body, access, getNewAnnotationWorkInsideGroups(), readPersons, readGroups, getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), (error, annotationId) =>
+        return Notify.fromError error, true if error
 
         LocalAnnotation.documents.remove @_id
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
       Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
-        return Notify.meteorError error, true if error
+        return Notify.fromError error, true if error
 
         return unless count
 
@@ -1274,11 +1368,431 @@ Template.annotationEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.visibilityMenu.public = ->
-  if @local
-    getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
+onAnnotationAccessDropdownHidden = (event) ->
+  # Return the access button to default state
+  $button = $(this).closest('.dropdown-trigger').find('.access-button')
+  $button.addClass('tooltip')
+
+Template.newAnnotationAccessControl.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
+
+Template.newAnnotationAccessButton.events
+  'click .access-button': (event, template) ->
+    $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
+    $anchor.toggle()
+
+    if $anchor.is(':visible')
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content. We need
+      # to remove the element manually, since we can't selectively disable/destroy
+      # it just on this element through jQeury UI.
+      $tooltip = $(template.findAll '.tooltip')
+      tooltipId = $tooltip.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $tooltip.removeClass('tooltip')
+
+    else
+      onAnnotationAccessDropdownHidden.call($anchor, null)
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.newAnnotationAccessButton.public = ->
+  getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
+
+Template.newAnnotationAccessForm.events
+  'change .access input:radio': (event, template) ->
+    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+
+    Session.set 'newAnnotationAccess', access
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseenter .access .selection': (event, template) ->
+    # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
+    accessHover = $(event.currentTarget).find('input').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+  'mouseleave .access .selections': (event, template) ->
+    # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
+    accessHover = $(template.findAll '.access input:radio:checked').val()
+    $(template.findAll '.access .displayed.description').removeClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.newAnnotationAccessForm.public = ->
+  getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
+
+Template.newAnnotationAccessForm.private = ->
+  getNewAnnotationAccess() is Annotation.ACCESS.PRIVATE
+
+Template.newAnnotationRolesControl.created = ->
+  # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
+  # the list of people we invited so the emails appear in the list instead of IDs.
+  @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
+
+Template.newAnnotationRolesControl.destroyed = ->
+  @_personsInvitedHandle?.stop()
+  @_personsInvitedHandle = null
+
+Template.newAnnotationRolesControlList.rolesList = ->
+  rolesList = [
+    # Creator will always be the administrator
+    personOrGroup: Meteor.person()
+    admin: true
+    locked: true
+  ]
+
+  for admin in getNewAnnotationAdminGroups()
+    continue if _.find rolesList, (item) ->
+      item.personOrGroup._id is admin
+
+    rolesList.push
+      personOrGroup: Group.documents.findOne admin, fields: searchResult: 0
+      admin: true
+
+  for admin in getNewAnnotationAdminPersons()
+    continue if _.find rolesList, (item) ->
+      item.personOrGroup._id is admin
+
+    rolesList.push
+      personOrGroup: Person.documents.findOne admin, fields: searchResult: 0
+      admin: true
+
+  for maintainer in getNewAnnotationMaintainerGroups()
+    continue if _.find rolesList, (item) ->
+      item.personOrGroup._id is maintainer
+
+    rolesList.push
+      personOrGroup: Group.documents.findOne maintainer, fields: searchResult: 0
+      maintainer: true
+
+  for maintainer in getNewAnnotationMaintainerPersons()
+    continue if _.find rolesList, (item) ->
+      item.personOrGroup._id is maintainer
+
+    rolesList.push
+      personOrGroup: Person.documents.findOne maintainer, fields: searchResult: 0
+      maintainer: true
+
+  if getNewAnnotationAccess() is ACCESS.PRIVATE
+    # Add working-in groups to read permissions
+    for group in getNewAnnotationWorkInsideGroups()
+      existing = _.find rolesList, (item) ->
+        item.personOrGroup._id is group
+
+      if existing
+        existing.cantRemove = true
+        continue
+
+      rolesList.push
+        personOrGroup: Group.documents.findOne group, fields: searchResult: 0
+        readAccess: true
+        cantRemove: true
+
+    for reader in getNewAnnotationReadGroups()
+      continue if _.find rolesList, (item) ->
+        item.personOrGroup._id is reader
+
+      rolesList.push
+        personOrGroup: Group.documents.findOne reader, fields: searchResult: 0
+        readAccess: true
+
+    for reader in getNewAnnotationReadPersons()
+      continue if _.find rolesList, (item) ->
+        item.personOrGroup._id is reader
+
+      rolesList.push
+        personOrGroup: Person.documents.findOne reader, fields: searchResult: 0
+        readAccess: true
+
+  rolesList
+
+changeRole = (data, role) ->
+  oldRole = null
+  oldRole = ROLES.ADMIN if data.admin
+  oldRole = ROLES.MAINTAINER if data.maintainer
+  oldRole = ROLES.READ_ACCESS if data.readAccess
+
+  return if oldRole is role
+
+  if data.personOrGroup instanceof Person
+    personOrGroupName = 'Person'
+  else if data.personOrGroup instanceof Group
+    personOrGroupName = 'Group'
   else
-    @access is Annotation.ACCESS.PUBLIC
+    assert false
+
+  personOrGroupId = data.personOrGroup._id
+
+  access = getNewAnnotationAccess()
+  roles =
+    adminPersons: getNewAnnotationAdminPersons()
+    adminGroups: getNewAnnotationAdminGroups()
+    maintainerPersons: getNewAnnotationMaintainerPersons()
+    maintainerGroups: getNewAnnotationMaintainerGroups()
+    readPersons: getNewAnnotationReadPersons()
+    readGroups: getNewAnnotationReadGroups()
+
+  wasAdmin = _.contains roles["admin#{personOrGroupName}s"], personOrGroupId
+  wasMaintainer = _.contains roles["maintainer#{personOrGroupName}s"], personOrGroupId
+  hadReadAccess = _.contains roles["read#{personOrGroupName}s"], personOrGroupId
+
+  # For private documents, grant read access together with admin/maintainer privileges.
+  if access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
+    Session.set "newAnnotationRead#{personOrGroupName}s", _.union roles["read#{personOrGroupName}s"], [personOrGroupId]
+
+  if role is ROLES.MAINTAINER
+    Session.set "newAnnotationMaintainer#{personOrGroupName}s", _.union roles["maintainer#{personOrGroupName}s"], [personOrGroupId]
+
+  if role is ROLES.ADMIN
+    Session.set "newAnnotationAdmin#{personOrGroupName}s", _.union roles["admin#{personOrGroupName}s"], [personOrGroupId]
+
+  # Only clear read access for private documents when specifically clearing all permissions
+  if access is ACCESS.PRIVATE and hadReadAccess and role < ROLES.READ_ACCESS
+    Session.set "newAnnotationRead#{personOrGroupName}s", _.without roles["read#{personOrGroupName}s"], personOrGroupId
+
+  if wasMaintainer and role isnt ROLES.MAINTAINER
+    Session.set "newAnnotationMaintainer#{personOrGroupName}s", _.without roles["maintainer#{personOrGroupName}s"], personOrGroupId
+
+  if wasAdmin and role isnt ROLES.ADMIN
+    Session.set "newAnnotationAdmin#{personOrGroupName}s", _.without roles["admin#{personOrGroupName}s"], personOrGroupId
+
+Template.newAnnotationRolesControlRoleEditor.events
+  'click .dropdown-trigger': (event, template) ->
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
+    return if $.contains template.find('.dropdown-anchor'), event.target
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .administrator-button': (event, template) ->
+    changeRole @, ROLES.ADMIN
+    $(template.findAll '.dropdown-anchor').hide()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .maintainer-button': (event, template) ->
+    changeRole @, ROLES.MAINTAINER
+    $(template.findAll '.dropdown-anchor').hide()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .read-access-button': (event, template) ->
+    changeRole @, ROLES.READ_ACCESS
+    $(template.findAll '.dropdown-anchor').hide()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .remove-button': (event, template) ->
+    changeRole @, null
+    $(template.findAll '.dropdown-anchor').hide()
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.newAnnotationRolesControlRoleEditor.isPerson = ->
+  @personOrGroup instanceof Person
+
+Template.newAnnotationRolesControlRoleEditor.isGroup = ->
+  @personOrGroup instanceof Group
+
+Template.newAnnotationRolesControlRoleEditor.private = ->
+  getNewAnnotationAccess() is ACCESS.PRIVATE
+
+Template.newAnnotationRolesControlAdd.events
+  'change .add-access, keyup .add-access': (event, template) ->
+    event.preventDefault()
+
+    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+    @_query.set $(template.findAll '.add-access').val()
+
+    return # Make sure CoffeeScript does not return anything
+
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addAccessControlReactiveVariables = (data) ->
+  if data._query
+    assert data._loading
+    return
+
+  data._query = new Variable ''
+  data._loading = new Variable 0
+
+  data._newDataContext = true
+
+Template.newAnnotationRolesControlAdd.created = ->
+  @_searchHandle = null
+
+  addAccessControlReactiveVariables @data
+
+Template.newAnnotationRolesControlAdd.rendered = ->
+  addAccessControlReactiveVariables @data
+
+  if @_searchHandle and @data._newDataContext
+    @_searchHandle.stop()
+    @_searchHandle = null
+
+  delete @data._newDataContext
+
+  return if @_searchHandle
+  @_searchHandle = Deps.autorun =>
+    if @data._query()
+      loading = true
+      @data._loading.set Deps.nonreactive(@data._loading) + 1
+
+      existingRoles = [Meteor.personId()].concat getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups()
+      existingRoles = existingRoles.concat getNewAnnotationReadPersons(), getNewAnnotationReadGroups(), getNewAnnotationWorkInsideGroups() if getNewAnnotationAccess() is ACCESS.PRIVATE
+
+      # We are using all roles, both persons and groups, together, because
+      # it is very improbable that there would be duplicate _ids
+      Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
+        onReady: =>
+          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          loading = false
+        onError: =>
+          # TODO: Should we display some error?
+          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          loading = false
+      Deps.onInvalidate =>
+        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+        loading = false
+
+Template.newAnnotationRolesControlAdd.destroyed = ->
+  @_searchHandle?.stop()
+  @_searchHandle = null
+
+  @data._query = null
+  @data._loading = null
+
+  delete @data._newDataContext
+
+Template.newAnnotationRolesControlNoResults.noResults = ->
+  addAccessControlReactiveVariables @
+
+  query = @_query()
+
+  return unless query
+
+  searchResult = SearchResult.documents.findOne
+    name: 'search-persons-groups'
+    query: query
+
+  return unless searchResult
+
+  not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+
+Template.newAnnotationRolesControlNoResults.email = ->
+  query = @_query().trim()
+  return unless query?.match EMAIL_REGEX
+
+  # Because it is not possible to access parent data context from event handler, we store it into results
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  query = new String(query)
+  query._parent = @
+  query
+
+grantAccess = (personOrGroup) ->
+  data =
+    personOrGroup: personOrGroup
+
+  switch getNewAnnotationAccess()
+    when ACCESS.PRIVATE then changeRole data, ROLES.READ_ACCESS
+    else changeRole data, ROLES.MAINTAINER
+
+Template.newAnnotationRolesControlNoResults.events
+  'click .add-and-invite': (event, template) ->
+
+    # We get the email in @ (this), but it's a String object that also has
+    # the parent context attached so we first convert it to a normal string.
+    email = "#{ @ }"
+
+    return unless email?.match EMAIL_REGEX
+
+    inviteUser email, null, (newPersonId) =>
+      grantAccess new Person
+        _id: newPersonId
+
+      # Clear autocomplete field
+      $(template.firstNode).closest('.add-control').find('.add-access').val('')
+      @_parent._query.set ''
+
+      return true # Show success notification
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.newAnnotationRolesControlLoading.loading = ->
+  addAccessControlReactiveVariables @
+
+  @_loading()
+
+Template.newAnnotationRolesControlResults.results = ->
+  addAccessControlReactiveVariables @
+
+  query = @_query()
+
+  return unless query
+
+  searchResult = SearchResult.documents.findOne
+    name: 'search-persons-groups'
+    query: query
+
+  return unless searchResult
+
+  personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
+  groupsLimit = 5 - personsLimit
+
+  if personsLimit
+    persons = Person.documents.find(
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: personsLimit
+    ).fetch()
+  else
+    persons = []
+
+  if groupsLimit
+    groups = Group.documents.find(
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: groupsLimit
+    ).fetch()
+  else
+    groups = []
+
+  results = persons.concat groups
+
+  # Because it is not possible to access parent data context from event handler, we store it into results
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  _.map results, (result) =>
+    result._parent = @
+    result
+
+Template.newAnnotationRolesControlResultsItem.ifPerson = (options) ->
+  if @ instanceof Person
+    options.fn @
+  else
+    options.inverse @
+
+Template.newAnnotationRolesControlResultsItem.events
+  'click .add-button': (event, template) ->
+
+    grantAccess @
+
+    # Clear autocomplete field
+    $(template.firstNode).closest('.add-control').find('.add-access').val('')
+    @_parent._query.set ''
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentsList.comments = ->
   Comment.documents.find
@@ -1299,7 +1813,7 @@ Template.annotationCommentsListItem.events
     annotationId = @annotation._id
     Meteor.call 'remove-comment', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
@@ -1356,7 +1870,7 @@ Template.annotationCommentEditor.events
     body = $editor.html().trim()
 
     Meteor.call 'create-comment', @_id, body, (error, commentId) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       # Reset editor
       $editor.empty()
@@ -1367,7 +1881,7 @@ Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-annotation', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
@@ -1383,38 +1897,19 @@ Template.annotationMetaMenu.canRemove = ->
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.contextMenu.events
-  'change .access input:radio': (event, template) ->
-    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+Template.contextMenuGroupsCount.selectedGroups = ->
+  getNewAnnotationWorkInsideGroups()
 
-    defaults = getAnnotationDefaults()
-    defaults.access = access
-    Session.set 'annotationDefaults', defaults
-
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseenter .access .selection': (event, template) ->
-    accessHover = $(event.currentTarget).find('input').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
-
-    return # Make sure CoffeeScript does not return anything
-
-  'mouseleave .access .selections': (event, template) ->
-    accessHover = $(template.findAll '.access input:radio:checked').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.contextMenu.public = ->
-  getAnnotationDefaults().access is Annotation.ACCESS.PUBLIC
-
-Template.contextMenu.private = ->
-  getAnnotationDefaults().access is Annotation.ACCESS.PRIVATE
-
-Template.contextMenu.selectedGroups = ->
-  getAnnotationDefaults().groups
+Template.groupsFilter.inside = ->
+  Group.documents.find
+    _id:
+      $in: getNewAnnotationWorkInsideGroups()
+  ,
+    fields: searchResult: 0
+  ,
+    sort: [
+      ['slug', 'asc']
+    ]
 
 Template.contextMenu.myGroups = Template.myGroups.myGroups
 
@@ -1422,30 +1917,26 @@ Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
 
 Template.contextMenuGroups.private = Template.contextMenu.private
 
-Template.contextMenuGroups.selectedGroups = Template.contextMenu.selectedGroups
+Template.contextMenuGroups.selectedGroups = Template.contextMenuGroupsCount.selectedGroups
 
 Template.contextMenuGroups.selectedGroupsDescription = ->
-  defaults = getAnnotationDefaults()
-  return unless defaults
-  if defaults.groups.length is 1 then "1 group" else "#{ defaults.groups.length } groups"
+  groups = getNewAnnotationWorkInsideGroups()
+  return unless groups
+  if groups.length is 1 then "1 group" else "#{ groups.length } groups"
 
 Template.contextMenuGroups.events
   'click .add-to-working-inside': (event, template) ->
-    defaults = getAnnotationDefaults()
-    defaults.groups = _.union defaults.groups, [@_id]
-    Session.set 'annotationDefaults', defaults
+    Session.set 'newAnnotationWorkInsideGroups', _.union getNewAnnotationWorkInsideGroups(), [@_id]
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-from-working-inside': (event, template) ->
-    defaults = getAnnotationDefaults()
-    defaults.groups = _.without defaults.groups, @_id
-    Session.set 'annotationDefaults', defaults
+    Session.set 'newAnnotationWorkInsideGroups', _.without getNewAnnotationWorkInsideGroups(), @_id
 
     return # Make sure CoffeeScript does not return anything
 
 Template.contextMenuGroupListing.workingInside = ->
-  _.contains getAnnotationDefaults().groups, @_id
+  _.contains getNewAnnotationWorkInsideGroups(), @_id
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()

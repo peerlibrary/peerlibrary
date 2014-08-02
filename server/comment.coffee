@@ -8,7 +8,7 @@ class @Comment extends Comment
     fields: {} # All
 
 Meteor.methods
-  'comments-path': (commentId) ->
+  'comments-path': methodWrap (commentId) ->
     check commentId, DocumentId
 
     person = Meteor.person()
@@ -32,7 +32,7 @@ Meteor.methods
 
     [publication._id, publication.slug, comment._id]
 
-  'create-comment': (annotationId, body) ->
+  'create-comment': methodWrap (annotationId, body) ->
     check annotationId, DocumentId
     check body, NonEmptyString
 
@@ -70,7 +70,7 @@ Meteor.methods
     Comment.documents.insert comment
 
   # TODO: Use this code on the client side as well
-  'remove-comment': (commentId) ->
+  'remove-comment': methodWrap (commentId) ->
     check commentId, DocumentId
 
     person = Meteor.person()

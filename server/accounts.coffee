@@ -4,7 +4,7 @@ ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
 INVITE_SECRET = Random.id()
 
 Meteor.methods
-  'invite-user': (email, message) ->
+  'invite-user': methodWrap (email, message) ->
     check email, EMail
     check message, Match.Optional String
 
@@ -36,7 +36,7 @@ Meteor.methods
 
     invited._id
 
-  'reset-password-with-username': (token, verifier, username) ->
+  'reset-password-with-username': methodWrap (token, verifier, username) ->
     check token, String
     check verifier, Object
     check username, String
@@ -48,7 +48,7 @@ Meteor.methods
 
     newUser
 
-  'set-username': (username) ->
+  'set-username': methodWrap (username) ->
     check username, String
     User.validateUsername username
 
@@ -65,8 +65,7 @@ Meteor.methods
 
     return # Make sure CoffeeScript does not return anything
 
-
-Accounts.onCreateUser (options, user) ->
+Accounts.onCreateUser methodWrap (options, user) ->
   # Idea is that only server side knows invite secret and we can
   # based on that differentiate between onCreateUser checks because
   # user is registering and checks because user has been invited

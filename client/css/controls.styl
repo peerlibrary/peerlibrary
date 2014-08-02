@@ -85,6 +85,12 @@ button.default:hover
       list-style none
       top 8px
       left 0
+      box-shadow 0 2px 5px box-shadow-shadow
+      cursor default
+
+      &.right-aligned
+        left auto
+        right 0
 
       .menu-item
         button
@@ -137,11 +143,11 @@ button.default:hover
   /* For focused style */
   padding 4px
   border 1px solid transparent
-  border-radius 5px
 
-.edit:hover, .meta-menu .edit:hover
-  background none
-  color blue-accent
+  &:hover
+    background none
+    border-color box-shadow-border
+    color blue-accent
 
 .editable:hover
   .edit
@@ -166,12 +172,16 @@ h1
       background none
       padding 5px
       height 34px
-      text-align left
 
       .inline-item
+        display block
+        padding-left 30px
+
         .avatar
           width 24px
           text-align center
+          position absolute
+          left 0
 
           img
             position absolute
@@ -192,9 +202,10 @@ h1
     overflow hidden
     text-overflow ellipsis
 
-/* Sidebar
-========== */
+/* Sidebar and dropdown contents
+================================ */
 .sidebar
+.dropdown
   position relative
   padding 10px
   padding-bottom 30px
@@ -209,14 +220,15 @@ h1
     font-size 0.9em
     font-weight 300
 
-  input, button, select, .add-control
+  input, button, select, .control
     display block
     width 235px
     box-sizing border-box
 
-  .input-and-buttons
-    width 100%
+  .section
+    margin-bottom 20px
 
+  .input-and-buttons
     button
       width auto
 
@@ -228,6 +240,8 @@ h1
 
   .add-control
     border 1px solid box-shadow-border
+    background white
+    color black
 
     input, input:focus
       width 233px
@@ -237,9 +251,27 @@ h1
     .add-button:hover
       background-color box-shadow-border
 
+    .member
+      display block
+      width 100%
+
+      .add-button
+        display block
+        width 100%
+
+    .member:last-of-type
+      margin-bottom 0
+
+  .add-control-results
+    padding 10px
+
+  .access-results
+  .group-member-results
+    margin 0
+    padding 0
+
 /* Meta menus and jQuery UI widgets
 =================================== */
-
 .meta-menu, .ui-widget
   input, button
     display block
@@ -314,6 +346,7 @@ h1
 
   .add-control
     background white
+    border-radius 2px
 
     .add-button
       display block
@@ -332,6 +365,9 @@ h1
 
     button:hover
       background-color rgba(120,120,120,0.3)
+
+  input:focus
+    box-shadow none
 
     .access-results
       margin 0
