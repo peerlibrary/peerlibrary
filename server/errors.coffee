@@ -8,7 +8,7 @@ class @LoggedError extends LoggedError
     fields: {} # All, only admins have access
 
 Meteor.methods
-  'log-error': (errorDocument) ->
+  'log-error': methodWrap (errorDocument) ->
     check errorDocument, Object
 
     # TODO: Check whether document conforms to schema

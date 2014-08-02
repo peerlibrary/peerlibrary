@@ -47,6 +47,6 @@ Template.libraryMyCollections.rendered = ->
       collectionId = $(event.target).data('collection-id')
       Meteor.call 'add-to-library', publicationId, collectionId, (error, count) =>
         # TODO: Same operation is handled in client/publication.coffee from the meta-menu. Sync both?
-        return Notify.smartError error, true if error
+        return Notify.fromError error, true if error
 
         Notify.success "Publication added to collection." if count

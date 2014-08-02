@@ -46,7 +46,7 @@ Editable.template Template.collectionName, ->
 ,
   (name) ->
     Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 ,
   "Enter collection name"
 ,
@@ -82,18 +82,21 @@ Template.collectionPublications.rendered = ->
         newOrder.push $(element).data('publication-id')
 
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
-        return Notify.smartError error, true if error
+        return Notify.fromError error, true if error
 
-Template.collectionDetails.canModify = ->
+Template.collectionTools.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.collectionDetails.canRemove = ->
+Template.collectionTools.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.collectionTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionDetails.events
   'click .delete-collection': (event, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
-      Notify.smartError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
@@ -120,7 +123,7 @@ Template.publicationLibraryMenuButtons.events
     return unless collection
 
     Meteor.call 'remove-from-library', @_id, collection._id, (error, count) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication removed from the collection." if count
 

@@ -9,7 +9,7 @@ _.mixin
 
   # Ensures that string ends with dot if it does not already end with some punctuation
   ensureSentence: (string) ->
-    string = string.replace /\s+$/, ''
+    string = string?.replace /\s+$/, ''
     if string and string.charAt(string.length - 1) not in ['.', '?', '!', ',', ';', ')']
       "#{ string }."
     else

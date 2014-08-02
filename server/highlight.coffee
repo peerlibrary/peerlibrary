@@ -71,7 +71,7 @@ Meteor.methods
     Highlight.documents.insert highlight
 
   # TODO: Use this code on the client side as well
-  'remove-highlight': (highlightId) ->
+  'remove-highlight': methodWrap (highlightId) ->
     check highlightId, DocumentId
 
     person = Meteor.person()

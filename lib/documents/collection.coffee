@@ -1,4 +1,4 @@
-class @Collection extends ReadAccessDocument
+class @Collection extends BasicAccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -162,17 +162,16 @@ class @Collection extends ReadAccessDocument
   @applyDefaultAccess: (personId, document) ->
     document = super
 
-    if personId and personId not in _.pluck document.adminPersons, '_id'
-      document.adminPersons ?= []
-      document.adminPersons.push
-        _id: personId
     if document.authorPerson?._id and document.authorPerson._id not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: document.authorPerson._id
+
     if document.authorGroup?._id and document.authorGroup._id not in _.pluck document.adminGroups, '_id'
       document.adminGroups ?= []
       document.adminGroups.push
         _id: document.authorGroup._id
+
+    document = @_applyDefaultAccess personId, document
 
     document

@@ -35,24 +35,36 @@
 
 <template name="collectionDetails">
   <div class="col4 push12 sidebar collection-details">
-    <h2>Collection by</h2>
-    {{> personInlineItem authorPerson}}
+    <div class="section">
+      <h2>Collection by</h2>
+      {{> personInlineItem authorPerson}}
+    </div>
+    {{> collectionTools}}
+    <div class="section to-my-library">
+      <a href="{{libraryPath}}">To My Library</a>
+    </div>
+  </div>
+</template>
+
+<template name="collectionTools">
+  <div class="section">
     {{#if canModify}}
-      <h3>Tools</h3>
+      <h2>Tools</h2>
       {{#if canRemove}}
-        <p>
+        <div class="section">
           <button class="delete-collection">Delete collection</button>
           {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
           {{! TODO: Remove all publications from collection }}
           {{! TODO: Add confirmation or undo for this action }}
-        </p>
+        </div>
       {{/if}}
-      <p class="hint">
+      <p class="hint section">
         You can reorder publications in a collection by dragging them.
       </p>
-      <p class="to-my-library">
-        <a href="{{libraryPath}}">To My Library</a>
-      </p>
     {{/if}}
+    <div class="section">
+      <h3>Permissions</h3>
+      {{> accessControl}}
+    </div>
   </div>
 </template>
