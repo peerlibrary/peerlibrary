@@ -55,7 +55,7 @@ parseReferences = (body) ->
   references
 
 Meteor.methods
-  'annotations-path': (annotationId) ->
+  'annotations-path': methodWrap (annotationId) ->
     check annotationId, DocumentId
 
     person = Meteor.person()
@@ -72,11 +72,17 @@ Meteor.methods
 
     [publication._id, publication.slug, annotation._id]
 
-  'create-annotation': (publicationId, body, access, groups) ->
+  'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
     check publicationId, DocumentId
     check body, Match.Optional NonEmptyString
     check access, MatchAccess Annotation.ACCESS
-    check groups, [DocumentId]
+    check workInsideGroups, [DocumentId]
+    check readPersons, [DocumentId]
+    check readGroups, [DocumentId]
+    check maintainerPersons, [DocumentId]
+    check maintainerGroups, [DocumentId]
+    check adminPersons, [DocumentId]
+    check adminGroups, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -93,14 +99,50 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid publication." unless publication
 
     personGroups = _.pluck person.inGroups, '_id'
-    throw new Meteor.Error 400, "Invalid groups." if _.difference(groups, personGroups).length
+    throw new Meteor.Error 400, "Invalid work-inside groups." if _.difference(workInsideGroups, personGroups).length
 
-    throw new Meteor.Error 400, "Invalid groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid work-inside groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
-        $in: groups
-    )).count() isnt groups.length
+        $in: workInsideGroups
+    ).count() isnt workInsideGroups.length
 
-    groups = (_id: groupId for groupId in groups)
+    throw new Meteor.Error 400, "Invalid read persons." if Person.documents.find(
+      _id:
+        $in: readPersons
+    ).count() isnt readPersons.length
+
+    throw new Meteor.Error 400, "Invalid read groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: readGroups
+    ).count() isnt readGroups.length
+
+    throw new Meteor.Error 400, "Invalid maintainer persons." if Person.documents.find(
+      _id:
+        $in: maintainerPersons
+    ).count() isnt maintainerPersons.length
+
+    throw new Meteor.Error 400, "Invalid maintainer groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: maintainerGroups
+    ).count() isnt maintainerGroups.length
+
+    throw new Meteor.Error 400, "Invalid admin persons." if Person.documents.find(
+      _id:
+        $in: adminPersons
+    ).count() isnt adminPersons.length
+
+    throw new Meteor.Error 400, "Invalid admin groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: adminGroups
+    ).count() isnt adminGroups.length
+
+    workInsideGroups = (_id: groupId for groupId in workInsideGroups)
+    readPersons = (_id: personId for personId in readPersons)
+    readGroups = (_id: groupId for groupId in readGroups)
+    maintainerPersons = (_id: personId for personId in maintainerPersons)
+    maintainerGroups = (_id: groupId for groupId in maintainerGroups)
+    adminPersons = (_id: personId for personId in adminPersons)
+    adminGroups = (_id: groupId for groupId in adminGroups)
 
     # TODO: Should we sync this somehow with createAnnotationDocument? Maybe move createAnnotationDocument to Annotation object?
     createdAt = moment.utc().toDate()
@@ -115,8 +157,13 @@ Meteor.methods
       tags: []
       body: body
       access: access
-      inside: groups
-      readGroups: groups
+      inside: workInsideGroups
+      readPersons: readPersons
+      readGroups: readGroups
+      maintainerPersons: maintainerPersons
+      maintainerGroups: maintainerGroups
+      adminPersons: adminPersons
+      adminGroups: adminGroups
       license: 'CC0-1.0+'
 
     annotation = Annotation.applyDefaultAccess person._id, annotation
@@ -124,7 +171,7 @@ Meteor.methods
     Annotation.documents.insert annotation
 
   # TODO: Use this code on the client side as well
-  'update-annotation-body': (annotationId, body) ->
+  'update-annotation-body': methodWrap (annotationId, body) ->
     check annotationId, DocumentId
     check body, NonEmptyString
 
@@ -153,7 +200,7 @@ Meteor.methods
         references: references
 
   # TODO: Use this code on the client side as well
-  'remove-annotation': (annotationId) ->
+  'remove-annotation': methodWrap (annotationId) ->
     check annotationId, DocumentId
 
     person = Meteor.person()

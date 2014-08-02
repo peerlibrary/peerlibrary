@@ -26,11 +26,12 @@ class @Group extends Group
       slug: 1
       name: 1
       membersCount: 1
+      access: 1
 
 registerForAccess Group
 
 Meteor.methods
-  'create-group': (name) ->
+  'create-group': methodWrap (name) ->
     check name, NonEmptyString
 
     person = Meteor.person()
@@ -50,7 +51,7 @@ Meteor.methods
     Group.documents.insert group
 
   # TODO: Use this code on the client side as well
-  'remove-group': (groupId) ->
+  'remove-group': methodWrap (groupId) ->
     check groupId, DocumentId
 
     person = Meteor.person()
@@ -66,7 +67,7 @@ Meteor.methods
     )
 
   # TODO: Use this code on the client side as well
-  'add-to-group': (groupId, memberId) ->
+  'add-to-group': methodWrap (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
@@ -94,7 +95,7 @@ Meteor.methods
           _id: member._id
 
   # TODO: Use this code on the client side as well
-  'remove-from-group': (groupId, memberId) ->
+  'remove-from-group': methodWrap (groupId, memberId) ->
     check groupId, DocumentId
     check memberId, DocumentId
 
@@ -121,7 +122,7 @@ Meteor.methods
           _id: member._id
 
   # TODO: Use this code on the client side as well
-  'group-set-name': (groupId, name) ->
+  'group-set-name': methodWrap (groupId, name) ->
     check groupId, DocumentId
     check name, NonEmptyString
 
@@ -139,12 +140,15 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'groups-by-id', (groupId) ->
-  check groupId, DocumentId
+Meteor.publish 'groups-by-ids', (groupIds) ->
+  check groupIds, Match.OneOf(DocumentId, [DocumentId])
+
+  groupIds = [groupIds] unless _.isArray groupIds
 
   @related (person) ->
     Group.documents.find Group.requireReadAccessSelector(person,
-      _id: groupId
+      _id:
+        $in: groupIds
     ),
       Group.PUBLISH_FIELDS()
   ,

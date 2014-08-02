@@ -44,8 +44,18 @@ class @Notify extends BaseDocument
 
     notificationId
 
-  @meteorError: (error, log) =>
-    @error error.reason, error.details, log
+  @fromError: (error, log) =>
+    if error instanceof Meteor.Error
+      if _.startsWith error.details, 'Stacktrace:\n'
+        @error _.ensureSentence(error.reason), null, log, error.details.substring('Stacktrace:\n'.length)
+      else
+        @error _.ensureSentence(error.reason), error.details, log
+    else if error instanceof Error
+      stack = StackTrace.printStackTrace e: error
+      stack = if _.isArray stack then stack.join('\n') else stack
+      @error _.ensureSentence(error.message or error.stringOf?() or "Unknown error."), null, log, stack
+    else
+      @error _.ensureSentence("#{ error }"), null, log
 
   @error: (message, additional, log, stack) =>
     additional = '' unless additional
@@ -56,7 +66,7 @@ class @Notify extends BaseDocument
 
     if stack
       displayStack = if _.isArray stack then stack.join('\n') else stack
-      notificationAdditional += "<textarea class=\"stack\" name=\"stack\" rows=\"10\" cols=\"30\">#{ _.escape(displayStack) }</textarea>"
+      notificationAdditional += "<textarea class=\"stack\" name=\"stack\" rows=\"10\" cols=\"30\">#{ _.escape(displayStack).replace(/\n/g, '&#10;') }</textarea>"
 
     afterLogging = (error, loggedErrorId) =>
       # Ignoring error

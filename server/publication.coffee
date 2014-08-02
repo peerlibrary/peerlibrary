@@ -234,7 +234,7 @@ class @Publication extends Publication
 registerForAccess Publication
 
 Meteor.methods
-  'create-publication': (filename, sha256) ->
+  'create-publication': methodWrap (filename, sha256) ->
     check filename, String
     check sha256, SHA256String
 
@@ -312,7 +312,7 @@ Meteor.methods
     already: already
     samples: samples
 
-  'upload-publication': (file, options) ->
+  'upload-publication': methodWrap (file, options) ->
     check file, MeteorFile
     check options, Match.ObjectIncluding
       publicationId: DocumentId
@@ -388,7 +388,7 @@ Meteor.methods
           library:
             _id: publication._id
 
-  'verify-publication': (publicationId, samplesData) ->
+  'verify-publication': methodWrap (publicationId, samplesData) ->
     check publicationId, DocumentId
     check samplesData, [Uint8Array]
 
@@ -424,7 +424,7 @@ Meteor.methods
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'publication-set-title': (publicationId, title) ->
+  'publication-set-title': methodWrap (publicationId, title) ->
     check publicationId, DocumentId
     check title, NonEmptyString
 
