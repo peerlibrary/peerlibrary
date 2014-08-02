@@ -2,6 +2,8 @@
 
 .catalog
   .controls
+    float right
+
     .control
       display inline-block
       margin-left 2em
@@ -25,6 +27,10 @@
   .status
     font-size 16px
     font-weight 300
+
+  /* Status after the controls should be aligned with controls */
+  .controls + .status
+    margin-top 5px
 
   /* Statuses appearing after the list of documents should be centered instead of left-aligned */
   .item-list + .status

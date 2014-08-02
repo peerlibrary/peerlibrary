@@ -1,4 +1,4 @@
-Handlebars.registerHelper 'keyboardShortcut', ->
+Handlebars.registerHelper 'keyboardShortcut', (options) ->
   if window?.navigator?.platform.toLowerCase().indexOf('mac') >= 0
     '⌘'
   else

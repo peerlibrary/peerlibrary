@@ -1,3 +1,39 @@
+class @Group extends Group
+  @Meta
+    name: 'Group'
+    replaceParent: true
+
+  # We allow passing the group slug if caller knows it
+  @pathFromId: (groupId, slug, options) ->
+    assert _.isString groupId
+    # To allow calling template helper with only one argument (group will be options then)
+    group = null unless _.isString group
+
+    group = @documents.findOne groupId
+
+    return Meteor.Router.groupPath group._id, (group.slug ? slug) if group
+
+    Meteor.Router.groupPath groupId, slug
+
+  path: ->
+    @constructor.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (groupId, group, options) ->
+    assert _.isString groupId
+    # To allow calling template helper with only one argument (collection will be options then)
+    group = null unless group instanceof @
+
+    group = @documents.findOne groupId unless group
+    assert groupId, group._id if group
+
+    _id: groupId # TODO: Remove when we will be able to access parent template context
+    text: "g:#{ groupId }"
+    title: group?.name or group?.slug
+
+  reference: ->
+    @constructor.reference @_id, @
+
 groupHandle = null
 
 # Mostly used just to force reevaluation of groupHandle
@@ -41,6 +77,17 @@ Template.group.notFound = ->
 
 Template.group.group = ->
   Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
+
+Editable.template Template.groupName, ->
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+,
+(name) ->
+  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    return Notify.fromError error, true if error
+,
+  "Enter group name"
+,
+  true
 
 Template.groupMembership.isMember = ->
   person = Meteor.person()
@@ -318,19 +365,6 @@ Template.groupTools.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the group slug if caller knows it
-Handlebars.registerHelper 'groupPathFromId', (groupId, slug, options) ->
-  group = Group.documents.findOne groupId
+Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
-  return Meteor.Router.groupPath group._id, group.slug if group
-
-  Meteor.Router.groupPath groupId, slug
-
-# Optional group document
-Handlebars.registerHelper 'groupReference', (groupId, group, options) ->
-  group = Group.documents.findOne groupId unless group
-  assert groupId, group._id if group
-
-  _id: groupId # TODO: Remove when we will be able to access parent template context
-  text: "g:#{ groupId }"
-  title: group?.name or group?.slug
+Handlebars.registerHelper 'groupReference', _.bind Group.reference, Group

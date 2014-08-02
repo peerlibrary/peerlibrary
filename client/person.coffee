@@ -1,3 +1,62 @@
+class @Person extends Person
+  @Meta
+    name: 'Person'
+    replaceParent: true
+
+  # We allow passing the person slug if caller knows it.
+  # If you do not know if you have an ID or a slug, you can pass
+  # it in as an ID and hopefully something useful will come out.
+  @pathFromId = (personId, slug, options) ->
+    assert _.isString personId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
+    person = @documents.findOne
+      $or: [
+        slug: personId
+      ,
+        _id: personId
+      ]
+
+    return Meteor.Router.personPath (person.slug ? slug) if person
+
+    # Even if did not find any person document, we still prefer slug over ID
+    return Meteor.Router.personPath slug if slug
+
+    # Otherwise use ID (which is maybe a slug) and let it be resolved later
+    Meteor.Router.personPath personId
+
+  path: ->
+    @constructor.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document. Optional person document.
+  # If you do not know if you have an ID or a slug, you can pass it in as an ID and hopefully
+  # something useful will come out.
+  @reference: (personId, person, options) ->
+    assert _.isString personId
+    # To allow calling template helper with only one argument (person will be options then)
+    person = null unless person instanceof @
+
+    unless person
+      person = @documents.findOne
+        $or: [
+          slug: personId
+        ,
+          _id: personId
+        ]
+    assert personId, person._id if person
+
+    if person
+      _id: personId # TODO: Remove when we will be able to access parent template context
+      text: "@#{ person.slug }"
+      title: person.displayName
+    else
+      _id: personId # TODO: Remove when we will be able to access parent template context
+      text: "@#{ personId }"
+
+  reference: ->
+    @constructor.reference @_id, @
+
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
@@ -45,42 +104,6 @@ Handlebars.registerHelper 'currentPerson', (options) ->
 Handlebars.registerHelper 'currentPersonId', (options) ->
   Meteor.personId()
 
-# We allow passing the person slug if caller knows it.
-# If you do not know if you have an ID or a slug, you can pass
-# it in as an ID and hopefully something useful will come out.
-Handlebars.registerHelper 'personPathFromId', (personId, slug, options) ->
-  person = Person.documents.findOne
-    $or: [
-      slug: personId
-    ,
-      _id: personId
-    ]
+Handlebars.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
 
-  return Meteor.Router.personPath person.slug if person
-
-  # Even if did not find any person document, we still prefer slug over ID
-  return Meteor.Router.personPath slug if slug
-
-  # Otherwise use ID (which is maybe a slug) and let it be resolved later
-  Meteor.Router.personPath personId
-
-# Optional person document.
-# If you do not know if you have an ID or a slug, you can pass
-# it in as an ID and hopefully something useful will come out.
-Handlebars.registerHelper 'personReference', (personId, person, options) ->
-  unless person
-    person = Person.documents.findOne
-      $or: [
-        slug: personId
-      ,
-        _id: personId
-      ]
-  assert personId, person._id if person
-
-  if person
-    _id: personId # TODO: Remove when we will be able to access parent template context
-    text: "@#{ person.slug }"
-    title: person.displayName
-  else
-    _id: personId # TODO: Remove when we will be able to access parent template context
-    text: "@#{ personId }"
+Handlebars.registerHelper 'personReference', _.bind Person.reference, Person

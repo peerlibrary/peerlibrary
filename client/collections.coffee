@@ -1,25 +1,21 @@
-Catalog.create 'collections', Collection,
-  main: Template.collections
-  empty: Template.noCollections
-  loading: Template.collectionsLoading
-,
-  active: 'collectionsActive'
-  ready: 'currentCollectionsReady'
-  loading: 'currentCollectionsLoading'
-  count: 'currentCollectionsCount'
-  filter: 'currentCollectionsFilter'
-  limit: 'currentCollectionsLimit'
-  sort: 'currentCollectionsSort'
+Template.collections.catalogSettings = ->
+  subscription: 'collections'
+  documentClass: Collection
+  variables:
+    active: 'collectionsActive'
+    ready: 'currentCollectionsReady'
+    loading: 'currentCollectionsLoading'
+    count: 'currentCollectionsCount'
+    filter: 'currentCollectionsFilter'
+    limit: 'currentCollectionsLimit'
+    limitIncreasing: 'currentCollectionsLimitIncreasing'
+    sort: 'currentCollectionsSort'
+  signedInNoDocumentsMessage: "Create the first using the form on the right."
+  signedOutNoDocumentsMessage: "Sign in and create the first."
 
 Deps.autorun ->
   if Session.equals 'collectionsActive', true
     Meteor.subscribe 'my-collections'
-
-Template.collections.catalogSettings = ->
-  documentClass: Collection
-  variables:
-    filter: 'currentCollectionsFilter'
-    sort: 'currentCollectionsSort'
 
 Template.myCollections.myCollections = ->
   return unless Meteor.personId()
@@ -58,6 +54,8 @@ Editable.template Template.collectionCatalogItemName, ->
   "Enter collection name"
 ,
   false
+
+EnableCatalogItemLink Template.collectionCatalogItem
 
 Template.collectionCatalogItem.countDescription = ->
   Publication.verboseNameWithCount @publications?.length

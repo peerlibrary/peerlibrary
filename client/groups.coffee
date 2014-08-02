@@ -1,25 +1,21 @@
-Catalog.create 'groups', Group,
-  main: Template.groups
-  empty: Template.noGroups
-  loading: Template.groupsLoading
-,
-  active: 'groupsActive'
-  ready: 'currentGroupsReady'
-  loading: 'currentGroupsLoading'
-  count: 'currentGroupsCount'
-  filter: 'currentGroupsFilter'
-  limit: 'currentGroupsLimit'
-  sort: 'currentGroupsSort'
+Template.groups.catalogSettings = ->
+  subscription: 'groups'
+  documentClass: Group
+  variables:
+    active: 'groupsActive'
+    ready: 'currentGroupsReady'
+    loading: 'currentGroupsLoading'
+    count: 'currentGroupsCount'
+    filter: 'currentGroupsFilter'
+    limit: 'currentGroupsLimit'
+    limitIncreasing: 'currentGroupsLimitIncreasing'
+    sort: 'currentGroupsSort'
+  signedInNoDocumentsMessage: "Create the first using the form on the right."
+  signedOutNoDocumentsMessage: "Sign in and create the first."
 
 Deps.autorun ->
   if Session.equals 'groupsActive', true
     Meteor.subscribe 'my-groups'
-
-Template.groups.catalogSettings = ->
-  documentClass: Group
-  variables:
-    filter: 'currentGroupsFilter'
-    sort: 'currentGroupsSort'
 
 Template.groups.events
   'submit .add-group': (event, template) ->
@@ -62,6 +58,6 @@ Editable.template Template.groupCatalogItemName, ->
 ,
   "Enter group name"
 ,
-  true
+  false
 
-Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
+EnableCatalogItemLink Template.groupCatalogItem

@@ -1,3 +1,39 @@
+class @Collection extends Collection
+  @Meta
+    name: 'Collection'
+    replaceParent: true
+
+  # We allow passing the collection slug if caller knows it
+  @pathFromId: (collectionId, slug, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
+    collection = @documents.findOne collectionId
+
+    return Meteor.Router.collectionPath collection._id, (collection.slug ? slug) if collection
+
+    Meteor.Router.collectionPath collectionId, slug
+
+  path: ->
+    @constructor.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (collectionId, collection, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (collection will be options then)
+    collection = null unless collection instanceof @
+
+    collection = @documents.findOne collectionId unless collection
+    assert collectionId, collection._id if collection
+
+    _id: collectionId # TODO: Remove when we will be able to access parent template context
+    text: "c:#{ collectionId }"
+    title: collection?.name or collection?.slug
+
+  reference: ->
+    @constructor.reference @_id, @
+
 collectionHandle = null
 
 # Mostly used just to force reevaluation of collectionHandle
@@ -129,20 +165,6 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the collection slug if caller knows it
-Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) ->
-  collection = Collection.documents.findOne collectionId
+Handlebars.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
 
-  return Meteor.Router.collectionPath collection._id, collection.slug if collection
-
-  Meteor.Router.collectionPath collectionId, slug
-
-# Optional collection document
-Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
-  collection = Collection.documents.findOne collectionId unless collection
-  assert collectionId, comment._id if collection
-
-  _id: collectionId # TODO: Remove when we will be able to access parent template context
-  noLink: collection?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "c:#{ collectionId }"
-  title: collection?.name or collection?.slug
+Handlebars.registerHelper 'collectionReference', _.bind Collection.reference, Collection
