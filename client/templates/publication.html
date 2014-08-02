@@ -35,7 +35,7 @@
       </p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{displayName}}</a></span>
         {{/each}}
       </p>
       <p>Source: {{source}}</p>
@@ -103,7 +103,7 @@
       <p class="hint">This will also add the publication to your library.</p>
     {{/unless}}
   {{else}}
-    {{> noCollections}}
+    {{> noMyCollections}}
   {{/if}}
 </template>
 
@@ -218,8 +218,8 @@
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
-      <a class="author" href="{{personPathFromId currentPerson._id currentPerson.slug}}">
-        <img src="{{currentPerson.avatar 30}}" class="avatar" />
+      <a class="author" href="{{currentPerson.path}}">
+        {{> personAvatar author}}
       </a>
     {{else}}
       {{> annotationMetaMenu}}
@@ -310,7 +310,7 @@
     <div class="tags">
       <ul class="annotation-tags-list">
         {{#each tags}}
-          <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
+          <li><a href="{{path}}">{{tag.name.en}}</a></li>
         {{/each}}
       </ul>
     </div>
@@ -330,8 +330,8 @@
 
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
-    <a href="{{personPathFromId author_.id author.slug}}">
-      <img src="{{author.avatar 30}}" class="avatar" />
+    <a href="{{author.path}}">
+      {{> personAvatar author}}
     </a>
     <div class="comment-content">
       {{#if canRemove}}
@@ -344,8 +344,8 @@
 
 <template name="annotationCommentEditor">
   <li class="comment-editor">
-    <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
-      <img src="{{currentPerson.avatar 30}}" class="avatar" />
+    <a href="{{currentPerson.path}}">
+      {{> personAvatar currentPerson}}
     </a>
     <div class="comment-content">
       {{#constant}}
@@ -365,7 +365,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -561,7 +561,7 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+      <span><a href="{{path}}">{{displayName}}</a></span>
     {{/with}}
   </p>
   <p class="time">{{createdAt}}</p>
@@ -569,13 +569,36 @@
   <p class="references">
     Referencing:
     {{#each referencingAnnotations}}
-      {{#with annotationReference _id this}}
-        <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-          {{text}}
-        </a></span>
-      {{/with}}
+      <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+        {{reference.text}}
+      </a></span>
     {{/each}}
   </p>
+</template>
+
+<template name="annotationsControl">
+  <div class="annotations-control">
+    {{#if currentPersonId}}
+      {{! TODO: Temporary disabled, not yet finalized code
+        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+      }}
+      {{> contextMenu}}
+      {{#if inside.count}}
+        <div class="filter">
+          Groups filter:
+          {{#each inside}}
+            <span><a href="{{path}}">{{name}}</a></span>
+          {{/each}}
+        </div>
+      {{/if}}
+    {{/if}}
+    {{#if filteredAnnotationsCount}}
+      <div class="filteredCount">
+        {{filteredAnnotationsCount}} annotations filtered out
+        {{! TODO: Add a button to cancel any filtering }}
+      </div>
+    {{/if}}
+  </div>
 </template>
 
 <template name="annotationMetaMenu">
@@ -587,7 +610,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{displayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">{{createdAt}}</p>
@@ -596,67 +619,51 @@
         <p class="inside">
           Inside groups:
           {{#each inside}}
-            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
+            <span><a href="{{path}}">{{name}}</a></span>
           {{/each}}
         </p>
       {{/if}}
       <p class="references">
         Referencing:
         {{#each references.highlights}}
-          {{#with highlightReference _id this}}
-            <span><a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.annotations}}
-          {{#with annotationReference _id this}}
-            <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.publications}}
-          {{#with publicationReference _id this}}
-            <span><a href="{{publicationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.persons}}
-          {{#with personReference _id this}}
-            <span><a href="{{personPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.groups}}
-          {{#with groupReference _id this}}
-            <span><a href="{{groupPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.tags}}
-          {{#with tagReference _id this}}
-            <span><a href="{{tagPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.collections}}
-          {{#with collectionReference _id this}}
-            <span><a href="{{collectionPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.comments}}
-          {{#with commentReference _id this}}
-            <span><a href="{{commentPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
       </p>
     </div>

@@ -80,14 +80,23 @@ Template.resultsCount.publications = ->
 Template.resultsCount.persons = ->
   Session.get 'currentSearchQueryCountPersons'
 
-Template.noResults.noResults = ->
+Template.resultsCount.noResults = ->
   Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
+
+Template.resultsCount.publicationsCountDescription = ->
+  Publication.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
+
+Template.resultsCount.personsCountDescription = ->
+  Person.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
 
 Template.resultsLoad.loading = ->
   Session.get('currentSearchQueryLoading')
 
 Template.resultsLoad.more = ->
   Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
+
+Template.resultsLoad.publications = ->
+  Session.get 'currentSearchQueryCountPublications'
 
 Template.resultsLoad.events =
   'click .load-more': (event, template) ->

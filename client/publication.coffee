@@ -173,6 +173,37 @@ class @Publication extends Publication
       when 'tei' then @showTEI()
       else Notify.error "Unsupported media type: #{ @mediaType }.", null, true
 
+  # We allow passing the publication slug if caller knows it
+  @pathFromId: (publicationId, slug, options) ->
+    assert _.isString publicationId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
+    publication = @documents.findOne publicationId
+
+    return Meteor.Router.publicationPath publication._id, (publication.slug ? slug) if publication
+
+    Meteor.Router.publicationPath publicationId, slug
+
+  path: ->
+    @constructor.pathFromId @_id, @slug
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (publicationId, publication, options) ->
+    assert _.isString publicationId
+    # To allow calling template helper with only one argument (publication will be options then)
+    publication = null unless publication instanceof @
+
+    publication = @documents.findOne publicationId unless publication
+    assert publicationId, publication._id if publication
+
+    _id: publicationId # TODO: Remove when we will be able to access parent template context
+    text: "p:#{ publicationId }"
+    title: publication?.title
+
+  reference: ->
+    @constructor.reference @_id, @
+
   showPDF: =>
     assert.strictEqual @_pages, null
 
@@ -1240,7 +1271,7 @@ Template.publicationAnnotationsItem.updatedFromNow = ->
   moment(@updatedAt).fromNow()
 
 Template.publicationAnnotationsItem.author = ->
-  # Because we cannot access parent templates we're modifying the data with an extra parameter
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
   # TODO: Change when Meteor allows sending parameters to templates
   @author.avatarSize = 30
   @author
@@ -1821,6 +1852,12 @@ Template.annotationCommentsListItem.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.annotationCommentsListItem.author = ->
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  @author.avatarSize = 30
+  @author
+
 Template.annotationCommentEditor.created = ->
   @_scribe = null
 
@@ -1876,6 +1913,12 @@ Template.annotationCommentEditor.events
       $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
+
+Template.annotationCommentEditor.currentPerson = ->
+  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
+  # TODO: Change when Meteor allows sending parameters to templates
+  _.extend Meteor.person(),
+    avatarSize: 30
 
 Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
@@ -2005,19 +2048,6 @@ Template.editorLinkPrompt.events
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the publication slug if caller knows it
-Handlebars.registerHelper 'publicationPathFromId', (publicationId, slug, options) ->
-  publication = Publication.documents.findOne publicationId
+Handlebars.registerHelper 'publicationPathFromId', _.bind Publication.pathFromId, Publication
 
-  return Meteor.Router.publicationPath publication._id, publication.slug if publication
-
-  Meteor.Router.publicationPath publicationId, slug
-
-# Optional publication document
-Handlebars.registerHelper 'publicationReference', (publicationId, publication, options) ->
-  publication = Publication.documents.findOne publicationId unless publication
-  assert publicationId, publication._id if publication
-
-  _id: publicationId # TODO: Remove when we will be able to access parent template context
-  text: "p:#{ publicationId }"
-  title: publication?.title
+Handlebars.registerHelper 'publicationReference', _.bind Publication.reference, Publication
