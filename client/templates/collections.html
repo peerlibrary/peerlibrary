@@ -1,52 +1,11 @@
 <template name="collections">
   <h1>Collections</h1>
-
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> noCollections}}
-      {{> collectionsList documents}}
-      {{> collectionsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> myCollections}}
   </div>
-</template>
-
-<template name="collectionsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> collectionCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="noCollections">
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        The filter matches no collections.
-      {{else}}
-        There are no collections yet.
-        {{#if currentPersonId}}
-          Create the first one using the form on the right.
-        {{else}}
-          Sign in and create the first.
-        {{/if}}
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="collectionsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="myCollections">
@@ -80,12 +39,10 @@
 </template>
 
 <template name="collectionInlineItem">
-  {{#with collectionReference _id this}}
-    <a class="inline-item collection"{{#unless noLink}} href="{{collectionPathFromId _id}}"{{/unless}}>
-      <i class="avatar only-icon icon-collection" title="Collection"></i>
-      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
-    </a>
-  {{/with}}
+  <a class="inline-item collection"{{#unless noLink}} href="{{path}}"{{/unless}}>
+    <i class="avatar only-icon icon-collection" title="Collection"></i>
+    <span class="name"{{#if reference.title}} title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
+  </a>
 </template>
 
 <template name="collectionCatalogItem">
@@ -102,14 +59,12 @@
       <p class="show-in-sidebar"><i class="icon-publication"></i> {{countDescription}}</p>
     </div>
 
-    <a class="full-item-link" href="{{collectionPathFromId _id slug}}"></a>
+    <a class="full-item-link" href="{{path}}"></a>
   </li>
 </template>
 
 <template name="collectionCatalogItemName">
   <h2>
-    <a href="{{collectionPathFromId _id slug}}" class="actionable">
-      {{name}}
-    </a>
+    {{name}}
   </h2>
 </template>

@@ -1,27 +1,25 @@
-Catalog.create 'persons', Person,
-  main: Template.persons
-  empty: Template.noPersons
-  loading: Template.personsLoading
-,
-  active: 'personsActive'
-  ready: 'currentPersonsReady'
-  loading: 'currentPersonsLoading'
-  count: 'currentPersonsCount'
-  filter: 'currentPersonsFilter'
-  limit: 'currentPersonsLimit'
-  sort: 'currentPersonsSort'
-
 Template.persons.catalogSettings = ->
+  subscription: 'persons'
   documentClass: Person
   variables:
+    active: 'personsActive'
+    ready: 'currentPersonsReady'
+    loading: 'currentPersonsLoading'
+    count: 'currentPersonsCount'
     filter: 'currentPersonsFilter'
+    limit: 'currentPersonsLimit'
+    limitIncreasing: 'currentPersonsLimitIncreasing'
     sort: 'currentPersonsSort'
+  signedOutNoDocumentsMessage: "There are no people yet. Sign up and become the first."
 
-Template.personInlineItem.status = ->
+Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"
 
-Template.personCatalogItem.avatarSize = ->
-  100
+EnableCatalogItemLink Template.personCatalogItem
+
+Template.personCatalogItem.person = ->
+  _.extend @,
+    avatarSize: 100
 
 Template.personCatalogItem.publicationsCountDescription = ->
   Publication.verboseNameWithCount @publications.length

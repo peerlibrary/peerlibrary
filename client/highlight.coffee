@@ -1,21 +1,44 @@
-# If we have the highlight and the publication available on the client,
-# we can create full path directly, otherwise we have to use highlightIdPath
-Handlebars.registerHelper 'highlightPathFromId', (highlightId, options) ->
-  highlight = Highlight.documents.findOne highlightId
+class @Highlight extends Highlight
+  @Meta
+    name: 'Highlight'
+    replaceParent: true
 
-  return Meteor.Router.highlightIdPath highlightId unless highlight
+  # If we have the highlight and the publication available on the client,
+  # we can create full path directly, otherwise we have to use highlightIdPath
+  @pathFromId: (highlightId, options) ->
+    assert _.isString highlightId
 
-  publication = Publication.documents.findOne highlight.publication._id
+    highlight = @documents.findOne highlightId
 
-  return Meteor.Router.highlightIdPath highlightId unless publication
+    return Meteor.Router.highlightIdPath highlightId unless highlight
 
-  Meteor.Router.highlightPath publication._id, publication.slug, highlightId
+    publicationSlug = highlight.publication?.slug
+    unless publicationSlug?
+      publication = Publication.documents.findOne highlight.publication._id
+      publicationSlug = publication?.slug
 
-# Optional highlight document
-Handlebars.registerHelper 'highlightReference', (highlightId, highlight, options) ->
-  highlight = Highlight.documents.findOne highlightId unless highlight
-  assert highlightId, highlight._id if highlight
+      return Meteor.Router.annotationIdPath highlightId unless publicationSlug?
 
-  _id: highlightId # TODO: Remove when we will be able to access parent template context
-  noLink: highlight?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "h:#{ highlightId }"
+    Meteor.Router.highlightPath highlight.publication._id, publicationSlug, highlightId
+
+  path: ->
+    @constructor.pathFromId @_id
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (highlightId, highlight, options) ->
+    assert _.isString highlightId
+    # To allow calling template helper with only one argument (highlight will be options then)
+    highlight = null unless highlight instanceof @
+
+    highlight = @documents.findOne highlightId unless highlight
+    assert highlightId, highlight._id if highlight
+
+    _id: highlightId # TODO: Remove when we will be able to access parent template context
+    text: "h:#{ highlightId }"
+
+  reference: ->
+    @constructor.reference @_id, @
+
+Handlebars.registerHelper 'highlightPathFromId', _.bind Highlight.pathFromId, Highlight
+
+Handlebars.registerHelper 'highlightReference', _.bind Highlight.reference, Highlight

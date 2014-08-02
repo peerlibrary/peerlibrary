@@ -33,11 +33,11 @@
         li
           display none
           width 100%
+          height 100%
 
           img
             width 100%
             height auto
-            float right
 
       &.medium::before, &.long::before, &.long::after
         content ""
@@ -56,18 +56,36 @@
         left 4px
         z-index 0
 
+      .page-tooltip
+        position absolute
+        left -50px
+        right -50px
+        bottom 141px
+        text-align center
+        visibility hidden
+        opacity 0
+        transition all 0.5s
+
+        .ui-tooltip
+          position relative
+          display inline-block
+
+      &:hover
+        .page-tooltip
+          visibility visible
+          opacity 1
+
     &:hover .scrubber
       border-color box-shadow-shadow
 
     .authors
       list-style none
-      margin 0
+      margin 0 0 15px
       padding 0
-      display inline
 
       li
         display inline-block
-        margin 0 10px 10px 0
+        margin 0 10px 5px 0
 
         .inline-item
           font-size 14px
@@ -77,6 +95,7 @@
       right 0
       left auto
       width 300px
+      cursor default
 
       .icon
         display none

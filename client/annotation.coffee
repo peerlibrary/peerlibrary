@@ -1,3 +1,44 @@
+class @Annotation extends Annotation
+  @Meta
+    name: 'Annotation'
+    replaceParent: true
+
+  # If we have the annotation and the publication available on the client,
+  # we can create full path directly, otherwise we have to use annotationIdPath
+  @pathFromId: (annotationId, options) ->
+    assert _.isString annotationId
+
+    annotation = @documents.findOne annotationId
+
+    return Meteor.Router.annotationIdPath annotationId unless annotation
+
+    publicationSlug = annotation.publication?.slug
+    unless publicationSlug?
+      publication = Publication.documents.findOne annotation.publication._id
+      publicationSlug = publication?.slug
+
+      return Meteor.Router.annotationIdPath annotationId unless publicationSlug?
+
+    Meteor.Router.annotationPath annotation.publication._id, publicationSlug, annotationId
+
+  path: ->
+    @constructor.pathFromId @_id
+
+  # Helper object with properties useful to refer to this document. Optional annotation document.
+  @reference: (annotationId, annotation, options) ->
+    assert _.isString annotationId
+    # To allow calling template helper with only one argument (annotation will be options then)
+    annotation = null unless annotation instanceof @
+
+    annotation = @documents.findOne annotationId unless annotation
+    assert annotationId, annotation._id if annotation
+
+    _id: annotationId # TODO: Remove when we will be able to access parent template context
+    text: "a:#{ annotationId }"
+
+  reference: ->
+    @constructor.reference @_id, @
+
 # A special client-only document which mirrors Annotation document. Anything
 # added to it will not be stored to the server, but any changes to Annotation
 # document will be refleced in this client-only document.
@@ -63,24 +104,7 @@ Meteor.startup ->
   tags: []
   body: ''
 
-# If we have the annotation and the publication available on the client,
-# we can create full path directly, otherwise we have to use annotationIdPath
-Handlebars.registerHelper 'annotationPathFromId', (annotationId, options) ->
-  annotation = LocalAnnotation.documents.findOne annotationId
+Handlebars.registerHelper 'annotationPathFromId', _.bind LocalAnnotation.pathFromId, LocalAnnotation
 
-  return Meteor.Router.annotationIdPath annotationId unless annotation
+Handlebars.registerHelper 'annotationReference', _.bind LocalAnnotation.reference, LocalAnnotation
 
-  publication = Publication.documents.findOne annotation.publication._id
-
-  return Meteor.Router.annotationIdPath annotationId unless publication
-
-  Meteor.Router.annotationPath publication._id, publication.slug, annotationId
-
-# Optional annotation document
-Handlebars.registerHelper 'annotationReference', (annotationId, annotation, options) ->
-  annotation = Annotation.documents.findOne annotationId unless annotation
-  assert annotationId, annotation._id if annotation
-
-  _id: annotationId # TODO: Remove when we will be able to access parent template context
-  noLink: annotation?.noLink # TODO: Remove when we will be able to access parent template context
-  text: "a:#{ annotationId }"

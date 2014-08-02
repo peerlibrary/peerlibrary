@@ -1,51 +1,11 @@
 <template name="publications">
   <h1>Publications</h1>
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> noPublications}}
-      {{> publicationsList documents}}
-      {{> publicationsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> myPublications}}
   </div>
-</template>
-
-<template name="publicationsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> publicationCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="noPublications">
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        The filter matches no publications.
-      {{else}}
-        There are no publications yet.
-        {{#if currentPersonId}}
-          Import the first from the menu on top.
-        {{else}}
-          Sign in and import the first.
-        {{/if}}
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="publicationsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="myPublications">
@@ -59,7 +19,7 @@
 
 <template name="publicationInlineItem">
   {{#spaceless}}
-    <a class="inline-item publication" {{#unless noLink}}href="{{publicationPathFromId _id slug}}"{{/unless}}>
+    <a class="inline-item publication" {{#unless noLink}}href="{{path}}"{{/unless}}>
       <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
         {{#if title}}
@@ -81,6 +41,9 @@
             {{> publicationCatalogItemThumbnail}}
           {{/each}}
         </ul>
+        <div class="page-tooltip">
+          <div class="ui-tooltip"></div>
+        </div>
       </div>
     {{/if}}
 
@@ -95,7 +58,7 @@
     <div class="details">
       {{> publicationCatalogItemTitle}}
 
-      <ol class="authors actionable">
+      <ol class="authors">
         {{#if authors.length}}
           {{#each authors}}
             <li>{{> personInlineItem}}</li>
@@ -119,11 +82,11 @@
         <p><i class="icon-annotation"></i> {{annotationsCountDescription}}</p>
       {{/if}}
 
-      <div class="actions actionable">
+      <div class="actions">
         {{#if hasAbstract}}
-          <button class="preview-link">Abstract</button> &middot;
+          <button class="actionable preview-link">Abstract</button> &middot;
         {{/if}}
-        <a href="{{publicationPathFromId _id slug}}">Full text</a>
+        <a href="{{path}}">Full text</a>
       </div>
     </div>
 
@@ -135,13 +98,13 @@
       {{/if}}
     </div>
 
-    <a class="full-item-link" href="{{publicationPathFromId _id slug}}"></a>
+    <a class="full-item-link" href="{{path}}"></a>
   </li>
 </template>
 
 <template name="publicationCatalogItemLibraryMenu">
   <div class="dropdown-trigger">
-    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library.{{else}}Add publication to library and collections.{{/if}}">
+    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections{{/if}}">
       <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
     </button>
     <div class="dropdown-anchor">
@@ -157,22 +120,20 @@
 <template name="publicationCatalogItemTitle">
   <h2 class="{{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
     {{#spaceless}}
-      <a class="actionable" href="{{publicationPathFromId _id slug}}">
-        {{#if title}}
-          {{title}}
+      {{#if title}}
+        {{title}}
+      {{else}}
+        {{#if importing.0.filename}}
+          {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.0.filename}}
         {{else}}
-          {{#if importing.0.filename}}
-            {{! Used only in personal library list, elsewhere we display "<title metadata missing>" to invite users to provide metadata }}
-            {{importing.0.filename}}
-          {{else}}
-            <i>&lt;title metadata missing&gt;</i>
-          {{/if}}
+          <i>&lt;title metadata missing&gt;</i>
         {{/if}}
-      </a>
+      {{/if}}
     {{/spaceless}}
   </h2>
 </template>
 
 <template name="publicationCatalogItemThumbnail">
-  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
+  <li><img src="{{this}}" width="95" height="125" alt=""></li>
 </template>

@@ -1,26 +1,22 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-Catalog.create 'publications', Publication,
-  main: Template.publications
-  empty: Template.noPublications
-  loading: Template.publicationsLoading
-,
-  active: 'publicationsActive'
-  ready: 'currentPublicationsReady'
-  loading: 'currentPublicationsLoading'
-  count: 'currentPublicationsCount'
-  filter: 'currentPublicationsFilter'
-  limit: 'currentPublicationsLimit'
-  sort: 'currentPublicationsSort'
-
 Template.publications.catalogSettings = ->
+  subscription: 'publications'
   documentClass: Publication
   variables:
+    active: 'publicationsActive'
+    ready: 'currentPublicationsReady'
+    loading: 'currentPublicationsLoading'
+    count: 'currentPublicationsCount'
     filter: 'currentPublicationsFilter'
+    limit: 'currentPublicationsLimit'
+    limitIncreasing: 'currentPublicationsLimitIncreasing'
     sort: 'currentPublicationsSort'
+  signedInNoDocumentsMessage: "Import the first from the menu on top."
+  signedOutNoDocumentsMessage: "Sign in and import the first."
 
-Template.publicationCatalogItem.events =
+Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->
     event.preventDefault()
 
@@ -34,11 +30,14 @@ Template.publicationCatalogItem.events =
 
     return # Make sure CoffeeScript does not return anything
 
+EnableCatalogItemLink Template.publicationCatalogItem
+
 Template.publicationCatalogItem.created = ->
   @_publicationHandle = null
 
 Template.publicationCatalogItem.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
+  $(@findAll '.scrubber').iscrubber
+    direction: 'combined'
 
 Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
@@ -142,6 +141,10 @@ Editable.template Template.publicationCatalogItemTitle, ->
 Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle[method] for method in ['created', 'rendered', 'destroyed']
 
 Template.publicationCatalogItemThumbnail.events
+  'mouseenter li': (event, template) ->
+    # Update page tooltip with current scrubbed over page
+    $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
+
   'click li': (event, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
