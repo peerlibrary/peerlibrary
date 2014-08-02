@@ -1,6 +1,6 @@
 class PDFTextMapper extends PageTextMapperCore
   # Are we working with a PDF document?
-  @applicable: =>
+  @applicable: ->
     # We unconditially report as applicable, but we conditionally load the plugin itself
     true
 
