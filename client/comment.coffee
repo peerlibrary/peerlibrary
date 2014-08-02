@@ -34,6 +34,6 @@ class @Comment extends Comment
   reference: ->
     @constructor.reference @_id, @
 
-Handlebars.registerHelper 'commentPathFromId', Comment.pathFromId
+Handlebars.registerHelper 'commentPathFromId', _.bind Comment.pathFromId, Comment
 
-Handlebars.registerHelper 'commentReference', Comment.reference
+Handlebars.registerHelper 'commentReference', _.bind Comment.reference, Comment

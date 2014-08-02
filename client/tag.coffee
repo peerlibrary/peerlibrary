@@ -38,6 +38,6 @@ Template.tag.tag = ->
   Tag.documents.findOne
     _id: Session.get 'currentTagId'
 
-Handlebars.registerHelper 'tagPathFromId', Tag.pathFromId
+Handlebars.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
 
-Handlebars.registerHelper 'tagReference', Tag.reference
+Handlebars.registerHelper 'tagReference', _.bind Tag.reference, Tag

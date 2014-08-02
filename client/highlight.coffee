@@ -34,6 +34,6 @@ class @Highlight extends Highlight
   reference: ->
     @constructor.reference @_id, @
 
-Handlebars.registerHelper 'highlightPathFromId', Highlight.pathFromId
+Handlebars.registerHelper 'highlightPathFromId', _.bind Highlight.pathFromId, Highlight
 
-Handlebars.registerHelper 'highlightReference', Highlight.reference
+Handlebars.registerHelper 'highlightReference', _.bind Highlight.reference, Highlight

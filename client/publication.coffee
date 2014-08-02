@@ -1550,6 +1550,6 @@ Template.editorLinkPrompt.events
 
     return # Make sure CoffeeScript does not return anything
 
-Handlebars.registerHelper 'publicationPathFromId', Publication.pathFromId
+Handlebars.registerHelper 'publicationPathFromId', _.bind Publication.pathFromId, Publication
 
-Handlebars.registerHelper 'publicationReference', Publication.reference
+Handlebars.registerHelper 'publicationReference', _.bind Publication.reference, Publication

@@ -259,6 +259,6 @@ Template.groupDetails.events
 
     return # Make sure CoffeeScript does not return anything
 
-Handlebars.registerHelper 'groupPathFromId', Group.pathFromId
+Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
-Handlebars.registerHelper 'groupReference', Group.reference
+Handlebars.registerHelper 'groupReference', _.bind Group.reference, Group

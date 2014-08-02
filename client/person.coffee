@@ -97,6 +97,6 @@ Handlebars.registerHelper 'currentPerson', (options) ->
 Handlebars.registerHelper 'currentPersonId', (options) ->
   Meteor.personId()
 
-Handlebars.registerHelper 'personPathFromId', Person.pathFromId
+Handlebars.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
 
-Handlebars.registerHelper 'personReference', Person.reference
+Handlebars.registerHelper 'personReference', _.bind Person.reference, Person
