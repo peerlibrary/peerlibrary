@@ -358,7 +358,7 @@ class @Annotator extends Annotator
     # Highlights are a special case and we provide _id from the client
     Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, highlightId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       assert.equal annotation._id, highlightId
 

@@ -44,7 +44,7 @@ class @Notify extends BaseDocument
 
     notificationId
 
-  @smartError: (error, log) =>
+  @fromError: (error, log) =>
     if error instanceof Meteor.Error
       if _.startsWith error.details, 'Stacktrace:\n'
         @error _.ensureSentence(error.reason), null, log, error.details.substring('Stacktrace:\n'.length)

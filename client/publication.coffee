@@ -653,7 +653,7 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'add-to-library', @_id, (error, count) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication added to the library." if count
 
@@ -663,7 +663,7 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_id, (error, count) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication removed from the library." if count
 
@@ -703,7 +703,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
     Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication added to the collection." if count
 
@@ -713,7 +713,7 @@ Template.publicationLibraryMenuCollectionListing.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Publication removed from the collection." if count
 
@@ -910,7 +910,7 @@ Template.highlightsControl.canRemove = ->
 Template.highlightsControl.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-highlight', @_id, (error, count) =>
-      Notify.smartError error, true if error
+      Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -947,7 +947,7 @@ Template.annotationsControl.events
   'click .add': (event, template) ->
     Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
@@ -1349,14 +1349,14 @@ Template.annotationEditor.events
       readGroups = if isPrivate then getNewAnnotationReadGroups() else []
 
       Meteor.call 'create-annotation', @publication._id, body, access, getNewAnnotationWorkInsideGroups(), readPersons, readGroups, getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), (error, annotationId) =>
-        return Notify.smartError error, true if error
+        return Notify.fromError error, true if error
 
         LocalAnnotation.documents.remove @_id
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
       Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
-        return Notify.smartError error, true if error
+        return Notify.fromError error, true if error
 
         return unless count
 
@@ -1813,7 +1813,7 @@ Template.annotationCommentsListItem.events
     annotationId = @annotation._id
     Meteor.call 'remove-comment', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.smartError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
@@ -1870,7 +1870,7 @@ Template.annotationCommentEditor.events
     body = $editor.html().trim()
 
     Meteor.call 'create-comment', @_id, body, (error, commentId) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       # Reset editor
       $editor.empty()
@@ -1881,7 +1881,7 @@ Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-annotation', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.smartError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 

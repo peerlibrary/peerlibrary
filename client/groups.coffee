@@ -29,7 +29,7 @@ Template.groups.events
     return unless name
 
     Meteor.call 'create-group', name, (error, groupId) =>
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Group created."
 
@@ -58,7 +58,7 @@ Editable.template Template.groupCatalogItemName, ->
 ,
   (name) ->
     Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-      return Notify.smartError error, true if error
+      return Notify.fromError error, true if error
 ,
   "Enter group name"
 ,
