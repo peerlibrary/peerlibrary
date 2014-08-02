@@ -1,4 +1,4 @@
-class @Group extends ReadAccessDocument
+class @Group extends BasicAccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
@@ -185,5 +185,7 @@ class @Group extends ReadAccessDocument
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
+    document = @_applyDefaultAccess personId, document
 
     document

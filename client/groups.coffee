@@ -29,7 +29,7 @@ Template.groups.events
     return unless name
 
     Meteor.call 'create-group', name, (error, groupId) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Group created."
 
@@ -44,18 +44,24 @@ Template.myGroups.myGroups = ->
       ['name', 'asc']
     ]
 
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
+
+Template.groupCatalogItem.public = ->
+  @access is ACCESS.OPEN
+
+Template.groupCatalogItem.private = ->
+  @access is ACCESS.PRIVATE
+
 Editable.template Template.groupCatalogItemName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
     Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 ,
   "Enter group name"
 ,
   true
 
 Template.groupName[method] = Template.groupCatalogItemName[method] for method in ['created', 'rendered', 'destroyed']
-
-Template.groupCatalogItem.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

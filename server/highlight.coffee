@@ -15,7 +15,7 @@ class @Highlight extends Highlight
       quote: 1
 
 Meteor.methods
-  'highlights-path': (highlightId) ->
+  'highlights-path': methodWrap (highlightId) ->
     check highlightId, DocumentId
 
     person = Meteor.person()
@@ -36,7 +36,7 @@ Meteor.methods
   # even if otherwise they would not have access to a highlight. This does not
   # seem an issue as highlights are generally seen as public and limited only
   # to not leak private publication content in a quote.
-  'create-highlight': (publicationId, highlightId, quote, target) ->
+  'create-highlight': methodWrap (publicationId, highlightId, quote, target) ->
     check publicationId, DocumentId
     check highlightId, DocumentId
     check quote, NonEmptyString
@@ -71,7 +71,7 @@ Meteor.methods
     Highlight.documents.insert highlight
 
   # TODO: Use this code on the client side as well
-  'remove-highlight': (highlightId) ->
+  'remove-highlight': methodWrap (highlightId) ->
     check highlightId, DocumentId
 
     person = Meteor.person()

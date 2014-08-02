@@ -45,17 +45,17 @@ randomTimestamp = ->
 updateBlogCache = @updateBlogCache
 
 Meteor.methods
-  'sample-data': ->
+  'sample-data': methodWrap ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
     Meteor.call 'sync-arxiv-metadata'
     Meteor.call 'sync-local-pdf-cache'
 
-  'process-pdfs': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'process-pdfs': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     # To force reprocessing, we first set processError to true everywhere to assure there will be
     # change afterwards when we unset it. We set to true so that value is still true and processing
@@ -78,8 +78,8 @@ Meteor.methods
     ,
       multi: true
 
-  'reprocess-pdfs': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'reprocess-pdfs': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     # To force reprocessing, we first set processError to true everywhere to assure there will be
     # change afterwards when we unset it. We set to true so that value is still true and processing
@@ -96,19 +96,19 @@ Meteor.methods
     ,
       multi: true
 
-  'database-update-all': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'database-update-all': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     Document.updateAll()
 
-  'sync-arxiv-pdf-cache': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'sync-arxiv-pdf-cache': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     @unblock()
 
     if not Meteor.settings.AWS
       Log.error "AWS settings missing"
-      throw new Meteor.Error 500, "AWS settings missing"
+      throw new Meteor.Error 500, "AWS settings missing."
 
     Log.info "Syncing arXiv PDF cache"
 
@@ -144,7 +144,7 @@ Meteor.methods
             id = match[1]
           else
             Log.error "Invalid filename #{ props.path }"
-            throw new Meteor.Error 500, "Invalid filename #{ props.path }"
+            throw new Meteor.Error 500, "Invalid filename '#{ props.path }'."
 
         ArXivPDF.documents.update fileObj._id,
           $addToSet:
@@ -216,9 +216,9 @@ Meteor.methods
 
     Log.info "Done"
 
-  'sync-arxiv-metadata': ->
+  'sync-arxiv-metadata': methodWrap ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -362,9 +362,9 @@ Meteor.methods
 
     Log.info "Done (#{ count })"
 
-  'sync-local-pdf-cache': ->
+  'sync-local-pdf-cache': methodWrap ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin or not @connection
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
     @unblock()
 
@@ -381,14 +381,14 @@ Meteor.methods
 
     Log.info "Done (#{ count })"
 
-  'sync-fsm-metadata': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'sync-fsm-metadata': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     @unblock()
 
     if not Meteor.settings.FSM
       Log.error "FSM settings missing"
-      throw new Meteor.Error 500, "FSM settings missing"
+      throw new Meteor.Error 500, "FSM settings missing."
 
     Log.info "Syncing FSM metadata"
 
@@ -530,14 +530,14 @@ Meteor.methods
 
     Log.info "Done (#{ count })"
 
-  'sync-fsm-cache': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'sync-fsm-cache': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     @unblock()
 
     if not Meteor.settings.FSM
       Log.error "FSM settings missing"
-      throw new Meteor.Error 500, "FSM settings missing"
+      throw new Meteor.Error 500, "FSM settings missing."
 
     Log.info "Syncing FSM cache"
 
@@ -576,14 +576,14 @@ Meteor.methods
 
     Log.info "Done (#{ count })"
 
-  'sync-blog': ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+  'sync-blog': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     @unblock()
 
     if not Meteor.settings.tumblr
       Log.error "Tumblr settings missing"
-      throw new Meteor.Error 500, "Tumblr settings missing"
+      throw new Meteor.Error 500, "Tumblr settings missing."
 
     Log.info "Syncing blog posts"
 

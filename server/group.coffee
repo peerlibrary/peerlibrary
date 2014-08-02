@@ -26,6 +26,7 @@ class @Group extends Group
       slug: 1
       name: 1
       membersCount: 1
+      access: 1
 
 registerForAccess Group
 
@@ -46,7 +47,7 @@ getValidGroup = (groupId, person) ->
   group
 
 Meteor.methods
-  'create-group': (name) ->
+  'create-group': methodWrap (name) ->
     check name, NonEmptyString
     person = getValidPerson()
 
@@ -68,7 +69,7 @@ Meteor.methods
     Group.documents.insert group
 
   # TODO: Use this code on the client side as well
-  'remove-group': (groupId) ->
+  'remove-group': methodWrap (groupId) ->
     check groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
@@ -78,7 +79,7 @@ Meteor.methods
     )
 
   # TODO: Use this code on the client side as well
-  'add-to-group': (groupId, memberId) ->
+  'add-to-group': methodWrap (groupId, memberId) ->
     console.log "Add to group method called"
     check groupId, DocumentId
     check memberId, DocumentId
@@ -109,7 +110,8 @@ Meteor.methods
         members:
           _id: member._id
 
-  'deny-request-to-join-group': (groupId, memberId) ->
+  # TODO: Use this code on the client side as well
+  'deny-request-to-join-group': methodWrap (groupId, memberId) ->
     console.log "Deny request to join group method called"
     check groupId, DocumentId
     check memberId, DocumentId
@@ -127,9 +129,8 @@ Meteor.methods
     # TODO: if requestDenied send e-mail to member
     requestDenied
 
-
   # TODO: Use this code on the client side as well
-  'remove-from-group': (groupId, memberId) ->
+  'remove-from-group': methodWrap (groupId, memberId) ->
     console.log "Remove from group called"
     check groupId, DocumentId
     check memberId, DocumentId
@@ -156,7 +157,7 @@ Meteor.methods
         members:
           _id: memberId
 
-  'deny-request-to-leave-group': (groupId, memberId) ->
+  'deny-request-to-leave-group': methodWrap (groupId, memberId) ->
     console.log "Deny request to leave group called"
     check groupId, DocumentId
     check memberId, DocumentId
@@ -175,7 +176,7 @@ Meteor.methods
     requestDenied
 
   # TODO: Use this code on the client side as well
-  'group-set-name': (groupId, name) ->
+  'group-set-name': methodWrap (groupId, name) ->
     console.log "Group set name called"
     check groupId, DocumentId
     check name, NonEmptyString
@@ -188,7 +189,7 @@ Meteor.methods
       $set:
         name: name
 
-  'group-set-join-policy': (groupId, policy) ->
+  'group-set-join-policy': methodWrap (groupId, policy) ->
     console.log "Group set join policy called"
     check groupId, DocumentId
     check policy, MatchAccess Group.POLICY
@@ -201,7 +202,7 @@ Meteor.methods
       $set:
         joinPolicy: policy
 
-  'group-set-leave-policy': (groupId, policy) ->
+  'group-set-leave-policy': methodWrap (groupId, policy) ->
     console.log "Group set leave policy called"
     check groupId, DocumentId
     check policy, MatchAccess Group.POLICY
@@ -214,7 +215,7 @@ Meteor.methods
       $set:
         leavePolicy: policy
 
-  'request-to-join-group': (groupId) ->
+  'request-to-join-group': methodWrap (groupId) ->
     console.log "Request to join group called"
     check groupId, DocumentId
     person = getValidPerson()
@@ -241,7 +242,7 @@ Meteor.methods
       # TODO: If requestAdded send e-mail to admins
       requestAdded
 
-  'cancel-request-to-join-group': (groupId) ->
+  'cancel-request-to-join-group': methodWrap (groupId) ->
     console.log "Cancel request to join group called"
     check groupId, DocumentId
     person = getValidPerson()
@@ -255,7 +256,7 @@ Meteor.methods
         joinRequests:
           _id: person._id
 
-  'request-to-leave-group': (groupId) ->
+  'request-to-leave-group': methodWrap (groupId) ->
     console.log "Request to leave group called"
     check groupId, DocumentId
     person = getValidPerson()
@@ -283,7 +284,7 @@ Meteor.methods
       # TODO: If requestAdded send e-mail to admins
       requestAdded
 
-  'cancel-request-to-leave-group': (groupId) ->
+  'cancel-request-to-leave-group': methodWrap (groupId) ->
     console.log "Cancel request to leave group called"
     check groupId, DocumentId
     person = getValidPerson()
@@ -297,12 +298,15 @@ Meteor.methods
         leaveRequests:
           _id: person._id
 
-Meteor.publish 'groups-by-id', (groupId) ->
-  check groupId, DocumentId
+Meteor.publish 'groups-by-ids', (groupIds) ->
+  check groupIds, Match.OneOf(DocumentId, [DocumentId])
+
+  groupIds = [groupIds] unless _.isArray groupIds
 
   @related (person) ->
     Group.documents.find Group.requireReadAccessSelector(person,
-      _id: groupId
+      _id:
+        $in: groupIds
     ),
       Group.PUBLISH_FIELDS()
   ,

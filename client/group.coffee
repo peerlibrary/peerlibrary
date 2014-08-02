@@ -6,7 +6,7 @@ groupSubscribing = new Variable false
 Deps.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
-    groupHandle = Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+    groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
     Meteor.subscribe 'my-join-requests', Session.get 'currentGroupId'
     Meteor.subscribe 'my-leave-requests', Session.get 'currentGroupId'
   else
@@ -40,7 +40,7 @@ Template.group.notFound = ->
   groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 
 Template.group.group = ->
-  Group.documents.findOne Session.get 'currentGroupId'
+  Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
 
 Template.groupMembership.isMember = ->
   person = Meteor.person()
@@ -63,21 +63,21 @@ Template.groupMembership.events
   'click .join-group': (event, template) ->
     console.log "Join group clicked"
     Meteor.call 'request-to-join-group', Session.get('currentGroupId'), (error) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (event, template) ->
     console.log "Leave group clicked"
     Meteor.call 'request-to-leave-group', Session.get('currentGroupId'), (error) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .cancel-request-to-join-group': (event, template) ->
     console.log "Cancel request clicked"
     Meteor.call 'cancel-request-to-join-group', Session.get('currentGroupId'), (error) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -101,34 +101,36 @@ Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyM
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupRequests.events =
   'click .join-requests .approve-button': (event, template) ->
     Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .join-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-join-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-requests .approve-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-leave-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
+
+Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->
@@ -205,11 +207,11 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
   not @_loading() and not (searchResult.countPersons or 0)
 
-Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.email
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
-    return Notify.meteorError error, true if error
+    return Notify.fromError error, true if error
 
     Notify.success "Member added." if count
 
@@ -269,29 +271,29 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupDetails.POLICY = ->
+Template.groupTools.POLICY = ->
   Group.POLICY
 
-Template.groupDetails.isCurrentJoinPolicy = (policy) ->
+Template.groupTools.isCurrentJoinPolicy = (policy) ->
   group = Group.documents.findOne(_id: Session.get 'currentGroupId')
   return false unless group
   group.joinPolicy is policy
 
-Template.groupDetails.isCurrentLeavePolicy = (policy) ->
+Template.groupTools.isCurrentLeavePolicy = (policy) ->
   group = Group.documents.findOne(_id: Session.get 'currentGroupId')
   return false unless group
   group.leavePolicy is policy
 
-Template.groupDetails.canModify = ->
+Template.groupTools.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.groupDetails.canRemove = ->
+Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.groupDetails.events
+Template.groupTools.events
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
@@ -304,7 +306,7 @@ Template.groupDetails.events
     policy = parseInt $('.group-join-policy').val()
     console.log "New join policy: " + policy
     Meteor.call 'group-set-join-policy', @_id, policy, (error, count) =>
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -312,7 +314,7 @@ Template.groupDetails.events
     policy = parseInt $('.group-join-policy').val()
     console.log "New leave policy: " + policy
     Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 

@@ -34,7 +34,7 @@ class @Collection extends Collection
 registerForAccess Collection
 
 Meteor.methods
-  'create-collection': (name) ->
+  'create-collection': methodWrap (name) ->
     check name, NonEmptyString
 
     person = Meteor.person()
@@ -54,7 +54,7 @@ Meteor.methods
     Collection.documents.insert collection
 
   # TODO: Use this code on the client side as well
-  'remove-collection': (collectionId) ->
+  'remove-collection': methodWrap (collectionId) ->
     check collectionId, DocumentId
 
     person = Meteor.person()
@@ -70,7 +70,7 @@ Meteor.methods
     )
 
   # TODO: Use this code on the client side as well
-  'add-to-library': (publicationId, collectionId) ->
+  'add-to-library': methodWrap (publicationId, collectionId) ->
     check publicationId, DocumentId
     check collectionId, Match.Optional DocumentId
 
@@ -110,7 +110,7 @@ Meteor.methods
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'remove-from-library': (publicationId, collectionId) ->
+  'remove-from-library': methodWrap (publicationId, collectionId) ->
     check publicationId, DocumentId
     check collectionId, Match.Optional DocumentId
 
@@ -161,7 +161,7 @@ Meteor.methods
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'reorder-collection': (collectionId, publicationIds) ->
+  'reorder-collection': methodWrap (collectionId, publicationIds) ->
     check collectionId, DocumentId
     check publicationIds, [DocumentId]
 
@@ -190,7 +190,7 @@ Meteor.methods
         publications: publications
 
   # TODO: Use this code on the client side as well
-  'collection-set-name': (collectionId, name) ->
+  'collection-set-name': methodWrap (collectionId, name) ->
     check collectionId, DocumentId
     check name, NonEmptyString
 
@@ -203,8 +203,8 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
     Collection.documents.update Group.requireMaintainerAccessSelector(person,
-        _id: collection._id
-      ),
+      _id: collection._id
+    ),
       $set:
         name: name
 
