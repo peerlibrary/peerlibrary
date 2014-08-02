@@ -18,8 +18,7 @@ class @Group extends Group
   path: ->
     @constructor.pathFromId @_id, @slug
 
-  # Helper object with properties useful to refer to this document
-  # Optional group document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (groupId, group, options) ->
     assert _.isString groupId
     # To allow calling template helper with only one argument (collection will be options then)

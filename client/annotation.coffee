@@ -24,8 +24,7 @@ class @Annotation extends Annotation
   path: ->
     @constructor.pathFromId @_id
 
-  # Helper object with properties useful to refer to this document
-  # Optional annotation document
+  # Helper object with properties useful to refer to this document. Optional annotation document.
   @reference: (annotationId, annotation, options) ->
     assert _.isString annotationId
     # To allow calling template helper with only one argument (annotation will be options then)

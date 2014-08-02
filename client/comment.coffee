@@ -24,8 +24,7 @@ class @Comment extends Comment
   path: ->
     @constructor.pathFromId @_id
 
-  # Helper object with properties useful to refer to this document
-  # Optional comment document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (commentId, comment, options) ->
     assert _.isString commentId
     # To allow calling template helper with only one argument (comment will be options then)

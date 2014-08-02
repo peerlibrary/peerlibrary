@@ -115,8 +115,7 @@ class @Publication extends Publication
   path: ->
     @constructor.pathFromId @_id, @slug
 
-  # Helper object with properties useful to refer to this document
-  # Optional publication document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (publicationId, publication, options) ->
     assert _.isString publicationId
     # To allow calling template helper with only one argument (publication will be options then)

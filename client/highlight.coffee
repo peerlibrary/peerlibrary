@@ -24,8 +24,7 @@ class @Highlight extends Highlight
   path: ->
     @constructor.pathFromId @_id
 
-  # Helper object with properties useful to refer to this document
-  # Optional highlight document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (highlightId, highlight, options) ->
     assert _.isString highlightId
     # To allow calling template helper with only one argument (highlight will be options then)

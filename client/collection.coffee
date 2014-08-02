@@ -18,8 +18,7 @@ class @Collection extends Collection
   path: ->
     @constructor.pathFromId @_id, @slug
 
-  # Helper object with properties useful to refer to this document
-  # Optional collection document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (collectionId, collection, options) ->
     assert _.isString collectionId
     # To allow calling template helper with only one argument (collection will be options then)

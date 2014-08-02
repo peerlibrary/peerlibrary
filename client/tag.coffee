@@ -18,8 +18,7 @@ class @Tag extends Tag
   path: ->
     @constructor.pathFromId @_id, @slug
 
-  # Helper object with properties useful to refer to this document
-  # Optional tag document
+  # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (tagId, tag, options) ->
     assert _.isString tagId
     # To allow calling template helper with only one argument (tag will be options then)

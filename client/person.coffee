@@ -29,10 +29,9 @@ class @Person extends Person
   path: ->
     @constructor.pathFromId @_id, @slug
 
-  # Helper object with properties useful to refer to this document
-  # Optional person document
-  # If you do not know if you have an ID or a slug, you can pass
-  # it in as an ID and hopefully something useful will come out.
+  # Helper object with properties useful to refer to this document. Optional person document.
+  # If you do not know if you have an ID or a slug, you can pass it in as an ID and hopefully
+  # something useful will come out.
   @reference: (personId, person, options) ->
     assert _.isString personId
     # To allow calling template helper with only one argument (person will be options then)
