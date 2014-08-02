@@ -35,7 +35,7 @@ Template.addNewCollection.events
     return unless name
 
     Meteor.call 'create-collection', name, (error, collectionId) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       # Clear the collection name from the form
       $(template.findAll '.name').val('')
@@ -49,7 +49,7 @@ Editable.template Template.collectionCatalogItemName, ->
 ,
   (name) ->
     Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 ,
   "Enter collection name"
 ,

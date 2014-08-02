@@ -92,7 +92,7 @@ setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroup
 
 # TODO: Use this code on the client side as well
 Meteor.methods
-  'set-role-for-person': (documentName, documentId, personId, role) ->
+  'set-role-for-person': methodWrap (documentName, documentId, personId, role) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check personId, DocumentId
@@ -105,7 +105,7 @@ Meteor.methods
 
     !!setRole currentPerson, documentName, documentId, 'Person', personId, role
 
-  'set-role-for-group': (documentName, documentId, groupId, role) ->
+  'set-role-for-group': methodWrap (documentName, documentId, groupId, role) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check groupId, DocumentId
@@ -118,7 +118,7 @@ Meteor.methods
 
     !!setRole currentPerson, documentName, documentId, 'Group', groupId, role
 
-  'set-access': (documentName, documentId, access) ->
+  'set-access': methodWrap (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check access, MatchAccess accessDocuments[documentName].ACCESS

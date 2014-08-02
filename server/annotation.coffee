@@ -55,7 +55,7 @@ parseReferences = (body) ->
   references
 
 Meteor.methods
-  'annotations-path': (annotationId) ->
+  'annotations-path': methodWrap (annotationId) ->
     check annotationId, DocumentId
 
     person = Meteor.person()
@@ -72,7 +72,7 @@ Meteor.methods
 
     [publication._id, publication.slug, annotation._id]
 
-  'create-annotation': (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
+  'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
     check publicationId, DocumentId
     check body, Match.Optional NonEmptyString
     check access, MatchAccess Annotation.ACCESS
@@ -171,7 +171,7 @@ Meteor.methods
     Annotation.documents.insert annotation
 
   # TODO: Use this code on the client side as well
-  'update-annotation-body': (annotationId, body) ->
+  'update-annotation-body': methodWrap (annotationId, body) ->
     check annotationId, DocumentId
     check body, NonEmptyString
 
@@ -200,7 +200,7 @@ Meteor.methods
         references: references
 
   # TODO: Use this code on the client side as well
-  'remove-annotation': (annotationId) ->
+  'remove-annotation': methodWrap (annotationId) ->
     check annotationId, DocumentId
 
     person = Meteor.person()

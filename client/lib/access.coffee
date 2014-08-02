@@ -72,7 +72,7 @@ Template.accessMenuPrivacyForm.events
       documentName = @constructor.Meta._name
 
     Meteor.call 'set-access', documentName, @_id, access, (error, changed) ->
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Access changed." if changed
 
@@ -205,7 +205,7 @@ changeRole = (data, newRole) ->
 
   # TODO: When will be possible to better access parent data context from event handler, we should use that
   Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, changed) =>
-    return Notify.meteorError error, true if error
+    return Notify.fromError error, true if error
 
     notification() if changed
 

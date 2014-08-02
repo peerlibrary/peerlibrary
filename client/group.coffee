@@ -103,7 +103,7 @@ Template.groupMembersList.events
   'click .remove-button': (event, template) ->
 
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return Notify.fromError error, true if error
 
       Notify.success "Member removed." if count
 
@@ -190,7 +190,7 @@ Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
-    return Notify.meteorError error, true if error
+    return Notify.fromError error, true if error
 
     Notify.success "Member added." if count
 
@@ -256,7 +256,7 @@ Template.groupTools.canRemove = ->
 Template.groupDetails.events
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
-      Notify.meteorError error, true if error
+      Notify.fromError error, true if error
 
       return unless count
 
