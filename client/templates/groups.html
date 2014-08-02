@@ -25,7 +25,7 @@
         </p>
       {{/if}}
       <h3>Create a new group</h3>
-      <form class="add-group input-and-buttons">
+      <form class="add-group input-and-buttons control">
         <button type="submit" class="add">Create</button>
         <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
       </form>
@@ -35,17 +35,32 @@
 </template>
 
 <template name="groupInlineItem">
-  <a class="inline-item group" {{#unless noLink}}href="{{path}}"{{/unless}}>
-    <i class="avatar only-icon icon-group" title="Group"></i>
-    <span class="name" title="{{name}}">{{name}}</span>
-  </a>
+  {{#spaceless}}
+    <a class="inline-item group" {{#unless noLink}}href="{{path}}"{{/unless}}>
+      <i class="avatar only-icon icon-group" title="Group"></i>
+      <span class="name" title="{{name}}">{{name}}</span>
+    </a>
+  {{/spaceless}}
 </template>
 
 <template name="groupCatalogItem">
   <li class="catalog-item group">
     <div class="details">
       {{> groupCatalogItemName}}
-      <p class="show-in-sidebar"><i class="icon-group"></i> {{countDescription}}</p>
+      <p class="members-count show-in-sidebar">
+        <i class="icon-group"></i>
+        {{#if private}}
+          <i class="icon-private"></i>
+        {{/if}}
+        {{countDescription}}
+      </p>
+        {{#if private}}
+          <p>
+            <span class="tooltip" title="Only the group members and listed users can see the group">
+              <i class="icon-private"></i> private group
+            </span>
+          </p>
+        {{/if}}
     </div>
 
     <a class="full-item-link" href="{{path}}"></a>

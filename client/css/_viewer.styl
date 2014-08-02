@@ -49,7 +49,6 @@ meta-menu-icon-font-size = 20px
      by accident highlight control as we move them around from one
      highlight to another */
   transition-property background, width, min-height
-  overflow hidden
 
   a
     color white
@@ -62,8 +61,6 @@ meta-menu-icon-font-size = 20px
     display none
     color white
     padding 5px
-    overflow-x hidden
-    overflow-y auto
 
     .editable.title
       display inline-block
@@ -274,7 +271,7 @@ small-meta-menu-icon-font-size = 13px
                 content ""
 
         .meta-menu:hover, .meta-menu.displayed
-          width 200px
+          width 245px
           height auto
 
       .loading
@@ -371,7 +368,7 @@ annotations-control-height = 30px
   .filter
     color white
     line-height annotations-control-height
-    margin-left 75px
+    margin-left 50px
     padding-right 5px
     white-space nowrap
     overflow hidden
@@ -479,17 +476,14 @@ annotations-control-height = 30px
   .form-control
     height 34px
     padding 18px 0 0 0
+    text-align right
 
-    .visibility-menu
-      float right
+    .access-control
       margin 0 20px
-
-      .hint
-        margin-top 8px
+      text-align left
 
     button.save
       margin-right 0
-      float right
 
 .annotations-editor-form-wrapper
   padding 10px
@@ -567,11 +561,10 @@ annotations-control-height = 30px
 
       .annotation-footer
         padding 10px
-        color #777
         background-color #f7f7f7
         border-top 1px solid #e3e3e3
 
-        .person.inline-item
+        > .person.inline-item
           margin-right 10px
           display inline-block
           vertical-align middle
@@ -580,6 +573,10 @@ annotations-control-height = 30px
 
           .avatar
             margin-right 10px
+
+        .access-control
+          .access-button
+            padding 0
 
         .timestamp
           color #444
@@ -720,7 +717,7 @@ annotations-control-height = 30px
           width 50%
 
     .meta-menu:hover, .meta-menu.displayed
-      width 200px
+      width 245px
       height auto
 
   .annotation:hover .annotation-wrapper, .annotation.selected .annotation-wrapper, .annotation.hovered .annotation-wrapper
@@ -746,14 +743,15 @@ annotations-control-height = 30px
     margin-top 10px
     margin-bottom 20px
 
-    .avatar
-      position absolute
-      left 0
-      top 10px
-      width 30px
-      height 30px
-      margin 0
-      border-radius 4px
+    .author
+      .avatar
+        position absolute
+        left 0
+        top 10px
+        width 30px
+        height 30px
+        margin 0
+        border-radius 4px
 
     .annotation-wrapper::after
       content ''
@@ -821,8 +819,8 @@ annotations-control-height = 30px
   */
   left 0
   height annotations-control-height
-  width 70px
-  padding 3px 5px
+  width 35px
+  padding 7px 5px
   box-sizing border-box
 
   .icons
@@ -852,21 +850,21 @@ annotations-control-height = 30px
   .context-menu-groups
     .toggle-list
       background none
-      margin-bottom 0
+      margin 0
 
     .members-count
       font-weight 300
       font-size 12px
       margin-left 10px
 
-  .hint
-    margin-bottom 0
+    .no-groups.description
+      padding 10px
 
 .context-menu.meta-menu.no-groups
   width 33px
 
 .context-menu.meta-menu:hover
-  width 250px
+  width 255px
   height auto
 
 /* Footer

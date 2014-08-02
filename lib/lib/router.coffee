@@ -30,9 +30,6 @@ if Meteor.isServer
     if route.match path, null, params
       return name: name, route: route, params: params
 
-startsWith = (string, start) ->
-  string.lastIndexOf(start, 0) is 0
-
 localPath = (path) ->
   if Meteor.isClient
     internal =
@@ -71,12 +68,12 @@ localPath = (path) ->
 
   rootUrl = Meteor.absoluteUrl()
   rootUrl = rootUrl.substr 0, rootUrl.length - 1 # Remove trailing /
-  return localPath href.substring rootUrl.length if startsWith href, rootUrl
+  return localPath href.substring rootUrl.length if _.startsWith href, rootUrl
 
   # When doing local development, we can use both localhost or 127.0.0.1, so let's check both
   rootUrl = Meteor.absoluteUrl replaceLocalhost: true
   rootUrl = rootUrl.substr 0, rootUrl.length - 1 # Remove trailing /
-  return localPath href.substring rootUrl.length if startsWith href, rootUrl
+  return localPath href.substring rootUrl.length if _.startsWith href, rootUrl
 
   if Meteor.isServer
     try

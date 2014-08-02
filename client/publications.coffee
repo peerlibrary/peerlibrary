@@ -55,9 +55,14 @@ Template.publicationCatalogItem.annotationsCountDescription = ->
 Template.publicationCatalogItem.hasAbstract = ->
   @hasAbstract or @abstract
 
-Template.publicationCatalogItem.open = Template.accessText.open
-Template.publicationCatalogItem.closed = Template.accessText.closed
-Template.publicationCatalogItem.private = Template.accessText.private
+Template.publicationCatalogItem.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.publicationCatalogItem.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.publicationCatalogItem.private = ->
+  @access is Publication.ACCESS.PRIVATE
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -91,7 +96,10 @@ Template.publicationCatalogItemLibraryMenu.events
       $item = $toolbar.parents('.catalog-item')
       $item.addClass('active').css('z-index','10')
 
-      # Temporarily remove and disable tooltips on the button
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content. We need
+      # to remove the element manually, since we can't selectively disable/destroy
+      # it just on this element through jQeury UI.
       $button = $(template.findAll '.toolbar-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()

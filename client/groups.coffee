@@ -40,6 +40,15 @@ Template.myGroups.myGroups = ->
       ['name', 'asc']
     ]
 
+Template.groupCatalogItem.countDescription = ->
+  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
+
+Template.groupCatalogItem.public = ->
+  @access is ACCESS.OPEN
+
+Template.groupCatalogItem.private = ->
+  @access is ACCESS.PRIVATE
+
 Editable.template Template.groupCatalogItemName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
@@ -52,6 +61,3 @@ Editable.template Template.groupCatalogItemName, ->
   false
 
 EnableCatalogItemLink Template.groupCatalogItem
-
-Template.groupCatalogItem.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

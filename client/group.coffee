@@ -42,7 +42,7 @@ groupSubscribing = new Variable false
 Deps.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
-    groupHandle = Meteor.subscribe 'groups-by-id', Session.get 'currentGroupId'
+    groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
   else
     groupSubscribing.set false
     groupHandle = null
@@ -74,7 +74,7 @@ Template.group.notFound = ->
   groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 
 Template.group.group = ->
-  Group.documents.findOne Session.get 'currentGroupId'
+  Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
 
 Editable.template Template.groupName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
@@ -108,6 +108,8 @@ Template.groupMembersList.events
       Notify.success "Member removed." if count
 
     return # Make sure CoffeeScript does not return anything
+
+Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->
@@ -184,7 +186,7 @@ Template.groupMembersAddControlNoResults.noResults = ->
 
   not @_loading() and not (searchResult.countPersons or 0)
 
-Template.groupMembersAddControlNoResults.email = Template.privateAccessControlNoResults.email
+Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.email
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
@@ -248,10 +250,7 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupDetails.canModify = ->
-  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
-
-Template.groupDetails.canRemove = ->
+Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupDetails.events

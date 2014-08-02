@@ -1,67 +1,208 @@
 @import 'variables.import'
 
-.access-menu
-  background-color rgba(120,120,120,0.9)
-  border-radius 2px
+.access-control
+  display inline-block
 
+  .access-button
+    display inline-block
+    padding 5px
+    border 1px solid transparent
+    background none
+    width auto
+    font-size 14px
+
+    &:hover
+      border 1px solid box-shadow-border
+
+.access-menu
   .selections
-    display table
-    border-collapse separate
-    border-spacing 10px
+    margin-left 0
+
+  .hint
+    margin-bottom 0
+
+  .roles-control
+    .roles-control-list
+      padding 0
+      list-style none
+
+      li
+        display table-row
+
+        .item
+          display table-cell
+          width 100%
+
+          .inline-item
+            max-width 125px
+            margin-bottom 4px
+
+            .avatar
+              width 24px
+              text-align center
+
+              img
+                position absolute
+                left 0
+
+              &::before
+                position static
+                vertical-align middle
+                margin-top -2px
+
+        &:last-child .document .inline-item
+          margin-bottom 0
+
+        .role
+          padding-right 12px
+          position relative
+          display table-cell
+          font-weight 300
+          font-size 13px
+          text-align right
+          white-space nowrap
+
+          .icon-down
+            position absolute
+            right -12px
+            top 3px
+            font-size 9px
+
+      &.read-only
+        margin-bottom 0
+
+        li
+          .item
+            .inline-item
+              max-width 130px
+
+            .role
+              padding-right 0
+
+  .add-control .member
+    display block
     width 100%
 
-    input
-      display none
+.read-only.access-control
+  .access-name
+    display none
+
+.sidebar
+  .control.access-menu
+    width 255px
+
+.control.access-menu.dropdown
+  width 255px
+
+.dropdown-trigger
+  .dropdown-anchor
+    .access-menu.dropdown
+      padding 10px
+
+.dropdown.access-menu
+  .selections
+    margin 0 0 10px 0
 
     .selection
-      display table-cell
-      width 33%
-      padding 10px
-      background none
-      text-align center
+      position relative
+      border 1px solid transparent
+      margin 0
+      padding 3px 3px 3px 25px
       cursor pointer
-      transition 0.2s
-      border-radius 2px
+
+      &::before
+        position absolute
+        left 7px
+        top 8px
+
+      input
+        display none
 
       .access-icon
-        display block
-        margin-bottom 10px
         cursor pointer
-        font-size 24px
+        font-size 18px
+        vertical-align middle
 
-    .selection:hover, .selection.selected
-      background-color rgba(200,200,200,0.7)
+      &:hover
+        border 1px solid box-shadow-border
+        background box-shadow-background
+
+  .access-name
+    margin-bottom 10px
+
+    .access-icon
+      font-size 18px
 
   .description
-    padding 0 10px 10px
-    text-align center
+    font-weight 300
     display none
 
   .displayed.description
     display block
 
-  .private-access-control
-    padding 10px
-
-    .private-access-control-members
-      .access-list
-        display inline
-
-        button:hover
-          color white
-
-      .member
-        display block
-        width 100%
-
-        .remove-button:hover
-          color #ccc
-
-.meta-menu .access-menu .private-access-control
-  .member
-    display inline-block
-    width auto
-
-  .add-control .member
-    display block
+  .add-control.control
     width 100%
+
+    .add-access
+      width 100%
+
+.meta-menu
+  .access-menu
+    background-color rgba(120,120,120,0.9)
+
+    .selections
+      display table
+      border-collapse separate
+      border-spacing 10px
+      width 100%
+
+      .selection
+        display table-cell
+        width 33%
+        padding 10px
+        background none
+        text-align center
+        cursor pointer
+        transition 0.2s
+        border-radius 2px
+
+        input
+          display none
+
+        .access-icon
+          display block
+          margin-bottom 10px
+          cursor pointer
+          font-size 24px
+
+        &::before
+          display none
+
+        &:hover, &.selected
+          background-color rgba(200,200,200,0.7)
+
+    .access-name
+      padding 10px
+      text-align center
+
+      .access-icon
+        font-size 18px
+
+    .description
+      padding 0 10px 10px
+      text-align center
+      display none
+
+    .displayed.description
+      display block
+
+    .roles-control
+      padding 0 10px 10px
+
+      .roles-control-list
+        margin-top 0
+
+        .role
+          .dropdown
+            button
+              color black

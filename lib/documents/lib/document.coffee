@@ -2,6 +2,11 @@
   PRIVATE: 0
   PUBLIC: 1
 
+@ROLES =
+  ADMIN: 3
+  MAINTAINER: 2
+  READ_ACCESS: 1
+
 class @BaseDocument extends Document
   @Meta
     abstract: true
@@ -248,7 +253,7 @@ class @ReadAccessDocument extends AccessDocument
       readGroups: 1
 
   @defaultAccess: ->
-    @ACCESS.PUBLIC
+    @ACCESS.PRIVATE
 
   @applyDefaultAccess: (personId, document) ->
     document = super
@@ -256,5 +261,44 @@ class @ReadAccessDocument extends AccessDocument
     document.access = @defaultAccess() if not document.access?
     document.readPersons ?= []
     document.readGroups ?= []
+
+    document
+
+class @BasicAccessDocument extends ReadAccessDocument
+  # When access is private, maintainers and admins should also be
+  # added to read access list so that if access is changed to public
+  # and then their maintainer or admin permission is revoked, they
+  # still retain read access if document is after all that switched
+  # back to private access. This logic is matched in
+  # server/lib/access.coffee's setRole function.
+  @_applyDefaultAccess: (personId, document) ->
+    if document.access is ACCESS.PRIVATE
+      document.adminPersons ?= []
+      for admin in document.adminPersons
+        if admin._id not in _.pluck document.readPersons, '_id'
+          document.readPersons ?= []
+          document.readPersons.push
+            _id: admin._id
+
+      document.adminGroups ?= []
+      for admin in document.adminGroups
+        if admin._id not in _.pluck document.readGroups, '_id'
+          document.readGroups ?= []
+          document.readGroups.push
+            _id: admin._id
+
+      document.maintainerPersons ?= []
+      for maintainer in document.maintainerPersons
+        if maintainer._id not in _.pluck document.readPersons, '_id'
+          document.readPersons ?= []
+          document.readPersons.push
+            _id: maintainer._id
+
+      document.maintainerGroups ?= []
+      for maintainer in document.maintainerGroups
+        if maintainer._id not in _.pluck document.readGroups, '_id'
+          document.readGroups ?= []
+          document.readGroups.push
+            _id: maintainer._id
 
     document
