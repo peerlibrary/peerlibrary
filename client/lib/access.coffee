@@ -43,6 +43,9 @@ Template.accessButton.documentName = ->
 
   documentName.toLowerCase()
 
+Template.accessButton.documentIsGroup = ->
+  @ instanceof Group
+
 Template.accessIconControl.canModifyAccess = Template.accessControl.canModifyAccess
 
 Template.accessIconButton.rendered = Template.accessButton.rendered
@@ -97,11 +100,15 @@ Template.accessMenuPrivacyForm.private = ->
 
 Template.accessMenuPrivacyForm.documentName = Template.accessButton.documentName
 
+Template.accessMenuPrivacyForm.documentIsGroup = Template.accessButton.documentIsGroup
+
 Template.accessMenuPrivacyInfo.public = Template.accessMenuPrivacyForm.public
 
 Template.accessMenuPrivacyInfo.private = Template.accessMenuPrivacyForm.private
 
 Template.accessMenuPrivacyInfo.documentName = Template.accessMenuPrivacyForm.documentName
+
+Template.accessMenuPrivacyInfo.documentIsGroup = Template.accessMenuPrivacyForm.documentIsGroup
 
 Template.rolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
