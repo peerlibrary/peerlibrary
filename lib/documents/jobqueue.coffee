@@ -15,3 +15,6 @@ class @JobQueue extends Document
     name: 'JobQueue'
     collection: new JobCollection 'JobQueue',
       noCollectionSuffix: true
+    fields: =>
+      data:
+        publication: @ReferenceField Publication, [], false, 'jobs'

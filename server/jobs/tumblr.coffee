@@ -24,7 +24,7 @@ class @TumblrJob extends Job
   enqueueOptions: (options) =>
     options = super
 
-    _.defaults options or {},
+    _.defaults options,
       priority: 'low'
       retry:
         wait: UPDATE_INTERVAL

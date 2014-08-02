@@ -85,12 +85,6 @@ Template.adminArXiv.PDFs = ->
     limit: 5
 
 Template.adminFSM.events
-  'click button.sync-fsm-cache': (event, template) ->
-    Meteor.call 'sync-fsm-cache', (error, result) ->
-      Notify.fromError error if error
-
-    return # Make sure CoffeeScript does not return anything
-
   'click button.sync-fsm-metadata': (event, template) ->
     Meteor.call 'sync-fsm-metadata', (error, result) ->
       Notify.fromError error if error

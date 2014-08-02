@@ -143,43 +143,9 @@ class @FSMMetadataJob extends Job
       if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+        new CheckCacheJob(publication: _.pick publication, '_id').enqueue()
         count++
 
     count: count
 
 Job.addJobClass FSMMetadataJob
-
-class @FSMCacheJob extends Job
-  run: =>
-    count = 0
-
-    Publication.documents.find(source: 'FSM', cached: {$exists: false}).forEach (publication) =>
-      if not Storage.exists publication.cachedFilename()
-        @log "Caching file for #{ publication._id }: #{ publication.foreignFilename() } -> #{ publication.cachedFilename() }"
-
-        tei = HTTP.get publication.foreignUrl,
-          timeout: 10000 # ms
-          encoding: null # PDFs are binary data
-
-        Storage.save publication.foreignFilename(), tei.content
-        assert Storage.exists publication.foreignFilename()
-        Storage.link publication.foreignFilename(), publication.cachedFilename()
-        assert Storage.exists publication.cachedFilename()
-
-      if not publication.sha256
-        pdfContent = Storage.open publication.cachedFilename()
-        hash = new Crypto.SHA256()
-        hash.update pdfContent
-        publication.sha256 = hash.finalize()
-
-      publication.cached = moment.utc().toDate()
-      Publication.documents.update publication._id,
-        $set:
-          cached: publication.cached
-          sha256: publication.sha256
-
-      count++
-
-    count: count
-
-Job.addJobClass FSMCacheJob

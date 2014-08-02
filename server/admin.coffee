@@ -365,30 +365,12 @@ Meteor.methods
     # If @connection is not set this means method is called from the server (eg., from auto installation)
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
-    @unblock()
-
-    Log.info "Syncing local PDF cache"
-
-    count = 0
-
-    Publication.documents.find(cached: {$exists: false}).forEach (publication) ->
-      try
-        publication.checkCache()
-        count++ if publication.cached
-      catch error
-        Log.error "For publication #{ publication._id }: #{ error }"
-
-    Log.info "Done (#{ count })"
+    new CacheSyncJob().enqueue()
 
   'sync-fsm-metadata': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     new FSMMetadataJob().enqueue()
-
-  'sync-fsm-cache': methodWrap ->
-    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
-
-    new FSMCacheJob().enqueue()
 
   'sync-blog': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin

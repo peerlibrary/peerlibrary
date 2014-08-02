@@ -22,6 +22,12 @@ class @BaseDocument extends Document
     return "1 #{ @verboseName() }" if quantity == 1
     "#{ quantity } #{ @verboseNamePlural() }"
 
+  refresh: (fields) =>
+    fields ?= {}
+    _.extend @, @constructor.documents.findOne @_id,
+      fields: fields
+      transform: null
+
 class @AccessDocument extends BaseDocument
   @Meta
     abstract: true

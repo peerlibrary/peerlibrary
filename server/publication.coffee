@@ -19,7 +19,7 @@ class @Publication extends Publication
       fields.fullText.generator = (fields) ->
         return [null, null] unless fields.cached
         return [null, null] if fields.processed
-        # That we exit if processError is true is important becaus it is used in admin methods to force (re)precessing
+        # That we exit if processError is true is important because it is used in admin methods to force (re)precessing
         return [null, null] if fields.processError
 
         try
@@ -42,6 +42,12 @@ class @Publication extends Publication
 
       fields
 
+  @foreignSources: ->
+    [
+      'arXiv'
+      'FSM'
+    ]
+
   @_arXivFilename: (arXivId) ->
     # TODO: Verify that id is not insecure
     'arxiv' + Storage._path.sep + arXivId + '.pdf'
@@ -60,46 +66,8 @@ class @Publication extends Publication
 
     Publication._filenamePrefix() + filename
 
-  foreignUrl: =>
+  storageForeignUrl: =>
     Storage.url @foreignFilename()
-
-  checkCache: =>
-    return if @cached
-
-    if not Storage.exists @cachedFilename()
-      # We provide a way for easy caching of sample publications so that
-      # developers can easily bootstrap their local development instance
-      return unless @foreignFilename()
-
-      if Storage.exists @foreignFilename()
-        Log.info "Linking PDF for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
-
-        Storage.link @foreignFilename(), @cachedFilename()
-        assert Storage.exists @cachedFilename()
-
-      else
-        Log.info "Caching file for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
-
-        pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
-          timeout: 10000 # ms
-          encoding: null # PDFs are binary data
-
-        Storage.save @foreignFilename(), pdf.content
-        assert Storage.exists @foreignFilename()
-        Storage.link @foreignFilename(), @cachedFilename()
-        assert Storage.exists @cachedFilename()
-
-    if not @sha256
-      pdfContent = Storage.open @cachedFilename()
-      hash = new Crypto.SHA256()
-      hash.update pdfContent
-      @sha256 = hash.finalize()
-
-    @cached = moment.utc().toDate()
-    Publication.documents.update @_id,
-      $set:
-        cached: @cached
-        sha256: @sha256
 
   process: =>
     switch @mediaType

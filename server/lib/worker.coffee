@@ -13,7 +13,7 @@ class @Job
 
   # Method so that job class can set or override enqueue options
   enqueueOptions: (options) =>
-    options
+    options or {}
 
   enqueue: (options) =>
     throw new @constructor.FatalJobError "Unknown job class '#{ @type() }'" unless Job.types[@type()]
@@ -42,6 +42,22 @@ class @Job
 
   log: (message, options) =>
     @getQueueJob().log message, options
+
+  logInfo: (message) =>
+    @log message,
+      level: 'info'
+
+  logSuccess: (message) =>
+    @log message,
+      level: 'success'
+
+  logWarning: (message) =>
+    @log message,
+      level: 'warning'
+
+  logDanger: (message) =>
+    @log message,
+      level: 'danger'
 
   progress: (completed, total, options) =>
     @getQueueJob().progress completed, total, options
@@ -99,7 +115,7 @@ Meteor.startup ->
   JobQueue.Meta.collection.startJobs()
   Log.info "Worker enabled"
 
-  JobQueue.Meta.collection.find(
+  JobQueue.documents.find(
     status: 'ready'
     runId: null
   ,
