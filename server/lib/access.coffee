@@ -10,115 +10,113 @@ RegisteredForAccess = Match.Where (documentName) ->
   check documentName, String
   accessDocuments.hasOwnProperty documentName
 
+createNotInSetQuery = (documentId, set, personOrGroup, personOrGroupId) ->
+  query =
+    _id: documentId
+
+  query["#{ set }#{ personOrGroup }s._id"] =
+    $ne: personOrGroupId
+
+  query
+
+createAddToSetCommand = (set, personOrGroup, personOrGroupId) ->
+  command =
+    $addToSet: {}
+
+  command.$addToSet["#{ set }#{ personOrGroup }s"] =
+    _id: personOrGroupId
+
+  command
+
+createInSetQuery = (documentId, set, personOrGroup, personOrGroupId) ->
+  query =
+    _id: documentId
+
+  query["#{ set }#{ personOrGroup }s._id"] = personOrGroupId
+
+  query
+
+createRemoveFromSetCommand = (set, personOrGroup, personOrGroupId) ->
+  command =
+    $pull: {}
+
+  command.$pull["#{ set }#{ personOrGroup }s"] =
+    _id: personOrGroupId
+
+  command
+
+# When access is private, maintainers and admins should also be added to read access list
+# so that if access is changed to public and then their maintainer or admin permission is
+# revoked, they still retain read access if document is after all that switched back to
+# private access. This logic is matched in BasicAccessDocument._applyDefaultAccess method.
+setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroupId, role) ->
+  assert currentPerson
+
+  changesCount = 0
+
+  # For private documents, grant read access together with admin/maintainer privileges
+  if role isnt null and role >= ROLES.READ_ACCESS
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      _.extend createNotInSetQuery(documentId, 'read', personOrGroup, personOrGroupId),
+        access: ACCESS.PRIVATE
+    ), createAddToSetCommand 'read', personOrGroup, personOrGroupId
+
+  if role is ROLES.MAINTAINER
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      createNotInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
+    ), createAddToSetCommand 'maintainer', personOrGroup, personOrGroupId
+
+  if role is ROLES.ADMIN
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      createNotInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
+    ), createAddToSetCommand 'admin', personOrGroup, personOrGroupId
+
+  # Only clear read access for private documents when specifically clearing all permissions
+  if role is null
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      _.extend createInSetQuery(documentId, 'read', personOrGroup, personOrGroupId),
+        access: ACCESS.PRIVATE
+    ), createRemoveFromSetCommand 'read', personOrGroup, personOrGroupId
+
+  if role isnt ROLES.MAINTAINER
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      createInSetQuery documentId, 'maintainer', personOrGroup, personOrGroupId
+    ), createRemoveFromSetCommand 'maintainer', personOrGroup, personOrGroupId
+
+  if role isnt ROLES.ADMIN
+    changesCount += accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(currentPerson,
+      createInSetQuery documentId, 'admin', personOrGroup, personOrGroupId
+    ), createRemoveFromSetCommand 'admin', personOrGroup, personOrGroupId
+
+  changesCount
+
 # TODO: Use this code on the client side as well
 Meteor.methods
-  'grant-read-access-to-person': (documentName, documentId, personId) ->
+  'set-role-for-person': (documentName, documentId, personId, role) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check personId, DocumentId
+    check role, Match.Where (role) ->
+      check role, Match.OneOf null, Match.Integer
+      return role is null or 0 <= role <= ROLES.ADMIN
 
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
+    currentPerson = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless currentPerson
 
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
+    !!setRole currentPerson, documentName, documentId, 'Person', personId, role
 
-    person2 = Person.documents.findOne
-      _id: personId
-    # No need for hasReadAccess because persons are public
-    throw new Meteor.Error 400, "Invalid person." unless person2
-
-    return 0 unless document.access is ACCESS.PRIVATE
-
-    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      _id: documentId
-      'readPersons._id':
-        $ne: personId
-    ),
-      $addToSet:
-        readPersons:
-          _id: personId
-
-  'grant-read-access-to-group': (documentName, documentId, groupId) ->
+  'set-role-for-group': (documentName, documentId, groupId, role) ->
     check documentName, RegisteredForAccess
     check documentId, DocumentId
     check groupId, DocumentId
+    check role, Match.Where (role) ->
+      check role, Match.OneOf null, Match.Integer
+      return role is null or 0 <= role <= ROLES.ADMIN
 
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
+    currentPerson = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless currentPerson
 
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
-
-    group = Group.documents.findOne
-      _id: groupId
-    throw new Meteor.Error 400, "Invalid group." unless group?.hasReadAccess person
-
-    return 0 unless document.access is ACCESS.PRIVATE
-
-    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      _id: documentId
-      'readGroups._id':
-        $ne: groupId
-    ),
-      $addToSet:
-        readGroups:
-          _id: groupId
-
-  'revoke-read-access-for-person': (documentName, documentId, personId) ->
-    check documentName, RegisteredForAccess
-    check documentId, DocumentId
-    check personId, DocumentId
-
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
-
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
-
-    person2 = Person.documents.findOne
-      _id: personId
-    # No need for hasReadAccess because persons are public
-    throw new Meteor.Error 400, "Invalid person." unless person2
-
-    return 0 unless document.access is ACCESS.PRIVATE
-
-    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      _id: documentId
-      'readPersons._id': personId
-    ),
-      $pull:
-        readPersons:
-          _id: personId
-
-  'revoke-read-access-for-group': (documentName, documentId, groupId) ->
-    check documentName, RegisteredForAccess
-    check documentId, DocumentId
-    check groupId, DocumentId
-
-    person = Meteor.person()
-    throw new Meteor.Error 401, "User not signed in." unless person
-
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
-
-    group = Group.documents.findOne
-      _id: groupId
-    throw new Meteor.Error 400, "Invalid group." unless group?.hasReadAccess person
-
-    return 0 unless document.access is ACCESS.PRIVATE
-
-    accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
-      _id: documentId
-      'readGroups._id': groupId
-    ),
-      $pull:
-        readGroups:
-          _id: groupId
+    !!setRole currentPerson, documentName, documentId, 'Group', groupId, role
 
   'set-access': (documentName, documentId, access) ->
     check documentName, RegisteredForAccess
@@ -128,12 +126,8 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Optimize, not all fields are necessary
-    document = accessDocuments[documentName].documents.findOne documentId
-    throw new Meteor.Error 400, "Invalid document." unless document?.hasReadAccess person
-
     if access is ACCESS.PRIVATE
-      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+      !!accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access
@@ -142,71 +136,10 @@ Meteor.methods
           access: access
 
     else
-      accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
+      !!accessDocuments[documentName].documents.update accessDocuments[documentName].requireAdminAccessSelector(person,
         _id: documentId
         access:
           $ne: access
       ),
         $set:
           access: access
-
-Meteor.publish 'search-persons-groups', (query, except) ->
-  except ?= []
-
-  check query, NonEmptyString
-  check except, [DocumentId]
-
-  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
-
-  findPersonQuery =
-    $and: []
-    _id:
-      $nin: except
-  findGroupQuery =
-    $and: []
-    _id:
-      $nin: except
-
-  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
-  for keyword in keywords when keyword
-    regex = new RegExp keyword, 'i'
-    findPersonQuery.$and.push
-      $or: [
-        _id: keyword
-      ,
-        'user.username': regex
-      ,
-        'user.emails.0.address': regex
-      ,
-        givenName: regex
-      ,
-        familyName: regex
-      ]
-    findGroupQuery.$and.push
-      $or: [
-        _id: keyword
-      ,
-        name: regex
-      ]
-
-  return unless findPersonQuery.$and.length + findGroupQuery.$and.length
-
-  @related (person) ->
-    restrictedFindGroupQuery = Group.requireReadAccessSelector person, findGroupQuery
-
-    searchPublish @, 'search-persons-groups', query,
-      # No need for requireReadAccessSelector because persons are public
-      cursor: Person.documents.find findPersonQuery,
-        limit: 5
-        # TODO: Optimize fields, we do not need all
-        fields: Person.PUBLISH_FIELDS().fields
-    ,
-      cursor: Group.documents.find restrictedFindGroupQuery,
-        limit: 5
-        # TODO: Optimize fields, we do not need all
-        fields: Group.PUBLISH_FIELDS().fields
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()

@@ -62,15 +62,19 @@ class @Person extends Person
       'inGroups'
     ]
 
-Meteor.publish 'persons-by-id-or-slug', (slug) ->
-  check slug, NonEmptyString
+Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
+  check idsOrSlugs, Match.OneOf(NonEmptyString, [NonEmptyString])
+
+  idsOrSlugs = [idsOrSlugs] unless _.isArray idsOrSlugs
 
   # No need for requireReadAccessSelector because persons are public
   Person.documents.find
     $or: [
-      slug: slug
+      slug:
+        $in: idsOrSlugs
     ,
-      _id: slug
+      _id:
+        $in: idsOrSlugs
     ]
   ,
     Person.PUBLISH_FIELDS()

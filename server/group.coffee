@@ -26,6 +26,7 @@ class @Group extends Group
       slug: 1
       name: 1
       membersCount: 1
+      access: 1
 
 registerForAccess Group
 
@@ -139,12 +140,15 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'groups-by-id', (groupId) ->
-  check groupId, DocumentId
+Meteor.publish 'groups-by-ids', (groupIds) ->
+  check groupIds, Match.OneOf(DocumentId, [DocumentId])
+
+  groupIds = [groupIds] unless _.isArray groupIds
 
   @related (person) ->
     Group.documents.find Group.requireReadAccessSelector(person,
-      _id: groupId
+      _id:
+        $in: groupIds
     ),
       Group.PUBLISH_FIELDS()
   ,
