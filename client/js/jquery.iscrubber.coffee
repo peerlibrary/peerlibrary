@@ -82,7 +82,7 @@ $.fn.iscrubber = (customOptions) ->
         else
           activeDirection = DIRECTION.VERTICAL
 
-        lastX, lastY, originX, originY = [e.pageX, e.pageY, e.pageX, e.pageY]
+        [lastX, lastY, originX, originY] = [e.pageX, e.pageY, e.pageX, e.pageY]
 
       if options.direction is DIRECTION.COMBINED
         ###
@@ -91,27 +91,22 @@ $.fn.iscrubber = (customOptions) ->
         ###
         if activeDirection is DIRECTION.HORIZONTAL and Math.abs(e.pageY - originY) > height * 0.25
           activeDirection = DIRECTION.VERTICAL
-          originX = e.pageX
-          originY = e.pageY
+          [originX, originY] = [e.pageX, e.pageY]
 
         else if activeDirection is DIRECTION.VERTICAL and Math.abs(e.pageX - originX) > width * 0.25
           activeDirection = DIRECTION.HORIZONTAL
-          originX = e.pageX
-          originY = e.pageY
+          [originX, originY] = [e.pageX, e.pageY]
 
         ### determine which direction the user is moving right now ###
-        newDirectionX = e.pageX > lastX
-        newDirectionY = e.pageY > lastY
-
+        [newDirectionX, newDirectionY] = [e.pageX > lastX, e.pageY > lastY]
+         
         ### change origin when user reverses mouse movement direction ###
         originX = e.pageX if newDirectionX isnt directionX
         originY = e.pageY if newDirectionY isnt directionY
 
         ### save for next frame ###
-        lastX = e.pageX
-        lastY = e.pageY
-        directionX = newDirectionX
-        directionY = newDirectionY
+        [lastX, lastY] = [e.pageX, e.pageY]
+        [directionX, directionY] = [newDirectionX, newDirectionY]
 
       ### get the index of image to display on top ###
       switch activeDirection
