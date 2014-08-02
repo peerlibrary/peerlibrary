@@ -11,8 +11,10 @@ $.fn.iscrubber = (customOptions) ->
   DIRECTION =
     HORIZONTAL: 'horizontal'
     VERTICAL: 'vertical'
-    # combined works either horizontal or vertical, depending on
-    # the direction from where the mouse entered the element
+    ###
+      combined works either horizontal or vertical, depending on
+      the direction from where the mouse entered the element
+    ###
     COMBINED: 'combined'
 
   $.fn.iscrubber.defaultOptions =
@@ -23,7 +25,7 @@ $.fn.iscrubber = (customOptions) ->
   ### Set the options ###
   options = $.extend({}, $.fn.iscrubber.defaultOptions, customOptions)
 
-  # Set starting active direction. This gets changed only by the combined option.
+  ### Set starting active direction. This gets changed only by the combined option. ###
   activeDirection = options.direction
 
   ### scrub function ###
@@ -58,11 +60,20 @@ $.fn.iscrubber = (customOptions) ->
     ### show first element ###
     scrub(elements, options.showItem)
 
+    lastX = null
+    lastY = null
+    originX = null
+    originY = null
+    directionX = true
+    directionY = true
+
     ### bind event when mouse moves over scrubber ###
     $this.on 'mousemove.iscrubber', (e) ->
       if activeDirection is DIRECTION.COMBINED
-        # determine which active direction to choose, depending
-        # on the side from which the mouse entered the element
+        ###
+          when activeDirection hasn't been yet set, determine it
+          depending on the side from which the mouse entered the element
+        ###
         horizontalDistanceToEdge = Math.min(Math.abs(e.pageX - $this.offset().left), Math.abs(e.pageX - $this.offset().left - width))
         verticalDistanceToEdge = Math.min(Math.abs(e.pageY - $this.offset().top), Math.abs(e.pageY - $this.offset().top - height))
 
@@ -70,6 +81,37 @@ $.fn.iscrubber = (customOptions) ->
           activeDirection = DIRECTION.HORIZONTAL
         else
           activeDirection = DIRECTION.VERTICAL
+
+        lastX, lastY, originX, originY = [e.pageX, e.pageY, e.pageX, e.pageY]
+
+      if options.direction is DIRECTION.COMBINED
+        ###
+          also allow to change direction in between, if the user
+          starts moving significantly in the opposite direction
+        ###
+        if activeDirection is DIRECTION.HORIZONTAL and Math.abs(e.pageY - originY) > height * 0.25
+          activeDirection = DIRECTION.VERTICAL
+          originX = e.pageX
+          originY = e.pageY
+
+        else if activeDirection is DIRECTION.VERTICAL and Math.abs(e.pageX - originX) > width * 0.25
+          activeDirection = DIRECTION.HORIZONTAL
+          originX = e.pageX
+          originY = e.pageY
+
+        ### determine which direction the user is moving right now ###
+        newDirectionX = e.pageX > lastX
+        newDirectionY = e.pageY > lastY
+
+        ### change origin when user reverses mouse movement direction ###
+        originX = e.pageX if newDirectionX isnt directionX
+        originY = e.pageY if newDirectionY isnt directionY
+
+        ### save for next frame ###
+        lastX = e.pageX
+        lastY = e.pageY
+        directionX = newDirectionX
+        directionY = newDirectionY
 
       ### get the index of image to display on top ###
       switch activeDirection
