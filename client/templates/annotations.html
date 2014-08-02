@@ -1,52 +1,11 @@
 <template name="annotations">
   <h1>Annotations</h1>
-
   <div class="row">
-    <div class="col12 catalog">
-      {{> catalogControls catalogSettings}}
-      {{> noAnnotations}}
-      {{> annotationsList documents}}
-      {{> annotationsLoading}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
     {{> myAnnotations}}
   </div>
-</template>
-
-<template name="annotationsList">
-  {{#if this}}
-    <ol class="item-list">
-      {{#each this}}
-        {{> annotationCatalogItem}}
-      {{/each}}
-    </ol>
-  {{/if}}
-</template>
-
-<template name="noAnnotations">
-  {{#if noDocuments}}
-    <p class="status">
-      {{#if documentsFilter}}
-        The filter matches no annotations.
-      {{else}}
-        There are no annotations yet.
-        {{#if currentPersonId}}
-          Create the first by annotating one of the publications.
-        {{else}}
-          Sign in and create the first.
-        {{/if}}
-      {{/if}}
-    </p>
-  {{/if}}
-</template>
-
-<template name="annotationsLoading">
-  {{#if documentsLoading}}
-    <p class="status">Loading …</p>
-  {{else}}
-    {{#if moreDocuments}}
-      <button class="load-more">Load more</button>
-    {{/if}}
-  {{/if}}
 </template>
 
 <template name="myAnnotations">
@@ -59,27 +18,25 @@
 </template>
 
 <template name="annotationInlineItem">
-  {{#with annotationReference _id this}}
-    <a class="inline-item annotation"{{#unless noLink}} href="{{annotationPathFromId _id}}"{{/unless}}>
+    <a class="inline-item annotation"{{#unless noLink}} href="{{path}}"{{/unless}}>
       <i class="avatar only-icon icon-annotation" title="Annotation"></i>
       <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
     </a>
-  {{/with}}
 </template>
 
 <template name="annotationCatalogItem">
   <li class="catalog-item annotation">
-    <div class="details">
-      <p class="actionable">{{> personInlineItem author}} annotated {{> publicationInlineItem publication}}</p>
-      <blockquote>
-        {{{body}}}
-      </blockquote>
+    <blockquote class="body">
+      {{{body}}}
+    </blockquote>
 
+    <div class="details">
+      <p><i class="icon-person"></i> Annotated by <span class="actionable">{{> personInlineItem author}}</span> in <span class="actionable">{{> publicationInlineItem publication}}</span></p>
       {{#if commentsCount}}
         <p><i class="icon-comment"></i> {{commentsCountDescription}}</p>
       {{/if}}
     </div>
 
-    <a class="full-item-link" href="{{annotationIdPath _id}}"></a>
+    <a class="full-item-link" href="{{path}}"></a>
   </li>
 </template>

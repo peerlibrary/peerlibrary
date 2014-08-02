@@ -1,8 +1,81 @@
 # The ammount by which we increate the limit of returned results
 LIMIT_INCREASE_STEP = 10
 
+# List of all session variables that activate views with catalogs (used to determine infinite scrolling)
+@catalogActiveVariables = []
+
+# Subscribe the client to catalog's documents
+Template.catalog.created = ->
+  variables = @data.variables
+
+  @catalogActiveVariables = _.union catalogActiveVariables, [variables.active]
+
+  # We need a reset signal that will rerun the search
+  # when the ready variable is set to false from the router
+  reset = new Variable false
+  wasReady = new Variable false
+
+  @_resetSignalHandle?.stop()
+  @_resetSignalHandle = Deps.autorun ->
+    # Detect when ready is turned to false
+    ready = Session.get(variables.ready)
+    if wasReady() and not ready
+      reset.set true
+      wasReady.set false
+
+  @_searchParametersHandle?.stop()
+  @_searchParametersHandle = Deps.autorun ->
+    # Every time filter or sort is changed, we reset counts
+    # (We don't want to reset counts on currentLimit change)
+    Session.get variables.filter
+    Session.get variables.sort
+    Session.set variables.ready, false
+    Session.set variables.limit, INITIAL_CATALOG_LIMIT
+    Session.set variables.limitIncreasing, false
+
+  subscriptionHandle = null
+
+  @_subscriptionAutorunHandle?.stop()
+  @_subscriptionAutorunHandle = Deps.autorun =>
+    # Listen for the reset signal, so the search is
+    # rerun when ready is set to false from the outside
+    reset()
+    reset.set false
+    if Session.get(variables.active) and Session.get(variables.limit)
+      Session.set variables.loading, true
+      # Make sure there is only one subscribtion being executed at once
+      subscriptionHandle.stop() if subscriptionHandle
+      subscriptionHandle = Meteor.subscribe @data.subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
+        onReady: =>
+          # Store how many results there are
+          searchResult = SearchResult.documents.findOne
+            name: @data.subscription
+            query: [Session.get(variables.filter), Session.get(variables.sort)]
+          Session.set variables.count, searchResult["count#{@data.documentClass.name}s"]
+
+          Session.set variables.ready, true
+          wasReady.set true
+
+          Session.set variables.loading, false
+        onError: ->
+          # TODO: Should we display some error?
+          Session.set variables.loading, false
+    else
+      Session.set variables.loading, false
+
+Template.catalog.destroyed = ->
+  @_resetSignalHandle?.stop()
+  @_resetSignalHandle = null
+  @_searchParametersHandle?.stop()
+  @_searchParametersHandle = null
+  @_subscriptionAutorunHandle?.stop()
+  @_subscriptionAutorunHandle = null
+
 Template.catalogFilter.documentsName = ->
   @documentClass.verboseNamePlural()
+
+Template.catalogFilter.filter = ->
+  Session.get(@variables.filter) or ''
 
 Template.catalogSort.field = ->
   index = Session.get @variables.sort
@@ -41,102 +114,118 @@ Template.catalogFilter.events
 
     return # Make sure CoffeeScript does not return anything
 
-# Helper that enables a list of documents with infinite scrolling and filtering
-class @Catalog
-  @catalogActiveVariables = []
+Template.catalogCount.ready = ->
+  Session.get @variables.ready
 
-  @create: (subscription, documentClass, templates, variables) ->
-    limitIncreasing = false
+Template.catalogCount.count = ->
+  Session.get @variables.count
 
-    @catalogActiveVariables.push variables.active
+Template.catalogCount.countDescription = ->
+  @documentClass.verboseNameWithCount Session.get(@variables.count)
 
-    Deps.autorun ->
-      # Every time filter or sort is changed, we reset counts
-      # (We don't want to reset counts on currentLimit change)
-      Session.get variables.filter
-      Session.get variables.sort
-      Session.set variables.count, 0
-      Session.set variables.limit, INITIAL_CATALOG_LIMIT
-      limitIncreasing = false
+Template.catalogCount.filter = ->
+  Session.get @variables.filter
 
-    Deps.autorun ->
-      Session.set variables.ready, false
-      if Session.get(variables.active) and Session.get(variables.limit)
-        Session.set variables.loading, true
-        Meteor.subscribe subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
-          onReady: ->
-            Session.set variables.ready, true
-            Session.set variables.loading, false
-          onError: ->
-            # TODO: Should we display some error?
-            Session.set variables.loading, false
-      else
-        Session.set variables.loading, false
+Template.catalogCount.documentsName = ->
+  @documentClass.verboseNamePlural()
 
-    assert not templates.main.created
-    templates.main.created = ->
-      $(window).on 'scroll.directory', ->
-        if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
-          increaseLimit LIMIT_INCREASE_STEP
+Template.catalogList.created = ->
+  $(window).on 'scroll.catalog', =>
+    if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
+      increaseLimit LIMIT_INCREASE_STEP, @data.variables
 
-        return # Make sure CoffeeScript does not return anything
+    return # Make sure CoffeeScript does not return anything
 
-    assert not templates.main.rendered
-    templates.main.rendered = ->
-      if Session.get variables.ready
-        limitIncreasing = false
-        # Trigger scrolling to automatically start loading more results until whole screen is filled
-        $(window).trigger('scroll')
+# Make sure onCatalogRendered gets executed once after rendered is done and new elements are in the DOM.
+# Otherwise we might increase limit multiple times in a row, before the DOM updates.
+onCatalogRenderedRunning = false
 
-    assert not templates.main.destroyed
-    templates.main.destroyed = ->
-      $(window).off '.directory'
+onCatalogRendered = (template, variables) ->
+  onCatalogRenderedRunning = true
 
-    templates.main.documents = ->
-      return unless Session.get(variables.limit)
+  renderedChildren = $(template.find '.item-list').children().length
+  expectedChildren = Math.min(Session.get(variables.count), Session.get(variables.limit))
 
-      searchResult = SearchResult.documents.findOne
-        name: subscription
-        query: [Session.get(variables.filter), Session.get(variables.sort)]
+  if expectedChildren is renderedChildren
+    onCatalogRenderedRunning = false
+    Session.set variables.limitIncreasing, false
+    # Trigger scrolling to automatically start loading more results until whole screen is filled
+    $(window).trigger('scroll')
+  else
+    # Give the engine more time to render things
+    setTimeout ->
+      onCatalogRendered template, variables
+    ,
+      500
 
-      return unless searchResult
+Template.catalogList.rendered = ->
+  onCatalogRendered @, @data.variables unless onCatalogRenderedRunning
 
-      Session.set variables.count, searchResult["count#{documentClass.name}s"]
+  # Focus on the filter
+  $(@find '.filter input').focus()
 
-      documentClass.documents.find
-        'searchResult._id': searchResult._id
-      ,
-        sort: [
-          ['searchResult.order', 'asc']
-        ]
-        limit: Session.get variables.limit
+Template.catalogList.destroyed = ->
+  $(window).off '.catalog'
 
-    templates.count?.documentsCount = ->
-      Session.get variables.count
+Template.catalogList.documents = ->
+  # Make sure we don't show documents if ready gets set to false
+  return unless Session.get @variables.ready
 
-    templates.empty.noDocuments = ->
-      Session.get(variables.ready) and not Session.get(variables.count)
+  searchResult = SearchResult.documents.findOne
+    name: @subscription
+    query: [Session.get(@variables.filter), Session.get(@variables.sort)]
 
-    templates.empty.documentsFilter = ->
-      Session.get(variables.filter)
+  return unless searchResult
 
-    templates.loading.documentsLoading = ->
-      Session.get(variables.loading)
+  @documentClass.documents.find
+    'searchResult._id': searchResult._id
+  ,
+    sort: [
+      ['searchResult.order', 'asc']
+    ]
+    limit: Session.get @variables.limit
 
-    templates.loading.moreDocuments = ->
-      Session.get(variables.ready) and Session.get(variables.limit) < Session.get(variables.count)
+Template.catalogItem.documentIsPublication = ->
+  @ instanceof Publication
 
-    templates.loading.events
-      'click .load-more': (event, template) ->
-        event.preventDefault()
-        limitIncreasing = false # We want to force loading more in every case
-        increaseLimit LIMIT_INCREASE_STEP
+Template.catalogItem.documentIsPerson = ->
+  @ instanceof Person
 
-        return # Make sure CoffeeScript does not return anything
+Template.catalogItem.documentIsHighlight = ->
+  @ instanceof Highlight
 
-    increaseLimit = (pageSize) ->
-      if limitIncreasing
-        return
-      if Session.get(variables.limit) < Session.get(variables.count)
-        limitIncreasing = true
-        Session.set variables.limit, (Session.get(variables.limit) or 0) + pageSize
+Template.catalogItem.documentIsAnnotation = ->
+  @ instanceof Annotation
+
+Template.catalogItem.documentIsGroup = ->
+  @ instanceof Group
+
+Template.catalogItem.documentIsCollection = ->
+  @ instanceof Collection
+
+Template.catalogLoading.loading = ->
+  Session.get @variables.loading
+
+Template.catalogLoading.more = ->
+  Session.get(@variables.ready) and Session.get(@variables.limit) < Session.get(@variables.count)
+
+Template.catalogLoading.count = ->
+  Session.get @variables.count
+
+Template.catalogLoading.documentsName = ->
+  @documentClass.verboseNamePlural()
+
+Template.catalogLoading.events
+  'click .load-more': (event, template) ->
+    e.preventDefault()
+    Session.set @variables.limitIncreasing, false # We want to force loading more in every case
+    increaseLimit LIMIT_INCREASE_STEP, @variables
+
+    return # Make sure CoffeeScript does not return anything
+
+increaseLimit = (pageSize, variables) ->
+  return if Session.get(variables.limitIncreasing)
+
+  if Session.get(variables.limit) < Session.get(variables.count)
+    Session.set variables.limitIncreasing, true
+    Session.set variables.limit, (Session.get(variables.limit) or 0) + pageSize
