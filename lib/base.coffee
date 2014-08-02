@@ -36,6 +36,7 @@ setSession = (session) ->
     currentPublicationsLoading: false
     currentPublicationsReady: false
     currentPublicationsLimit: INITIAL_CATALOG_LIMIT
+    currentPublicationsLimitIncreasing: false
     currentPublicationsSort: 0
     personsActive: false
     currentPersonsFilter: null
@@ -43,6 +44,7 @@ setSession = (session) ->
     currentPersonsLoading: false
     currentPersonsReady: false
     currentPersonsLimit: INITIAL_CATALOG_LIMIT
+    currentPersonsLimitIncreasing: false
     currentPersonsSort: 0
     collectionsActive: false
     currentCollectionsFilter: null
@@ -50,6 +52,7 @@ setSession = (session) ->
     currentCollectionsLoading: false
     currentCollectionsReady: false
     currentCollectionsLimit: INITIAL_CATALOG_LIMIT
+    currentCollectionsLimitIncreasing: false
     currentCollectionsSort: 0
     groupsActive: false
     currentGroupsFilter: null
@@ -57,6 +60,7 @@ setSession = (session) ->
     currentGroupsLoading: false
     currentGroupsReady: false
     currentGroupsLimit: INITIAL_CATALOG_LIMIT
+    currentGroupsLimitIncreasing: false
     currentGroupsSort: 0
     annotationsActive: false
     currentAnnotationsFilter: null
@@ -64,6 +68,7 @@ setSession = (session) ->
     currentAnnotationsLoading: false
     currentAnnotationsReady: false
     currentAnnotationsLimit: INITIAL_CATALOG_LIMIT
+    currentAnnotationsLimitIncreasing: false
     currentAnnotationsSort: 0
     highlightsActive: false
     currentHighlightsFilter: null
@@ -71,6 +76,7 @@ setSession = (session) ->
     currentHighlightsLoading: false
     currentHighlightsReady: false
     currentHighlightsLimit: INITIAL_CATALOG_LIMIT
+    currentHighlightsLimitIncreasing: false
     currentHighlightsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false

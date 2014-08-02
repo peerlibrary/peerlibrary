@@ -62,6 +62,9 @@ class @Person extends AccessDocument
         oldPublications = (publication._id for publication in oldDoc.library or [])
         _.difference newPublications, oldPublications
 
+  @verboseNamePlural: ->
+    "people"
+
   @PUBLISH_CATALOG_SORT:
     [
       name: "last activity"
