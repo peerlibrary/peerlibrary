@@ -1,7 +1,7 @@
-@methodWrap = (f) ->
+@methodWrap = (method) ->
   (args...) ->
     try
-      f.apply @, args
+      method.apply @, args
     catch error
       if error instanceof Error
         stack = StackTrace.printStackTrace e: error
