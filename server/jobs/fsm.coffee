@@ -9,7 +9,7 @@ class @FSMMetadataJob extends Job
 
     # We throw a fatal error to stop retrying a job if settings are not
     # available anymore, but they were in the past when job was added
-    throw new Job.FatalJobError "FSM settings missing" unless Meteor.settings?.FSM?.appId and Meteor.settings?.FSM?.appKey
+    throw new @constructor.FatalJobError "FSM settings missing" unless Meteor.settings?.FSM?.appId and Meteor.settings?.FSM?.appKey
 
   run: =>
     page = HTTP.get "https://apis.berkeley.edu/solr/fsm/select?q=-fsmImageUrl:*&wt=json&indent=on&rows=1000&app_id=#{ Meteor.settings.FSM.appId }&app_key=#{ Meteor.settings.FSM.appKey }",

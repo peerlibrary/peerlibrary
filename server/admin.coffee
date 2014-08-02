@@ -49,7 +49,7 @@ Meteor.methods
     Meteor.call 'sync-local-pdf-cache'
 
   'test-job': methodWrap ->
-    throw new Meteor.Error 403, "Permission denied" unless Meteor.person()?.isAdmin
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
     new TestJob({foo: 'bar'}).enqueue()
 

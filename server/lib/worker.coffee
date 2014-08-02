@@ -9,14 +9,14 @@ class @Job
     _.extend @, data
 
   run: =>
-    throw new Error "Not implemented"
+    throw new @constructor.FatalJobError "Not implemented"
 
   # Method so that job class can set or override enqueue options
   enqueueOptions: (options) =>
     options
 
   enqueue: (options) =>
-    throw new Error "Unknown job class '#{ @type() }'" unless Job.types[@type()]
+    throw new @constructor.FatalJobError "Unknown job class '#{ @type() }'" unless Job.types[@type()]
 
     # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
