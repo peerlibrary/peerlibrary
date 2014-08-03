@@ -32,8 +32,8 @@ class @FSMMetadataJob extends Job
       unless createdAt.isValid()
         # Using inspect because documents can be heavily nested
         # TODO: What to do in this case?
-        @log "Could not parse created date, setting to current date '#{ dateCreated }', #{ util.inspect document, false, null }",
-          level: 'warning'
+        # TODO: Replace inspect with log payload
+        @logWarn "Could not parse created date, setting to current date '#{ dateCreated }', #{ util.inspect document, false, null }"
         createdAt = moment.utc()
 
       createdAt = createdAt.toDate()
@@ -142,7 +142,7 @@ class @FSMMetadataJob extends Job
       # TODO: Use findAndModify
       if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
-        @log "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
+        @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         new CheckCacheJob(publication: _.pick publication, '_id').enqueue()
         count++
 
