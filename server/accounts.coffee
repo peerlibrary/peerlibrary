@@ -16,7 +16,7 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    throw new Meteor.Error 400, "User is already a member." if User.documents.findOne 'emails.address': email
+    throw new Meteor.Error 400, "User is already a member." if User.documents.exists 'emails.address': email
 
     userId = Accounts.createUser
       email: email
@@ -53,7 +53,7 @@ Accounts.onCreateUser methodWrap (options, user) ->
     personId = Random.id()
     # Person _id must not match any existing User username otherwise our queries for
     # Person documents querying both _id and slug would return multiple documents
-    while User.documents.findOne(username: personId)
+    while User.documents.exists(username: personId)
       personId = Random.id()
 
   # We are verifying things here and not in a validateNewUser hook to prevent creation
@@ -72,11 +72,11 @@ Accounts.onCreateUser methodWrap (options, user) ->
     # Check for unique username in a case insensitive manner.
     # We do not have to escape username because we have already
     # checked that it contains only a-zA-Z0-9_- characters.
-    throw new Meteor.Error 400, "Username already exists." if User.documents.findOne username: new RegExp "^#{ user.username }$", 'i'
+    throw new Meteor.Error 400, "Username already exists." if User.documents.exists username: new RegExp "^#{ user.username }$", 'i'
 
     # Username must not match any existing Person _id otherwise our queries for
     # Person documents querying both _id and slug would return multiple documents
-    throw new Meteor.Error 400, "Username already exists." if Person.documents.findOne _id: user.username
+    throw new Meteor.Error 400, "Username already exists." if Person.documents.exists _id: user.username
 
   throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
@@ -87,7 +87,7 @@ Accounts.onCreateUser methodWrap (options, user) ->
   # We do not really care if users are reusing their email address, we just do not want errors
   # later on when MongoDB unique index fails. So we are not checking here an email in a
   # case insensitive manner, or normalize it in some other way (like removing Gmail +suffix).
-  throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.findOne 'emails.address': user.emails?[0]?.address
+  throw new Meteor.Error 400, "Email already exists." if user.username isnt 'admin' and User.documents.exists 'emails.address': user.emails?[0]?.address
 
   user.person =
     _id: personId
