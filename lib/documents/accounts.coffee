@@ -32,11 +32,11 @@ class @User extends BaseDocument
     # Check for unique username in a case insensitive manner.
     # We do not have to escape username because we have already
     # checked that it contains only a-zA-Z0-9_- characters.
-    throw new FormError 400, "Username already exists.", field if User.documents.findOne username: new RegExp "^#{ username }$", 'i'
+    throw new FormError 400, "Username already exists.", field if User.documents.exists username: new RegExp "^#{ username }$", 'i'
 
     # Username must not match any existing Person _id otherwise our queries for
     # Person documents querying both _id and slug would return multiple documents
-    throw new FormError 400, "Username already exists.", field if Person.documents.findOne _id: username
+    throw new FormError 400, "Username already exists.", field if Person.documents.exists _id: username
 
   @validatePassword = (password, field) ->
     throw new FormError 400, "Password must be at least 6 characters long.", field unless password and password.length >= 6

@@ -253,7 +253,7 @@ Template.groupMembersAddControlResultsItem.events
 Template.groupTools.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.groupDetails.events
+Template.groupTools.events
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
       Notify.fromError error, true if error

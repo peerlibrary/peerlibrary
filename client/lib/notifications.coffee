@@ -1,3 +1,8 @@
+# As an exception we are using fat arrow (=>) for class methods here so that methods can be easily
+# passed as callbacks, but extending the class and overriding class methods might not work as you expect.
+# If class method A calls bound class method B, even if you override B with B' in a subclass, when
+# calling A on a subclass, it will still call B and not B'.
+
 # Local (client-only) document for notifications
 class @Notify extends BaseDocument
   # type: type of the notification (debug, warn, error)
