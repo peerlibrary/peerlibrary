@@ -27,12 +27,11 @@ ARXIV_ACCENTS =
   '''{\\o}''': 'ø', '''{\\O}''': 'Ø', '''{\\OE}''': 'Œ', '''{\\oe}''': 'œ', '''{\\ss}''': 'ß'
 
 class @ArXivMetadataJob extends Job
-  constructor: (data) ->
-    super
+  enqueueOptions: (options) =>
+    options = super
 
-    # We throw a fatal error to stop retrying a job if settings are not
-    # available anymore, but they were in the past when job was added
-    throw new @constructor.FatalJobError "AWS settings missing" unless Meteor.settings?.AWS?.accessKeyId and Meteor.settings?.AWS?.secretAccessKey
+    _.defaults options,
+      priority: 'medium'
 
   run: =>
     # TODO: URL hardcoded - not good
@@ -44,13 +43,13 @@ class @ArXivMetadataJob extends Job
 
     page = xml2js.parseStringSync page.content
 
+    thisJob = @getQueueJob()
     count = 0
 
     for recordEntry in page['OAI-PMH'].ListRecords[0].record
       record = recordEntry.metadata?[0].arXivRaw?[0]
 
       if not record?
-        # Using inspect because records can be heavily nested
         # TODO: Replace inspect with log payload
         @logWarn "Empty record metadata, skipping #{ util.inspect recordEntry, false, null }"
         continue
@@ -95,7 +94,6 @@ class @ArXivMetadataJob extends Job
         familyName: familyName
 
       if bad
-        # Using inspect because records can be heavily nested
         # TODO: Replace inspect with log payload
         @logWarn "Could not parse authors, skipping #{ authors }, #{ util.inspect record, false, null }"
         continue
@@ -108,7 +106,6 @@ class @ArXivMetadataJob extends Job
       authors = (author for author in authors when not (/collaboration/i.test(author.givenName) or /collaboration/i.test(author.familyName)))
 
       if authors.length == 0
-        # Using inspect because records can be heavily nested
         # TODO: Replace inspect with log payload
         @logWarn "Empty authors list, skipping #{ util.inspect record, false, null }"
         continue
@@ -165,11 +162,13 @@ class @ArXivMetadataJob extends Job
       #assert.equal (cls for cls in publication.msc2010 when cls.match(/[()]/)).length, 0, "#{ publication.foreignId }: #{ publication.msc2010 }"
 
       # TODO: Use findAndModify
-      if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+      if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        new CheckCacheJob(publication: _.pick publication, '_id').enqueue()
-        count++
+        count++ if new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
+          skipIfExisting: true
+          depends: thisJob # To create a relation
+        )
 
     count: count
 

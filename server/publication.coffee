@@ -56,15 +56,18 @@ class @Publication extends Publication
     # TODO: Verify that id is not insecure
     'FSM' + Storage._path.sep + fsmId + '.tei'
 
-  foreignFilename: =>
-    filename = switch @source
-      when 'arXiv' then Publication._arXivFilename @foreignId
-      when 'FSM' then Publication._FSMFilename @foreignId
+  @foreignFilename: (source, foreignId) ->
+    filename = switch source
+      when 'arXiv' then Publication._arXivFilename foreignId
+      when 'FSM' then Publication._FSMFilename foreignId
       else null
 
     return unless filename
 
     Publication._filenamePrefix() + filename
+
+  foreignFilename: =>
+    @constructor.foreignFilename @source, @foreignId
 
   storageForeignUrl: =>
     Storage.url @foreignFilename()

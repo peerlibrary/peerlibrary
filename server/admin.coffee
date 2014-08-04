@@ -193,22 +193,26 @@ Meteor.methods
     # If @connection is not set this means method is called from the server (eg., from auto installation)
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
-    new ArXivMetadataJob().enqueue()
+    new ArXivMetadataJob().enqueue
+      skipIfExisting: true
 
   'sync-local-pdf-cache': methodWrap ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
-    new CacheSyncJob().enqueue()
+    new CacheSyncJob().enqueue
+      skipIfExisting: true
 
   'sync-fsm-metadata': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
-    new FSMMetadataJob().enqueue()
+    new FSMMetadataJob().enqueue
+      skipIfExisting: true
 
   'sync-blog': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
+    # skipIfExisting not needed because cancelRepeats is set
     new TumblrJob().enqueue
       delay: 0
 

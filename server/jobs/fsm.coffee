@@ -11,6 +11,12 @@ class @FSMMetadataJob extends Job
     # available anymore, but they were in the past when job was added
     throw new @constructor.FatalJobError "FSM settings missing" unless Meteor.settings?.FSM?.appId and Meteor.settings?.FSM?.appKey
 
+  enqueueOptions: (options) =>
+    options = super
+
+    _.defaults options,
+      priority: 'medium'
+
   run: =>
     page = HTTP.get "https://apis.berkeley.edu/solr/fsm/select?q=-fsmImageUrl:*&wt=json&indent=on&rows=1000&app_id=#{ Meteor.settings.FSM.appId }&app_key=#{ Meteor.settings.FSM.appKey }",
       timeout: HTTP_TIMEOUT
@@ -18,6 +24,7 @@ class @FSMMetadataJob extends Job
     # TODO: Implement pagination
     assert page.data.response.docs.length, page.data.response.numFound
 
+    thisJob = @getQueueJob()
     count = 0
 
     for document in page.data.response.docs
@@ -30,7 +37,6 @@ class @FSMMetadataJob extends Job
       createdAt = moment.utc dateCreated
 
       unless createdAt.isValid()
-        # Using inspect because documents can be heavily nested
         # TODO: What to do in this case?
         # TODO: Replace inspect with log payload
         @logWarn "Could not parse created date, setting to current date '#{ dateCreated }', #{ util.inspect document, false, null }"
@@ -140,11 +146,13 @@ class @FSMMetadataJob extends Job
         publication.comments = document.fsmRelatedTitle.join '\n'
 
       # TODO: Use findAndModify
-      if Publication.documents.find({source: publication.source, foreignId: publication.foreignId}, limit: 1).count() == 0
+      if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        new CheckCacheJob(publication: _.pick publication, '_id').enqueue()
-        count++
+        count++ if new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
+          skipIfExisting: true
+          depends: thisJob # To create a relation
+        )
 
     count: count
 

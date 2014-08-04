@@ -8,7 +8,7 @@ class @TestJob extends Job
   run: =>
     @logInfo "Test log"
 
-    # Return @foo value
-    @foo
+    # Return foo data value
+    @data.foo
 
 Job.addJobClass TestJob

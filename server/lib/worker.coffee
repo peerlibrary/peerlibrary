@@ -5,8 +5,7 @@ FatalJobError = Meteor.makeErrorType 'FatalJobError',
 class @Job
   @types = {}
 
-  constructor: (data) ->
-    _.extend @, data
+  constructor: (@data) ->
 
   run: =>
     throw new @constructor.FatalJobError "Not implemented"
@@ -18,8 +17,12 @@ class @Job
   enqueue: (options) =>
     throw new @constructor.FatalJobError "Unknown job class '#{ @type() }'" unless Job.types[@type()]
 
+    # There is a race-condition here, but in the worst case there will be
+    # some duplicate work done. Jobs ought to be idempotent anyway.
+    return if options?.skipIfExisting and @constructor.exists @data, options?.skipIncludingCompleted
+
     # We use EJSON.toJSONValue to convert to an object with only fields and no methods
-    job = JobQueue.Meta.collection.createJob @type(), EJSON.toJSONValue @
+    job = JobQueue.Meta.collection.createJob @type(), @data
 
     options = @enqueueOptions options
 
@@ -36,9 +39,9 @@ class @Job
   getQueueJob: =>
     JobQueue.Meta.collection.makeJob
       _id: @_id
-      runId: @_runId
+      runId: @runId
       type: @type()
-      data: {}
+      data: @data
 
   log: (message, options) =>
     @getQueueJob().log message, options
@@ -76,6 +79,28 @@ class @Job
 
   @FatalJobError: FatalJobError
 
+  @exists: (data, includingCompleted) ->
+    # Cancellable job statuses are in fact the same as those we want for existence check
+    statuses = JobQueue.Meta.collection.jobStatusCancellable
+    statuses = statuses.concat ['completed'] if includingCompleted
+
+    values = (path, doc) ->
+      res = {}
+      for field, value of doc
+        newPath = if path then "#{ path }.#{ field }" else field
+        if _.isPlainObject value
+          _.extend res, values newPath, value
+        else
+          res[newPath] = value
+      res
+
+    query = values '', data
+    query.type = @type()
+    query.status =
+      $in: statuses
+
+    JobQueue.documents.exists query
+
 jobQueueRunning = false
 runJobQueue = ->
   return if jobQueueRunning
@@ -92,7 +117,7 @@ runJobQueue = ->
             jobClass = Job.types[job.type]
             j = new jobClass job.data
             j._id = job._doc._id
-            j._runId = job._doc.runId
+            j.runId = job._doc.runId
             result = j.run()
           catch error
             if error instanceof Error

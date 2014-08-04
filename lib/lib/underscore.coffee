@@ -14,3 +14,12 @@ _.mixin
       "#{ string }."
     else
       string
+
+  isPlainObject = (obj) ->
+    if not _.isObject(obj) or _.isArray(obj) or _.isFunction(obj)
+      return false
+
+    if obj.constructor isnt Object
+      return false
+
+    return true
