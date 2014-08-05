@@ -3,14 +3,12 @@
     <div class="drop-overlay imports-overlay">
       <div class="content">
         <h1>Importing files</h1>
-        <p class="hint">Drop files to import them.</p>
-      </div>
-      <div class="imports">
-        <table class="imports-table">
+        <ol class="importing-files">
           {{#each importingFiles}}
             {{> importingFilesItem}}
           {{/each}}
-        <table>
+        </ol>
+        <p class="hint">Drop files to import them.</p>
       </div>
     </div>
   {{/if}}
@@ -27,23 +25,21 @@
 </template>
 
 <template name="importingFilesItem">
-  <tr class="{{state}}">
-    <td class="imports-cell name-cell">
+  <li class="file {{state}} icon-publication">
+    <div class="name">
       {{name}}
-    </td>
-    <td class="imports-cell progress-cell">
-      <div class="import-progress-bar" style="width: {{preprocessingProgress}}%"></div>
-      <div class="import-progress-bar" style="width: {{uploadProgress}}%"></div>
-    </td>
-    <td class="imports-cell status-cell">
-      {{status}}
-    </td>
-    <td class="imports-cell cancel-cell">
+    </div>
+    <div class="progress">
+      <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
+      <div class="upload bar" style="width: {{uploadProgress}}%"></div>
+      <div class="status">{{status}}</div>
+    </div>
+    <div class="cancel">
       {{#unless hideCancel}}
-        <button class="cancel-button">
-          <i class="icon-cancel cancel-white"></i>
-        </button>
+      <button class="cancel-button tooltip" title="Cancel import.">
+        <i class="icon-cancel"></i>
+      </button>
       {{/unless}}
-    </td>
-  </tr>
+    </div>
+  </li>
 </template> 

@@ -1,66 +1,5 @@
 @import 'variables.import'
 
-.imports-table
-  margin auto
-  width 100%
-
-  .imports-cell
-    padding 0 5px
-
-  .name-cell
-    width 50%
-
-  .progress-cell
-    width 25%
-
-  .status-cell
-    width 20%
-
-  .cancel-cell
-    width 5%
-
-.drop-overlay
-  position fixed
-  width 100%
-  height 100%
-  top 0
-  left 0
-  /* Higher than header */
-  z-index 6000
-  background white-translucent
-
-  .content
-    position relative
-    top 40%
-    width 80%
-    margin auto
-    text-align center
-    color black
-
-.imports-overlay
-  .content
-    top 20%
-
-  .imports
-    color black
-    position relative
-    top 25%
-    height 45%
-    width 80%
-    margin auto
-    overflow-y scroll
-
-.import-progress-bar
-  background green
-  height 8px
-  margin-bottom 3px
-
-.cancel-button
-  border-width 0
-
-  .cancel-white
-    color white 
-
 .overlay-active
   /* We prevent scrolling of the page content while overlay is visible */
   overflow hidden
@@ -72,3 +11,108 @@
     -ms-filter blur(3px)
     -o-filter blur(3px)
     filter blur(3px)
+
+.drop-overlay
+  position fixed
+  width 100%
+  height 100%
+  top 0
+  left 0
+  /* Higher than header */
+  z-index 6000
+  background white-translucent
+  color black
+  text-align center
+
+  &::before
+    content ''
+    display inline-block
+    height 100%
+    vertical-align middle
+    margin-right -0.25em
+
+  .content
+    display inline-block
+    vertical-align middle
+    text-align left
+    max-height 100%
+
+  &.imports-overlay
+    .content
+      width 70%
+      max-width 1000px
+      min-width 500px
+
+      h1
+        margin-bottom 30px
+
+      .importing-files
+        list-style none
+        padding 0
+
+        .file
+          position relative
+          width 100%
+          height 30px
+          margin-bottom 10px
+
+          > *
+            display inline-block
+            vertical-align middle
+
+          .name
+            width 22%
+            padding-right 10px
+            box-sizing border-box
+            white-space nowrap
+            text-overflow ellipsis
+            overflow hidden
+
+          .progress
+            position relative
+            width 50%
+            height 25px
+            line-height 25px
+            border 1px solid box-shadow-border
+            border-radius 10px
+            box-sizing border-box
+            overflow hidden
+            text-align center
+
+            .status
+              position relative
+              display inline-block
+              vertical-align middle
+              z-index 2
+
+            .bar
+              position absolute
+              left 0
+              top 0
+              height 100%
+
+            .preprocessing
+              background-color blue
+              z-index 1
+
+            .upload
+              background-color blue-accent
+              z-index 2
+
+          .cancel
+            padding-left 10px
+
+            .cancel-button
+              border 1px solid transparent
+              background-color transparent
+
+              &:hover
+                border-color box-shadow-border
+
+          &::after
+            content ''
+            clear both
+
+      .hint
+        margin-top 30px
+        text-align center
