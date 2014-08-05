@@ -359,7 +359,10 @@ Template.signInOverlay.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importOverlay.events =
+Template.importOverlay.events
+  'click .import': (event, template) ->
+    $('.import-file-input').click()
+
   'dragover': (event, template) ->
     event.preventDefault()
     event.dataTransfer.effectAllowed = 'copy'
