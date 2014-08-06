@@ -30,16 +30,29 @@
       {{name}}
     </div>
     <div class="progress">
-      <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
-      <div class="upload bar" style="width: {{uploadProgress}}%"></div>
+      {{> preprocessingBar}}
+      {{> uploadBar}}
       <div class="status">{{status}}</div>
     </div>
     <div class="cancel">
       {{#unless hideCancel}}
-      <button class="cancel-button tooltip" title="Cancel import.">
-        <i class="icon-cancel"></i>
-      </button>
+        {{> importingFilesItemCancel}}
       {{/unless}}
     </div>
   </li>
-</template> 
+</template>
+
+<template name="preprocessingBar">
+  <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
+</template>
+
+<template name="uploadBar">
+  <div class="upload bar" style="width: {{uploadProgress}}%"></div>
+</template>
+
+<template name="importingFilesItemCancel">
+  <button class="cancel-button">
+    <i class="icon-cancel"></i>
+    <div class="ui-tooltip">Cancel import.</div>
+  </button>
+</template>

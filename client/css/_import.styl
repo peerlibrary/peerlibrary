@@ -107,11 +107,27 @@
             height 30px
 
             .cancel-button
+              position relative
               border 1px solid transparent
               background-color transparent
 
+              .ui-tooltip
+                position absolute
+                bottom 40px
+                left 50%
+                width 100px
+                margin-left -50px
+                opacity 0
+                visibility hidden
+                transition all 0.5s
+                box-sizing border-box
+
               &:hover
                 border-color box-shadow-border
+
+                .ui-tooltip
+                  opacity 1
+                  visibility visible
 
           &.finished .progress .bar
             background-color success-green-border
@@ -121,6 +137,9 @@
 
             .bar
               background-color warn-yellow-border
+
+          &.errored .progress
+            background-color error-red-border
 
           &::after
             content ''

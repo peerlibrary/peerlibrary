@@ -299,17 +299,12 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importingFilesItem.events =
+Template.importingFilesItemCancel.events
   'click .cancel-button': (event, template) ->
     event.preventDefault()
     # We stop event propagation to prevent the
     # cancel from bubbling up to hide the overlay
     event.stopPropagation()
-
-    # Manually remove the tooltip before the button is removed from DOM.
-    $button = $(template.findAll '.cancel-button')
-    tooltipId = $button.attr('aria-describedby')
-    $('#' + tooltipId).remove()
 
     ImportingFile.documents.update @_id,
       $set:
