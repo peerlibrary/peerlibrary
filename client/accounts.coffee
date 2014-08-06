@@ -44,7 +44,7 @@ Template._forgotPasswordForm.rendered = ->
 Template._enrollAccountDialog.rendered = ->
   $('#enroll-account-password').focus()
 
-$$(document).on 'keyup', (event) ->
+$(document).on 'keyup', (event) ->
   if event.keyCode is 27 # Escape key
     Accounts._loginButtonsSession.closeDropdown()
     Accounts._loginButtonsSession.set 'resetPasswordToken', null
