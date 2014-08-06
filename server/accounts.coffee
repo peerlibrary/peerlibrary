@@ -61,7 +61,7 @@ Meteor.methods
     ,
       $set:
         username: username
-    throw new Meteor.Error 400, "Username already set" unless updatedCount is 1
+    throw new Meteor.Error 400, "Username already set." unless updatedCount is 1
 
     return # Make sure CoffeeScript does not return anything
 
