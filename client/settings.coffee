@@ -1,20 +1,20 @@
 usernameFormMessages = new FormMessages()
 passwordFormMessages = new FormMessages()
-PASSWORD_READY_FOR_VALIDATION = false
-PASSWORD_CONFIRMATION_READY_FOR_VALIDATION = false
-USERNAME_READY_FOR_VALIDATION = false
+passwordReadyForValidation = false
+passwordConfirmationReadyForValidation = false
+usernameReadyForValidation = false
 
 resetUsernameForm = ->
   usernameFormMessages.resetMessages()
-  USERNAME_READY_FOR_VALIDATION = false
+  usernameReadyForValidation = false
 
 resetPasswordForm = ->
   passwordFormMessages.resetMessages()
   $('#current-password').val('')
   $('#new-password').val('')
   $('#new-password-confirmation').val('')
-  PASSWORD_READY_FOR_VALIDATION = false
-  PASSWORD_CONFIRMATION_READY_FOR_VALIDATION = false
+  passwordReadyForValidation = false
+  passwordConfirmationReadyForValidation = false
 
 # Reset forms when settings page becomes active
 Deps.autorun ->
@@ -28,7 +28,7 @@ Template.settings.person = ->
 # Username settings
 Template.settingsUsername.events =
   'click button.set-username': (event, template) ->
-    USERNAME_READY_FOR_VALIDATION = true
+    usernameReadyForValidation = true
     usernameFormMessages.resetMessages()
     event.preventDefault()
     username = $('#username').val()
@@ -47,7 +47,7 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#username': (event, template) ->
-    USERNAME_READY_FOR_VALIDATION = true
+    usernameReadyForValidation = true
     username = $('#username').val()
     validateUsername username, 'username'
 
@@ -71,7 +71,7 @@ Template.settingsUsername.isValid = (field, options) ->
   !usernameFormMessages.getErrorMessage field
 
 validateUsername = (username, messageField) ->
-  return unless USERNAME_READY_FOR_VALIDATION
+  return unless usernameReadyForValidation
   try
     User.validateUsername username, messageField
     usernameFormMessages.resetMessages messageField
@@ -81,8 +81,8 @@ validateUsername = (username, messageField) ->
 # Password settings
 Template.settingsPassword.events =
   'click button.change-password': (event, template) ->
-    PASSWORD_READY_FOR_VALIDATION = true
-    PASSWORD_CONFIRMATION_READY_FOR_VALIDATION = true
+    passwordReadyForValidation = true
+    passwordConfirmationReadyForValidation = true
     passwordFormMessages.resetMessages()
     event.preventDefault()
     currentPassword = $('#current-password').val()
@@ -99,14 +99,14 @@ Template.settingsPassword.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#new-password': (event, template) ->
-    PASSWORD_READY_FOR_VALIDATION = true
+    passwordReadyForValidation = true
     newPassword = $('#new-password').val()
     validatePassword newPassword, "new-password"
 
     return # Make sure CoffeeScript does not return anything
 
   'focus input#new-password-confirmation': (event, template) ->
-    PASSWORD_CONFIRMATION_READY_FOR_VALIDATION = true
+    passwordConfirmationReadyForValidation = true
 
     return # Make sure CoffeeScript does not return anything
 
@@ -134,7 +134,7 @@ Template.settingsPassword.isValid = (field, options) ->
   !passwordFormMessages.getErrorMessage field
 
 validatePassword = (newPassword, messageField) ->
-  return unless PASSWORD_READY_FOR_VALIDATION
+  return unless passwordReadyForValidation
   try
     User.validatePassword newPassword, messageField
     passwordFormMessages.resetMessages messageField
@@ -142,7 +142,7 @@ validatePassword = (newPassword, messageField) ->
     passwordFormMessages.setError error
 
 validatePasswordConfirmation = (newPassword, newPasswordConfirmation, messageField) ->
-  return unless PASSWORD_CONFIRMATION_READY_FOR_VALIDATION
+  return unless passwordConfirmationReadyForValidation
   if newPassword isnt newPasswordConfirmation
     error = new FormError 400, "Passwords do not match.", messageField
     passwordFormMessages.setError error
