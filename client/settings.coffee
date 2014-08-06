@@ -1,7 +1,6 @@
 usernameFormMessages = new FormMessages()
 passwordFormMessages = new FormMessages()
 passwordReadyForValidation = false
-passwordConfirmationReadyForValidation = false
 usernameReadyForValidation = false
 
 resetUsernameForm = ->
@@ -12,9 +11,7 @@ resetPasswordForm = ->
   passwordFormMessages.resetMessages()
   $('#current-password').val('')
   $('#new-password').val('')
-  $('#new-password-confirmation').val('')
   passwordReadyForValidation = false
-  passwordConfirmationReadyForValidation = false
 
 # Reset forms when settings page becomes active
 Deps.autorun ->
@@ -82,14 +79,12 @@ validateUsername = (username, messageField) ->
 Template.settingsPassword.events =
   'click button.change-password': (event, template) ->
     passwordReadyForValidation = true
-    passwordConfirmationReadyForValidation = true
     passwordFormMessages.resetMessages()
     event.preventDefault()
     currentPassword = $('#current-password').val()
     newPassword = $('#new-password').val()
-    newPasswordConfirmation = $('#new-password-confirmation').val()
 
-    changePassword currentPassword, newPassword, newPasswordConfirmation, (error) ->
+    changePassword currentPassword, newPassword, (error) ->
       if error
         passwordFormMessages.setError error
       else
@@ -105,23 +100,9 @@ Template.settingsPassword.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'focus input#new-password-confirmation': (event, template) ->
-    passwordConfirmationReadyForValidation = true
-
-    return # Make sure CoffeeScript does not return anything
-
   'keyup input#new-password': (event, template) ->
     newPassword = $('#new-password').val()
-    newPasswordConfirmation = $('#new-password-confirmation').val()
     validatePassword newPassword, "new-password"
-    validatePasswordConfirmation newPassword, newPasswordConfirmation, "new-password-confirmation"
-
-    return # Make sure CoffeeScript does not return anything
-
-  'keyup input#new-password-confirmation': (event, template) ->
-    newPassword = $('#new-password').val()
-    newPasswordConfirmation = $('#new-password-confirmation').val()
-    validatePasswordConfirmation newPassword, newPasswordConfirmation, "new-password-confirmation"
 
     return # Make sure CoffeeScript does not return anything
 
@@ -141,18 +122,9 @@ validatePassword = (newPassword, messageField) ->
   catch error
     passwordFormMessages.setError error
 
-validatePasswordConfirmation = (newPassword, newPasswordConfirmation, messageField) ->
-  return unless passwordConfirmationReadyForValidation
-  if newPassword isnt newPasswordConfirmation
-    error = new FormError 400, "Passwords do not match.", messageField
-    passwordFormMessages.setError error
-  else
-    passwordFormMessages.resetMessages messageField
-
-changePassword = (currentPassword, newPassword, newPasswordConfirmation, callback) ->
+changePassword = (currentPassword, newPassword, callback) ->
   try
     User.validatePassword newPassword, "new-password"
-    validatePasswordConfirmation newPassword, newPasswordConfirmation, "new-password-confirmation"
     Accounts.changePassword currentPassword, newPassword, callback
   catch error
     callback error

@@ -45,14 +45,6 @@
     </div>
 
     <div class="form-control-group">
-      <label for="new-password-confirmation">Confirm new password</label>
-      <input type="password" id="new-password-confirmation" {{#unless isValid "new-password-confirmation"}}class="invalid"{{/unless}} />
-      {{#with message "new-password-confirmation"}}
-        {{> formMessage}}
-      {{/with}}
-    </div>
-
-    <div class="form-control-group">
       <button class="change-password">Change password</button>
       {{> formMessage message}}
     </div>
