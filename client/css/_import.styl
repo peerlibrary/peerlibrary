@@ -16,6 +16,7 @@
   position fixed
   width 100%
   height 100%
+  overflow-y scroll
   top 0
   left 0
   /* Higher than header */
@@ -35,7 +36,6 @@
     display inline-block
     vertical-align middle
     text-align left
-    max-height 100%
 
   &.imports-overlay
     .content
@@ -45,6 +45,9 @@
 
       h1
         margin-bottom 30px
+
+        &.drop-hint-only
+          text-align center
 
       .importing-files
         list-style none
@@ -92,15 +95,16 @@
               height 100%
 
             .preprocessing
-              background-color blue
+              background-color debug-blue-background
               z-index 1
 
             .upload
-              background-color blue-accent
+              background-color debug-blue-border
               z-index 2
 
           .cancel
             padding-left 10px
+            height 30px
 
             .cancel-button
               border 1px solid transparent
@@ -108,6 +112,15 @@
 
               &:hover
                 border-color box-shadow-border
+
+          &.finished .progress .bar
+            background-color success-green-border
+
+          &.canceled .progress
+            background-color warn-yellow-border
+
+            .bar
+              background-color warn-yellow-border
 
           &::after
             content ''

@@ -2,7 +2,7 @@
   {{#if importOverlayActive}}
     <div class="drop-overlay imports-overlay">
       <div class="content">
-        <h1>Importing files</h1>
+        <h1 class="{{#unless importingFilesCount}}drop-hint-only{{/unless}}">Importing files</h1>
         <ol class="importing-files">
           {{#each importingFiles}}
             {{> importingFilesItem}}
