@@ -2,9 +2,9 @@
   <br/><br/><br/>
   {{#if person}}
     <h1>{{person.displayName}} personal settings</h1>
-    {{#if usernameExists}}
+    {{#unless usernameExists}}
       {{> settingsUsername}}<br/><br/>
-    {{/if}}
+    {{/unless}}
     {{> settingsPassword}}
   {{/if}}
 </template>
