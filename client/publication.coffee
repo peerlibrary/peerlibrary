@@ -541,7 +541,7 @@ class @Publication extends Publication
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     publicationSubscribing.set true
-    publicationHandle = Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    publicationHandle = Meteor.subscribe 'publications-by-ids', Session.get 'currentPublicationId'
     publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
@@ -631,10 +631,52 @@ addAccessEvents =
     $(template.findAll '.meta-menu').removeClass('displayed')
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationMetaMenu.events addAccessEvents
+Template.publicationAccessMenu.events addAccessEvents
 
-Template.publicationMetaMenu.canModifyAccess = ->
+Template.publicationAccessMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+onAccessDropdownHidden = (event) ->
+  # Return the access button to default state.
+  $button = $(this).closest('.dropdown-trigger').find('.access-button')
+  $button.addClass('tooltip')
+
+accessButtonEventHandlers =
+  'click .access-button': (event, template) ->
+    $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
+    $anchor.toggle()
+
+    if $anchor.is(':visible')
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content. We need
+      # to remove the element manually, since we can't selectively disable/destroy
+      # it just on this element through jQeury UI.
+      $button = $(template.findAll '.access-button')
+      tooltipId = $button.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $button.removeClass('tooltip')
+
+    else
+      onAccessDropdownHidden.call($anchor, null)
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationAccessIconControl.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+
+Template.publicationAccessIconControl.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.publicationAccessIconButton.events accessButtonEventHandlers
+
+Template.publicationAccessIconButton.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.publicationAccessIconButton.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.publicationAccessIconButton.private = ->
+  @access is Publication.ACCESS.PRIVATE
 
 Template.publicationAccessControlPrivacyForm.open = ->
   @access is Publication.ACCESS.OPEN

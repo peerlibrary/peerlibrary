@@ -26,8 +26,21 @@
 
 <template name="importingFilesItem">
   <li class="file {{state}} icon-publication">
-    <div class="name">
-      {{name}}
+    <div class="publication">
+      {{#if publication}}
+        {{#with publication}}
+          <span class="name-with-access">
+            {{#if title}}
+              <span class="name">{{title}}</span>
+            {{else}}
+              <span class="name">{{filename}}</span>
+            {{/if}}
+            <span class="access">{{> publicationAccessIconControl}}</span>
+          </span>
+        {{/with}}
+      {{else}}
+        <span class="name">{{name}}</span>
+      {{/if}}
     </div>
     <div class="progress">
       {{> preprocessingBar}}

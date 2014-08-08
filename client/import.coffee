@@ -45,6 +45,18 @@ canceledFiles.observe
         state: 'finished'
         status: "Import canceled"
 
+publicationHandles = {}
+
+# Observes files that go the documents assigned to
+filesWithPublications = ImportingFile.documents.find
+  'publicationId':
+    $exists: true
+filesWithPublications.observeChanges
+  added: (id) ->
+    publicationHandles[id] = Meteor.subscribe 'publications-by-ids', ImportingFile.documents.findOne(id).publicationId
+  removed: (id) ->
+    publicationHandles[id].stop()
+
 verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,
     $set:
@@ -321,6 +333,13 @@ Template.importingFilesItem.state = ->
   return 'canceled' if @canceled
   return @state
 
+Template.importingFilesItem.publication = ->
+  publication = Publication.documents.findOne @publicationId
+  return unless publication
+  # TODO: Change when you are able to access parent context directly with Meteor
+  publication.filename = @name
+  publication
+
 Template.searchInput.events =
   'click .drop-files-to-import': (event, template) ->
     event.preventDefault()
@@ -395,6 +414,9 @@ Template.importOverlay.events
     # button but it still propagates so we cancel here
     # TODO: Check if this is still necessary in the new version of Meteor
     return if event.isPropagationStopped()
+
+    # Allow interaction with the access controls
+    return if $(event.target).closest('.access-control')
 
     hideOverlay()
 

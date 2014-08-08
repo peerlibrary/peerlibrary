@@ -503,12 +503,15 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-id', (publicationId) ->
-  check publicationId, DocumentId
+Meteor.publish 'publications-by-ids', (publicationIds) ->
+  check publicationIds, Match.OneOf(DocumentId, [DocumentId])
+
+  publicationIds = [publicationIds] unless _.isArray publicationIds
 
   @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
-      _id: publicationId
+      _id:
+        $in: publicationIds
     ),
       Publication.PUBLISH_FIELDS()
   ,
