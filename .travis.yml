@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
   - curl -L http://git.io/ejPSng | /bin/sh
-  - npm install -g coffeelint
+  - npm install -g 'coffeelint@1.5.2'
 before_script:
   - coffeelint client/ lib/ server/
 script:
