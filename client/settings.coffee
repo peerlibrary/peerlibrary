@@ -1,7 +1,9 @@
 usernameFormMessages = new FormMessages()
 passwordFormMessages = new FormMessages()
 passwordReadyForValidation = false
+passwordFieldModified = false
 usernameReadyForValidation = false
+usernameFieldModified = false
 
 resetUsernameForm = ->
   usernameFormMessages.resetMessages()
@@ -44,13 +46,14 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#username': (event, template) ->
-    usernameReadyForValidation = true
+    usernameReadyForValidation = usernameFieldModified
     username = $('#username').val()
     validateUsername username, 'username'
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup input#username': (event, template) ->
+  'keyup, paste input#username': (event, template) ->
+    usernameFieldModified = true
     username = $('#username').val()
     validateUsername username, 'username'
 
@@ -94,13 +97,14 @@ Template.settingsPassword.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#new-password': (event, template) ->
-    passwordReadyForValidation = true
+    passwordReadyForValidation = passwordFieldModified
     newPassword = $('#new-password').val()
     validatePassword newPassword, "new-password"
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup input#new-password': (event, template) ->
+  'keyup, paste input#new-password': (event, template) ->
+    passwordFieldModified = true
     newPassword = $('#new-password').val()
     validatePassword newPassword, "new-password"
 
