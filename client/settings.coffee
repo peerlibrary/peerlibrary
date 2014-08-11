@@ -129,6 +129,8 @@ validatePassword = (newPassword, messageField) ->
 changePassword = (currentPassword, newPassword, callback) ->
   try
     User.validatePassword newPassword, "new-password"
+    # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
+    throw new FormError 400, "Incorrect password" unless currentPassword
     Accounts.changePassword currentPassword, newPassword, callback
   catch error
     callback error
