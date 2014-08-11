@@ -313,11 +313,6 @@ Template.importButton.events =
 
 Template.importingFilesItemCancel.events
   'click .cancel-button': (event, template) ->
-    event.preventDefault()
-    # We stop event propagation to prevent the
-    # cancel from bubbling up to hide the overlay
-    event.stopPropagation()
-
     ImportingFile.documents.update @_id,
       $set:
         canceled: true
@@ -410,13 +405,13 @@ Template.importOverlay.events
     return # Make sure CoffeeScript does not return anything
 
   'click': (event, template) ->
-    # We are stopping propagation in click on cancel
-    # button but it still propagates so we cancel here
-    # TODO: Check if this is still necessary in the new version of Meteor
-    return if event.isPropagationStopped()
+    $target = $(event.target)
 
-    # Allow interaction with the access controls
-    return if $(event.target).closest('.access-control')
+    # Allow click on cancel buttons
+    return if $target.closest('.cancel-button').length
+
+    # Don't close overlay if the user is interacting with one of the access controls (or other dropdowns)
+    return if $target.closest('.access-control').length or $('.dropdown-anchor:visible').length
 
     hideOverlay()
 
@@ -451,6 +446,9 @@ Deps.autorun ->
     $('body').add('html').removeClass 'overlay-active'
 
 Deps.autorun ->
+  # Don't redirect if the user is interacting with one of the access controls (or other dropdowns)
+  return if $('.dropdown-anchor:visible').length
+
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
