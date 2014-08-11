@@ -47,7 +47,7 @@ canceledFiles.observe
 
 publicationHandles = {}
 
-# Observes files that go the documents assigned to
+# Observes files that have a publication on the server
 filesWithPublications = ImportingFile.documents.find
   'publicationId':
     $exists: true
@@ -55,6 +55,7 @@ filesWithPublications.observeChanges
   added: (id) ->
     publicationHandles[id] = Meteor.subscribe 'publications-by-ids', ImportingFile.documents.findOne(id).publicationId
   removed: (id) ->
+    assert.ok publicationHandles[id]
     publicationHandles[id].stop()
 
 verifyFile = (file, publicationId, samples) ->
