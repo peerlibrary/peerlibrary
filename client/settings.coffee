@@ -35,8 +35,8 @@ Template.settingsUsername.events =
     event.preventDefault()
     username = $('#username').val()
     try
+      usernameFormMessages.resetMessages()
       User.validateUsername username, 'username'
-      usernameFormMessages.resetMessages 'username'
       Meteor.call 'set-username', username, (error) ->
         if error
           usernameFormMessages.setError error
@@ -100,21 +100,21 @@ Template.settingsPassword.events =
         passwordFormMessages.setError error
       else
         resetPasswordForm()
-        passwordFormMessages.setInfoMessage "Password changed sucessfully"
+        passwordFormMessages.setInfoMessage "Password changed sucessfully."
 
     return # Make sure CoffeeScript does not return anything
 
   'blur input#new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
     newPassword = $('#new-password').val()
-    validatePassword newPassword, "new-password"
+    validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup, paste input#new-password': (event, template) ->
     newPasswordFieldModified = true
     newPassword = $('#new-password').val()
-    validatePassword newPassword, "new-password"
+    validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
@@ -141,16 +141,16 @@ validatePassword = (newPassword, messageField) ->
 
 changePassword = (currentPassword, newPassword, callback) ->
   try
-    User.validatePassword newPassword, "new-password"
+    User.validatePassword newPassword, 'new-password'
   catch error
     callback error
     return
 
   try
     # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
-    throw new FormError 400, "Incorrect password", "current-password" unless currentPassword
+    throw new FormError 400, "Incorrect password.", 'current-password' unless currentPassword
     Accounts.changePassword currentPassword, newPassword, (error) ->
-      formError = new FormError error.error, error.reason, "current-password" if error
+      formError = new FormError error.error, error.reason, 'current-password' if error
       callback formError
   catch error
     callback error
