@@ -1,8 +1,9 @@
-class @FormError extends Meteor.Error
-  constructor: (error, reason, field, details) ->
+@FormError = Meteor.makeErrorType 'FormError',
+  (error, reason, field) ->
     throw new Error "Error not set" unless error
-    super error, reason, details
-    @field = field
+    @error = error
+    @reason = reason or ''
+    @field = field or ''
 
 # Session variable wrapper for info/error messages
 class @FormMessages
