@@ -71,5 +71,8 @@ Template.backgroundPause.events
     Session.set('backgroundPaused', not Session.get 'backgroundPaused')
     return # Make sure CoffeeScript does not return anything
 
-Template.backgroundPause.backgroundPaused = ->
+Template.backgroundPauseButton.backgroundPaused = ->
+  Session.get 'backgroundPaused'
+
+Template.backgroundPauseTooltipContent.backgroundPaused = ->
   Session.get 'backgroundPaused'

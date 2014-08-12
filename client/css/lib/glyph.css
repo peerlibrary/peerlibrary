@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'glyph';
-  src: url('/fonts/glyph.eot?81897704');
-  src: url('/fonts/glyph.eot?81897704#iefix') format('embedded-opentype'),
-       url('/fonts/glyph.woff?81897704') format('woff'),
-       url('/fonts/glyph.ttf?81897704') format('truetype'),
-       url('/fonts/glyph.svg?81897704#glyph') format('svg');
+  src: url('/fonts/glyph.eot?50259111');
+  src: url('/fonts/glyph.eot?50259111#iefix') format('embedded-opentype'),
+       url('/fonts/glyph.woff?50259111') format('woff'),
+       url('/fonts/glyph.ttf?50259111') format('truetype'),
+       url('/fonts/glyph.svg?50259111#glyph') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -14,7 +14,7 @@
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   @font-face {
     font-family: 'glyph';
-    src: url('../font/glyph.svg?81897704#glyph') format('svg');
+    src: url('../font/glyph.svg?50259111#glyph') format('svg');
   }
 }
 */
@@ -82,5 +82,5 @@
 .icon-comment:before { content: '\e81d'; } /* '' */
 .icon-publication:before { content: '\e81e'; } /* '' */
 .icon-collection:before { content: '\e81f'; } /* '' */
-.icon-play:before { content: '\e820'; } /* '' */
-.icon-pause:before { content: '\e821'; } /* '' */
+.icon-pause:before { content: '\e820'; } /* '' */
+.icon-play:before { content: '\e821'; } /* '' */
