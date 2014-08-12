@@ -50,7 +50,7 @@ Meteor.methods
 
   'set-username': methodWrap (username) ->
     check username, String
-    User.validateUsername username
+    User.validateUsername username, 'username'
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
 

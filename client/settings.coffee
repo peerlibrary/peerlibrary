@@ -36,7 +36,6 @@ Template.settingsUsername.events =
     username = $('#username').val()
     try
       usernameFormMessages.resetMessages()
-      User.validateUsername username, 'username'
       Meteor.call 'set-username', username, (error) ->
         if error
           usernameFormMessages.setError error
