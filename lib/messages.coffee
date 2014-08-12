@@ -6,7 +6,7 @@ class @FormError extends Meteor.Error
 
 # Session variable wrapper for info/error messages
 class @FormMessages
-  fields: [''] # Global field is always registered
+  fields: [''] # Empty string represents global message which always exists
   messageType:
     ERROR: 'errorMessage'
     INFO: 'infoMessage'

@@ -69,7 +69,7 @@ Template.settingsUsername.events =
 Template.settings.usernameExists = ->
   !!Meteor.person().user?.username
 
-Template.settingsUsername.message = (field, options) ->
+Template.settingsUsername.messageOnField = (field, options) ->
   field = null unless options
   usernameFormMessages.get field
 
@@ -122,7 +122,7 @@ Template.settingsPassword.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.settingsPassword.message = (field, options) ->
+Template.settingsPassword.messageOnField = (field, options) ->
   field = null unless options
   passwordFormMessages.get field
 

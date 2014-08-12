@@ -14,14 +14,15 @@
     <div class="form-control-group">
       <label for="username">Username</label>
       <input type="text" id="username" {{#unless isValid "username"}}class="invalid"{{/unless}} />
-      {{#with message "username"}}
+      {{#with messageOnField "username"}}
         {{> formMessage}}<br/>
       {{/with}}
     </div>
 
     <div class="form-control-group">
       <button class="set-username">Set username</button>
-      {{> formMessage message}}
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
     </div>
   </form>
 </template>
@@ -31,7 +32,7 @@
     <div class="form-control-group">
       <label for="current-password">Current password</label>
       <input type="password" id="current-password" {{#unless isValid "current-password"}}class="invalid"{{/unless}} />
-      {{#with message "current-password"}}
+      {{#with messageOnField "current-password"}}
         {{> formMessage}}
       {{/with}}
     </div>
@@ -39,14 +40,15 @@
     <div class="form-control-group">
       <label for="new-password">New password</label>
       <input type="password" id="new-password" {{#unless isValid "new-password"}}class="invalid"{{/unless}} />
-      {{#with message "new-password"}}
+      {{#with messageOnField "new-password"}}
         {{> formMessage}}
       {{/with}}
     </div>
 
     <div class="form-control-group">
       <button class="change-password">Change password</button>
-      {{> formMessage message}}
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
     </div>
   </form>
 </template>
