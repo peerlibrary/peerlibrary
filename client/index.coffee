@@ -52,3 +52,24 @@ Template.indexLatestBlogPost.blogPostsCount = ->
 
 Template.indexLatestBlogPost.blogUrl = ->
   Meteor.settings?.public?.blogUrl
+
+Meteor.startup ->
+  Session.setDefault 'backgroundPaused', false
+
+Template.backgroundPause.rendered = ->
+  $(@find 'button').tooltip
+    position:
+      my: 'left center'
+      at: 'right+15 center'
+    show: 200
+    hide: 200
+    tooltipClass: 'right'
+
+Template.backgroundPause.events
+  'click button': (event, template) ->
+    $(template.find 'button').tooltip('destroy')
+    Session.set('backgroundPaused', not Session.get 'backgroundPaused')
+    return # Make sure CoffeeScript does not return anything
+
+Template.backgroundPause.backgroundPaused = ->
+  Session.get 'backgroundPaused'

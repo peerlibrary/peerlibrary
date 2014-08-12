@@ -74,3 +74,29 @@
     
   li:last-child
     border 0
+
+.background-pause
+  position absolute
+  z-index 5001
+  top 20px
+  left 25px
+
+  button
+    background none
+    border 1px solid border-blue
+    border-radius 50%
+    color bg-blue
+    font-size 28px
+    line-height 28px
+    width 28px
+    height 28px
+    overflow hidden
+    padding 0
+    opacity 0.2
+
+    &::before
+      margin -1px
+
+    &:hover
+      background none
+      opacity 1
