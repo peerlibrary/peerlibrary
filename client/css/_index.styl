@@ -14,7 +14,7 @@
   width 300px
   top 25%
   left 50%
-  margin -80px 0 0 -140px
+  margin -80px 0 0 -160px
   text-align center
   padding 10px
 
@@ -83,10 +83,11 @@
   left 50%
   top 75%
   width 644px
-  margin -20px 0 0 -322px
+  margin -40px 0 0 -322px
 
 .background-pause
-  position absolute
+  position fixed
+  /* Position it above header */
   z-index 5001
   top 20px
   left 25px
@@ -116,9 +117,8 @@
   .ui-tooltip
     position absolute
     left 100%
-    margin-left 15px
     top 50%
-    margin-top -21px
+    margin -21px 0 0 15px
     opacity 0
     visibility hidden
     transition all 0.2s
