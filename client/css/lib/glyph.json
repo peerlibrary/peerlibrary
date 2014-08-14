@@ -193,6 +193,24 @@
       "src": "elusive"
     },
     {
+      "uid": "cde79a37774e5817bc68fff2464aee28",
+      "css": "tools",
+      "code": 59426,
+      "src": "elusive"
+    },
+    {
+      "uid": "fc006ff27e50163bdec3a7588226171b",
+      "css": "play",
+      "code": 59424,
+      "src": "elusive"
+    },
+    {
+      "uid": "8710d1e404dcb3a55b3ab97f797355b5",
+      "css": "pause",
+      "code": 59425,
+      "src": "elusive"
+    },
+    {
       "uid": "221947bea81f49a11b863c686a7bd235",
       "css": "search",
       "code": 59411,
