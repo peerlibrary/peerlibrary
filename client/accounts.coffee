@@ -40,10 +40,6 @@ Template._loginButtonsLoggedOutPasswordService.rendered = ->
 Template._forgotPasswordForm.rendered = ->
   $('#forgot-password-email').focus()
 
-# Autofocus password when enroll user form is rendered
-Template._enrollAccountDialog.rendered = ->
-  $('#enroll-account-password').focus()
-
 $(document).on 'keyup', (event) ->
   if event.keyCode is 27 # Escape key
     Accounts._loginButtonsSession.closeDropdown()
@@ -125,7 +121,7 @@ Template._enrollAccountDialog.events
 
 Template._enrollAccountDialog.rendered = ->
   Meteor.defer =>
-    $(@findAll '#enroll-account-password').focus()
+    $(@findAll '#enroll-account-with-username-username').focus()
 
 # When user enrolls or enrollment is canceled, we change the location to the index page
 lastEnrollAccountToken = null
