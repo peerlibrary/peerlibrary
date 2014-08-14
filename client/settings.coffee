@@ -27,9 +27,10 @@ Deps.autorun ->
 # Username settings
 Template.settingsUsername.events =
   'click button.set-username': (event, template) ->
+    event.stopPropagation()
+    event.preventDefault()
     usernameReadyForValidation = true
     usernameFormMessages.resetMessages()
-    event.preventDefault()
     username = $('#username').val()
     try
       usernameFormMessages.resetMessages()
@@ -45,6 +46,7 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#username': (event, template) ->
+    event.stopPropagation()
     usernameReadyForValidation = usernameFieldModified
     username = $('#username').val()
     validateUsername username, 'username'
