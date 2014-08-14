@@ -24,9 +24,6 @@ Deps.autorun ->
     resetUsernameForm()
     resetPasswordForm()
 
-Template.settings.person = ->
-  Meteor.person()
-
 # Username settings
 Template.settingsUsername.events =
   'click button.set-username': (event, template) ->
