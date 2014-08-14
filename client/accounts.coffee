@@ -158,7 +158,7 @@ enrollAccount = ->
   token = Accounts._loginButtonsSession.get 'enrollAccountToken'
   Accounts.resetPasswordWithUsername token, password, username, (error) ->
     if error
-      Accounts._loginButtonsSession.errorMessage error.reason or "Unknown error"
+      Accounts._loginButtonsSession.errorMessage error.reason or error.toString?() or "Unknown error"
     else
       Accounts._loginButtonsSession.set 'enrollAccountToken', null
 
