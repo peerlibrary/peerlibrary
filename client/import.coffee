@@ -1,5 +1,5 @@
 # Local (client-only) document of importing files
-class ImportingFile extends BaseDocument
+class @ImportingFile extends BaseDocument
   # name: user's file name
   # status: current status or error message displayed to user
   # readProgress: progress of reading from file, in %
@@ -15,7 +15,7 @@ class ImportingFile extends BaseDocument
   #   importing: file currently being imported
   #   finished: file processing finished successfully, but it
   #             was not imported (import canceled or already exists)
-  #   imported: file processing finished successfully and at was imported
+  #   imported: file processing finished successfully and it was imported
   #   errored: file processing errored
 
   @Meta
@@ -317,10 +317,16 @@ Template.importingFilesItemCancel.events
 Template.importingFilesItem.hideCancel = ->
   # We keep cancel shown even when canceled is set, until we get back
   # in the file upload method callback and set finished as well
-  @state in ['finished', 'errored']
+  @state in ['finished', 'errored', 'imported']
 
 Template.importingFilesItem.state = ->
-  return 'canceled' if @canceled
+  # Canceled could still be set, but state could be errored
+  # or imported if canceled was set to late in the process,
+  # in which case we want not to display it as canceled
+  return @state if @state in ['errored', 'imported']
+  # But otherwise if state is finished and canceled,
+  # we want to display it as canceled
+  return 'canceled' if @canceled and @state is 'finished'
   return @state
 
 Template.importingFilesItem.publication = ->
@@ -444,6 +450,8 @@ Deps.autorun ->
     $('body').add('html').removeClass 'overlay-active'
 
 Deps.autorun ->
+  return
+
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
