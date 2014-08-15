@@ -58,7 +58,6 @@ Meteor.startup ->
 
 Template.backgroundPause.events
   'click button': (event, template) ->
-    $(template.find 'button').tooltip('destroy')
     Session.set('backgroundPaused', not Session.get 'backgroundPaused')
     return # Make sure CoffeeScript does not return anything
 
