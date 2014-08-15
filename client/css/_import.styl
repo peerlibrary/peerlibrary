@@ -8,7 +8,7 @@
   position fixed
   width 100%
   height 100%
-  overflow-y scroll
+  overflow scroll
   top 0
   left 0
   /* Higher than header */
@@ -16,6 +16,7 @@
   background white-translucent
   color black
   text-align center
+  white-space nowrap
 
   &::before
     content ''
@@ -32,8 +33,10 @@
   &.imports-overlay
     .content
       width 70%
-      max-width 1500px
-      min-width 1000px
+      max-width 1200px
+      min-width 800px
+      margin 20px 0
+      padding 0 50px
 
       h1
         margin-bottom 30px
@@ -58,8 +61,13 @@
           .publication
             position relative
             width 30%
-            padding-right 10px
+            padding 5px 10px 0 20px
             box-sizing border-box
+
+            &::before
+              position absolute
+              top 5px
+              left -3px
 
             .name
               display inline-block
@@ -87,7 +95,7 @@
 
           .progress
             position relative
-            width 40%
+            width 70%
             height 25px
             line-height 25px
             border 1px solid box-shadow-border
@@ -117,7 +125,9 @@
               z-index 2
 
           .cancel
-            padding-left 10px
+            position absolute
+            top -3px
+            right -40px
             height 30px
 
             .cancel-button
@@ -162,6 +172,8 @@
       .hint
         margin-top 30px
         text-align center
+        border-top 2px solid rgba(40,40,40,0.2)
+        padding-top 30px
 
         .import
           border none

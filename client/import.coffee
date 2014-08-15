@@ -411,6 +411,9 @@ Template.importOverlay.events
     # Allow click on cancel buttons
     return if $target.closest('.cancel-button').length
 
+    # Allow click on import button
+    return if $target.closest('.import').length
+
     # Don't close overlay if the user is interacting with one of the access controls (or other dropdowns)
     return if $target.closest('.access-control').length or $('.dropdown-anchor:visible').length
 
@@ -447,9 +450,6 @@ Deps.autorun ->
     $('body').add('html').removeClass 'overlay-active'
 
 Deps.autorun ->
-  # Don't redirect if the user is interacting with one of the access controls (or other dropdowns)
-  return if $('.dropdown-anchor:visible').length
-
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
@@ -463,6 +463,9 @@ Deps.autorun ->
 
   # If no file was really imported (all canceled?)
   return unless importedFilesCount
+
+  # Don't redirect if the user is interacting with one of the access controls (or other dropdowns)
+  return if $('.dropdown-anchor:visible').length
 
   if importedFilesCount is 1
     Notify.success "Imported the publication."
