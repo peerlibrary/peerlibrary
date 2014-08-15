@@ -2,14 +2,15 @@
 LIMIT_INCREASE_STEP = 10
 
 # List of all session variables that activate views with catalogs (used to determine infinite scrolling)
-@catalogActiveVariables = []
+globals = @
+globals.catalogActiveVariables = []
 
 # Subscribe the client to catalog's documents
 Template.catalog.created = ->
   variables = @data.variables
 
   # Make sure to access the global catalogActiveVariables variable
-  window.catalogActiveVariables = _.union window.catalogActiveVariables, [variables.active]
+  globals.catalogActiveVariables = _.union globals.catalogActiveVariables, [variables.active]
 
   # We need a reset signal that will rerun the search
   # when the ready variable is set to false from the router
