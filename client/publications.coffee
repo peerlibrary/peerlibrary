@@ -24,7 +24,7 @@ Template.publicationCatalogItem.events
       # We ignore the click if handle is not yet ready
       $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
     else
-      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
+      template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
         Deps.afterFlush =>
           $(template.findAll '.abstract').slideToggle('fast')
 

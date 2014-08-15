@@ -474,7 +474,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-id', (publicationId) ->
+Meteor.publish 'publication-by-id', (publicationId) ->
   check publicationId, DocumentId
 
   @related (person) ->
