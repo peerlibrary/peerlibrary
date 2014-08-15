@@ -47,16 +47,10 @@ canceledFiles.observe
 
 publicationHandles = {}
 
-# Observes files that have a publication on the server
-filesWithPublications = ImportingFile.documents.find
-  'publicationId':
-    $exists: true
-filesWithPublications.observeChanges
-  added: (id) ->
-    publicationHandles[id] = Meteor.subscribe 'publications-by-ids', ImportingFile.documents.findOne(id).publicationId
-  removed: (id) ->
-    assert.ok publicationHandles[id]
-    publicationHandles[id].stop()
+# Subscribe to publications that have been matched on the server
+Deps.autorun ->
+  ImportingFile.documents.find({publicationId: $exists: true}, {fields: publicationId: 1}).forEach (file) ->
+    Meteor.subscribe 'publication-by-id', file.publicationId
 
 verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,

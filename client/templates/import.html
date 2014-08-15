@@ -44,9 +44,8 @@
         {{/if}}
       </div>
       <div class="progress">
-        {{> preprocessingBar}}
-        {{> uploadBar}}
-        <div class="status">{{status}}</div>
+        {{! TODO: Re-check if updating progress still flickers the cancel tooltip after upgrade to Blaze }}
+        {{> importingFilesItemProgress}}
       </div>
       <div class="cancel">
         {{#unless hideCancel}}
@@ -57,12 +56,10 @@
   </li>
 </template>
 
-<template name="preprocessingBar">
+<template name="importingFilesItemProgress">
   <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
-</template>
-
-<template name="uploadBar">
   <div class="upload bar" style="width: {{uploadProgress}}%"></div>
+  <div class="status">{{status}}</div>
 </template>
 
 <template name="importingFilesItemCancel">

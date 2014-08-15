@@ -541,7 +541,7 @@ class @Publication extends Publication
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     publicationSubscribing.set true
-    publicationHandle = Meteor.subscribe 'publications-by-ids', Session.get 'currentPublicationId'
+    publicationHandle = Meteor.subscribe 'publication-by-id', Session.get 'currentPublicationId'
     publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
