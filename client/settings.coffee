@@ -35,11 +35,9 @@ Template.settingsUsername.events =
     try
       usernameFormMessages.resetMessages()
       Meteor.call 'set-username', username, (error) ->
-        if error
-          usernameFormMessages.setError error
-        else
-          resetUsernameForm()
-          usernameFormMessages.setInfoMessage "Username set successfully"
+        return usernameFormMessages.setError error if error
+        resetUsernameForm()
+        usernameFormMessages.setInfoMessage "Username set successfully"
     catch error
       usernameFormMessages.setError error
 
