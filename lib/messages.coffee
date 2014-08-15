@@ -43,12 +43,17 @@ class @FormMessages
       @_set @messageType.ERROR, field, ''
 
   setError: (error) =>
-    # We get field value from error details
-    if _.startsWith error.details, 'Field: '
-      field = error.details.substring 'Field: '.length
+    if error instanceof Meteor.Error
+      # We get field value from error details
+      if _.startsWith error.details, 'Field: '
+        field = error.details.substring 'Field: '.length
+      else
+        field = ''
+      @setErrorMessage error.reason, field
+    else if error instanceof Error
+      @setErrorMessage error.message
     else
-      field = ''
-    @setErrorMessage error.reason, field
+      @setErrorMessage error.toString()
 
   # Sets error message for given field or global error message if field is not set
   setErrorMessage: (message, field) =>
