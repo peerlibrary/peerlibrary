@@ -15,7 +15,7 @@ _.mixin
     else
       string
 
-  isPlainObject = (obj) ->
+  isPlainObject: (obj) ->
     if not _.isObject(obj) or _.isArray(obj) or _.isFunction(obj)
       return false
 

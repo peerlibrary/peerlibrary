@@ -149,10 +149,11 @@ class @FSMMetadataJob extends Job
       if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        count++ if new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
+        new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
           skipIfExisting: true
           depends: thisJob # To create a relation
         )
+        count++
 
     count: count
 

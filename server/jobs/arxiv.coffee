@@ -1,3 +1,6 @@
+Fiber = Npm.require 'fibers'
+Future = Npm.require 'fibers/future'
+
 HTTP_TIMEOUT = 60000 # ms
 
 if Meteor.settings?.AWS?.accessKeyId and Meteor.settings?.AWS?.secretAccessKey
@@ -165,11 +168,203 @@ class @ArXivMetadataJob extends Job
       if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        count++ if new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
+        new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
           skipIfExisting: true
           depends: thisJob # To create a relation
         )
+        count++
 
     count: count
 
 Job.addJobClass ArXivMetadataJob
+
+bindWithFuture = (futures, mainFuture, fun, self) ->
+  wrapped = (args...) ->
+    future = new Future()
+
+    if mainFuture
+      future.resolve (error, value) ->
+        # To resolve mainFuture early when an exception occurs
+        mainFuture.throw error if error and not mainFuture.isResolved()
+        # We ignore the value
+
+    args.push future.resolver()
+    try
+      futures.list.push future
+      fun.apply (self or @), args
+    catch error
+      future.throw error
+
+    # This waiting does not really do much because we are
+    # probably in a new fiber created by Meteor.bindEnvironment,
+    # but we can still try to wait
+    Future.wait future
+
+  Meteor.bindEnvironment wrapped, null, self
+
+wait = (futures) ->
+  while futures.list.length
+    Future.wait futures.list
+    # Some elements could be added in meantime to futures,
+    # so let's remove resolved ones and retry
+    futures.list = _.reject futures.list, (f) ->
+      if f.isResolved()
+        # We get to throw an exception if there was an exception.
+        # This should not really be needed because exception should
+        # be already thrown through mainFuture and we should not even
+        # get here, but let's check for every case.
+        f.get()
+        true # And to remove resolved
+
+class @ArXivTarCacheSyncJob extends Job
+  constructor: (data) ->
+    super
+
+    # We throw a fatal error to stop retrying a job if settings are not
+    # available anymore, but they were in the past when job was added
+    throw new @constructor.FatalJobError "AWS settings missing" unless Meteor.settings?.AWS?.accessKeyId and Meteor.settings?.AWS?.secretAccessKey
+
+    @s3 = new AWS.S3()
+
+  enqueueOptions: (options) =>
+    options = super
+
+    _.defaults options,
+      priority: 'medium'
+
+  run: =>
+    count = 0
+    mainFuture = new Future()
+
+    # To be able to override list with a new value in wait we wrap it in an object
+    futures =
+      list: []
+
+    bindWithOnException = (f) =>
+      Meteor.bindEnvironment f, (error) =>
+        mainFuture.throw error unless mainFuture.isResolved()
+
+    onIgnoredEntry = (entry, callback) =>
+      return callback null if mainFuture.isResolved()
+
+      # TODO: Replace inspect with log payload
+      @logWarning "Ignored entry: #{ util.inspect entry.props, false, null }", callback
+
+    onEntry = (entry, callback) =>
+      return callback null if mainFuture.isResolved()
+
+      return callback null if entry.props.type isnt tar.types.File
+
+      match = ARXIV_OLD_ID_REGEX.exec entry.props.path
+      if match
+        id = match[1] + '/' + match[2]
+      else
+        match = ARXIV_NEW_ID_REGEX.exec entry.props.path
+        if match
+          id = match[1]
+        else
+          # TODO: We could store entry.props into log payload somehow?
+          return callback "Invalid filename '#{ entry.props.path }'"
+
+      filename = Publication.foreignFilename 'arXiv', id
+
+      Storage.saveStream filename, entry, bindWithOnException (error) =>
+        return callback null if mainFuture.isResolved()
+
+        return callback error if error
+
+        # TODO: We could store entry.props into log payload
+        @logInfo "Added #{ entry.props.path } as #{ id }", bindWithOnException (error) =>
+          return callback null if mainFuture.isResolved()
+
+          return callback error if error
+
+          count++
+          callback null
+
+    req = @s3.getObject(
+      Bucket: 'arxiv'
+      Key: @data.key
+    )
+    req.httpRequest.headers['x-amz-request-payer'] = 'requester'
+    req.createReadStream().on('error', (error) =>
+      # It could already be resolved by an exception from bindWithFuture or bindWithOnException
+      mainFuture.throw error unless mainFuture.isResolved()
+    ).pipe(
+      tar.Parse()
+    ).on('ignoredEntry', bindWithFuture futures, mainFuture, onIgnoredEntry
+    ).on('entry', bindWithFuture futures, mainFuture, onEntry
+    ).on('end', =>
+      # It could already be resolved by an exception from bindWithFuture or bindWithOnException
+      mainFuture.return() unless mainFuture.isResolved()
+    ).on('error', (error) =>
+      # It could already be resolved by an exception from bindWithFuture or bindWithOnException
+      mainFuture.throw error unless mainFuture.isResolved()
+    )
+
+    mainFuture.wait()
+    wait futures
+
+    count: count
+
+Job.addJobClass ArXivTarCacheSyncJob
+
+class @ArXivBulkCacheSyncJob extends Job
+  constructor: (data) ->
+    super
+
+    # We throw a fatal error to stop retrying a job if settings are not
+    # available anymore, but they were in the past when job was added
+    throw new @constructor.FatalJobError "AWS settings missing" unless Meteor.settings?.AWS?.accessKeyId and Meteor.settings?.AWS?.secretAccessKey
+
+    @s3 = new AWS.S3()
+
+  enqueueOptions: (options) =>
+    options = super
+
+    _.defaults options,
+      priority: 'high'
+
+  run: =>
+    future = new Future()
+
+    req = @s3.listObjects
+      Bucket: 'arxiv'
+      Prefix: 'pdf/'
+    req.httpRequest.headers['x-amz-request-payer'] = 'requester'
+    req.on 'complete', (response) =>
+      if response.error
+        future.throw response.error
+      else
+        future.return response.data
+    req.send()
+
+    list = future.wait()
+
+    thisJob = @getQueueJob()
+    count = 0
+
+    for file in list.Contents
+      # Only tar files
+      continue unless /\.tar$/.test file.Key
+
+      lastModified = moment.utc file.LastModified
+
+      tarFileData =
+        key: file.Key
+        lastModified: lastModified.toDate()
+        eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
+        size: file.Size
+
+      count++ if new ArXivTarCacheSyncJob(tarFileData).enqueue(
+        skipIfExisting: true
+        # If tarFileData is the same, tar file is the same so there is no reason to re-extract the tar file
+        skipIncludingCompleted: true
+        depends: thisJob # To create a relation
+      )
+
+      break
+
+    count: count
+
+Job.addJobClass ArXivBulkCacheSyncJob

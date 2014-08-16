@@ -6,6 +6,7 @@ class @Job
   @types = {}
 
   constructor: (@data) ->
+    @data ||= {}
 
   run: =>
     throw new @constructor.FatalJobError "Not implemented"
@@ -43,27 +44,35 @@ class @Job
       type: @type()
       data: @data
 
-  log: (message, options) =>
-    @getQueueJob().log message, options
+  log: (message, options, callback) =>
+    @getQueueJob().log message, options, callback
 
-  logInfo: (message) =>
+  logInfo: (message, callback) =>
     @log message,
       level: 'info'
+    ,
+      callback
 
-  logSuccess: (message) =>
+  logSuccess: (message, callback) =>
     @log message,
       level: 'success'
+    ,
+      callback
 
-  logWarning: (message) =>
+  logWarning: (message, callback) =>
     @log message,
       level: 'warning'
+    ,
+      callback
 
-  logDanger: (message) =>
+  logDanger: (message, callback) =>
     @log message,
       level: 'danger'
+    ,
+      callback
 
-  progress: (completed, total, options) =>
-    @getQueueJob().progress completed, total, options
+  progress: (completed, total, options, callback) =>
+    @getQueueJob().progress completed, total, options, callback
 
   type: =>
     @constructor.type()
