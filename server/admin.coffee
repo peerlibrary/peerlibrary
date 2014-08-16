@@ -1,17 +1,3 @@
-class @ArXivPDF extends ArXivPDF
-  @Meta
-    name: 'ArXivPDF'
-    replaceParent: true
-
-  # A set of fields which are public and can be published to the client
-  @PUBLISH_FIELDS: ->
-    fields: {} # All, only admins have access
-
-randomTimestamp = ->
-  moment.utc().subtract('hours', Random.fraction() * 24 * 100).toDate()
-
-updateBlogCache = @updateBlogCache
-
 Meteor.methods
   'sample-data': methodWrap ->
     # If @connection is not set this means method is called from the server (eg., from auto installation)
@@ -106,23 +92,3 @@ Meteor.methods
     # skipIfExisting not needed because cancelRepeats is set
     new TumblrJob().enqueue
       delay: 0
-
-Meteor.publish 'arxiv-pdfs', ->
-  return unless @personId
-
-  @related (person) ->
-    return unless person?.isAdmin
-
-    ArXivPDF.documents.find {},
-      fields: ArXivPDF.PUBLISH_FIELDS().fields
-      sort: [
-        ['processingStart', 'desc']
-      ]
-      limit: 5
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields:
-        # _id field is implicitly added
-        isAdmin: 1

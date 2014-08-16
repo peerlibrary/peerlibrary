@@ -103,15 +103,6 @@
     <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
     <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
   </div>
-  <ul>
-    {{#each PDFs}}
-      {{> adminArXivPDFsItem}}
-    {{/each}}
-  </ul>
-</template>
-
-<template name="adminArXivPDFsItem">
-  <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
 </template>
 
 <template name="adminFSM">

@@ -77,13 +77,6 @@ Template.adminArXiv.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.adminArXiv.PDFs = ->
-  ArXivPDF.documents.find {},
-    sort: [
-      ['processingStart', 'desc']
-    ]
-    limit: 5
-
 Template.adminFSM.events
   'click button.sync-fsm-metadata': (event, template) ->
     Meteor.call 'sync-fsm-metadata', (error, result) ->
