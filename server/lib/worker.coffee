@@ -139,7 +139,7 @@ runJobQueue = ->
           # TODO: Mark as ready all resolved dependent jobs
           job.done EJSON.toJSONValue result
         catch error
-          Log.error "Error running a job queue: #{ error.stack or error.toString?() or error }"
+          Log.error "Error running a job queue: #{ error.stack or error }"
     finally
       jobQueueRunning = false
 
