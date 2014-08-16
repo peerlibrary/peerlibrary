@@ -64,7 +64,7 @@ verifyFile = (file, publicationId, samples) ->
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     ImportingFile.documents.update file._id,
@@ -98,7 +98,7 @@ uploadFile = (file, publicationId) ->
         ImportingFile.documents.update file._id,
           $set:
             state: 'errored'
-            status: error.toString()
+            status: "#{ error }"
         return
 
       ImportingFile.documents.update file._id,
@@ -130,7 +130,7 @@ Deps.autorun ->
       ImportingFile.documents.update document._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     if result.already
@@ -155,11 +155,11 @@ computeChecksum = (file, callback) ->
 
   hash.update file.content, (error) ->
     if error
-      Notify.error "Crypto error: #{ error.toString?() or error }", null, true, error.stack
+      Notify.error "Crypto error: #{ error }", null, true, error.stack
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     hash.finalize callback
@@ -198,7 +198,7 @@ Deps.autorun ->
           ImportingFile.documents.update document._id,
             $set:
               state: 'errored'
-              status: error.toString()
+              status: "#{ error }"
           return
 
         ImportingFile.documents.update document._id,
@@ -208,11 +208,11 @@ Deps.autorun ->
             state: 'preprocessed'
 
   reader.onerror = (error) ->
-    Notify.error "FileReader error: #{ error.toString?() or error }", null, true, error.stack
+    Notify.error "FileReader error: #{ error }", null, true, error.stack
     ImportingFile.documents.update document._id,
       $set:
         state: 'errored'
-        status: error.toString()
+        status: "#{ error }"
 
   # TODO: Read file in chunks
   reader.readAsArrayBuffer importingFiles[document._id]
