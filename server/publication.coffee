@@ -16,27 +16,6 @@ class @Publication extends Publication
         else
           [fields._id, '']
 
-      fields.fullText.generator = (fields) ->
-        return [null, null] unless fields.cached
-        return [null, null] if fields.processed
-        # That we exit if processError is true is important because it is used in admin methods to force (re)precessing
-        return [null, null] if fields.processError
-
-        try
-          return [fields._id, new Publication(fields).process()]
-        catch error
-          # TODO: What if exception is just because of the concurrent processing? Should we retry? After a delay?
-
-          Publication.documents.update fields._id,
-            $set:
-              processError:
-                error: "#{ error }"
-                stack: error.stack
-
-          Log.error "Error processing publication: #{ error.stack or error }"
-
-          return [null, null]
-
       fields.annotationsCount.generator = (fields) ->
         [fields._id, fields.annotations?.length or 0]
 
@@ -72,14 +51,18 @@ class @Publication extends Publication
   storageForeignUrl: =>
     Storage.url @foreignFilename()
 
-  process: =>
+  process: (args...) =>
+    throw new Error "Publication not cached" unless @cached
+
     switch @mediaType
-      when 'pdf' then @processPDF()
-      when 'tei' then @processTEI()
+      when 'pdf' then @processPDF args...
+      when 'tei' then @processTEI args...
       else throw new Error "Unsupported media type: #{ @mediaType }"
 
-  processPDF: =>
-    currentlyProcessingPublication @_id
+  processPDF: (job) =>
+    throw new Error "processPDF can be called only from a job" unless job
+
+    currentlyProcessingPublication job
 
     try
       pdf = Storage.open @cachedFilename()
@@ -107,24 +90,19 @@ class @Publication extends Publication
 
       progressCallback = (progress) =>
 
-      Log.info "Processing PDF for #{ @_id }: #{ @cachedFilename() }"
-
       PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
-      assert textContents.length, @numberOfPages
+      assert textContents.length
+      assert @numberOfPages
 
       @fullText = PDFJS.pdfExtractText textContents...
 
-      # TODO: We could also add some additional information (statistics, how long it took and so on)
       @processed = moment.utc().toDate()
       Publication.documents.update @_id,
         $set:
           numberOfPages: @numberOfPages
           processed: @processed
           fullText: @fullText
-
-      # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
-      return @fullText
 
     finally
       currentlyProcessingPublication null
@@ -135,15 +113,11 @@ class @Publication extends Publication
     $ = cheerio.load tei
     @fullText = $.root().text().replace(/\s+/g, ' ').trim()
 
-    # TODO: We could also add some additional information (statistics, how long it took and so on)
     @processed = moment.utc().toDate()
     Publication.documents.update @_id,
       $set:
         processed: @processed
         fullText: @fullText
-
-    # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
-    @fullText
 
   _importingFilename: (index=0) =>
     assert @importing?[index]?.importingId

@@ -5,8 +5,10 @@ Meteor.methods
 
     @unblock()
 
+    # Currently, a sample is simply current smaller set of arXiv metadata
+    # publications which then has cache synced with PDFs from the central server
+    # TODO: Think how to make a better sample which would contain both metadata and content
     Meteor.call 'sync-arxiv-metadata'
-    Meteor.call 'sync-local-pdf-cache'
 
   'test-job': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
@@ -16,44 +18,14 @@ Meteor.methods
   'process-pdfs': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
-    # To force reprocessing, we first set processError to true everywhere to assure there will be
-    # change afterwards when we unset it. We set to true so that value is still true and processing
-    # is not already triggered (but only when we unset the field).
-    Publication.documents.update
-      processed:
-        $exists: false
-    ,
-      $set:
-        processError: true
-    ,
-      multi: true
-    Publication.documents.update
-      processed:
-        $exists: false
-      processError: true
-    ,
-      $unset:
-        processError: ''
-    ,
-      multi: true
+    new ProcessPublicationsJob(all: false).enqueue
+      skipIfExisting: true
 
   'reprocess-pdfs': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 
-    # To force reprocessing, we first set processError to true everywhere to assure there will be
-    # change afterwards when we unset it. We set to true so that value is still true and processing
-    # is not already triggered (but only when we unset the field).
-    Publication.documents.update {},
-      $set:
-        processError: true
-    ,
-      multi: true
-    Publication.documents.update {},
-      $unset:
-        processed: ''
-        processError: ''
-    ,
-      multi: true
+    new ProcessPublicationsJob(all: true).enqueue
+      skipIfExisting: true
 
   'database-update-all': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
