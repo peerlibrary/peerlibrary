@@ -86,9 +86,10 @@ class @CacheSyncJob extends Job
         _id: 1
       transform: null
     ).forEach (publication) =>
-      count++ if new CheckCacheJob(publication: publication).enqueue
+      count++ if new CheckCacheJob(publication: publication).enqueue(
         skipIfExisting: true
         depends: thisJob # To create a relation
+      )
 
     count: count
 

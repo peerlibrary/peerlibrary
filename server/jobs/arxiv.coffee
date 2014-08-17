@@ -355,11 +355,12 @@ class @ArXivBulkCacheSyncJob extends Job
         eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
         size: file.Size
 
-      count++ if new ArXivTarCacheSyncJob(tarFileData).enqueue
+      count++ if new ArXivTarCacheSyncJob(tarFileData).enqueue(
         skipIfExisting: true
         # If tarFileData is the same, tar file is the same so there is no reason to re-extract the tar file
         skipIncludingCompleted: true
         depends: thisJob # To create a relation
+      )
 
       break
 

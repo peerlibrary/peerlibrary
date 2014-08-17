@@ -43,9 +43,10 @@ class @ProcessPublicationsJob extends Job
         _id: 1
       transform: null
     ).forEach (publication) =>
-      count++ if new ProcessPublicationJob(publication: publication).enqueue
+      count++ if new ProcessPublicationJob(publication: publication).enqueue(
         skipIfExisting: true
         depends: thisJob # To create a relation
+      )
 
     count: count
 
