@@ -136,8 +136,8 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A set of fields which are public and can be published to the client
-  # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+  # A set of fields which are public and can be published to the client. cachedId field is available
+  # for open access publications, if user has the publication in the library, or is a private publication.
   @PUBLISH_FIELDS: ->
     fields:
       slug: 1
@@ -159,6 +159,8 @@ class @Publication extends Publication
       maintainerGroups: 1
       adminPersons: 1
       adminGroups: 1
+      jobs:
+        $slice: -1
 
   # A subset of public fields used for search results to optimize transmission to a client
   @PUBLISH_SEARCH_RESULTS_FIELDS: ->

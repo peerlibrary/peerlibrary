@@ -56,6 +56,7 @@ Template.adminJobs.jobqueue = ->
     sort: [
       ['updated', 'desc']
     ]
+    transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (event, template) ->

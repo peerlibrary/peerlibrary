@@ -1,0 +1,9 @@
+<template name="publicationJobs">
+  <h1>Jobs for {{#with publicationReference publicationId}}<a href="{{publicationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a>{{/with}}</h1>
+  <h2>Queue</h2>
+  <ul class="admin-job-queue">
+    {{#each jobqueue}}
+      {{> adminJobQueueItem}}
+    {{/each}}
+  </ul>
+</template>

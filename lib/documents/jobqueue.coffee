@@ -17,4 +17,4 @@ class @JobQueue extends Document
       noCollectionSuffix: true
     fields: =>
       data:
-        publication: @ReferenceField Publication, [], false, 'jobs'
+        publication: @ReferenceField Publication, [], false, 'jobs', ['status']
