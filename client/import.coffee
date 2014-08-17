@@ -450,8 +450,6 @@ Deps.autorun ->
     $('body').add('html').removeClass 'overlay-active'
 
 Deps.autorun ->
-  return
-
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount
