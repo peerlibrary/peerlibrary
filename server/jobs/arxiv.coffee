@@ -54,7 +54,7 @@ class @ArXivMetadataJob extends Job
 
       if not record?
         # TODO: Replace inspect with log payload
-        @logWarn "Empty record metadata, skipping #{ util.inspect recordEntry, false, null }"
+        @logWarning "Empty record metadata, skipping #{ util.inspect recordEntry, false, null }"
         continue
 
       # TODO: Really process versions
@@ -98,7 +98,7 @@ class @ArXivMetadataJob extends Job
 
       if bad
         # TODO: Replace inspect with log payload
-        @logWarn "Could not parse authors, skipping #{ authors }, #{ util.inspect record, false, null }"
+        @logWarning "Could not parse authors, skipping #{ util.inspect authors, false, null }, #{ util.inspect record, false, null }"
         continue
 
       # Remove collaboration information
@@ -110,7 +110,7 @@ class @ArXivMetadataJob extends Job
 
       if authors.length == 0
         # TODO: Replace inspect with log payload
-        @logWarn "Empty authors list, skipping #{ util.inspect record, false, null }"
+        @logWarning "Empty authors list, skipping #{ util.inspect record, false, null }"
         continue
 
       authors = for author in authors
@@ -168,7 +168,7 @@ class @ArXivMetadataJob extends Job
       if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        new CheckCacheJob(publication: _.pick publication, '_id').enqueue(
+        new CheckCacheJob(publication: _id: id).enqueue(
           skipIfExisting: true
           depends: thisJob # To create a relation
         )
