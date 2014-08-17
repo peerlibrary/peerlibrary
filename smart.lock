@@ -130,8 +130,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.12.0",
-        "commit": "8268d1a25905adb6ee4c105bd5cbe7a419d3655a"
+        "tag": "v0.12.1",
+        "commit": "3e556dee1bb1ec6d55f4802b8fed8c16438ad09a"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -196,7 +196,7 @@
       "jobCollection": {
         "git": "https://github.com/peerlibrary/meteor-job-collection.git",
         "branch": "peerlibrary",
-        "commit": "2a768e85c57042654b40cf5a3e7cf0261be02b52"
+        "commit": "1d50d797dad944dcf084d46da474cf0a10cdcade"
       },
       "async": {
         "git": "https://github.com/peerlibrary/meteor-async.git",
