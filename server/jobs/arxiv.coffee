@@ -168,10 +168,9 @@ class @ArXivMetadataJob extends Job
       if not Publication.documents.exists(source: publication.source, foreignId: publication.foreignId)
         id = Publication.documents.insert Publication.applyDefaultAccess null, publication
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
-        new CheckCacheJob(publication: _id: id).enqueue(
+        new CheckCacheJob(publication: _id: id).enqueue
           skipIfExisting: true
           depends: thisJob # To create a relation
-        )
         count++
 
     count: count
@@ -356,12 +355,11 @@ class @ArXivBulkCacheSyncJob extends Job
         eTag: file.ETag.replace /^"|"$/g, '' # It has " at the start and the end
         size: file.Size
 
-      count++ if new ArXivTarCacheSyncJob(tarFileData).enqueue(
+      count++ if new ArXivTarCacheSyncJob(tarFileData).enqueue
         skipIfExisting: true
         # If tarFileData is the same, tar file is the same so there is no reason to re-extract the tar file
         skipIncludingCompleted: true
         depends: thisJob # To create a relation
-      )
 
       break
 
