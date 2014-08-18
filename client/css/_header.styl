@@ -170,41 +170,18 @@ span.cursor
 .development
   position relative
 
-.development .banner, .development-banner
-  color red
-  position absolute
-  font-size 12px
-  line-height default-line-height
-  font-weight bold
-  text-align center
-  top 33%
-  left 0
-  right 0
-  padding 0
-  transform rotate(-10deg)
-
-.development-banner
-  transform none
-  position static
-  font-size 18px
-  width 90%
-  margin-left auto
-  margin-right auto
-  margin-bottom 0
-
-  .warning
-    font-size 36px
-    margin-top ((18px * default-line-height * 2 - 36px) / 2)
-
-  .left
-    float left
-
-  .right
-    float right
-
-.development-comment
-  text-align center
-  margin 0
+  .banner
+    color red
+    position absolute
+    font-size 12px
+    line-height default-line-height
+    font-weight bold
+    text-align center
+    top 33%
+    left 0
+    right 0
+    padding 0
+    transform rotate(-10deg)
 
 /* Sign in buttons
 ================== */
@@ -360,6 +337,39 @@ header.index-header
   .drop-files-to-import
     text-align center
     cursor pointer
+
+  .development
+    position fixed
+    top 15px
+    left 75px
+    width 460px
+    padding-left 50px
+
+    .banner
+      transform none
+      position static
+      font-size 18px
+      margin 0
+      padding 0
+      text-align left
+
+      .warning
+        position absolute
+        left 0
+        top 3px
+        font-size 36px
+
+    .comment
+      text-align left
+      margin 0
+
+      a
+        display inline
+        padding 0
+        color blue-accent
+
+        &:hover
+          text-decoration underline !important
 
   ul.top-menu
     a

@@ -5,7 +5,19 @@
     {{> indexMain}}
     {{> indexStatistics}}
     {{> indexLatestBlogPost}}
+    {{> backgroundPause}}
   {{/if}}
+</template>
+
+<template name="indexMain">
+  {{#constant}}
+    <div class="landing">
+      <div class="big-logo">
+        <img src="img/logo.svg"/>
+        <h1><span class="peer">Peer</span>Library</h1>
+      </div>
+    </div>
+  {{/constant}}
 </template>
 
 <template name="indexStatistics">
@@ -49,16 +61,6 @@
   </ul>
 </template>
 
-<template name="indexMain">
-  {{#constant}}
-    <div class="landing">
-      <div class="big-logo">
-        <h1>PeerLibrary</h1>
-      </div>
-    </div>
-  {{/constant}}
-</template>
-
 <template name="indexLatestBlogPost">
   {{#if latestBlogPost}}
     <div class="latest-blog-post">
@@ -68,4 +70,21 @@
       {{/if}}
     </div>
   {{/if}}
+</template>
+
+<template name="backgroundPause">
+  <div class="background-pause">
+    {{> backgroundPauseButton}}
+    <div class="right ui-tooltip">
+      {{> backgroundPauseTooltipContent}}
+    </div>
+  </div>
+</template>
+
+<template name="backgroundPauseButton">
+  <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
+</template>
+
+<template name="backgroundPauseTooltipContent">
+  {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
 </template>

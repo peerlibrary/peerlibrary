@@ -21,14 +21,23 @@ input:focus, button:focus
 button
   background-color box-shadow-background
 
-button:hover
-  background-color box-shadow-border
+  &:hover
+    background-color box-shadow-border
 
-button.default
-  background-color box-shadow-background-default
+  &.default
+    background-color box-shadow-background-default
 
-button.default:hover
-  background-color box-shadow-border
+    &:hover
+      background-color box-shadow-border
+
+  &.borderless
+    border-color transparent
+    background-color transparent
+    width auto !important
+    font-size 14px
+
+    &:hover
+      border 1px solid box-shadow-border
 
 /* Dropdown
 =========== */
@@ -97,8 +106,12 @@ button.default:hover
           border none
           background transparent
 
-        button:hover
-          background box-shadow-border
+          &:hover
+            background box-shadow-border
+
+          &.warning:hover
+            background error-red
+            color white
 
       h3
         font-weight 300
@@ -269,6 +282,16 @@ h1
   .group-member-results
     margin 0
     padding 0
+
+  .settings
+    h2
+      margin-bottom 7px
+
+    .section
+      margin -1px 0 0
+
+    .admin-tools
+      display inline-block
 
 /* Meta menus and jQuery UI widgets
 =================================== */
@@ -474,9 +497,20 @@ h1
     border-color rgb(14,41,57) transparent
     display block
     width 0
+    height 0
     margin-left -8px
     bottom -8px
     left 50%
+
+  &.right
+    &::before
+      border-width 8px 8px 8px 0
+      border-color transparent rgb(14,41,57)
+      margin-top -8px
+      left -8px
+      margin-left 0
+      top 50%
+      bottom auto
 
 /* Layouts
 ========== */

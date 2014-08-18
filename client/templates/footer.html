@@ -5,7 +5,7 @@
       <li><a href="{{helpPath}}">Help</a></li>
       <li><a href="{{privacyPath}}">Privacy</a></li>
       <li><a href="{{termsPath}}">Terms</a></li>
-      <li><a href="https://github.com/peerlibrary/peerlibrary" title="Running version {{VERSION}}">Source</a></li>
+      <li><a href="https://github.com/peerlibrary/peerlibrary" class="tooltip" title="Running version {{VERSION}}">Source</a></li>
       <li><a href="https://github.com/peerlibrary/peerlibrary/wiki/Public-API">API</a></li>
     </ul>
     <ul class="connect">
@@ -14,20 +14,7 @@
       <li><a href="http://lists.peerlibrary.org/lists/info/news" class="newsletter">Newsletter</a></li>
       <li><a href="mailto:hello@peerlibrary.org">Contact</a></li>
     </ul>
-    {{> backgroundPause}}
   </footer>
-</template>
-
-<template name="backgroundPause">
-  <div class="background-pause">
-    <button>
-      {{#if backgroundPaused}}
-        Resume Background
-      {{else}}
-        Pause Background
-      {{/if}}
-    </button>
-  </div>
 </template>
 
 <template name="baseFooter">
