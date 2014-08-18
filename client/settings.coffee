@@ -27,9 +27,7 @@ Deps.autorun ->
 # Username settings
 Template.settingsUsername.events =
   'submit form#set-username': (event, template) ->
-    event.stopPropagation()
     event.preventDefault()
-    usernameReadyForValidation = true
     usernameFormMessages.resetMessages()
     username = $('#username').val()
     try
@@ -44,7 +42,6 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
   'blur input#username': (event, template) ->
-    event.stopPropagation()
     usernameReadyForValidation = usernameFieldModified
     username = $('#username').val()
     validateUsername username, 'username'
@@ -64,7 +61,7 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.settings.usernameExists = ->
-  !Meteor.person?().user?.username
+  !!Meteor.person?().user?.username
 
 Template.settingsUsername.messageOnField = (field, options) ->
   field = null unless options
