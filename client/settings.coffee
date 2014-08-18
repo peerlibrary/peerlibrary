@@ -26,7 +26,7 @@ Deps.autorun ->
 
 # Username settings
 Template.settingsUsername.events =
-  'click button.set-username': (event, template) ->
+  'submit form#set-username': (event, template) ->
     event.stopPropagation()
     event.preventDefault()
     usernameReadyForValidation = true
@@ -84,7 +84,7 @@ validateUsername = (username, messageField) ->
 
 # Password settings
 Template.settingsPassword.events =
-  'click button.change-password': (event, template) ->
+  'submit form#set-password': (event, template) ->
     newPasswordReadyForValidation = true
     passwordFormMessages.resetMessages()
     event.preventDefault()
