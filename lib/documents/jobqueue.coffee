@@ -8,8 +8,42 @@ if Meteor.isServer
     _toLog: (userId, method, message) =>
       Log.info "#{ method }: #{ message }"
 
+# Document is wrapping jobCollection collection so additional fields might be
+# added by future versions of the package. A good description of the schema
+# can be found in validJobDoc function, see
+# https://github.com/vsivsi/meteor-job-collection/blob/master/shared.coffee#L50
 class @JobQueue extends Document
-  # TODO: Describe
+  # runId: ID of the current run
+  # type: one of Job class names
+  # status: status of the job
+  # data: arbitrary object with data for the job
+  #   publication: optional reference to the publication this job is associated with
+  # result: arbitrary object with result
+  # failures: information about job failures
+  # priority: priority, lower is higher
+  # depends: list of job dependencies
+  # resolved: list of resolved job dependencies
+  # after: should run after
+  # updated: was updated at
+  # log: list of log entries
+  #   time
+  #   runId
+  #   level
+  #   message
+  # progress:
+  #   completed
+  #   total
+  #   percent
+  # retries
+  # retried
+  # retryUntil
+  # retryWait
+  # retryBackoff
+  # repeats
+  # repeated
+  # repeatUntil
+  # repeatWait
+  # created
 
   @Meta
     name: 'JobQueue'

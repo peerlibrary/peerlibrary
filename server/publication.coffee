@@ -162,7 +162,7 @@ class @Publication extends Publication
       cached: 1
       processed: 1
       jobs:
-        $slice: -1
+        $slice: -1 # To have the latest job status available on the client
 
   # A subset of public fields used for search results to optimize transmission to a client
   @PUBLISH_SEARCH_RESULTS_FIELDS: ->

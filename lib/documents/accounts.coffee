@@ -1,3 +1,5 @@
+# Document is wrapping Meteor.users collection so additional
+# fields might be added by future versions of Meteor
 class @User extends BaseDocument
   # createdAt: time of creation
   # updatedAt: time of the last change
