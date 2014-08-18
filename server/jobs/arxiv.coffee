@@ -49,7 +49,7 @@ class @ArXivMetadataJob extends Job
     thisJob = @getQueueJob()
     count = 0
 
-    for recordEntry in page['OAI-PMH'].ListRecords[0].record
+    for recordEntry in page['OAI-PMH'].ListRecords[0].record[0..100]
       record = recordEntry.metadata?[0].arXivRaw?[0]
 
       if not record?
