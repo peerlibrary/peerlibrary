@@ -135,6 +135,7 @@ class @FSMMetadataJob extends Job
         license: 'https://creativecommons.org/licenses/by-nc-sa/3.0/us/'
         cachedId: Random.id()
         mediaType: 'tei'
+        access: Publication.ACCESS.OPEN
 
       if document.fsmDateCreated?[0]
         publication.createdRaw = document.fsmDateCreated[0]

@@ -158,6 +158,7 @@ class @ArXivMetadataJob extends Job
         license: record.license?[0] or 'arXiv'
         cachedId: Random.id()
         mediaType: 'pdf'
+        access: Publication.ACCESS.OPEN
 
       # TODO: Deal with this
       #if publication.msc2010?
