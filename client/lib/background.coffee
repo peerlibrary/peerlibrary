@@ -45,7 +45,7 @@ class Vector
     @x = @originX + sin * @deltaX + distance
     @y = @originY + sin * @deltaY + distance
 
-  toString = =>
+  toString: =>
     "#<Vector x: #{ @x }, y: #{ @y }>"
 
 class Triangle

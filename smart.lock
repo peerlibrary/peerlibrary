@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "b0d898b2132213734820f18295a5e7d2ad481833"
+    "commit": "6f517e3837053b142937ad46a18983850a0664af"
   },
   "dependencies": {
     "basePackages": {
@@ -80,8 +80,8 @@
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
-        "tag": "v2.6.0",
-        "commit": "26156df681750fd6e6ed77043eef32b6653ebbdf"
+        "tag": "v2.8.1",
+        "commit": "722ea63783d594341023836b7d418ab2567dab8c"
       },
       "xml2js": {
         "git": "https://github.com/peerlibrary/meteor-xml2js.git",
@@ -165,8 +165,8 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.4.9",
-        "commit": "8bb902989917522822a0897117672ae858c23427"
+        "tag": "v2.4.13",
+        "commit": "1f3c1a427084af5a2eca2e299eb65bc01387df8a"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",

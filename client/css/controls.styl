@@ -212,15 +212,18 @@ h1
     overflow hidden
     text-overflow ellipsis
 
-/* Sidebar and dropdown contents
-================================ */
+/* Sidebar
+========== */
 .sidebar
-.dropdown
   position relative
   padding 10px
   padding-bottom 30px
   border-left 1px solid #dee7e9
 
+/* Sidebar and dropdown contents
+================================ */
+.sidebar
+.dropdown
   h3
     font-weight 300
 
@@ -494,9 +497,20 @@ h1
     border-color rgb(14,41,57) transparent
     display block
     width 0
+    height 0
     margin-left -8px
     bottom -8px
     left 50%
+
+  &.right
+    &::before
+      border-width 8px 8px 8px 0
+      border-color transparent rgb(14,41,57)
+      margin-top -8px
+      left -8px
+      margin-left 0
+      top 50%
+      bottom auto
 
 /* Layouts
 ========== */

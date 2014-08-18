@@ -30,10 +30,10 @@ class @Publication extends Publication
           Publication.documents.update fields._id,
             $set:
               processError:
-                error: "#{ error.toString?() or error }"
+                error: "#{ error }"
                 stack: error.stack
 
-          Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
+          Log.error "Error processing publication: #{ error.stack or error }"
 
           return [null, null]
 
@@ -503,7 +503,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-id', (publicationId) ->
+Meteor.publish 'publication-by-id', (publicationId) ->
   check publicationId, DocumentId
 
   @related (person) ->

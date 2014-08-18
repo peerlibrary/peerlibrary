@@ -52,3 +52,17 @@ Template.indexLatestBlogPost.blogPostsCount = ->
 
 Template.indexLatestBlogPost.blogUrl = ->
   Meteor.settings?.public?.blogUrl
+
+Meteor.startup ->
+  Session.setDefault 'backgroundPaused', false
+
+Template.backgroundPause.events
+  'click button': (event, template) ->
+    Session.set('backgroundPaused', not Session.get 'backgroundPaused')
+    return # Make sure CoffeeScript does not return anything
+
+Template.backgroundPauseButton.backgroundPaused = ->
+  Session.get 'backgroundPaused'
+
+Template.backgroundPauseTooltipContent.backgroundPaused = ->
+  Session.get 'backgroundPaused'
