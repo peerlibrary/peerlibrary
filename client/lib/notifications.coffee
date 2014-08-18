@@ -8,20 +8,24 @@ class @Notify extends BaseDocument
   # type: type of the notification (debug, warn, error)
   # timestamp: timestamp when was notification inserted
   # message: message of the notification
+  # additional: additional data of the notification
+  # sticky: if true (can be any custom value useful for identifying the
+  #         notification) notification is not removed automatically
 
   @Meta
     name: 'Notify'
     collection: null
 
-  @_insert: (type, message, additional) =>
+  @_insert: (type, message, additional, sticky) =>
     @documents.insert
       type: type
       timestamp: moment.utc().toDate()
       message: message
       additional: additional
+      sticky: sticky
 
-  @success: (message, additional) =>
-    notificationId = @_insert 'success', message, additional
+  @success: (message, additional, sticky) =>
+    notificationId = @_insert 'success', message, additional, sticky
 
     if additional
       console.log message, additional
@@ -39,8 +43,8 @@ class @Notify extends BaseDocument
 
     null
 
-  @warn: (message, additional) =>
-    notificationId = @_insert 'warn', message, additional
+  @warn: (message, additional, sticky) =>
+    notificationId = @_insert 'warn', message, additional, sticky
 
     if additional
       console.warn message, additional
@@ -62,10 +66,11 @@ class @Notify extends BaseDocument
     else
       @error _.ensureSentence("#{ error }"), null, log
 
-  @error: (message, additional, log, stack) =>
+  # If stack is false then it is not automatically added
+  @error: (message, additional, log, stack, sticky) =>
     additional = '' unless additional
 
-    stack = StackTrace.printStackTrace() unless stack
+    stack = StackTrace.printStackTrace() unless stack or stack is false
 
     notificationAdditional = additional
 
@@ -78,7 +83,7 @@ class @Notify extends BaseDocument
 
       notificationAdditional += "<div class=\"error-logged\">This error has been logged as #{ loggedErrorId }.</div>" if loggedErrorId
 
-      notificationId = @_insert 'error', message, notificationAdditional
+      notificationId = @_insert 'error', message, notificationAdditional, sticky
 
       if loggedErrorId
         logged = "<logged as #{ loggedErrorId }>"

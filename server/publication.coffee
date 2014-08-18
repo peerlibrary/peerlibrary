@@ -159,6 +159,8 @@ class @Publication extends Publication
       maintainerGroups: 1
       adminPersons: 1
       adminGroups: 1
+      cached: 1
+      processed: 1
       jobs:
         $slice: -1
 
@@ -474,7 +476,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
       _id: id
     ),
       fields: _.extend Publication.PUBLISH_FIELDS().fields,
-        # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+        # cachedId field is available for open access publications, if user has the publication in the library, or is a private publication
         'cachedId': 1
   ,
     Person.documents.find

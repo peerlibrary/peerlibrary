@@ -606,6 +606,48 @@ Deps.autorun ->
 
   LocalAnnotation.documents.insert annotation
 
+Deps.autorun ->
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      processed: 1
+
+  unless publication
+    # To remove any existing notification when going away from the publication page
+    Notify.documents.remove
+      'sticky.notProcessedPublicationId':
+        $exists: true
+    return
+
+  # To remove any existing notification for previous publication
+  Notify.documents.remove
+    'sticky.notProcessedPublicationId':
+      $ne: publication._id
+
+  if publication.processed
+    # Publication is processed, so no notification is necessary anymore
+    count = Notify.documents.remove
+      'sticky.notProcessedPublicationId': publication._id
+    # There was a notification displayed previously, so let's display
+    # a new one informing about publication just being processed
+    if count
+      Notify.success "Publication successfully processed."
+  else
+    # The content of this message is used also in the template, so keep it in the sync
+    Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
+      notProcessedPublicationId: publication._id # Making it a sticky notification
+
+Deps.autorun ->
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      jobs: 1
+
+  # Only the latest job is pushed to the client, so index 0
+  return unless publication?.jobs?[0]?.status is 'failed'
+
+  Notify.error "The last job associated with the publication has failed.", Template.failedJobLink(publication), false, false # Don't display the stack
+
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
@@ -616,6 +658,9 @@ Template.publication.notFound = ->
 
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
+
+Template.publicationMetaMenu.rendered = ->
+    $(@findAll '.balance-text').balanceText()
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (event, template) ->
@@ -794,7 +839,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
 Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionCatalogItem.countDescription
 
-Template.publicationDisplay.cached = ->
+Template.publicationDisplay.cachedAvailable = ->
   publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 

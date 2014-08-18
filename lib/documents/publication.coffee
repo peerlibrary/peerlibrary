@@ -45,6 +45,7 @@ class @Publication extends BasicAccessDocument
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
   # jobs: list of (reverse field from JobQueue.publication)
   #   _id: job id
+  #   status: status of the job
   # numberOfPages
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
