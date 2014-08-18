@@ -17,7 +17,7 @@
         </div>
         <div class="col4 push12 sidebar group-members-panel">
           {{> groupMembers group}}
-          {{> groupTools group}}
+          {{> groupSettings group}}
         </div>
       </div>
     {{/if}}
@@ -91,18 +91,32 @@
   {{/if}}
 </template>
 
-<template name="groupTools">
-  <div class="section">
+<template name="groupSettings">
+  <div class="settings section">
+    <h2>Settings</h2>
+    <div class="section">
+      {{> accessControl}}
+    </div>
     {{#if canRemove}}
-      <h2>Tools</h2>
       <div class="section">
-        <button class="delete-group">Delete group</button>
-        {{! TODO: Add confirmation or undo for this action }}
+        {{> groupAdminTools}}
       </div>
     {{/if}}
-    <div class="section">
-      <h3>Permissions</h3>
-      {{> accessControl}}
+  </div>
+</template>
+
+<template name="groupAdminTools">
+  <div class="admin-tools dropdown-trigger">
+    <button class="borderless">
+      <i class="icon-tools"></i> Admin tools
+    </button>
+    <div class="dropdown-anchor">
+      <ul class="dropdown">
+        <li class="menu-item">
+          {{! TODO: Add confirmation or undo for this action }}
+          <button class="delete-group warning tooltip" title="Warning: there is no undo for this action.">Delete group</button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
