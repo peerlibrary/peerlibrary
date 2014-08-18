@@ -42,6 +42,15 @@ class @FormMessages
       @_set @messageType.INFO, field, ''
       @_set @messageType.ERROR, field, ''
 
+  # Checks if given field is valid. If no field is given, checks if entire form is valid.
+  isValid: (field) =>
+    return not @getErrorMessage field if field
+    for field in @fields
+      continue unless field
+      return false unless @isValid field
+    true
+
+  # Read error message and field from given error object
   setError: (error) =>
     if error instanceof Meteor.Error
       # We get field value from error details

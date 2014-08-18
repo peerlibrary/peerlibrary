@@ -64,7 +64,7 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.settings.usernameExists = ->
-  !!Meteor.person?().user?.username
+  !Meteor.person?().user?.username
 
 Template.settingsUsername.messageOnField = (field, options) ->
   field = null unless options
@@ -72,7 +72,7 @@ Template.settingsUsername.messageOnField = (field, options) ->
 
 Template.settingsUsername.isValid = (field, options) ->
   field = null unless options
-  !usernameFormMessages.getErrorMessage field
+  usernameFormMessages.isValid field
 
 validateUsername = (username, messageField) ->
   return unless usernameReadyForValidation
@@ -91,12 +91,20 @@ Template.settingsPassword.events =
     currentPassword = $('#current-password').val()
     newPassword = $('#new-password').val()
 
-    changePassword currentPassword, newPassword, (error) ->
-      if error
-        passwordFormMessages.setError error
-      else
-        resetPasswordForm()
-        passwordFormMessages.setInfoMessage "Password changed sucessfully."
+    passwordFormMessages.setErrorMessage 'Current password is requried.', 'current-password' unless currentPassword
+
+    try
+      User.validatePassword newPassword, 'new-password'
+    catch error
+      passwordFormMessages.setError error
+
+    if passwordFormMessages.isValid()
+      changePassword currentPassword, newPassword, (error) ->
+        if error
+          passwordFormMessages.setError error
+        else
+          resetPasswordForm()
+          passwordFormMessages.setInfoMessage "Password changed sucessfully."
 
     return # Make sure CoffeeScript does not return anything
 
@@ -125,7 +133,7 @@ Template.settingsPassword.messageOnField = (field, options) ->
 
 Template.settingsPassword.isValid = (field, options) ->
   field = null unless options
-  !passwordFormMessages.getErrorMessage field
+  passwordFormMessages.isValid field
 
 validatePassword = (newPassword, messageField) ->
   return unless newPasswordReadyForValidation
