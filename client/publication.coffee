@@ -660,7 +660,7 @@ Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationMetaMenu.rendered = ->
-    $(@findAll '.balance-text').balanceText()
+  $(@findAll '.balance-text').balanceText()
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (event, template) ->
