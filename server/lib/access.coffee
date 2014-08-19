@@ -96,9 +96,10 @@ Meteor.methods
     validateArgument documentName, RegisteredForAccess, 'documentName'
     validateArgument documentId, DocumentId, 'documentId'
     validateArgument personId, DocumentId, 'personId'
-    validateArgument role, (Match.Where (role) ->
+    validateArgument role, Match.Where (role) ->
       validateArgument role, Match.OneOf null, Match.Integer
-      return role is null or 0 <= role <= ROLES.ADMIN), 'role'
+      return role is null or 0 <= role <= ROLES.ADMIN
+    , 'role'
 
     currentPerson = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless currentPerson
@@ -109,9 +110,10 @@ Meteor.methods
     validateArgument documentName, RegisteredForAccess, 'documentName'
     validateArgument documentId, DocumentId, 'documentId'
     validateArgument groupId, DocumentId, 'groupId'
-    validateArgument role, (Match.Where (role) ->
+    validateArgument role, Match.Where (role) ->
       validateArgument role, Match.OneOf null, Match.Integer
-      return role is null or 0 <= role <= ROLES.ADMIN), 'role'
+      return role is null or 0 <= role <= ROLES.ADMIN
+    , 'role'
 
     currentPerson = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless currentPerson

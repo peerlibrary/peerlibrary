@@ -74,8 +74,8 @@ Meteor.methods
 
   'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
     validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument body, Match.Optional (NonEmptyString), 'body'
-    validateArgument access, (MatchAccess Annotation.ACCESS), 'access'
+    validateArgument body, Match.Optional(NonEmptyString), 'body'
+    validateArgument access, MatchAccess(Annotation.ACCESS), 'access'
     validateArgument workInsideGroups, [DocumentId], 'workInsideGroups'
     validateArgument readPersons, [DocumentId], 'readPersons'
     validateArgument readGroups, [DocumentId], 'readGroups'
@@ -242,10 +242,11 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
 
 Meteor.publish 'annotations', (limit, filter, sortIndex) ->
   validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull (String), 'filter'
-  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
-  validateArgument sortIndex, (Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length), 'sortIndex'
+  validateArgument filter, OptionalOrNull(String), 'filter'
+  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
+  validateArgument sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
+  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'body') if filter

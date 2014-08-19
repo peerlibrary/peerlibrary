@@ -6,7 +6,7 @@ INVITE_SECRET = Random.id()
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument email, EMail, 'email'
-    validateArgument message, Match.Optional (String), 'message'
+    validateArgument message, Match.Optional(String), 'message'
 
     # We require that user inviting is logged in
     person = Meteor.person()

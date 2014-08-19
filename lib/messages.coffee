@@ -84,4 +84,3 @@ class @FormMessages
   getInfoMessage: (field) =>
     @_registerField field if field
     @_get @messageType.INFO, field
-

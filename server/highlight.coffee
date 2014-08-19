@@ -117,8 +117,9 @@ Meteor.publish 'highlights', (limit, filter, sortIndex) ->
   validateArgument limit, PositiveNumber, 'limit'
   validateArgument filter, OptionalOrNull(String), 'filter'
   validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
-  validateArgument sortIndex, (Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Highlight.PUBLISH_CATALOG_SORT.length), 'sortIndex'
+  validateArgument sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
+  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'quote') if filter

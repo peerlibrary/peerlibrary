@@ -72,7 +72,7 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'add-to-library': methodWrap (publicationId, collectionId) ->
     validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument collectionId, Match.Optional (DocumentId), 'collectionId'
+    validateArgument collectionId, Match.Optional(DocumentId), 'collectionId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -112,7 +112,7 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'remove-from-library': methodWrap (publicationId, collectionId) ->
     validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument collectionId, Match.Optional (DocumentId), 'collectionId'
+    validateArgument collectionId, Match.Optional(DocumentId), 'collectionId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -262,10 +262,11 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
 
 Meteor.publish 'collections', (limit, filter, sortIndex) ->
   validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull (String), 'filter'
-  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
-  validateArgument sortIndex, (Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length), 'sortIndex'
+  validateArgument filter, OptionalOrNull(String), 'filter'
+  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
+  validateArgument sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length
+  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter

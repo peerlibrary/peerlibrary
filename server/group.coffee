@@ -173,10 +173,11 @@ Meteor.publish 'my-groups', ->
 
 Meteor.publish 'groups', (limit, filter, sortIndex) ->
   validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull (String), 'filter'
-  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
-  validateArgument sortIndex, (Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Group.PUBLISH_CATALOG_SORT.length), 'sortIndex'
+  validateArgument filter, OptionalOrNull(String), 'filter'
+  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
+  validateArgument sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Group.PUBLISH_CATALOG_SORT.length
+  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter
