@@ -130,8 +130,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.12.2",
-        "commit": "83e7862ef1b3e2de22382482656bf0496128e42b"
+        "tag": "v0.12.3",
+        "commit": "f256fd7c3bbd50b3c94b683efeca1fc0334e5acd"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
