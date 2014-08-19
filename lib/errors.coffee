@@ -8,4 +8,3 @@ class @ValidationError extends Meteor.Error
   constructor: (error, reason, argumentName) ->
     details = "Argument: #{ argumentName or '' }"
     super error, reason, details
-

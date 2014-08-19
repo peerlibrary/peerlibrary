@@ -28,8 +28,9 @@ Deps.autorun ->
 # Username settings
 Template.settingsUsername.events =
   'submit form#set-username': (event, template) ->
-    usernameSubmitted = true
     event.preventDefault()
+
+    usernameSubmitted = true
     usernameFormMessages.resetMessages()
     username = $('#username').val()
     try
@@ -46,8 +47,8 @@ Template.settingsUsername.events =
   'blur input#username': (event, template) ->
     # We postpone blur event handling as a workaround for a bug in Meteor.
     # See https://github.com/peerlibrary/peerlibrary/pull/520#issuecomment-52514483
-    # TODO: Move function below out of setTimeout when we move to Blaze. Also, remove
-    # flag usernameSubmitted and all related to it.
+    # TODO: Move function below out of setTimeout when we move to Blaze
+    # TODO: Remove flag usernameSubmitted and everything related to it
     Meteor.setTimeout ->
       usernameReadyForValidation = usernameFieldModified
       return if usernameSubmitted
@@ -72,7 +73,7 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
 Template.settings.usernameExists = ->
-  !!Meteor.person?('user.username': true).user?.username
+  !!Meteor.person?('user.username': 1).user?.username
 
 Template.settingsUsername.messageOnField = (field, options) ->
   field = null unless options
@@ -92,14 +93,15 @@ validateUsername = (username, messageField) ->
 
 # Password settings
 Template.settingsPassword.events =
-  'submit form#set-password': (event, template) ->
+  'submit #set-password': (event, template) ->
+    event.preventDefault()
+
     newPasswordReadyForValidation = true
     passwordFormMessages.resetMessages()
-    event.preventDefault()
     currentPassword = $('#current-password').val()
     newPassword = $('#new-password').val()
 
-    passwordFormMessages.setErrorMessage 'Current password is requried.', 'current-password' unless currentPassword
+    passwordFormMessages.setErrorMessage 'Current password is required.', 'current-password' unless currentPassword
 
     try
       User.validatePassword newPassword, 'new-password'
@@ -112,18 +114,18 @@ Template.settingsPassword.events =
           passwordFormMessages.setError error
         else
           resetPasswordForm()
-          passwordFormMessages.setInfoMessage "Password changed sucessfully."
+          passwordFormMessages.setInfoMessage "Password changed successfully."
 
     return # Make sure CoffeeScript does not return anything
 
-  'blur input#new-password': (event, template) ->
+  'blur #new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
     newPassword = $('#new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup, paste input#new-password': (event, template) ->
+  'keyup #new-password, paste #new-password': (event, template) ->
     newPasswordFieldModified = true
     newPassword = $('#new-password').val()
     validatePassword newPassword, 'new-password'
@@ -145,6 +147,7 @@ Template.settingsPassword.isValid = (field, options) ->
 
 validatePassword = (newPassword, messageField) ->
   return unless newPasswordReadyForValidation
+
   try
     User.validatePassword newPassword, messageField
     passwordFormMessages.resetMessages messageField
@@ -166,4 +169,3 @@ changePassword = (currentPassword, newPassword, callback) ->
       callback formError
   catch error
     callback error
-
