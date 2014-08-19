@@ -9,7 +9,7 @@ class @Comment extends Comment
 
 Meteor.methods
   'comments-path': methodWrap (commentId) ->
-    check commentId, DocumentId
+    validateArgument commentId, DocumentId, 'commentId'
 
     person = Meteor.person()
 
@@ -33,8 +33,8 @@ Meteor.methods
     [publication._id, publication.slug, comment._id]
 
   'create-comment': methodWrap (annotationId, body) ->
-    check annotationId, DocumentId
-    check body, NonEmptyString
+    validateArgument annotationId, DocumentId, 'annotationId'
+    validateArgument body, NonEmptyString, 'body'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -71,7 +71,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-comment': methodWrap (commentId) ->
-    check commentId, DocumentId
+    validateArgument commentId, DocumentId, 'commentId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -95,7 +95,7 @@ Meteor.methods
     )
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument publicationId, DocumentId, 'publicationId'
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person

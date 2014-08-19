@@ -35,7 +35,7 @@ registerForAccess Collection
 
 Meteor.methods
   'create-collection': methodWrap (name) ->
-    check name, NonEmptyString
+    validateArgument name, NonEmptyString, 'name'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -55,7 +55,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-collection': methodWrap (collectionId) ->
-    check collectionId, DocumentId
+    validateArgument collectionId, DocumentId, 'collectionId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -71,8 +71,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'add-to-library': methodWrap (publicationId, collectionId) ->
-    check publicationId, DocumentId
-    check collectionId, Match.Optional DocumentId
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument collectionId, Match.Optional (DocumentId), 'collectionId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -111,8 +111,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-from-library': methodWrap (publicationId, collectionId) ->
-    check publicationId, DocumentId
-    check collectionId, Match.Optional DocumentId
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument collectionId, Match.Optional (DocumentId), 'collectionId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -162,8 +162,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'reorder-collection': methodWrap (collectionId, publicationIds) ->
-    check collectionId, DocumentId
-    check publicationIds, [DocumentId]
+    validateArgument collectionId, DocumentId, 'collectionId'
+    validateArgument publicationIds, [DocumentId], 'publicationIds'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -191,8 +191,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'collection-set-name': methodWrap (collectionId, name) ->
-    check collectionId, DocumentId
-    check name, NonEmptyString
+    validateArgument collectionId, DocumentId, 'collectionId'
+    validateArgument name, NonEmptyString, 'name'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -209,7 +209,7 @@ Meteor.methods
         name: name
 
 Meteor.publish 'collection-by-id', (collectionId) ->
-  check collectionId, DocumentId
+  validateArgument collectionId, DocumentId, 'collectionId'
 
   @related (person) ->
     Collection.documents.find Collection.requireReadAccessSelector(person,
@@ -237,7 +237,7 @@ Meteor.publish 'my-collections', ->
       fields: _.extend Collection.readAccessPersonFields()
 
 Meteor.publish 'publications-by-collection', (collectionId) ->
-  check collectionId, DocumentId
+  validateArgument collectionId, DocumentId, 'collectionId'
 
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
@@ -261,11 +261,11 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
         publications: 1
 
 Meteor.publish 'collections', (limit, filter, sortIndex) ->
-  check limit, PositiveNumber
-  check filter, OptionalOrNull String
-  check sortIndex, OptionalOrNull Number
-  check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length
+  validateArgument limit, PositiveNumber, 'limit'
+  validateArgument filter, OptionalOrNull (String), 'filter'
+  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
+  validateArgument sortIndex, (Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length), 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter

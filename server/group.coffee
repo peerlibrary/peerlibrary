@@ -32,7 +32,7 @@ registerForAccess Group
 
 Meteor.methods
   'create-group': methodWrap (name) ->
-    check name, NonEmptyString
+    validateArgument name, NonEmptyString, 'name'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -52,7 +52,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-group': methodWrap (groupId) ->
-    check groupId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -68,8 +68,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'add-to-group': methodWrap (groupId, memberId) ->
-    check groupId, DocumentId
-    check memberId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument memberId, DocumentId, 'groupId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -96,8 +96,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-from-group': methodWrap (groupId, memberId) ->
-    check groupId, DocumentId
-    check memberId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument memberId, DocumentId, 'groupId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -123,8 +123,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'group-set-name': methodWrap (groupId, name) ->
-    check groupId, DocumentId
-    check name, NonEmptyString
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument name, NonEmptyString, 'name'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -141,7 +141,7 @@ Meteor.methods
         name: name
 
 Meteor.publish 'groups-by-ids', (groupIds) ->
-  check groupIds, Match.OneOf(DocumentId, [DocumentId])
+  validateArgument groupIds, Match.OneOf(DocumentId, [DocumentId]), 'groupIds'
 
   groupIds = [groupIds] unless _.isArray groupIds
 
@@ -172,11 +172,11 @@ Meteor.publish 'my-groups', ->
       fields: _.extend Group.readAccessPersonFields()
 
 Meteor.publish 'groups', (limit, filter, sortIndex) ->
-  check limit, PositiveNumber
-  check filter, OptionalOrNull String
-  check sortIndex, OptionalOrNull Number
-  check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Group.PUBLISH_CATALOG_SORT.length
+  validateArgument limit, PositiveNumber, 'limit'
+  validateArgument filter, OptionalOrNull (String), 'filter'
+  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
+  validateArgument sortIndex, (Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Group.PUBLISH_CATALOG_SORT.length), 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter

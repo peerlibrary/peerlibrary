@@ -56,7 +56,7 @@ parseReferences = (body) ->
 
 Meteor.methods
   'annotations-path': methodWrap (annotationId) ->
-    check annotationId, DocumentId
+    validateArgument annotationId, DocumentId, 'annotationId'
 
     person = Meteor.person()
 
@@ -73,16 +73,16 @@ Meteor.methods
     [publication._id, publication.slug, annotation._id]
 
   'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
-    check publicationId, DocumentId
-    check body, Match.Optional NonEmptyString
-    check access, MatchAccess Annotation.ACCESS
-    check workInsideGroups, [DocumentId]
-    check readPersons, [DocumentId]
-    check readGroups, [DocumentId]
-    check maintainerPersons, [DocumentId]
-    check maintainerGroups, [DocumentId]
-    check adminPersons, [DocumentId]
-    check adminGroups, [DocumentId]
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument body, Match.Optional (NonEmptyString), 'body'
+    validateArgument access, (MatchAccess Annotation.ACCESS), 'access'
+    validateArgument workInsideGroups, [DocumentId], 'workInsideGroups'
+    validateArgument readPersons, [DocumentId], 'readPersons'
+    validateArgument readGroups, [DocumentId], 'readGroups'
+    validateArgument maintainerPersons, [DocumentId], 'maintainerPersons'
+    validateArgument maintainerGroups, [DocumentId], 'maintainerGroups'
+    validateArgument adminPersons, [DocumentId], 'adminPersons'
+    validateArgument adminGroups, [DocumentId], 'adminGroups'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -172,8 +172,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'update-annotation-body': methodWrap (annotationId, body) ->
-    check annotationId, DocumentId
-    check body, NonEmptyString
+    validateArgument annotationId, DocumentId, 'annotationId'
+    validateArgument body, NonEmptyString, 'body'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -201,7 +201,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-annotation': methodWrap (annotationId) ->
-    check annotationId, DocumentId
+    validateArgument annotationId, DocumentId, 'DocumentId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -221,7 +221,7 @@ Meteor.methods
     )
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument publicationId, DocumentId, 'publicationId'
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
@@ -241,11 +241,11 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
       fields: Publication.readAccessSelfFields()
 
 Meteor.publish 'annotations', (limit, filter, sortIndex) ->
-  check limit, PositiveNumber
-  check filter, OptionalOrNull String
-  check sortIndex, OptionalOrNull Number
-  check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
+  validateArgument limit, PositiveNumber, 'limit'
+  validateArgument filter, OptionalOrNull (String), 'filter'
+  validateArgument sortIndex, OptionalOrNull (Number), 'sortIndex'
+  validateArgument sortIndex, (Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length), 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'body') if filter
