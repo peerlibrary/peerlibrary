@@ -14,7 +14,7 @@ class Migration extends Document.PatchMigration
     counts.migrated += count
     counts.all += count
 
-    new ProcessPublicationsJob(all: true).enqueue()
+    new ProcessPublicationsJob(all: true).enqueue() if counts.migrated
 
     counts
 
