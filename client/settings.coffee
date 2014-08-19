@@ -160,9 +160,9 @@ changePassword = (currentPassword, newPassword, callback) ->
 
   try
     # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
-    throw new FormError 400, "Incorrect password.", 'current-password' unless currentPassword
+    throw new ValidationError 400, "Incorrect password.", 'current-password' unless currentPassword
     Accounts.changePassword currentPassword, newPassword, (error) ->
-      formError = new FormError error.error, error.reason, 'current-password' if error
+      formError = new ValidationError error.error, error.reason, 'current-password' if error
       callback formError
   catch error
     callback error

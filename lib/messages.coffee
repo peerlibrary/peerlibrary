@@ -1,9 +1,3 @@
-class @FormError extends Meteor.Error
-  constructor: (error, reason, field) ->
-    throw new Error "Error not set" unless error
-    details = "Field: #{ field or '' }"
-    super error, reason, details
-
 # Session variable wrapper for info/error messages
 class @FormMessages
   fields: [''] # Empty string represents global message which always exists
@@ -50,15 +44,20 @@ class @FormMessages
       return false unless @isValid field
     true
 
+  # Converts argument name to field name
+  mapArgumentToField: (argumentName) =>
+    # For now we keep those equal
+    argumentName
+
   # Read error message and field from given error object
   setError: (error) =>
     if error instanceof Meteor.Error
       # We get field value from error details
-      if _.startsWith error.details, 'Field: '
-        field = error.details.substring 'Field: '.length
+      if _.startsWith error.details, 'Argument: '
+        argument = error.details.substring 'Argument: '.length
       else
-        field = ''
-      @setErrorMessage error.reason, field
+        argument = ''
+      @setErrorMessage error.reason, @mapArgumentToField argument
     else if error instanceof Error
       @setErrorMessage error.message
     else
