@@ -16,7 +16,7 @@ class @Highlight extends Highlight
 
 Meteor.methods
   'highlights-path': methodWrap (highlightId) ->
-    check highlightId, DocumentId
+    validateArgument highlightId, DocumentId, 'highlightId'
 
     person = Meteor.person()
 
@@ -37,10 +37,10 @@ Meteor.methods
   # seem an issue as highlights are generally seen as public and limited only
   # to not leak private publication content in a quote.
   'create-highlight': methodWrap (publicationId, highlightId, quote, target) ->
-    check publicationId, DocumentId
-    check highlightId, DocumentId
-    check quote, NonEmptyString
-    check target, [Object]
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument highlightId, DocumentId, 'highlightId'
+    validateArgument quote, NonEmptyString, 'quote'
+    validateArgument target, [Object], 'target'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -72,7 +72,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-highlight': methodWrap (highlightId) ->
-    check highlightId, DocumentId
+    validateArgument highlightId, DocumentId, 'highlightId'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -92,7 +92,7 @@ Meteor.methods
     )
 
 Meteor.publish 'highlights-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument publicationId, DocumentId, 'publicationId'
 
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person
@@ -114,11 +114,11 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
       fields: Publication.readAccessSelfFields()
 
 Meteor.publish 'highlights', (limit, filter, sortIndex) ->
-  check limit, PositiveNumber
-  check filter, OptionalOrNull String
-  check sortIndex, OptionalOrNull Number
-  check sortIndex, Match.Where ->
-    not _.isNumber(sortIndex) or 0 <= sortIndex < Highlight.PUBLISH_CATALOG_SORT.length
+  validateArgument limit, PositiveNumber, 'limit'
+  validateArgument filter, OptionalOrNull(String), 'filter'
+  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
+  validateArgument sortIndex, (Match.Where ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Highlight.PUBLISH_CATALOG_SORT.length), 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'quote') if filter
