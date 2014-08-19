@@ -1,0 +1,28 @@
+body {
+  background: #f6f8f8;
+}
+
+.peerlibrary-loading {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: 10em;
+  margin-top: -7em;
+  line-height: 10em;
+  background-image: url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif");
+  background-position: 50% 90%;
+  background-repeat: no-repeat;
+  text-align: center;
+  font-size: 150%;
+  /* We use z-index -1 to hide the loading message once content is loaded */
+  z-index: -1;
+}
+
+noscript {
+  position: absolute;
+  top: 20%;
+  width: 100%;
+  text-align: center;
+  color: red;
+  font-size: 120%;
+}
