@@ -72,6 +72,8 @@ class @Notify extends BaseDocument
 
     stack = StackTrace.printStackTrace() unless stack or stack is false
 
+    throw new Error "Additional message has to be string when using \"log\" or \"stack\" arguments" if not _.isString(additional) and (log or stack)
+
     notificationAdditional = additional
 
     if stack

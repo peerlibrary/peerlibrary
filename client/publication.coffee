@@ -630,8 +630,7 @@ Deps.autorun ->
       'sticky.notProcessedPublicationId': publication._id
     # There was a notification displayed previously, so let's display
     # a new one informing about publication just being processed
-    if count
-      Notify.success "Publication successfully processed."
+    Notify.success "Publication successfully processed." if count
   else
     # The content of this message is used also in the template, so keep it in the sync
     Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
@@ -642,11 +641,12 @@ Deps.autorun ->
     fields:
       _id: 1
       jobs: 1
+    transform: null # So that we don't have any complications passing it to Notify.error
 
   # Only the latest job is pushed to the client, so index 0
   return unless publication?.jobs?[0]?.status is 'failed'
 
-  Notify.error "The last job associated with the publication has failed.", Template.failedJobLink(publication), false, false # Don't display the stack
+  Notify.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
 
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency

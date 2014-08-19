@@ -96,6 +96,9 @@ Template.notificationsOverlayItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.notificationsOverlayItem.additional = ->
-  # We allow additional information to be raw HTML content,
-  # but we make sure that it can be plain text as well
-  @additional.replace '\n', '<br/>' if @additional
+  if @additional?.template
+    Template[@additional.template] @additional.data
+  else
+    # We allow additional information to be raw HTML content,
+    # but we make sure that it can be plain text as well
+    @additional.replace '\n', '<br/>' if @additional
