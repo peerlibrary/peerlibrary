@@ -193,6 +193,8 @@ Template.catalogList.documents = ->
       ['searchResult.order', 'asc']
     ]
     limit: Session.get @variables.limit
+    fields:
+      searchResult: 0
 
 Template.catalogItem.documentIsPublication = ->
   @ instanceof Publication

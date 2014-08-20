@@ -73,6 +73,8 @@ Template.results.publications = ->
       ['searchResult.order', 'asc']
     ]
     limit: Session.get 'currentSearchLimit'
+    fields:
+      searchResult: 0
 
 Template.resultsCount.publications = ->
   Session.get 'currentSearchQueryCountPublications'
