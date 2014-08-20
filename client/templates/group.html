@@ -53,6 +53,7 @@
       {{> groupMembersAddControlResults}}
       {{> groupMembersAddControlLoading}}
     </div>
+    {{> groupMembersAddControlInviteHint}}
   {{/if}}
 </template>
 
@@ -119,4 +120,10 @@
       </ul>
     </div>
   </div>
+</template>
+
+<template name="groupMembersAddControlInviteHint">
+  {{#if visible}}
+    <p class="hint">Enter an email to add and invite the user.</p>
+  {{/if}}
 </template>
