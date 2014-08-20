@@ -27,7 +27,7 @@ Deps.autorun ->
 
 # Username settings
 Template.settingsUsername.events =
-  'submit form#set-username': (event, template) ->
+  'submit form.set-username': (event, template) ->
     event.preventDefault()
 
     usernameSubmitted = true
@@ -44,7 +44,7 @@ Template.settingsUsername.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'blur input#username': (event, template) ->
+  'blur input.username': (event, template) ->
     # We postpone blur event handling as a workaround for a bug in Meteor.
     # See https://github.com/peerlibrary/peerlibrary/pull/520#issuecomment-52514483
     # TODO: Move function below out of setTimeout when we move to Blaze
@@ -59,7 +59,7 @@ Template.settingsUsername.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup, paste input#username': (event, template) ->
+  'keyup input.username, paste input.username': (event, template) ->
     usernameFieldModified = true
     username = $('#username').val()
     validateUsername username, 'username'
@@ -93,7 +93,7 @@ validateUsername = (username, messageField) ->
 
 # Password settings
 Template.settingsPassword.events =
-  'submit #set-password': (event, template) ->
+  'submit form.set-password': (event, template) ->
     event.preventDefault()
 
     newPasswordReadyForValidation = true
@@ -118,14 +118,14 @@ Template.settingsPassword.events =
 
     return # Make sure CoffeeScript does not return anything
 
-  'blur #new-password': (event, template) ->
+  'blur input.new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
     newPassword = $('#new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
-  'keyup #new-password, paste #new-password': (event, template) ->
+  'keyup input.new-password, paste input.new-password': (event, template) ->
     newPasswordFieldModified = true
     newPassword = $('#new-password').val()
     validatePassword newPassword, 'new-password'
