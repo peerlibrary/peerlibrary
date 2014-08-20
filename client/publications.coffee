@@ -145,8 +145,12 @@ Template.publicationCatalogItemThumbnail.events
     # Update page tooltip with current scrubbed over page
     $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
 
+    return # Make sure CoffeeScript does not return anything
+
   'click li': (event, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
     publication = @publication
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
+
+    return # Make sure CoffeeScript does not return anything
