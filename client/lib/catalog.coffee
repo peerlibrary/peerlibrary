@@ -18,7 +18,7 @@ Template.catalog.created = ->
   wasReady = new Variable false
 
   @_resetSignalHandle?.stop()
-  @_resetSignalHandle = Deps.autorun ->
+  @_resetSignalHandle = Deps.autorun =>
     # Detect when ready is turned to false
     ready = Session.get(variables.ready)
     if wasReady() and not ready
@@ -26,7 +26,7 @@ Template.catalog.created = ->
       wasReady.set false
 
   @_searchParametersHandle?.stop()
-  @_searchParametersHandle = Deps.autorun ->
+  @_searchParametersHandle = Deps.autorun =>
     # Every time filter or sort is changed, we reset counts
     # (We don't want to reset counts on currentLimit change)
     Session.get variables.filter
@@ -45,16 +45,10 @@ Template.catalog.created = ->
     reset.set false
     if Session.get(variables.active) and Session.get(variables.limit)
       Session.set variables.loading, true
-      # Make sure there is only one subscribtion being executed at once
+      # Make sure there is only one subscription being executed at once
       subscriptionHandle.stop() if subscriptionHandle
       subscriptionHandle = Meteor.subscribe @data.subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
         onReady: =>
-          # Store how many results there are
-          searchResult = SearchResult.documents.findOne
-            name: @data.subscription
-            query: [Session.get(variables.filter), Session.get(variables.sort)]
-          Session.set variables.count, searchResult["count#{@data.documentClass.name}s"]
-
           Session.set variables.ready, true
           wasReady.set true
 
@@ -65,6 +59,24 @@ Template.catalog.created = ->
     else
       Session.set variables.loading, false
 
+  @_searchResultHandle?.stop()
+  @_searchResultHandle = Deps.autorun =>
+    fields = {}
+    fields["count#{@data.documentClass.name}s"] = 1
+
+    searchResultCursor = SearchResult.documents.find
+      name: @data.subscription
+      query: [Session.get(variables.filter), Session.get(variables.sort)]
+    ,
+      fields: fields
+
+    # Store how many results there are
+    searchResultCursor.observe
+      added: (document) =>
+        Session.set variables.count, document["count#{@data.documentClass.name}s"]
+      changed: (newDocument, oldDocument) =>
+        Session.set variables.count, newDocument["count#{@data.documentClass.name}s"]
+
 Template.catalog.destroyed = ->
   @_resetSignalHandle?.stop()
   @_resetSignalHandle = null
@@ -72,6 +84,8 @@ Template.catalog.destroyed = ->
   @_searchParametersHandle = null
   @_subscriptionAutorunHandle?.stop()
   @_subscriptionAutorunHandle = null
+  @_searchResultHandle?.stop()
+  @_searchResultHandle = null
 
 Template.catalogFilter.documentsName = ->
   @documentClass.verboseNamePlural()
