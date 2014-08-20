@@ -336,7 +336,14 @@ header.index-header
 
   .drop-files-to-import
     text-align center
-    cursor pointer
+
+    a
+      display inline
+      padding 0
+      color blue-accent
+
+      &:hover
+        text-decoration underline !important
 
   .development
     position fixed
