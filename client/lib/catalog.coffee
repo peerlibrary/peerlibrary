@@ -1,4 +1,4 @@
-# The ammount by which we increate the limit of returned results
+# The amount by which we increase the limit of returned results
 LIMIT_INCREASE_STEP = 10
 
 # List of all session variables that activate views with catalogs (used to determine infinite scrolling)
@@ -138,30 +138,23 @@ Template.catalogList.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-# Make sure onCatalogRendered gets executed once after rendered is done and new elements are in the DOM.
-# Otherwise we might increase limit multiple times in a row, before the DOM updates.
-onCatalogRenderedRunning = false
-
 onCatalogRendered = (template, variables) ->
-  onCatalogRenderedRunning = true
-
   renderedChildren = $(template.find '.item-list').children().length
   expectedChildren = Math.min(Session.get(variables.count), Session.get(variables.limit))
 
-  if expectedChildren is renderedChildren
-    onCatalogRenderedRunning = false
-    Session.set variables.limitIncreasing, false
-    # Trigger scrolling to automatically start loading more results until whole screen is filled
-    $(window).trigger('scroll')
-  else
-    # Give the engine more time to render things
-    setTimeout ->
-      onCatalogRendered template, variables
-    ,
-      500
+  # Not all elements are yet in the DOM. Let's return here.
+  # There will be another rendered call when they are added.
+  return if renderedChildren isnt expectedChildren
+
+  Session.set variables.limitIncreasing, false
+  # Trigger scrolling to automatically start loading more results until whole screen is filled
+  $(window).trigger('scroll')
 
 Template.catalogList.rendered = ->
-  onCatalogRendered @, @data.variables unless onCatalogRenderedRunning
+  Deps.afterFlush =>
+    # Make sure onCatalogRendered gets executed after rendered is done and new elements are in the DOM.
+    # Otherwise we might increase limit multiple times in a row, before the DOM updates.
+    onCatalogRendered @, @data.variables
 
   # Focus on the filter
   $(@find '.filter input').focus()
@@ -219,7 +212,7 @@ Template.catalogLoading.documentsName = ->
 
 Template.catalogLoading.events
   'click .load-more': (event, template) ->
-    e.preventDefault()
+    event.preventDefault()
     Session.set @variables.limitIncreasing, false # We want to force loading more in every case
     increaseLimit LIMIT_INCREASE_STEP, @variables
 
