@@ -40,14 +40,7 @@
       </p>
       <p>Source: {{source}}</p>
       <p>{{createdAt}}</p>
-      <div class="access-menu">
-        {{#if canModifyAccess}}
-          {{> publicationAccessControlPrivacyForm}}
-        {{else}}
-          {{> publicationAccessControlPrivacyInfo}}
-        {{/if}}
-        {{> rolesControl}}
-      </div>
+      {{> publicationAccessMenu}}
     </div>
   </div>
 </template>
@@ -116,21 +109,50 @@
   </li>
 </template>
 
+<template name="publicationAccessIconControl">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> publicationAccessIconButton}}
+    <div class="dropdown-anchor">
+      {{> publicationAccessMenu}}
+    </div>
+  </div>
+</template>
+
+<template name="publicationAccessIconButton">
+  <button class="access-button tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
+    {{#if open}}<i class="icon-public"></i>{{/if}}
+    {{#if closed}}<i class="icon-closed"></i>{{/if}}
+    {{#if private}}<i class="icon-private"></i>{{/if}}
+  </button>
+</template>
+
+<template name="publicationAccessMenu">
+  <div class="access-menu dropdown control">
+    <h3>Permissions</h3>
+    {{#if canModifyAccess}}
+      {{> publicationAccessControlPrivacyForm}}
+    {{else}}
+      {{> publicationAccessControlPrivacyInfo}}
+    {{/if}}
+    {{> rolesControl}}
+  </div>
+</template>
+
 <template name="publicationAccessControlPrivacyForm">
     <form class="access publication-access">
       <div class="selections">
 
-        <label class="selection {{#if open}}selected{{/if}}">
+        <label class="selection {{#if open}}selected icon-check{{/if}}">
           <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
-          <i class="access-icon icon-public"></i> Open<br/>Access
+          <i class="access-icon icon-public"></i> Open Access
         </label>
 
-        <label class="selection {{#if closed}}selected{{/if}}">
+        <label class="selection {{#if closed}}selected icon-check{{/if}}">
           <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
-          <i class="access-icon icon-closed"></i> Closed<br/>Access
+          <i class="access-icon icon-closed"></i> Closed Access
         </label>
 
-        <label class="selection {{#if private}}selected{{/if}}">
+        <label class="selection {{#if private}}selected icon-check{{/if}}">
           <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
           <i class="access-icon icon-private"></i> Private
         </label>
@@ -384,7 +406,7 @@
 </template>
 
 <template name="newAnnotationAccessButton">
-  <button class="access-button tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
+  <button class="access-button borderless tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public annotation
     {{else}}

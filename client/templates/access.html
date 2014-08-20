@@ -8,7 +8,7 @@
 </template>
 
 <template name="accessButton">
-  <button class="access-button tooltip" title="{{#if public}}Everyone can see the {{documentName}}.{{else}}Only the  {{#if documentIsGroup}}group members and {{/if}} listed users can see the {{documentName}}.{{/if}}">
+  <button class="access-button borderless tooltip" title="{{#if public}}Everyone can see the {{documentName}}.{{else}}Only the  {{#if documentIsGroup}}group members and {{/if}} listed users can see the {{documentName}}.{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public {{documentName}}
     {{else}}
@@ -27,7 +27,7 @@
 </template>
 
 <template name="accessIconButton">
-  <button class="access-button tooltip" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
+  <button class="access-button borderless tooltip" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
     {{#if public}}
       <i class="icon-public"></i>
     {{else}}

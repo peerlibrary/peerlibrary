@@ -112,7 +112,7 @@ class @Notify extends BaseDocument
       url: url
       lineNumber: lineNumber
       stack: stack
-      location: document.location.toString()
+      location: "#{ document.location }"
       userAgent: navigator.userAgent
       language: navigator.language
       doNotTrack: (navigator.msDoNotTrack or navigator.doNotTrack) in ["1", "yes", "true", 1, true]

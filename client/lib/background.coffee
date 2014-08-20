@@ -45,7 +45,7 @@ class Vector
     @x = @originX + sin * @deltaX + distance
     @y = @originY + sin * @deltaY + distance
 
-  toString = =>
+  toString: =>
     "#<Vector x: #{ @x }, y: #{ @y }>"
 
 class Triangle
@@ -137,6 +137,9 @@ class @Background
     @resizeView()
     @generateTriangles()
 
+    # If paused, we have to call it ourselves here
+    frame @draw if Session.get('backgroundPaused') and @autorunHandle
+
     return # Make sure CoffeeScript does not return anything
 
   resizeView: =>
@@ -196,6 +199,7 @@ class @Background
 
     return # To not have CoffeeScript return a result of for loop
 
+  # Is called regularly from requestAnimationFrame or from resize while paused
   draw: (time) =>
     return unless @renderer
 
@@ -214,14 +218,15 @@ class @Background
     if Session.get 'backgroundPaused'
       # Remember the time when we were paused
       @pausedTime = time
-      # And react to the change of backgroundPaused
-      @autorunHandle = Deps.autorun =>
-        unless Session.get 'backgroundPaused'
-          # Cleanup after resume
-          @autorunHandle.stop()
-          @autorunHandle = null
-          # Restart the loop
-          frame @draw
+      if not @autorunHandle # autorunHandle is set if we are calling this from resize while paused
+        # And react to the change of backgroundPaused
+        @autorunHandle = Deps.autorun =>
+          unless Session.get 'backgroundPaused'
+            # Cleanup after resume
+            @autorunHandle.stop()
+            @autorunHandle = null
+            # Restart the loop
+            frame @draw
       return
 
     frame @draw

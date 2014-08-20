@@ -39,32 +39,46 @@
       <h2>Collection by</h2>
       {{> personInlineItem authorPerson}}
     </div>
-    {{> collectionTools}}
+    {{> collectionSettings}}
     <div class="section to-my-library">
       <a href="{{libraryPath}}">To My Library</a>
     </div>
   </div>
 </template>
 
-<template name="collectionTools">
-  <div class="section">
+<template name="collectionSettings">
+  <div class="settings section">
+    <h2>Settings</h2>
+    <div class="section">
+      {{> accessControl}}
+    </div>
+    {{#if canRemove}}
+      <div class="section">
+        {{> collectionAdminTools}}
+      </div>
+    {{/if}}
     {{#if canModify}}
-      <h2>Tools</h2>
-      {{#if canRemove}}
-        <div class="section">
-          <button class="delete-collection">Delete collection</button>
-          {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
-          {{! TODO: Remove all publications from collection }}
-          {{! TODO: Add confirmation or undo for this action }}
-        </div>
-      {{/if}}
       <p class="hint section">
         You can reorder publications in a collection by dragging them.
       </p>
     {{/if}}
-    <div class="section">
-      <h3>Permissions</h3>
-      {{> accessControl}}
+  </div>
+</template>
+
+<template name="collectionAdminTools">
+  <div class="admin-tools dropdown-trigger">
+    <button class="borderless">
+      <i class="icon-tools"></i> Admin tools
+    </button>
+    <div class="dropdown-anchor">
+      <ul class="dropdown">
+        <li class="menu-item">
+          {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
+          {{! TODO: Remove all publications from collection }}
+          {{! TODO: Add confirmation or undo for this action }}
+          <button class="delete-collection warning tooltip" title="Warning: there is no undo for this action.">Delete collection</button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
