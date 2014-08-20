@@ -1942,6 +1942,11 @@ Template.annotationCommentEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
+  'keyup .comment-content-editor': (event, template) ->
+    $(template.findAll 'button.comment').click() if event.keyCode is 13 # Enter key
+
+    return # Make sure CoffeeScript does not return anything
+
   'click button.comment': (event, template) ->
     $editor = $(template.findAll '.comment-content-editor')
 
