@@ -2,9 +2,10 @@
   try
     check argumentValue, match
   catch error
-    throw new ValidationError error.error, error.message, argumentName
+    throw new ValidationError error.message, argumentName
 
 class @ValidationError extends Meteor.Error
-  constructor: (error, reason, argumentName) ->
-    details = "Argument: #{ argumentName or '' }"
+  constructor: (reason, argumentName) ->
+    error = 400
+    details = "Argument: #{ argumentName or '' }" if argumentName
     super error, reason, details

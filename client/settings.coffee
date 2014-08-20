@@ -163,7 +163,7 @@ changePassword = (currentPassword, newPassword, callback) ->
 
   try
     Accounts.changePassword currentPassword, newPassword, (error) ->
-      formError = new ValidationError error.error, error.reason, 'current-password' if error
+      formError = new ValidationError (error.reason or error.toString() or "Unknown error"), 'current-password' if error
       callback formError
   catch error
     callback error
