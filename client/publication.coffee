@@ -225,6 +225,10 @@ class @Publication extends Publication
 
       @_highlighter.setNumPages @_pdf.numPages
 
+      longPublicationMessage = "Publication is long and your browser might have issues displaying it."
+      if @_pdf.numPages > 20 and not Notify.documents.exists(message: longPublicationMessage)
+        Notify.warn longPublicationMessage
+
       for pageNumber in [1..@_pdf.numPages]
         $displayCanvas = $('<canvas/>').addClass('display-canvas').addClass('content-background').data('page-number', pageNumber)
         $highlightsCanvas = $('<canvas/>').addClass('highlights-canvas')
