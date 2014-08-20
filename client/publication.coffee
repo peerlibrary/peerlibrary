@@ -163,7 +163,9 @@ class @Publication extends Publication
     documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
     pagesHalf = if @_pdf then (@_pagesDone / @_pdf.numPages) / 2 else 0
 
-    Session.set 'currentPublicationProgress', documentHalf + pagesHalf
+    progress = documentHalf + pagesHalf
+
+    Session.set('currentPublicationProgress', progress) if progress > Session.get 'currentPublicationProgress'
 
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"

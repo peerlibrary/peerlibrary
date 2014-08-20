@@ -19,7 +19,7 @@ setSession = (session) ->
     currentCollectionSlug: null
     currentPublicationId: null
     currentPublicationSlug: null
-    currentPublicationProgress: null
+    currentPublicationProgress: null # TODO: This does not have to be a session variable, but just a normal reactive variable
     currentPublicationLimitAnnotationsToViewport: false
     currentHighlightId: null
     currentAnnotationId: null
