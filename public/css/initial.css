@@ -15,6 +15,8 @@ body {
   background-repeat: no-repeat;
   text-align: center;
   font-size: 150%;
+  /* We use system font so that it is available immediately */
+  font-family: sans-serif;
   /* We use z-index -1 to hide the loading message once content is loaded */
   z-index: -1;
 }
