@@ -131,13 +131,10 @@ Deps.autorun ->
 
 Deps.autorun ->
   # Subscribe to people and group data that appear in permissions for new annotations
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationReadPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationMaintainerPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationAdminPersons()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationReadGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationMaintainerGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationAdminGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationWorkInsideGroups()
+  for persons in [getNewAnnotationReadPersons(), getNewAnnotationMaintainerPersons(), getNewAnnotationAdminPersons()] when persons.length
+    Meteor.subscribe 'persons-by-ids-or-slugs', persons
+  for groups in [getNewAnnotationReadGroups(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminGroups(), getNewAnnotationWorkInsideGroups()] when groups.length
+    Meteor.subscribe 'groups-by-ids', groups
 
 class @Publication extends Publication
   @Meta
