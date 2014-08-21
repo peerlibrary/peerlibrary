@@ -162,6 +162,8 @@ changePassword = (currentPassword, newPassword, callback) ->
     return
 
   try
+    # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
+    throw new ValidationError 400, "Incorrect password.", 'current-password' unless currentPassword
     Accounts.changePassword currentPassword, newPassword, (error) ->
       formError = new ValidationError (error.reason or error.toString() or "Unknown error"), 'current-password' if error
       callback formError
