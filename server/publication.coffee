@@ -136,8 +136,8 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A set of fields which are public and can be published to the client. cachedId field is available
-  # for open access publications, if user has the publication in the library, or is a private publication.
+  # A set of fields which are public and can be published to the client. cachedId field is available for open
+  # access publications, if user has the publication in the library, or has necessary permissions over the publication.
   @PUBLISH_FIELDS: ->
     fields:
       slug: 1
@@ -173,7 +173,7 @@ class @Publication extends Publication
       'title'
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-      'access'
+      'access' # Also needed to compute hasCachedId in search results
       'annotationsCount'
     ]
 
@@ -414,11 +414,26 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
       added: (id, fields) =>
         fields.hasAbstract = !!fields.abstract
         delete fields.abstract
+        if fields.access isnt Publication.ACCESS.CLOSED
+          # Both other cases are handled by the selector, if publication is in the
+          # query results, user has access to the full text of the publication
+          # (publication is private or open access)
+          fields.hasCachedId = true
+        else
+          fields.hasCachedId = new Publication(fields).hasCacheAccessSearchResult person
         fields
       changed: (id, fields) =>
         if 'abstract' of fields
           fields.hasAbstract = !!fields.abstract
           delete fields.abstract
+        if 'access' of fields
+          if fields.access isnt Publication.ACCESS.CLOSED
+            # Both other cases are handled by the selector, if publication is in the
+            # query results, user has access to the full text of the publication
+            # (publication is private or open access)
+            fields.hasCachedId = true
+          else
+            fields.hasCachedId = new Publication(fields).hasCacheAccessSearchResult person
         fields
   ,
     Person.documents.find
@@ -476,7 +491,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
       _id: id
     ),
       fields: _.extend Publication.PUBLISH_FIELDS().fields,
-        # cachedId field is available for open access publications, if user has the publication in the library, or is a private publication
+        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication
         'cachedId': 1
   ,
     Person.documents.find
