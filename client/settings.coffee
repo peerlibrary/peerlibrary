@@ -79,9 +79,10 @@ Template.settingsUsername.messageOnField = (field, options) ->
   field = null unless options
   usernameFormMessages.get field
 
-Template.settingsUsername.isValid = (field, options) ->
+Template.settingsUsername.validity = (field, options) ->
   field = null unless options
-  usernameFormMessages.isValid field
+  return 'invalid' unless usernameFormMessages.isValid field
+  ''
 
 validateUsername = (username, messageField) ->
   return unless usernameReadyForValidation
@@ -141,9 +142,10 @@ Template.settingsPassword.messageOnField = (field, options) ->
   field = null unless options
   passwordFormMessages.get field
 
-Template.settingsPassword.isValid = (field, options) ->
+Template.settingsPassword.validity = (field, options) ->
   field = null unless options
-  passwordFormMessages.isValid field
+  return 'invalid' unless passwordFormMessages.isValid field
+  ''
 
 validatePassword = (newPassword, messageField) ->
   return unless newPasswordReadyForValidation
