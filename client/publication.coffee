@@ -131,13 +131,10 @@ Deps.autorun ->
 
 Deps.autorun ->
   # Subscribe to people and group data that appear in permissions for new annotations
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationReadPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationMaintainerPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationAdminPersons()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationReadGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationMaintainerGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationAdminGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationWorkInsideGroups()
+  for persons in [getNewAnnotationReadPersons(), getNewAnnotationMaintainerPersons(), getNewAnnotationAdminPersons()] when persons.length
+    Meteor.subscribe 'persons-by-ids-or-slugs', persons
+  for groups in [getNewAnnotationReadGroups(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminGroups(), getNewAnnotationWorkInsideGroups()] when groups.length
+    Meteor.subscribe 'groups-by-ids', groups
 
 class @Publication extends Publication
   @Meta
@@ -163,7 +160,9 @@ class @Publication extends Publication
     documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
     pagesHalf = if @_pdf then (@_pagesDone / @_pdf.numPages) / 2 else 0
 
-    Session.set 'currentPublicationProgress', documentHalf + pagesHalf
+    progress = documentHalf + pagesHalf
+
+    Session.set('currentPublicationProgress', progress) if progress > Session.get 'currentPublicationProgress'
 
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"
@@ -1982,6 +1981,11 @@ Template.annotationCommentEditor.events
     $editor = $(event.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
     $wrapper.addClass 'active' if $editor.text().trim()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'keyup .comment-content-editor': (event, template) ->
+    $(template.findAll 'button.comment').click() if event.keyCode is 13 # Enter key
 
     return # Make sure CoffeeScript does not return anything
 

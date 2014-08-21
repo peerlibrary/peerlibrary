@@ -39,6 +39,8 @@ Template.myGroups.myGroups = ->
     sort: [
       ['name', 'asc']
     ]
+    fields:
+      searchResult: 0
 
 Template.groupCatalogItem.countDescription = ->
   if @membersCount is 1 then "1 member" else "#{ @membersCount } members"

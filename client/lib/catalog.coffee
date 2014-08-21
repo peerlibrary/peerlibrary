@@ -1,4 +1,4 @@
-# The ammount by which we increate the limit of returned results
+# The amount by which we increase the limit of returned results
 LIMIT_INCREASE_STEP = 10
 
 # List of all session variables that activate views with catalogs (used to determine infinite scrolling)
@@ -18,7 +18,7 @@ Template.catalog.created = ->
   wasReady = new Variable false
 
   @_resetSignalHandle?.stop()
-  @_resetSignalHandle = Deps.autorun ->
+  @_resetSignalHandle = Deps.autorun =>
     # Detect when ready is turned to false
     ready = Session.get(variables.ready)
     if wasReady() and not ready
@@ -26,7 +26,7 @@ Template.catalog.created = ->
       wasReady.set false
 
   @_searchParametersHandle?.stop()
-  @_searchParametersHandle = Deps.autorun ->
+  @_searchParametersHandle = Deps.autorun =>
     # Every time filter or sort is changed, we reset counts
     # (We don't want to reset counts on currentLimit change)
     Session.get variables.filter
@@ -45,16 +45,10 @@ Template.catalog.created = ->
     reset.set false
     if Session.get(variables.active) and Session.get(variables.limit)
       Session.set variables.loading, true
-      # Make sure there is only one subscribtion being executed at once
+      # Make sure there is only one subscription being executed at once
       subscriptionHandle.stop() if subscriptionHandle
       subscriptionHandle = Meteor.subscribe @data.subscription, Session.get(variables.limit), Session.get(variables.filter), Session.get(variables.sort),
         onReady: =>
-          # Store how many results there are
-          searchResult = SearchResult.documents.findOne
-            name: @data.subscription
-            query: [Session.get(variables.filter), Session.get(variables.sort)]
-          Session.set variables.count, searchResult["count#{@data.documentClass.name}s"]
-
           Session.set variables.ready, true
           wasReady.set true
 
@@ -65,6 +59,24 @@ Template.catalog.created = ->
     else
       Session.set variables.loading, false
 
+  @_searchResultHandle?.stop()
+  @_searchResultHandle = Deps.autorun =>
+    fields = {}
+    fields["count#{@data.documentClass.name}s"] = 1
+
+    searchResultCursor = SearchResult.documents.find
+      name: @data.subscription
+      query: [Session.get(variables.filter), Session.get(variables.sort)]
+    ,
+      fields: fields
+
+    # Store how many results there are
+    searchResultCursor.observe
+      added: (document) =>
+        Session.set variables.count, document["count#{@data.documentClass.name}s"]
+      changed: (newDocument, oldDocument) =>
+        Session.set variables.count, newDocument["count#{@data.documentClass.name}s"]
+
 Template.catalog.destroyed = ->
   @_resetSignalHandle?.stop()
   @_resetSignalHandle = null
@@ -72,6 +84,8 @@ Template.catalog.destroyed = ->
   @_searchParametersHandle = null
   @_subscriptionAutorunHandle?.stop()
   @_subscriptionAutorunHandle = null
+  @_searchResultHandle?.stop()
+  @_searchResultHandle = null
 
 Template.catalogFilter.documentsName = ->
   @documentClass.verboseNamePlural()
@@ -138,30 +152,23 @@ Template.catalogList.created = ->
 
     return # Make sure CoffeeScript does not return anything
 
-# Make sure onCatalogRendered gets executed once after rendered is done and new elements are in the DOM.
-# Otherwise we might increase limit multiple times in a row, before the DOM updates.
-onCatalogRenderedRunning = false
-
 onCatalogRendered = (template, variables) ->
-  onCatalogRenderedRunning = true
-
   renderedChildren = $(template.find '.item-list').children().length
   expectedChildren = Math.min(Session.get(variables.count), Session.get(variables.limit))
 
-  if expectedChildren is renderedChildren
-    onCatalogRenderedRunning = false
-    Session.set variables.limitIncreasing, false
-    # Trigger scrolling to automatically start loading more results until whole screen is filled
-    $(window).trigger('scroll')
-  else
-    # Give the engine more time to render things
-    setTimeout ->
-      onCatalogRendered template, variables
-    ,
-      500
+  # Not all elements are yet in the DOM. Let's return here.
+  # There will be another rendered call when they are added.
+  return if renderedChildren isnt expectedChildren
+
+  Session.set variables.limitIncreasing, false
+  # Trigger scrolling to automatically start loading more results until whole screen is filled
+  $(window).trigger('scroll')
 
 Template.catalogList.rendered = ->
-  onCatalogRendered @, @data.variables unless onCatalogRenderedRunning
+  Deps.afterFlush =>
+    # Make sure onCatalogRendered gets executed after rendered is done and new elements are in the DOM.
+    # Otherwise we might increase limit multiple times in a row, before the DOM updates.
+    onCatalogRendered @, @data.variables
 
   # Focus on the filter
   $(@find '.filter input').focus()
@@ -186,6 +193,8 @@ Template.catalogList.documents = ->
       ['searchResult.order', 'asc']
     ]
     limit: Session.get @variables.limit
+    fields:
+      searchResult: 0
 
 Template.catalogItem.documentIsPublication = ->
   @ instanceof Publication
@@ -219,7 +228,7 @@ Template.catalogLoading.documentsName = ->
 
 Template.catalogLoading.events
   'click .load-more': (event, template) ->
-    e.preventDefault()
+    event.preventDefault()
     Session.set @variables.limitIncreasing, false # We want to force loading more in every case
     increaseLimit LIMIT_INCREASE_STEP, @variables
 

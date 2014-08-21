@@ -152,6 +152,7 @@
     {{> rolesControlResults}}
     {{> rolesControlLoading}}
   </div>
+  {{> rolesControlInviteHint}}
 </template>
 
 <template name="rolesControlNoResults">
@@ -180,5 +181,11 @@
 <template name="rolesControlLoading">
   {{#if loading}}
     <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
+</template>
+
+<template name="rolesControlInviteHint">
+  {{#if visible}}
+    <p class="hint">Enter an email to add and invite the user.</p>
   {{/if}}
 </template>

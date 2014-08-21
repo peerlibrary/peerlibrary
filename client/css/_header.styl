@@ -336,7 +336,14 @@ header.index-header
 
   .drop-files-to-import
     text-align center
-    cursor pointer
+
+    a
+      display inline
+      padding 0
+      color blue-accent
+
+      &:hover
+        text-decoration underline !important
 
   .development
     position fixed
@@ -407,7 +414,9 @@ header.no-index-header
   .container
     .progress-bar
       background #2dc7ff
-      bottom -2px
-      height 2px
+      top 0
+      bottom 0
       position absolute
+      z-index -1
+
 

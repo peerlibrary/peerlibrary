@@ -274,6 +274,11 @@ Template.groupAdminTools.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.groupMembersAddControlInviteHint.visible = ->
+  addGroupMembersReactiveVariables @
+
+  !@_query()
+
 Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
 Handlebars.registerHelper 'groupReference', _.bind Group.reference, Group

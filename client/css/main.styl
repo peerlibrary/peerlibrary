@@ -41,7 +41,7 @@ body
   font 14px "Fira Sans", sans-serif
   line-height default-line-height
   margin 0 auto
-  background light-grey
+  background light-grey // Keep in sync with public/css/initial.css
   -webkit-font-smoothing antialiased
 
 ::-moz-selection
@@ -81,13 +81,14 @@ textarea
   resize vertical
 
   font-weight: normal;
+
 .chromeframe
   margin 0.2em 0
   background #dee7e9
   color #000
   padding 0.2em 0
 
-a, ul.top-menu li .search-wrapper .development-comment a
+a
   display inline
   padding 0
   color blue-accent
@@ -95,9 +96,6 @@ a, ul.top-menu li .search-wrapper .development-comment a
 
 a:hover
   text-decoration underline
-
-ul.top-menu li .search-wrapper .development-comment a:hover
-  text-decoration underline !important
 
 h2
   font-size 18px
