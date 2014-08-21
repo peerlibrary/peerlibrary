@@ -12,7 +12,7 @@
   <form class="set-username">
     <div class="form-control-group">
       <label for="username">Username</label>
-      <input type="text" id="username" class="username {{validity "username"}}" />
+      <input type="text" id="username" class="username {{validity 'username'}}" />
       {{#with messageOnField "username"}}
         {{> formMessage}}<br/>
       {{/with}}
@@ -30,7 +30,7 @@
   <form class="set-password">
     <div class="form-control-group">
       <label for="current-password">Current password</label>
-      <input type="password" id="current-password" class="current-password {{validity "current-password"}}" />
+      <input type="password" id="current-password" class="current-password {{validity 'current-password'}}" />
       {{#with messageOnField "current-password"}}
         {{> formMessage}}
       {{/with}}
@@ -38,7 +38,7 @@
 
     <div class="form-control-group">
       <label for="new-password">New password</label>
-      <input type="password" id="new-password" class="new-password {{validity "new-password"}}" />
+      <input type="password" id="new-password" class="new-password {{validity 'new-password'}}" />
       {{#with messageOnField "new-password"}}
         {{> formMessage}}
       {{/with}}
