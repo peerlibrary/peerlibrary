@@ -9,7 +9,7 @@
 </template>
 
 <template name="settingsUsername">
-  <form id="set-username" class="set-username">
+  <form class="set-username">
     <div class="form-control-group">
       <label for="username">Username</label>
       <input type="text" id="username" class="username{{#unless isValid "username"}} invalid{{/unless}}" />
@@ -27,7 +27,7 @@
 </template>
 
 <template name="settingsPassword">
-  <form id="set-password" class="set-password">
+  <form class="set-password">
     <div class="form-control-group">
       <label for="current-password">Current password</label>
       <input type="password" id="current-password" class="current-password{{#unless isValid "current-password"}} invalid{{/unless}}" />

@@ -14,8 +14,8 @@ resetUsernameForm = ->
 
 resetPasswordForm = ->
   passwordFormMessages.resetMessages()
-  $('#current-password').val('')
-  $('#new-password').val('')
+  $('input.current-password').val('')
+  $('input.new-password').val('')
   newPasswordReadyForValidation = false
   newPasswordFieldModified = false
 
@@ -32,7 +32,7 @@ Template.settingsUsername.events =
 
     usernameSubmitted = true
     usernameFormMessages.resetMessages()
-    username = $('#username').val()
+    username = $('input.username').val()
     try
       usernameFormMessages.resetMessages()
       Meteor.call 'set-username', username, (error) ->
@@ -52,7 +52,7 @@ Template.settingsUsername.events =
     Meteor.setTimeout ->
       usernameReadyForValidation = usernameFieldModified
       return if usernameSubmitted
-      username = $('#username').val()
+      username = $('input.username').val()
       validateUsername username, 'username'
     ,
       100 # ms
@@ -61,7 +61,7 @@ Template.settingsUsername.events =
 
   'keyup input.username, paste input.username': (event, template) ->
     usernameFieldModified = true
-    username = $('#username').val()
+    username = $('input.username').val()
     validateUsername username, 'username'
 
     return # Make sure CoffeeScript does not return anything
@@ -98,8 +98,8 @@ Template.settingsPassword.events =
 
     newPasswordReadyForValidation = true
     passwordFormMessages.resetMessages()
-    currentPassword = $('#current-password').val()
-    newPassword = $('#new-password').val()
+    currentPassword = $('input.current-password').val()
+    newPassword = $('input.new-password').val()
 
     passwordFormMessages.setErrorMessage 'Current password is required.', 'current-password' unless currentPassword
 
@@ -120,14 +120,14 @@ Template.settingsPassword.events =
 
   'blur input.new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
-    newPassword = $('#new-password').val()
+    newPassword = $('input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup input.new-password, paste input.new-password': (event, template) ->
     newPasswordFieldModified = true
-    newPassword = $('#new-password').val()
+    newPassword = $('input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
