@@ -134,8 +134,8 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'remove-from-group': methodWrap (groupId, memberId) ->
     console.log "Remove from group called"
-    check groupId, DocumentId
-    check memberId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument memberId, DocumentId, 'memberId'
     person = getValidPerson()
     group = getValidGroup groupId, person
     throw new Meteor.Error 400, "Member is last remaining administrator of this group." if group.adminPersons.length is 1 and group.adminPersons[0]._id is memberId
@@ -161,8 +161,8 @@ Meteor.methods
 
   'deny-request-to-leave-group': methodWrap (groupId, memberId) ->
     console.log "Deny request to leave group called"
-    check groupId, DocumentId
-    check memberId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument memberId, DocumentId, 'membrerId'
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -193,8 +193,8 @@ Meteor.methods
 
   'group-set-join-policy': methodWrap (groupId, policy) ->
     console.log "Group set join policy called"
-    check groupId, DocumentId
-    check policy, MatchAccess Group.POLICY
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument policy, MatchAccessi(Group.POLICY), 'policy'
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -206,8 +206,8 @@ Meteor.methods
 
   'group-set-leave-policy': methodWrap (groupId, policy) ->
     console.log "Group set leave policy called"
-    check groupId, DocumentId
-    check policy, MatchAccess Group.POLICY
+    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument policy, MatchAccess(Group.POLICY), 'policy'
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -219,7 +219,7 @@ Meteor.methods
 
   'request-to-join-group': methodWrap (groupId) ->
     console.log "Request to join group called"
-    check groupId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
     person = getValidPerson()
     group = getValidGroup groupId, person
     throw new Meteor.Error 400, "You are not allowed to join this group." if group.joinPolicy is Group.POLICY.CLOSED
@@ -246,7 +246,7 @@ Meteor.methods
 
   'cancel-request-to-join-group': methodWrap (groupId) ->
     console.log "Cancel request to join group called"
-    check groupId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -260,7 +260,7 @@ Meteor.methods
 
   'request-to-leave-group': methodWrap (groupId) ->
     console.log "Request to leave group called"
-    check groupId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
     person = getValidPerson()
     group = getValidGroup groupId, person
     throw new Meteor.Error 400, "You are not allowed to leave this group." if group.leavePolicy is Group.POLICY.CLOSED
@@ -288,7 +288,7 @@ Meteor.methods
 
   'cancel-request-to-leave-group': methodWrap (groupId) ->
     console.log "Cancel request to leave group called"
-    check groupId, DocumentId
+    validateArgument groupId, DocumentId, 'groupId'
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -332,7 +332,7 @@ Meteor.publish 'my-groups', ->
       fields: _.extend Group.readAccessPersonFields()
 
 Meteor.publish 'my-join-requests', (groupId) ->
-  check groupId, DocumentId
+  validateArgument groupId, DocumentId, 'groupId'
 
   @related (person) ->
     return unless person?._id
@@ -350,7 +350,7 @@ Meteor.publish 'my-join-requests', (groupId) ->
       fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'my-leave-requests', (groupId) ->
-  check groupId, DocumentId
+  validateArgument groupId, DocumentId, 'groupId'
 
   @related (person) ->
     return unless person?._id
