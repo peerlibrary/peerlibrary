@@ -1,6 +1,6 @@
 Meteor.methods
   'newsletter-subscribe': methodWrap (email) ->
-    validateArgument email, EMail, 'email'
+    validateArgument 'email', email, EMail
 
     result = Meteor.http.post 'http://lists.peerlibrary.org/lists',
       params:
