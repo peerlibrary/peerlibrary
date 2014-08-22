@@ -30,7 +30,7 @@ Meteor.publish 'job-queue', ->
         isAdmin: 1
 
 Meteor.publish 'jobs-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument publicationId, DocumentId, 'publicationId'
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
