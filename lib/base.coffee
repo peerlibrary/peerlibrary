@@ -15,6 +15,7 @@ setSession = (session) ->
     searchFocused: false
     adminActive: false
     libraryActive: false
+    settingsActive: false
     currentCollectionId: null
     currentCollectionSlug: null
     currentPublicationId: null
@@ -359,6 +360,13 @@ else
         setSession
           libraryActive: true
         'library'
+
+    '/settings':
+      as: 'settings'
+      to: ->
+        setSession
+          settingsActive: true
+        'settings'
 
 Meteor.Router.add
   '/about':

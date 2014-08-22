@@ -1,7 +1,7 @@
 # TODO: Search for persons as well
 Meteor.publish 'search-results', (query, limit) ->
-  check query, NonEmptyString
-  check limit, PositiveNumber
+  validateArgument query, NonEmptyString, 'query'
+  validateArgument limit, PositiveNumber, 'limit'
 
   findQuery = createQueryCriteria(query, 'fullText')
   return unless findQuery.$and.length

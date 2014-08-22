@@ -235,8 +235,8 @@ registerForAccess Publication
 
 Meteor.methods
   'create-publication': methodWrap (filename, sha256) ->
-    check filename, String
-    check sha256, SHA256String
+    validateArgument filename, String, 'filename'
+    validateArgument sha256, SHA256String, 'sha256'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -313,9 +313,8 @@ Meteor.methods
     samples: samples
 
   'upload-publication': methodWrap (file, options) ->
-    check file, MeteorFile
-    check options, Match.ObjectIncluding
-      publicationId: DocumentId
+    validateArgument file, MeteorFile, 'file'
+    validateArgument options, Match.ObjectIncluding(publicationId: DocumentId), 'options'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -389,8 +388,8 @@ Meteor.methods
             _id: publication._id
 
   'verify-publication': methodWrap (publicationId, samplesData) ->
-    check publicationId, DocumentId
-    check samplesData, [Uint8Array]
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument samplesData, [Uint8Array], 'samplesData'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -425,8 +424,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'publication-set-title': methodWrap (publicationId, title) ->
-    check publicationId, DocumentId
-    check title, NonEmptyString
+    validateArgument publicationId, DocumentId, 'publicationId'
+    validateArgument title, NonEmptyString, 'title'
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -443,11 +442,12 @@ Meteor.methods
         title: title
 
 Meteor.publish 'publications', (limit, filter, sortIndex) ->
-  check limit, PositiveNumber
-  check filter, OptionalOrNull String
-  check sortIndex, OptionalOrNull Number
-  check sortIndex, Match.Where ->
+  validateArgument limit, PositiveNumber, 'limit'
+  validateArgument filter, OptionalOrNull(String), 'filter'
+  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
+  validateArgument sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
+  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'title') if filter
@@ -493,7 +493,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
       fields: _.extend Publication.readAccessPersonFields()
 
 Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, NonEmptyString
+  validateArgument slug, NonEmptyString, 'slug'
 
   @related (author, person) ->
     return unless author?._id
@@ -519,7 +519,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
       fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'publication-by-id', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument publicationId, DocumentId, 'publicationId'
 
   @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
@@ -535,7 +535,7 @@ Meteor.publish 'publication-by-id', (publicationId) ->
 # We could try to combine publications-by-id and publications-cached-by-id,
 # but it is easier to have two and leave to Meteor to merge them together
 Meteor.publish 'publications-cached-by-id', (id) ->
-  check id, DocumentId
+  validateArgument id, DocumentId, 'id'
 
   @related (person) ->
     Publication.documents.find Publication.requireCacheAccessSelector(person,

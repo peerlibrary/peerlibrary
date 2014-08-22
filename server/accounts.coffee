@@ -1,16 +1,12 @@
 ADMIN_USER_ID = 'NfEBPKH6GLYHuSJXJ'
 ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
 
-USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
-
-FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
-
 INVITE_SECRET = Random.id()
 
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
-    check email, EMail
-    check message, Match.Optional String
+    validateArgument email, EMail, 'email'
+    validateArgument message, Match.Optional(String), 'message'
 
     # We require that user inviting is logged in
     person = Meteor.person()
@@ -40,6 +36,35 @@ Meteor.methods
 
     invited._id
 
+  'reset-password-with-username': methodWrap (token, verifier, username) ->
+    validateArgument token, String, 'token'
+    validateArgument verifier, Object, 'verifier'
+    validateArgument username, String, 'username'
+    User.validateUsername username, 'username'
+
+    # We call Meteor's internal resetPassword method
+    newUser = Meteor.call 'resetPassword', token, verifier
+    Meteor.call 'set-username', username
+
+    newUser
+
+  'set-username': methodWrap (username) ->
+    validateArgument username, String, 'username'
+    User.validateUsername username, 'username'
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
+
+    updatedCount = User.documents.update
+      _id: Meteor.userId()
+      username:
+        $exists: false
+    ,
+      $set:
+        username: username
+    throw new Meteor.Error 400, "Username already set." unless updatedCount is 1
+
+    return # Make sure CoffeeScript does not return anything
+
 Accounts.onCreateUser methodWrap (options, user) ->
   # Idea is that only server side knows invite secret and we can
   # based on that differentiate between onCreateUser checks because
@@ -62,21 +87,7 @@ Accounts.onCreateUser methodWrap (options, user) ->
   # TODO: Our error messages end with a dot, but client-side (Meteor's) do not
 
   # Check username unless onCreateUser is called because user has been invited
-  unless options.secret
-    throw new Meteor.Error 400, "Username must be at least 3 characters long." unless user.username and user.username.length >= 3
-
-    throw new Meteor.Error 400, "Username must contain only a-zA-Z0-9_- characters." unless USERNAME_REGEX.test user.username
-
-    throw new Meteor.Error 400, "Username already exists." if FORBIDDEN_USERNAME_REGEX.test user.username
-
-    # Check for unique username in a case insensitive manner.
-    # We do not have to escape username because we have already
-    # checked that it contains only a-zA-Z0-9_- characters.
-    throw new Meteor.Error 400, "Username already exists." if User.documents.exists username: new RegExp "^#{ user.username }$", 'i'
-
-    # Username must not match any existing Person _id otherwise our queries for
-    # Person documents querying both _id and slug would return multiple documents
-    throw new Meteor.Error 400, "Username already exists." if Person.documents.exists _id: user.username
+  User.validateUsername user.username, 'user.username' unless options.secret
 
   throw new Meteor.Error 400, "Invalid email address." unless user.username is 'admin' or EMAIL_REGEX.test user.emails?[0]?.address
 
