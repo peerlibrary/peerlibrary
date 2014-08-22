@@ -48,7 +48,7 @@ getValidGroup = (groupId, person) ->
 
 Meteor.methods
   'create-group': methodWrap (name) ->
-    validateArgument name, NonEmptyString, 'name'
+    validateArgument 'name', name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -72,7 +72,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-group': methodWrap (groupId) ->
-    validateArgument groupId, DocumentId, 'groupId'
+    validateArgument 'groupId', groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -83,8 +83,8 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'add-to-group': methodWrap (groupId, memberId) ->
     console.log "Add to group method called"
-    validateArgument groupId, DocumentId, 'groupId'
-    validateArgument memberId, DocumentId, 'groupId'
+    validateArgument 'groupId', groupId, DocumentId
+    validateArgument 'groupId', memberId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -115,8 +115,8 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'deny-request-to-join-group': methodWrap (groupId, memberId) ->
     console.log "Deny request to join group method called"
-    validateArgument groupId, DocumentId, 'groupId'
-    validateArgument memberId, DocumentId, 'groupId'
+    validateArgument 'groupId', groupId, DocumentId
+    validateArgument 'groupId', memberId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -180,8 +180,8 @@ Meteor.methods
   # TODO: Use this code on the client side as well
   'group-set-name': methodWrap (groupId, name) ->
     console.log "Group set name called"
-    validateArgument groupId, DocumentId, 'groupId'
-    validateArgument name, NonEmptyString, 'name'
+    validateArgument 'groupId', groupId, DocumentId
+    validateArgument 'name', name, NonEmptyString
     person = getValidPerson()
     group = getValidGroup groupId, person
 
@@ -301,7 +301,7 @@ Meteor.methods
           _id: person._id
 
 Meteor.publish 'groups-by-ids', (groupIds) ->
-  validateArgument groupIds, Match.OneOf(DocumentId, [DocumentId]), 'groupIds'
+  validateArgument 'groupIds', groupIds, Match.OneOf DocumentId, [DocumentId]
 
   groupIds = [groupIds] unless _.isArray groupIds
 
@@ -368,12 +368,11 @@ Meteor.publish 'my-leave-requests', (groupId) ->
       fields: Publication.readAccessPersonFields()
 
 Meteor.publish 'groups', (limit, filter, sortIndex) ->
-  validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull(String), 'filter'
-  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
-  validateArgument sortIndex, Match.Where (sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Group.PUBLISH_CATALOG_SORT.length
-  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter

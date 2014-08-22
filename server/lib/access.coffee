@@ -7,7 +7,7 @@ accessDocuments = {}
   accessDocuments[document.Meta._name] = document
 
 RegisteredForAccess = Match.Where (documentName) ->
-  validateArgument documentName, String, 'documentName'
+  validateArgument 'documentName', documentName, String
   accessDocuments.hasOwnProperty documentName
 
 createNotInSetQuery = (documentId, set, personOrGroup, personOrGroupId) ->
@@ -93,13 +93,12 @@ setRole = (currentPerson, documentName, documentId, personOrGroup, personOrGroup
 # TODO: Use this code on the client side as well
 Meteor.methods
   'set-role-for-person': methodWrap (documentName, documentId, personId, role) ->
-    validateArgument documentName, RegisteredForAccess, 'documentName'
-    validateArgument documentId, DocumentId, 'documentId'
-    validateArgument personId, DocumentId, 'personId'
-    validateArgument role, Match.Where (role) ->
-      validateArgument role, Match.OneOf null, Match.Integer
+    validateArgument 'documentName', documentName, RegisteredForAccess
+    validateArgument 'documentId', documentId, DocumentId
+    validateArgument 'personId', personId, DocumentId
+    validateArgument 'role', role, Match.Where (role) ->
+      check role, Match.OneOf null, Match.Integer
       return role is null or 0 <= role <= ROLES.ADMIN
-    , 'role'
 
     currentPerson = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless currentPerson
@@ -107,13 +106,12 @@ Meteor.methods
     !!setRole currentPerson, documentName, documentId, 'Person', personId, role
 
   'set-role-for-group': methodWrap (documentName, documentId, groupId, role) ->
-    validateArgument documentName, RegisteredForAccess, 'documentName'
-    validateArgument documentId, DocumentId, 'documentId'
-    validateArgument groupId, DocumentId, 'groupId'
-    validateArgument role, Match.Where (role) ->
-      validateArgument role, Match.OneOf null, Match.Integer
+    validateArgument 'documentName', documentName, RegisteredForAccess
+    validateArgument 'documentId', documentId, DocumentId
+    validateArgument 'groupId', groupId, DocumentId
+    validateArgument 'role', role, Match.Where (role) ->
+      check role, Match.OneOf null, Match.Integer
       return role is null or 0 <= role <= ROLES.ADMIN
-    , 'role'
 
     currentPerson = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless currentPerson
@@ -121,9 +119,9 @@ Meteor.methods
     !!setRole currentPerson, documentName, documentId, 'Group', groupId, role
 
   'set-access': methodWrap (documentName, documentId, access) ->
-    validateArgument documentName, RegisteredForAccess, 'documentName'
-    validateArgument documentId, DocumentId, 'documentId'
-    validateArgument access, MatchAccess(accessDocuments[documentName].ACCESS), 'access'
+    validateArgument 'documentName', documentName, RegisteredForAccess
+    validateArgument 'documentId', documentId, DocumentId
+    validateArgument 'access', access, MatchAccess accessDocuments[documentName].ACCESS
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
