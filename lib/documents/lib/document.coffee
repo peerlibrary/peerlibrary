@@ -22,6 +22,10 @@ class @BaseDocument extends Document
     return "1 #{ @verboseName() }" if quantity == 1
     "#{ quantity } #{ @verboseNamePlural() }"
 
+  # Refreshes all the fields of the current document instance
+  # from the database. It allows you populate a thin document
+  # (with for example only _id) with additional fields, or
+  # update fields if you think they were updated in the database.
   refresh: (fields) =>
     fields ?= {}
     _.extend @, @constructor.documents.findOne @_id,

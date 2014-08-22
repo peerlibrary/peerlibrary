@@ -47,7 +47,7 @@
       {{#if processed}}
         <p class="time">Processed: {{processed}}</p>
       {{else}}
-        {{! The content of this message is used also in the code, so keep it in the sync }}
+        {{! The content of this message is used also in the code, so keep it in sync }}
         <p class="warning balance-text">Publication has not yet been processed and is thus unavailable to others regardless of the access settings below.</p>
       {{/if}}
       <p>Last job status: {{jobs.0.status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
