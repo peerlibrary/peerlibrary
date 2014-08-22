@@ -1,0 +1,65 @@
+<template name="settings">
+  {{#if currentPerson}}
+    <h1>{{currentPerson.displayName}} personal settings</h1>
+    {{#unless usernameExists}}
+      {{> settingsUsername}}
+    {{/unless}}
+    {{> settingsPassword}}
+  {{/if}}
+</template>
+
+<template name="settingsUsername">
+  <form class="set-username">
+    <div class="form-control-group">
+      <label for="username">Username</label>
+      {{! TODO: Remove id after we move to Blaze }}
+      <input type="text" id="username" class="username {{validity 'username'}}" />
+      {{#with messageOnField "username"}}
+        {{> formMessage}}<br/>
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <button class="set-username">Set username</button>
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
+    </div>
+  </form>
+</template>
+
+<template name="settingsPassword">
+  <form class="set-password">
+    <div class="form-control-group">
+      <label for="current-password">Current password</label>
+      {{! TODO: Remove id after we move to Blaze }}
+      <input type="password" id="current-password" class="current-password {{validity 'current-password'}}" />
+      {{#with messageOnField "current-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <label for="new-password">New password</label>
+      {{! TODO: Remove id after we move to Blaze }}
+      <input type="password" id="new-password" class="new-password {{validity 'new-password'}}" />
+      {{#with messageOnField "new-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="form-control-group">
+      <button class="change-password">Change password</button>
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
+    </div>
+  </form>
+</template>
+
+<template name="formMessage">
+  {{#if errorMessage}}
+    <div class="form-message error">{{errorMessage}}</div>
+  {{/if}}
+  {{#if infoMessage}}
+    <div class="form-message info">{{infoMessage}}</div>
+  {{/if}}
+</template>

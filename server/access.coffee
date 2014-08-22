@@ -1,8 +1,8 @@
 Meteor.publish 'search-persons-groups', (query, except) ->
   except ?= []
 
-  check query, NonEmptyString
-  check except, [DocumentId]
+  validateArgument query, NonEmptyString, 'query'
+  validateArgument except, [DocumentId], 'except'
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 

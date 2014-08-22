@@ -24,7 +24,7 @@ Template.publicationCatalogItem.events
       # We ignore the click if handle is not yet ready
       $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
     else
-      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
+      template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
         Deps.afterFlush =>
           $(template.findAll '.abstract').slideToggle('fast')
 
@@ -145,8 +145,12 @@ Template.publicationCatalogItemThumbnail.events
     # Update page tooltip with current scrubbed over page
     $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
 
+    return # Make sure CoffeeScript does not return anything
+
   'click li': (event, template) ->
     globals.startViewerOnPage = @page
     # TODO: Change when you are able to access parent context directly with Meteor
     publication = @publication
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
+
+    return # Make sure CoffeeScript does not return anything

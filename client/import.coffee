@@ -1,5 +1,5 @@
 # Local (client-only) document of importing files
-class ImportingFile extends BaseDocument
+class @ImportingFile extends BaseDocument
   # name: user's file name
   # status: current status or error message displayed to user
   # readProgress: progress of reading from file, in %
@@ -15,7 +15,7 @@ class ImportingFile extends BaseDocument
   #   importing: file currently being imported
   #   finished: file processing finished successfully, but it
   #             was not imported (import canceled or already exists)
-  #   imported: file processing finished successfully and at was imported
+  #   imported: file processing finished successfully and it was imported
   #   errored: file processing errored
 
   @Meta
@@ -45,6 +45,13 @@ canceledFiles.observe
         state: 'finished'
         status: "Import canceled"
 
+publicationHandles = {}
+
+# Subscribe to publications that have been matched on the server
+Deps.autorun ->
+  ImportingFile.documents.find({publicationId: $exists: true}, {fields: publicationId: 1}).forEach (file) ->
+    Meteor.subscribe 'publication-by-id', file.publicationId
+
 verifyFile = (file, publicationId, samples) ->
   ImportingFile.documents.update file._id,
     $set:
@@ -57,7 +64,7 @@ verifyFile = (file, publicationId, samples) ->
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     ImportingFile.documents.update file._id,
@@ -91,7 +98,7 @@ uploadFile = (file, publicationId) ->
         ImportingFile.documents.update file._id,
           $set:
             state: 'errored'
-            status: error.toString()
+            status: "#{ error }"
         return
 
       ImportingFile.documents.update file._id,
@@ -123,7 +130,7 @@ Deps.autorun ->
       ImportingFile.documents.update document._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     if result.already
@@ -148,11 +155,11 @@ computeChecksum = (file, callback) ->
 
   hash.update file.content, (error) ->
     if error
-      Notify.error "Crypto error: #{ error.toString?() or error }", null, true, error.stack
+      Notify.error "Crypto error: #{ error }", null, true, error.stack
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
-          status: error.toString()
+          status: "#{ error }"
       return
 
     hash.finalize callback
@@ -191,7 +198,7 @@ Deps.autorun ->
           ImportingFile.documents.update document._id,
             $set:
               state: 'errored'
-              status: error.toString()
+              status: "#{ error }"
           return
 
         ImportingFile.documents.update document._id,
@@ -201,11 +208,11 @@ Deps.autorun ->
             state: 'preprocessed'
 
   reader.onerror = (error) ->
-    Notify.error "FileReader error: #{ error.toString?() or error }", null, true, error.stack
+    Notify.error "FileReader error: #{ error }", null, true, error.stack
     ImportingFile.documents.update document._id,
       $set:
         state: 'errored'
-        status: error.toString()
+        status: "#{ error }"
 
   # TODO: Read file in chunks
   reader.readAsArrayBuffer importingFiles[document._id]
@@ -271,17 +278,20 @@ $(document).on 'dragenter', (event) ->
 
   return # Make sure CoffeeScript does not return anything
 
-Template.importButton.events =
-  'click .import': (event, template) ->
+importButtonEvent =
+  'click .import, click .import-link': (event, template) ->
     event.preventDefault()
 
     if Meteor.personId()
-      $(template.findAll '.import-file-input').click()
+      $('.import-file-input').click()
     else
       Session.set 'signInOverlayActive', true
 
     return # Make sure CoffeeScript does not return anything
 
+Template.importButton.events importButtonEvent
+
+Template.importButton.events
   'change input.import-file-input': (event, template) ->
     event.preventDefault()
 
@@ -299,13 +309,10 @@ Template.importButton.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importingFilesItem.events =
-  'click .cancel-button': (event) ->
-    event.preventDefault()
-    # We stop event propagation to prevent the
-    # cancel from bubbling up to hide the overlay
-    event.stopPropagation()
+Template.importLink.events importButtonEvent
 
+Template.importingFilesItemCancel.events
+  'click .cancel-button': (event, template) ->
     ImportingFile.documents.update @_id,
       $set:
         canceled: true
@@ -315,17 +322,24 @@ Template.importingFilesItem.events =
 Template.importingFilesItem.hideCancel = ->
   # We keep cancel shown even when canceled is set, until we get back
   # in the file upload method callback and set finished as well
-  @state in ['finished', 'errored']
+  @state in ['finished', 'errored', 'imported']
 
 Template.importingFilesItem.state = ->
-  return 'canceled' if @canceled
+  # Canceled could still be set, but state could be errored
+  # or imported if canceled was set to late in the process,
+  # in which case we want not to display it as canceled
+  return @state if @state in ['errored', 'imported']
+  # But otherwise if state is finished and canceled,
+  # we want to display it as canceled
+  return 'canceled' if @canceled and @state is 'finished'
   return @state
 
-Template.searchInput.events =
-  'click .drop-files-to-import': (event, template) ->
-    event.preventDefault()
-
-    $('ul.top-menu .import').click()
+Template.importingFilesItem.publication = ->
+  publication = Publication.documents.findOne @publicationId
+  return unless publication
+  # TODO: Change when you are able to access parent context directly with Meteor
+  publication.filename = @name
+  publication
 
 Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'
@@ -359,7 +373,10 @@ Template.signInOverlay.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importOverlay.events =
+Template.importOverlay.events
+  'click .import': (event, template) ->
+    $('.import-file-input').click()
+
   'dragover': (event, template) ->
     event.preventDefault()
     event.dataTransfer.effectAllowed = 'copy'
@@ -388,10 +405,16 @@ Template.importOverlay.events =
     return # Make sure CoffeeScript does not return anything
 
   'click': (event, template) ->
-    # We are stopping propagation in click on cancel
-    # button but it still propagates so we cancel here
-    # TODO: Check if this is still necessary in the new version of Meteor
-    return if event.isPropagationStopped()
+    $target = $(event.target)
+
+    # Allow click on cancel buttons
+    return if $target.closest('.cancel-button').length
+
+    # Allow click on import button
+    return if $target.closest('.import').length
+
+    # Don't close overlay if the user is interacting with one of the access controls (or other dropdowns)
+    return if $target.closest('.access-control').length or $('.dropdown-anchor:visible').length
 
     hideOverlay()
 
@@ -415,6 +438,9 @@ Template.importOverlay.importOverlayActive = ->
 Template.importOverlay.importingFiles = ->
   ImportingFile.documents.find()
 
+Template.importOverlay.importingFilesCount = ->
+  ImportingFile.documents.find().count()
+
 Deps.autorun ->
   if Session.get('importOverlayActive') or Session.get('signInOverlayActive')
     # We prevent scrolling of page content while overlay is visible
@@ -436,6 +462,9 @@ Deps.autorun ->
 
   # If no file was really imported (all canceled?)
   return unless importedFilesCount
+
+  # Don't redirect if the user is interacting with one of the access controls (or other dropdowns)
+  return if $('.dropdown-anchor:visible').length
 
   if importedFilesCount is 1
     Notify.success "Imported the publication."

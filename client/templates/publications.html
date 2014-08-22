@@ -86,7 +86,9 @@
         {{#if hasAbstract}}
           <button class="actionable preview-link">Abstract</button> &middot;
         {{/if}}
-        <a href="{{path}}">Full text</a>
+        {{#if hasCachedId}}
+          <a href="{{path}}">Full text</a>
+        {{/if}}
       </div>
     </div>
 

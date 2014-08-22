@@ -23,6 +23,7 @@ class @Publication extends BasicAccessDocument
   # comments: comments about the publication, a free-form text, metadata provided by the source
   # abstract
   # hasAbstract (client only): boolean if document has an abstract, used only in search results (cheaper to send than the whole abstract)
+  # hasCachedId (client only): boolean if user has access to the full text of the publication, used only in search results
   # doi
   # msc2010: list of MSC 2010 classes
   # acm1998: list of ACM 1998 classes
@@ -136,14 +137,14 @@ class @Publication extends BasicAccessDocument
   createdDay: =>
     moment(@createdAt).format 'MMMM Do YYYY'
 
-  hasReadAccess: (person, cache=false) =>
-    return false unless @cached
+  hasReadAccess: (person, cache=false, searchResult=false) =>
+    return false unless searchResult or @cached
 
     return true if person?.isAdmin
 
     return true if @_id in _.pluck person?.library, '_id'
 
-    return false unless @processed
+    return false unless searchResult or @processed
 
     implementation = @_hasReadAccess person, cache
     return implementation if implementation is true or implementation is false
@@ -178,6 +179,14 @@ class @Publication extends BasicAccessDocument
 
   hasCacheAccess: (person) =>
     @hasReadAccess person, true
+
+  # Special version of hasCacheAccess to be used when checking for cache access
+  # for search results which were already preselected based on read access conditions.
+  # It checks only for the full text access and if not all necessary fields (like
+  # maintainer and admin fields) are present the result is an approximation (but good
+  # enough for the common case).
+  hasCacheAccessSearchResult: (person) =>
+    @hasReadAccess person, true, true
 
   @requireReadAccessSelector: (person, selector, cache=false) ->
     # To not modify input

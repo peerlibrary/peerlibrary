@@ -57,5 +57,8 @@ Editable.template Template.collectionCatalogItemName, ->
 
 EnableCatalogItemLink Template.collectionCatalogItem
 
+Template.collectionCatalogItem.private = ->
+  @access is ACCESS.PRIVATE
+
 Template.collectionCatalogItem.countDescription = ->
   Publication.verboseNameWithCount @publications?.length

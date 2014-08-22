@@ -25,6 +25,20 @@
   {{/if}}
   {{#if noResults}}
     <p class="status">No publications or people found.</p>
+        <p class="hint">
+          {{#if currentPersonId}}
+            If you are not finding publications you expected, you can {{> importLink}} their PDFs yourself.
+          {{else}}
+            If you are not finding publications you expected, you might lack permissions to access them. Try signing in.
+            Moreover, after signing in you can import their PDFs yourself.
+          {{/if}}
+        </p>
+        <p class="hint">
+          PeerLibrary can be used for open access, closed access, or private publications, by marking them
+          accordingly once imported. For a closed access publication others will have to import its PDF
+          themselves to see its full text. For a private publication you can configure access permissions
+          for users and groups.
+        </p>
   {{/if}}
 </template>
 
