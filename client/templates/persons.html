@@ -22,7 +22,7 @@
 
 <template name="personInlineItem">
   {{#spaceless}}
-    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{path}}"{{/unless}}>
+    <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#if addLink}}href="{{path}}"{{/if}}>
       {{> personAvatar}}
       <span class="name" title="{{displayName}}">{{displayName}}</span>
     </a>

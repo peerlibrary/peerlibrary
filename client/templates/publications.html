@@ -19,7 +19,7 @@
 
 <template name="publicationInlineItem">
   {{#spaceless}}
-    <a class="inline-item publication" {{#unless noLink}}href="{{path}}"{{/unless}}>
+    <a class="inline-item publication"{{#if addLink}} href="{{path}}"{{/if}}>
       <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
         {{#if title}}
