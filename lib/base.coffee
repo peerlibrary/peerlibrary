@@ -15,11 +15,12 @@ setSession = (session) ->
     searchFocused: false
     adminActive: false
     libraryActive: false
+    settingsActive: false
     currentCollectionId: null
     currentCollectionSlug: null
     currentPublicationId: null
     currentPublicationSlug: null
-    currentPublicationProgress: null
+    currentPublicationProgress: null # TODO: This does not have to be a session variable, but just a normal reactive variable
     currentPublicationLimitAnnotationsToViewport: false
     currentHighlightId: null
     currentAnnotationId: null
@@ -359,6 +360,13 @@ else
         setSession
           libraryActive: true
         'library'
+
+    '/settings':
+      as: 'settings'
+      to: ->
+        setSession
+          settingsActive: true
+        'settings'
 
 Meteor.Router.add
   '/about':

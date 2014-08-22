@@ -44,7 +44,7 @@ class @Person extends AccessDocument
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       slug: @GeneratedField 'self', ['user.username']
-      displayName: @GeneratedField 'self', ['displayName', 'givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
+      displayName: @GeneratedField 'self', ['givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited:

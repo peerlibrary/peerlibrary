@@ -1,6 +1,6 @@
 Meteor.methods
   'create-admin-account': methodWrap (password) ->
-    check password, String
+    validateArgument 'password', password, String
 
     throw new Meteor.Error 403, "Not in install mode." unless INSTALL
 

@@ -131,13 +131,10 @@ Deps.autorun ->
 
 Deps.autorun ->
   # Subscribe to people and group data that appear in permissions for new annotations
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationReadPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationMaintainerPersons()
-  Meteor.subscribe 'persons-by-ids-or-slugs', getNewAnnotationAdminPersons()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationReadGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationMaintainerGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationAdminGroups()
-  Meteor.subscribe 'groups-by-ids', getNewAnnotationWorkInsideGroups()
+  for persons in [getNewAnnotationReadPersons(), getNewAnnotationMaintainerPersons(), getNewAnnotationAdminPersons()] when persons.length
+    Meteor.subscribe 'persons-by-ids-or-slugs', persons
+  for groups in [getNewAnnotationReadGroups(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminGroups(), getNewAnnotationWorkInsideGroups()] when groups.length
+    Meteor.subscribe 'groups-by-ids', groups
 
 class @Publication extends Publication
   @Meta
@@ -163,7 +160,9 @@ class @Publication extends Publication
     documentHalf = _.min [(@_progressData.loaded / @_progressData.total) / 2, 0.5]
     pagesHalf = if @_pdf then (@_pagesDone / @_pdf.numPages) / 2 else 0
 
-    Session.set 'currentPublicationProgress', documentHalf + pagesHalf
+    progress = documentHalf + pagesHalf
+
+    Session.set('currentPublicationProgress', progress) if progress > Session.get 'currentPublicationProgress'
 
   show: (@_$displayWrapper) =>
     Notify.debug "Showing publication #{ @_id }"
@@ -541,7 +540,7 @@ class @Publication extends Publication
 Deps.autorun ->
   if Session.get 'currentPublicationId'
     publicationSubscribing.set true
-    publicationHandle = Meteor.subscribe 'publications-by-id', Session.get 'currentPublicationId'
+    publicationHandle = Meteor.subscribe 'publication-by-id', Session.get 'currentPublicationId'
     publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
@@ -631,10 +630,52 @@ addAccessEvents =
     $(template.findAll '.meta-menu').removeClass('displayed')
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationMetaMenu.events addAccessEvents
+Template.publicationAccessMenu.events addAccessEvents
 
-Template.publicationMetaMenu.canModifyAccess = ->
+Template.publicationAccessMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+onAccessDropdownHidden = (event) ->
+  # Return the access button to default state.
+  $button = $(this).closest('.dropdown-trigger').find('.access-button')
+  $button.addClass('tooltip')
+
+accessButtonEventHandlers =
+  'click .access-button': (event, template) ->
+    $anchor = $(template.firstNode).siblings('.dropdown-anchor').first()
+    $anchor.toggle()
+
+    if $anchor.is(':visible')
+      # Temporarily remove and disable tooltips on the button, because the same
+      # information as in the tooltip is displayed in the dropdown content. We need
+      # to remove the element manually, since we can't selectively disable/destroy
+      # it just on this element through jQeury UI.
+      $button = $(template.findAll '.access-button')
+      tooltipId = $button.attr('aria-describedby')
+      $('#' + tooltipId).remove()
+      $button.removeClass('tooltip')
+
+    else
+      onAccessDropdownHidden.call($anchor, null)
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.publicationAccessIconControl.rendered = ->
+  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+
+Template.publicationAccessIconControl.canModifyAccess = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.publicationAccessIconButton.events accessButtonEventHandlers
+
+Template.publicationAccessIconButton.open = ->
+  @access is Publication.ACCESS.OPEN
+
+Template.publicationAccessIconButton.closed = ->
+  @access is Publication.ACCESS.CLOSED
+
+Template.publicationAccessIconButton.private = ->
+  @access is Publication.ACCESS.PRIVATE
 
 Template.publicationAccessControlPrivacyForm.open = ->
   @access is Publication.ACCESS.OPEN
@@ -1895,6 +1936,11 @@ Template.annotationCommentEditor.events
     $editor = $(event.currentTarget)
     $wrapper = $(template.findAll '.comment-editor')
     $wrapper.addClass 'active' if $editor.text().trim()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'keyup .comment-content-editor': (event, template) ->
+    $(template.findAll 'button.comment').click() if event.keyCode is 13 # Enter key
 
     return # Make sure CoffeeScript does not return anything
 

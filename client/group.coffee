@@ -250,10 +250,19 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupTools.canRemove = ->
+Template.groupSettings.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.groupDetails.events
+Template.groupAdminTools.events
+  'click .dropdown-trigger': (event, template) ->
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
+    return if $.contains template.find('.dropdown-anchor'), event.target
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return # Make sure CoffeeScript does not return anything
+
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
       Notify.fromError error, true if error
@@ -264,6 +273,11 @@ Template.groupDetails.events
       Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
+
+Template.groupMembersAddControlInviteHint.visible = ->
+  addGroupMembersReactiveVariables @
+
+  !@_query()
 
 Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 

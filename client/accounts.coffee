@@ -40,11 +40,7 @@ Template._loginButtonsLoggedOutPasswordService.rendered = ->
 Template._forgotPasswordForm.rendered = ->
   $('#forgot-password-email').focus()
 
-# Autofocus password when enroll user form is rendered
-Template._enrollAccountDialog.rendered = ->
-  $('#enroll-account-password').focus()
-
-$$(document).on 'keyup', (event) ->
+$(document).on 'keyup', (event) ->
   if event.keyCode is 27 # Escape key
     Accounts._loginButtonsSession.closeDropdown()
     Accounts._loginButtonsSession.set 'resetPasswordToken', null
@@ -109,21 +105,23 @@ Template._enrollAccountDialog.events
     event.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
-  'click #login-buttons-enroll-account-button': (event, template) ->
-    changingPasswordInEnrollAccount = true
+  'click #login-buttons-enroll-account-with-username-button': (event, template) ->
+    event.preventDefault()
+    enrollAccount()
     return # Make sure CoffeeScript does not return anything
 
-  'keypress #enroll-account-password': (event, template) ->
-    changingPasswordInEnrollAccount = true if event.keyCode is 13 # Enter key
+  'keypress #enroll-account-with-username-password': (event, template) ->
+    enrollAccount() if event.keyCode is 13 # Enter key
     return # Make sure CoffeeScript does not return anything
 
+  # The rest of the cancel button functionality is handled by Meteor
   'click #login-buttons-cancel-enroll-account': (event, template) ->
     changingPasswordInEnrollAccount = false
     return # Make sure CoffeeScript does not return anything
 
 Template._enrollAccountDialog.rendered = ->
   Meteor.defer =>
-    $(@findAll '#enroll-account-password').focus()
+    $(@findAll '#enroll-account-with-username-username').focus()
 
 # When user enrolls or enrollment is canceled, we change the location to the index page
 lastEnrollAccountToken = null
@@ -150,3 +148,32 @@ Deps.autorun ->
     else
       Notify.success "Signed out."
     lastPersonId = personId
+
+enrollAccount = ->
+  changingPasswordInEnrollAccount = true
+
+  username = $('#enroll-account-with-username-username').val()
+  password = $('#enroll-account-with-username-password').val()
+
+  token = Accounts._loginButtonsSession.get 'enrollAccountToken'
+  Accounts.resetPasswordWithUsername token, password, username, (error) ->
+    if error
+      Accounts._loginButtonsSession.errorMessage error.reason or error.toString?() or "Unknown error"
+    else
+      Accounts._loginButtonsSession.set 'enrollAccountToken', null
+
+# We extend Meteor's Accounts.resetPassword functionality with username so that
+# user must choose username in the enroll form
+Accounts.resetPasswordWithUsername = (token, password, username, callback) ->
+  try
+    throw new Meteor.Error 400, "Invalid token." unless token
+    User.validateUsername username
+    User.validatePassword password
+
+    verifier = SRP.generateVerifier password
+    Accounts.callLoginMethod
+      methodName: 'reset-password-with-username'
+      methodArguments: [token, verifier, username]
+      userCallback: callback
+  catch error
+    callback error

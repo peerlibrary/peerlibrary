@@ -195,6 +195,15 @@ small-meta-menu-icon-font-size = 13px
     /* We disable selection so that user cannot select anything between pages (in Firefox) */
     user-select none
 
+    /* Keep in sync with public/css/initial.css */
+    .loading
+      display inline-block
+      height 5em
+      vertical-align top
+      background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
+      background-position 50% 90%
+      background-repeat no-repeat
+
     .display-page
       position relative
       /* Has to be set otherwise there is 4px of additional height to display-page */
@@ -275,6 +284,7 @@ small-meta-menu-icon-font-size = 13px
           width 245px
           height auto
 
+      /* Keep in sync with public/css/initial.css */
       .loading
         position absolute
         left 50%
@@ -282,10 +292,10 @@ small-meta-menu-icon-font-size = 13px
         height 10em
         width 10em
         margin-left -5em
-        margin-top -5em
+        margin-top -7em
         line-height 10em
         background-image url("/packages/pdf.js/pdf.js/web/images/loading-icon.gif")
-        background-position 50% 50%
+        background-position 50% 90%
         background-repeat no-repeat
         text-align center
 

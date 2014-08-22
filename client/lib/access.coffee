@@ -436,3 +436,8 @@ Template.rolesControlResultsItem.events
     grantAccess @_parent, @
 
     return # Make sure CoffeeScript does not return anything
+
+Template.rolesControlInviteHint.visible = ->
+  addAccessControlReactiveVariables @
+
+  !@_query()

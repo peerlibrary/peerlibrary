@@ -120,16 +120,22 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return Notify.fromError error, true if error
 
-Template.collectionTools.canModify = ->
+Template.collectionSettings.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.collectionTools.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
-
-Template.collectionTools.canRemove = ->
+Template.collectionSettings.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.collectionDetails.events
+Template.collectionAdminTools.events
+  'click .dropdown-trigger': (event, template) ->
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
+    return if $.contains template.find('.dropdown-anchor'), event.target
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return # Make sure CoffeeScript does not return anything
+
   'click .delete-collection': (event, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
       Notify.fromError error, true if error

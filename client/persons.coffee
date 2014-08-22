@@ -10,7 +10,7 @@ Template.persons.catalogSettings = ->
     limit: 'currentPersonsLimit'
     limitIncreasing: 'currentPersonsLimitIncreasing'
     sort: 'currentPersonsSort'
-  signedOutNoDocumentsMessage: "There are no people yet. Sign up and become the first."
+  signedOutNoDocumentsMessage: "Sign up and become the first."
 
 Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"

@@ -23,6 +23,7 @@
       {{/if}}
       {{> addNewCollection}}
     {{/if}}
+    {{> footer}}
   </div>
 </template>
 
@@ -56,7 +57,20 @@
           <i class="icon-group"></i> Collection by <span class="actionable">{{> groupInlineItem authorGroup}}</span>
         {{/if}}
       </p>
-      <p class="show-in-sidebar"><i class="icon-publication"></i> {{countDescription}}</p>
+      <p class="show-in-sidebar publications-count">
+        <i class="icon-publication"></i>
+        {{#if private}}
+          <i class="icon-private"></i>
+        {{/if}}
+        {{countDescription}}
+      </p>
+      {{#if private}}
+        <p>
+          <span class="tooltip" title="Only listed users can see the collection">
+            <i class="icon-private"></i> private collection
+          </span>
+        </p>
+      {{/if}}
     </div>
 
     <a class="full-item-link" href="{{path}}"></a>

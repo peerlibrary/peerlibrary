@@ -12,32 +12,35 @@
 .big-logo
   position fixed 
   width 300px
-  height auto
-  top 145px
+  top 25%
   left 50%
-  margin-left -161px
+  margin -80px 0 0 -160px
   text-align center
   padding 10px
-  background transparent
-  cursor default
-  //border 2px solid rgba(20,20,20,0.8)
-  //border-radius 10px
+
+  img
+    width 150px
 
   h1
     font-family "Fira Sans", sans-serif
     font-size 50px
     font-weight 300
-    color rgba(20,20,20,0.8) 
-    margin 0
+    color rgba(20,20,20,0.8)
+    /* Centers the i in the middle of the logo */
+    margin 0 0 0 -3px
     user-select none
+
+    .peer
+      /* Centers the i in the middle of the logo */
+      letter-spacing -0.02em
 
 .statistics
   width auto
-  height: auto
+  height auto
   margin 0
   padding 0
   position fixed
-  bottom 0
+  bottom 50px
   left 50%
   margin-left -363px
   list-style none
@@ -48,9 +51,9 @@
     position relative
     text-align center
     width 120px
-    height 70px
+    height 50px
     margin 0
-    padding 20px 0
+    padding 10px 0 20px 0
     vertical-align middle
     border-right 2px solid rgba(40,40,40,0.2)
 
@@ -74,3 +77,61 @@
     
   li:last-child
     border 0
+
+.latest-blog-post
+  position fixed
+  left 50%
+  top 75%
+  width 644px
+  margin -40px 0 0 -322px
+
+.background-pause
+  position fixed
+  /* Position it above header */
+  z-index 5001
+  top 20px
+  left 25px
+  border 1px solid border-blue
+  border-radius 50%
+  opacity 0.2
+  transition opacity 0.2s
+
+  button
+    background none
+    border none
+    /* Shape borders for focus outline */
+    border-radius 50%
+    color border-blue
+    font-size 16px
+    width 28px
+    height 28px
+    padding 0
+
+    &::before
+      padding 5px
+      margin 0
+
+    &.icon-play::before
+      margin-left 1px
+
+  .ui-tooltip
+    position absolute
+    left 100%
+    top 50%
+    margin -21px 0 0 15px
+    opacity 0
+    visibility hidden
+    transition all 0.2s
+
+  &:hover
+    opacity 1
+
+    button
+      background none
+      border none
+
+    .ui-tooltip
+      opacity 1
+      visibility visible
+
+
