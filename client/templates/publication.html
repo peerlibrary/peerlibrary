@@ -207,7 +207,11 @@
 <template name="publicationDisplay">
   {{#if cachedAvailable}}
     {{#constant}}
-      <div class="display-wrapper"></div>
+      <div class="display-wrapper">
+        <div class="loading">
+          <h2>Loading</h2>
+        </div>
+      </div>
     {{/constant}}
   {{else}}
     <div class="display-wrapper closed-access">

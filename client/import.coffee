@@ -278,17 +278,20 @@ $(document).on 'dragenter', (event) ->
 
   return # Make sure CoffeeScript does not return anything
 
-Template.importButton.events =
-  'click .import': (event, template) ->
+importButtonEvent =
+  'click .import, click .import-link': (event, template) ->
     event.preventDefault()
 
     if Meteor.personId()
-      $(template.findAll '.import-file-input').click()
+      $('.import-file-input').click()
     else
       Session.set 'signInOverlayActive', true
 
     return # Make sure CoffeeScript does not return anything
 
+Template.importButton.events importButtonEvent
+
+Template.importButton.events
   'change input.import-file-input': (event, template) ->
     event.preventDefault()
 
@@ -305,6 +308,8 @@ Template.importButton.events =
     $(event.target, template).replaceWith($(event.target).clone())
 
     return # Make sure CoffeeScript does not return anything
+
+Template.importLink.events importButtonEvent
 
 Template.importingFilesItemCancel.events
   'click .cancel-button': (event, template) ->
@@ -335,12 +340,6 @@ Template.importingFilesItem.publication = ->
   # TODO: Change when you are able to access parent context directly with Meteor
   publication.filename = @name
   publication
-
-Template.searchInput.events =
-  'click .drop-files-to-import': (event, template) ->
-    event.preventDefault()
-
-    $('ul.top-menu .import').click()
 
 Template.signInOverlay.signInOverlayActive = ->
   Session.get 'signInOverlayActive'

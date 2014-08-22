@@ -171,8 +171,7 @@
         removed: (id) =>
           result.removed id if result.removed # Optional preprocessing callback
 
-          # We remove from the search results and leave to some other publish function to remove whole document
-          publish.changed result.cursor._cursorDescription.collectionName, id, searchResult: undefined
+          publish.removed result.cursor._cursorDescription.collectionName, id
 
           idIndex = orderMap[id]
 
