@@ -35,7 +35,7 @@ registerForAccess Collection
 
 Meteor.methods
   'create-collection': methodWrap (name) ->
-    validateArgument name, NonEmptyString, 'name'
+    validateArgument 'name', name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -55,7 +55,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-collection': methodWrap (collectionId) ->
-    validateArgument collectionId, DocumentId, 'collectionId'
+    validateArgument 'collectionId', collectionId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -71,8 +71,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'add-to-library': methodWrap (publicationId, collectionId) ->
-    validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument collectionId, Match.Optional(DocumentId), 'collectionId'
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'collectionId', collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -111,8 +111,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-from-library': methodWrap (publicationId, collectionId) ->
-    validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument collectionId, Match.Optional(DocumentId), 'collectionId'
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'collectionId', collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -162,8 +162,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'reorder-collection': methodWrap (collectionId, publicationIds) ->
-    validateArgument collectionId, DocumentId, 'collectionId'
-    validateArgument publicationIds, [DocumentId], 'publicationIds'
+    validateArgument 'collectionId', collectionId, DocumentId
+    validateArgument 'publicationIds', publicationIds, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -191,8 +191,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'collection-set-name': methodWrap (collectionId, name) ->
-    validateArgument collectionId, DocumentId, 'collectionId'
-    validateArgument name, NonEmptyString, 'name'
+    validateArgument 'collectionId', collectionId, DocumentId
+    validateArgument 'name', name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -209,7 +209,7 @@ Meteor.methods
         name: name
 
 Meteor.publish 'collection-by-id', (collectionId) ->
-  validateArgument collectionId, DocumentId, 'collectionId'
+  validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person) ->
     Collection.documents.find Collection.requireReadAccessSelector(person,
@@ -237,7 +237,7 @@ Meteor.publish 'my-collections', ->
       fields: _.extend Collection.readAccessPersonFields()
 
 Meteor.publish 'publications-by-collection', (collectionId) ->
-  validateArgument collectionId, DocumentId, 'collectionId'
+  validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
@@ -261,12 +261,11 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
         publications: 1
 
 Meteor.publish 'collections', (limit, filter, sortIndex) ->
-  validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull(String), 'filter'
-  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
-  validateArgument sortIndex, Match.Where (sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length
-  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'name') if filter

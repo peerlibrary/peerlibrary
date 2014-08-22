@@ -22,7 +22,7 @@ class @User extends BaseDocument
       updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
       lastActivity: LastActivityTrigger ['services']
 
-  @validateUsername = (username, argumentName = 'username') ->
+  @validateUsername = (username, argumentName='username') ->
     throw new ValidationError "Username must be at least 3 characters long.", argumentName unless username and username.length >= 3
 
     throw new ValidationError "Username must contain only a-zA-Z0-9_- characters.", argumentName unless USERNAME_REGEX.test username
@@ -38,5 +38,5 @@ class @User extends BaseDocument
     # Person documents querying both _id and slug would return multiple documents
     throw new ValidationError "Username already exists.", argumentName if Person.documents.exists _id: username
 
-  @validatePassword = (password, argumentName = 'password') ->
+  @validatePassword = (password, argumentName='password') ->
     throw new ValidationError "Password must be at least 6 characters long.", argumentName unless password and password.length >= 6
