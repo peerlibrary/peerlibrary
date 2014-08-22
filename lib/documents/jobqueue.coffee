@@ -23,8 +23,8 @@ class @JobQueue extends Document
   # priority: priority, lower is higher
   # depends: list of job dependencies
   # resolved: list of resolved job dependencies
-  # after: should run after
-  # updated: was updated at
+  # after: should run after this time
+  # updated: was updated at this time
   # log: list of log entries
   #   time
   #   runId

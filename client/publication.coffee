@@ -632,7 +632,7 @@ Deps.autorun ->
     if count
       Notify.success "Publication successfully processed."
   else
-    # The content of this message is used also in the template, so keep it in the sync
+    # The content of this message is used also in the template, so keep it in sync
     Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
       notProcessedPublicationId: publication._id # Making it a sticky notification
 
