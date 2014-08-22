@@ -30,3 +30,34 @@
     </form>
   </div>
 </template>
+
+<template name="_enrollAccountDialog">
+  {{#if inEnrollAccountFlow}}
+    <div class="hide-background"></div>
+
+    <div class="accounts-dialog accounts-centered-dialog">
+      <label id="enroll-account-with-username-username-label" for="enroll-account-with-username-username">
+        Choose a username
+      </label>
+      <div class="enroll-account-with-username-username-wrapper">
+        <input id="enroll-account-with-username-username" type="text" />
+      </div>
+
+      <label id="enroll-account-with-username-password-label" for="enroll-account-with-username-password">
+        Choose a password
+      </label>
+      <div class="enroll-account-with-username-password-wrapper">
+        <input id="enroll-account-with-username-password" type="password" />
+      </div>
+
+      {{> _loginButtonsMessages}}
+
+      <div class="login-button login-button-form-submit" id="login-buttons-enroll-account-with-username-button">
+        Create account
+      </div>
+
+      <a class="accounts-close" id="login-buttons-cancel-enroll-account">&times;</a>
+    </div>
+  {{/if}}
+</template>
+
