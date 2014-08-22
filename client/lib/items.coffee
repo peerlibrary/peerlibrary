@@ -12,9 +12,8 @@ Template.memberAdd.created = ->
   @addLink = true
 
 Template.memberAdd.noLinkDocument = ->
-  # When an inline item is used inside a button, disable its hyperlink. We
-  # don't want an active link inside a button, because the button itself
-  # provides an action that happens when clicking on it.
+  # When inline item is used inside a button, disable its hyperlink. We don't want an active link
+  # inside a button, because the button itself provides an action that happens when clicking on it.
 
   # Because we cannot access parent templates we're modifying the data with an
   # extra parameter
