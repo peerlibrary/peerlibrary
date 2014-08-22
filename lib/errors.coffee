@@ -1,4 +1,4 @@
-@validateArgument = (argumentValue, match, argumentName) ->
+@validateArgument = (argumentName, argumentValue, match) ->
   throw new Error "Argument name not set." unless argumentName
   try
     check argumentValue, match

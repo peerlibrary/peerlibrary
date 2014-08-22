@@ -9,7 +9,7 @@ class @LoggedError extends LoggedError
 
 Meteor.methods
   'log-error': methodWrap (errorDocument) ->
-    validateArgument errorDocument, Object, 'errorDocument'
+    validateArgument 'errorDocument', errorDocument, Object
 
     # TODO: Check whether document conforms to schema
 
