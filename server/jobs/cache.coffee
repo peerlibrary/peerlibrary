@@ -73,7 +73,6 @@ class @CacheSyncJob extends Job
       priority: 'high'
 
   run: =>
-    thisJob = @getQueueJob()
     count = 0
 
     Publication.documents.find(
@@ -88,7 +87,6 @@ class @CacheSyncJob extends Job
     ).forEach (publication) =>
       count++ if new CheckCacheJob(publication: publication).enqueue(
         skipIfExisting: true
-        depends: thisJob # To create a relation
       )
 
     count: count
