@@ -46,7 +46,6 @@ class @ArXivMetadataJob extends Job
 
     page = xml2js.parseStringSync page.content
 
-    thisJob = @getQueueJob()
     count = 0
 
     for recordEntry in page['OAI-PMH'].ListRecords[0].record[0..100]
@@ -171,7 +170,6 @@ class @ArXivMetadataJob extends Job
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         new CheckCacheJob(publication: _id: id).enqueue
           skipIfExisting: true
-          depends: thisJob # To create a relation
         count++
 
     count: count
@@ -341,7 +339,6 @@ class @ArXivBulkCacheSyncJob extends Job
 
     list = future.wait()
 
-    thisJob = @getQueueJob()
     count = 0
 
     for file in list.Contents
@@ -360,7 +357,6 @@ class @ArXivBulkCacheSyncJob extends Job
         skipIfExisting: true
         # If tarFileData is the same, tar file is the same so there is no reason to re-extract the tar file
         skipIncludingCompleted: true
-        depends: thisJob # To create a relation
       )
 
       break

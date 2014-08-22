@@ -25,7 +25,6 @@ class @ProcessPublicationsJob extends Job
       priority: 'high'
 
   run: =>
-    thisJob = @getQueueJob()
     count = 0
 
     query =
@@ -45,7 +44,6 @@ class @ProcessPublicationsJob extends Job
     ).forEach (publication) =>
       count++ if new ProcessPublicationJob(publication: publication).enqueue(
         skipIfExisting: true
-        depends: thisJob # To create a relation
       )
 
     count: count

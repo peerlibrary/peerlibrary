@@ -28,7 +28,6 @@ class @FSMMetadataJob extends Job
     # TODO: Implement pagination
     assert page.data.response.docs.length, page.data.response.numFound
 
-    thisJob = @getQueueJob()
     count = 0
 
     for document in page.data.response.docs
@@ -156,7 +155,6 @@ class @FSMMetadataJob extends Job
         @logInfo "Added #{ publication.source }/#{ publication.foreignId } as #{ id }"
         new CheckCacheJob(publication: _id: id).enqueue
           skipIfExisting: true
-          depends: thisJob # To create a relation
         count++
 
     count: count
