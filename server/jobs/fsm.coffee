@@ -1,3 +1,7 @@
+# Free Speech Movement (http://bancroft.berkeley.edu/FSM/) publications. They are
+# TEI textual documents. FSM API (http://digitalhumanities.berkeley.edu/hackfsm/api)
+# keys are needed to access the archive.
+
 HTTP_TIMEOUT = 60000 # ms
 
 unless Meteor.settings?.FSM?.appId and Meteor.settings?.FSM?.appKey

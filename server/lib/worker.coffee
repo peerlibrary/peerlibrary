@@ -124,10 +124,10 @@ runJobQueue = ->
         try
           try
             jobClass = Job.types[job.type]
-            j = new jobClass job.data
-            j._id = job._doc._id
-            j.runId = job._doc.runId
-            result = j.run()
+            jobInstance = new jobClass job.data
+            jobInstance._id = job._doc._id
+            jobInstance.runId = job._doc.runId
+            result = jobInstance.run()
           catch error
             if error instanceof Error
               stack = StackTrace.printStackTrace e: error
@@ -149,6 +149,10 @@ Meteor.startup ->
   JobQueue.Meta.collection.startJobs()
   Log.info "Worker enabled"
 
+  # The query and sort here is based on the query in jobCollection's
+  # getWork query. We want to have a query which is the same, just
+  # that we observe with it and when there is any change, we call
+  # getWork itself.
   JobQueue.documents.find(
     status: 'ready'
     runId: null
