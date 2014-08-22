@@ -68,7 +68,7 @@ class @Person extends Person
     ]
 
 Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
-  validateArgument idsOrSlugs, Match.OneOf(NonEmptyString, [NonEmptyString]), 'idsOrSlugs'
+  validateArgument 'idsOrSlugs', idsOrSlugs, Match.OneOf NonEmptyString, [NonEmptyString]
 
   idsOrSlugs = [idsOrSlugs] unless _.isArray idsOrSlugs
 
@@ -117,8 +117,8 @@ Meteor.publish 'my-person-library', ->
 Meteor.publish 'search-persons', (query, except) ->
   except ?= []
 
-  validateArgument query, NonEmptyString, 'query'
-  validateArgument except, [DocumentId], 'except'
+  validateArgument 'query', query, NonEmptyString
+  validateArgument 'except', except, [DocumentId]
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
@@ -158,12 +158,11 @@ Person.Meta.collection._ensureIndex
   unique: 1
 
 Meteor.publish 'persons', (limit, filter, sortIndex) ->
-  validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull(String), 'filter'
-  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
-  validateArgument sortIndex, Match.Where (sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Person.PUBLISH_CATALOG_SORT.length
-  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'displayName') if filter

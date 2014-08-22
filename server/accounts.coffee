@@ -5,8 +5,8 @@ INVITE_SECRET = Random.id()
 
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
-    validateArgument email, EMail, 'email'
-    validateArgument message, Match.Optional(String), 'message'
+    validateArgument 'email', email, EMail
+    validateArgument 'message', message, Match.Optional String
 
     # We require that user inviting is logged in
     person = Meteor.person()
@@ -37,9 +37,9 @@ Meteor.methods
     invited._id
 
   'reset-password-with-username': methodWrap (token, verifier, username) ->
-    validateArgument token, String, 'token'
-    validateArgument verifier, Object, 'verifier'
-    validateArgument username, String, 'username'
+    validateArgument 'token', token, String
+    validateArgument 'verifier', verifier, Object
+    validateArgument 'username', username, String,
     User.validateUsername username, 'username'
 
     # We call Meteor's internal resetPassword method
@@ -49,7 +49,7 @@ Meteor.methods
     newUser
 
   'set-username': methodWrap (username) ->
-    validateArgument username, String, 'username'
+    validateArgument 'username', username, String
     User.validateUsername username, 'username'
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
