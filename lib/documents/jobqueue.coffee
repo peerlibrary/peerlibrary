@@ -9,9 +9,11 @@ if Meteor.isServer
       Log.info "#{ method }: #{ message }"
 
 # Document is wrapping jobCollection collection so additional fields might be
-# added by future versions of the package. A good description of the schema
-# can be found in validJobDoc function, see
+# added by future versions of the package. An actual schema can be found in
+# validJobDoc function, see
 # https://github.com/vsivsi/meteor-job-collection/blob/master/shared.coffee#L50
+# Fields listed below are partially documented, mostly those which we are using
+# elsewhere around our code.
 class @JobQueue extends Document
   # runId: ID of the current run
   # type: one of Job class names
@@ -50,5 +52,8 @@ class @JobQueue extends Document
     collection: new JobCollection 'JobQueue',
       noCollectionSuffix: true
     fields: =>
+      # Data can be arbitrary object, but we have one field which we can use
+      # if job is referencing a publication. This is then used to allow
+      # publications to link back to related jobs.
       data:
         publication: @ReferenceField Publication, [], false, 'jobs', ['status']
