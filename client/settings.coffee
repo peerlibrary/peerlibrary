@@ -12,10 +12,14 @@ resetUsernameForm = ->
   usernameReadyForValidation = false
   usernameFieldModified = false
 
-resetPasswordForm = ->
+resetPasswordForm = (template) ->
   passwordFormMessages.resetMessages()
-  $('input.current-password').val('')
-  $('input.new-password').val('')
+  if template
+    $(template.findAll 'input.current-password').val('')
+    $(template.findAll 'input.new-password').val('')
+  else
+    $('input.current-password').val('')
+    $('input.new-password').val('')
   newPasswordReadyForValidation = false
   newPasswordFieldModified = false
 
@@ -31,8 +35,7 @@ Template.settingsUsername.events =
     event.preventDefault()
 
     usernameSubmitted = true
-    usernameFormMessages.resetMessages()
-    username = $('input.username').val()
+    username = $(template.findAll 'input.username').val()
     try
       usernameFormMessages.resetMessages()
       Meteor.call 'set-username', username, (error) ->
@@ -52,7 +55,7 @@ Template.settingsUsername.events =
     Meteor.setTimeout ->
       usernameReadyForValidation = usernameFieldModified
       return if usernameSubmitted
-      username = $('input.username').val()
+      username = $(template.findAll 'input.username').val()
       validateUsername username, 'username'
     ,
       100 # ms
@@ -61,7 +64,7 @@ Template.settingsUsername.events =
 
   'keyup input.username, paste input.username': (event, template) ->
     usernameFieldModified = true
-    username = $('input.username').val()
+    username = $(template.findAll 'input.username').val()
     validateUsername username, 'username'
 
     return # Make sure CoffeeScript does not return anything
@@ -99,8 +102,8 @@ Template.settingsPassword.events =
 
     newPasswordReadyForValidation = true
     passwordFormMessages.resetMessages()
-    currentPassword = $('input.current-password').val()
-    newPassword = $('input.new-password').val()
+    currentPassword = $(template.findAll 'input.current-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
 
     passwordFormMessages.setErrorMessage 'Current password is required.', 'current-password' unless currentPassword
 
@@ -114,21 +117,21 @@ Template.settingsPassword.events =
         if error
           passwordFormMessages.setError error
         else
-          resetPasswordForm()
+          resetPasswordForm template
           passwordFormMessages.setInfoMessage "Password changed successfully."
 
     return # Make sure CoffeeScript does not return anything
 
   'blur input.new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
-    newPassword = $('input.new-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup input.new-password, paste input.new-password': (event, template) ->
     newPasswordFieldModified = true
-    newPassword = $('input.new-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything

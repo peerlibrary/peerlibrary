@@ -5,7 +5,7 @@ _.mixin
     string.charAt(0).toUpperCase() + string.substring(1).toLowerCase()
 
   startsWith: (string, start) ->
-    string.lastIndexOf(start, 0) is 0
+    string?.lastIndexOf(start, 0) is 0
 
   # Ensures that string ends with dot if it does not already end with some punctuation
   ensureSentence: (string) ->
