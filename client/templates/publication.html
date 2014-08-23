@@ -35,7 +35,7 @@
       </p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/each}}
       </p>
       <p>Source: {{source}}</p>
@@ -402,7 +402,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">Created: {{createdAt}}</p>
@@ -598,7 +598,7 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{path}}">{{displayName}}</a></span>
+      <span><a href="{{path}}">{{getDisplayName}}</a></span>
     {{/with}}
   </p>
   <p class="time">Created: {{createdAt}}</p>
@@ -647,7 +647,7 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
       <p class="time">Created: {{createdAt}}</p>
