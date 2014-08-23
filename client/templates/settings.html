@@ -7,6 +7,7 @@
       <h1>{{> personAvatar currentPerson}} {{currentPerson.getDisplayName}} settings</h1>
       {{> settingsUsername}}
       {{> settingsPassword}}
+      {{> settingsBackground}}
     </div>
   {{/unless}}
 </template>
@@ -51,6 +52,20 @@
 
     <div class="form-control-group">
       <button class="change-password">Change password</button>
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
+    </div>
+  </form>
+</template>
+
+<template name="settingsBackground">
+  <form class="set-background">
+    <div class="form-control-group">
+      <label for="set-background-paused">Background paused</label>
+      <input type="checkbox" id="set-background-paused" class="paused" {{#if checked}}checked="checked"{{/if}}/>
+      {{#with messageOnField "paused"}}
+        {{> formMessage}}
+      {{/with}}
       {{! Global form message }}
       {{> formMessage messageOnField}}
     </div>
