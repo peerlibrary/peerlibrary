@@ -665,6 +665,15 @@ Template.publication.publication = ->
 Template.publicationMetaMenu.rendered = ->
   $(@findAll '.balance-text').balanceText()
 
+Template.publicationMetaMenu.events =
+  'click .download': (event, template) ->
+    # We want default action to happen, but we do not want that our router processes
+    # it and tries to route it inside the Meteor app, which fails because there is no
+    # suitable route, so we stop propagation here for the event not to get to the
+    # document level where router has an event listener for link clicks.
+    event.stopPropagation()
+    return # Make sure CoffeeScript does not return anything
+
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (event, template) ->
     # A special case to prevent defocus after click on the input box

@@ -38,7 +38,7 @@
           <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/each}}
       </p>
-      <p>Source: {{source}}</p>
+      <p>Source: {{source}}{{#if cached}}{{#if cachedId}} (<a href="{{url}}" class="download">download</a>){{/if}}{{/if}}</p>
       <p class="time">Created: {{createdAt}}</p>
       <p class="time">Updated: {{updatedAt}}</p>
       {{#if cached}}
