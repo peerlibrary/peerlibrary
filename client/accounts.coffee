@@ -16,6 +16,9 @@ changingPasswordInEnrollAccount = false
 
 # To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
 $(document).on 'click focus keypress', (event) ->
+  # Do not act when interacting with notifications
+  return if $(event.target).closest('.notifications').length
+
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   unless event.originalEvent?.accountsDialogBoxEvent
