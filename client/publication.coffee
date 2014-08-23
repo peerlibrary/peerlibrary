@@ -1069,6 +1069,9 @@ Template.annotationFilteredCount.filteredAnnotationsCount = ->
       'publication._id': Session.get 'currentPublicationId'
     ).count() - displayedAnnotations(false).count()
 
+Template.annotationFilteredCount.filteredAnnotationsDescription = ->
+  Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
+
 Template.annotationFilteredCount.rendered = ->
   $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
 
