@@ -1070,12 +1070,7 @@ Template.annotationFilteredCount.filteredAnnotationsCount = ->
     ).count() - displayedAnnotations(false).count()
 
 Template.annotationFilteredCount.rendered = ->
-  $(@find '.clear-filters').tooltip
-    position:
-      my: 'center bottom'
-      at: 'center top-10'
-    show: 200
-    hide: 200
+  $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
 
 Template.annotationFilteredCount.events
   'click .clear-filters': (event, template) ->

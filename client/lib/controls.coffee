@@ -32,5 +32,5 @@ $(document).on 'keyup', (event) ->
   hide: 200
 
 Meteor.startup ->
-  $(document).tooltip _.extend TOOLTIP_DEFAULTS,
+  $(document).tooltip _.extend {}, TOOLTIP_DEFAULTS,
     items: '.tooltip'
