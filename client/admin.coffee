@@ -67,6 +67,10 @@ Template.adminJobQueueItem.canManageJob = ->
   return true if person.isAdmin
 
   if @data.publication
+    # We have to refresh manually the publication because data.publication is
+    # not an instance of Publication because we disable transform in the
+    # publicationJobs template to display data payload without client-only
+    # attributes like _pages and _highlighter.
     publication = Publication.documents.findOne @data.publication._id, fields: Publication.maintainerAccessSelfFields()
     # When used on the generic job queue page where we are not subscribed
     # to all publications, publication will probably not be found, but this
