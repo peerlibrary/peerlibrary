@@ -1,0 +1,31 @@
+@import 'variables.import'
+
+.item-list
+  .job.catalog-item
+    .log
+      list-style none
+      padding 0
+      border-radius 2px
+      overflow hidden
+
+      .level
+        padding 5px
+
+        &:nth-child(odd)
+          background-color #f8f8f8
+
+        &:nth-child(even)
+          background-color #fbfbfb
+
+        .data
+          float right
+          margin 0
+          color #666
+
+        .message
+          margin 0
+
+        &::after
+          content ''
+          display block
+          clear both
