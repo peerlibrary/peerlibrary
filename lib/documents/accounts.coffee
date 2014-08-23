@@ -15,6 +15,8 @@ class @User extends BaseDocument
   # services: list of authentication/linked services
   # person:
   #   _id: id of related person document
+  # settings:
+  #  backgroundPaused: should index page background be paused
 
   @Meta
     name: 'User'

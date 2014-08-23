@@ -7,6 +7,8 @@ passwordFormMessages = new FormMessages()
 newPasswordReadyForValidation = false
 newPasswordFieldModified = false
 
+backgroundFormMessages = new FormMessages()
+
 resetUsernameForm = ->
   usernameFormMessages.resetMessages()
   usernameReadyForValidation = false
@@ -23,11 +25,15 @@ resetPasswordForm = (template) ->
   newPasswordReadyForValidation = false
   newPasswordFieldModified = false
 
+resetBackgroundForm = ->
+  backgroundFormMessages.resetMessages()
+
 # Reset forms when settings page becomes active
 Deps.autorun ->
   if Session.get 'settingsActive'
     resetUsernameForm()
     resetPasswordForm()
+    resetBackgroundForm()
 
 # Username settings
 Template.settingsUsername.events =
@@ -174,3 +180,35 @@ changePassword = (currentPassword, newPassword, callback) ->
       callback formError
   catch error
     callback error
+
+Template.settingsBackground.checked = ->
+  backgroundPaused = !!Meteor.user().settings?.backgroundPaused
+  # We also clear messages where so that if from somewhere a settings change come
+  # (like from the index page) any shown messages are cleared as well. The idea is
+  # that if what is displayed is different then we clear messages. In normal workflow
+  # checkbox is always first set, then method is called, and then this helper is rerun
+  # when value changes, so checkbox should already be set, so messages stay.
+  backgroundFormMessages.resetMessages() if backgroundPaused isnt $('input.paused').is(':checked')
+  backgroundPaused
+
+Template.settingsBackground.messageOnField = (field, options) ->
+  field = null unless options
+  backgroundFormMessages.get field
+
+Template.settingsBackground.events
+  'change input.paused': (event, template) ->
+    event.preventDefault()
+
+    checked = $(template.findAll 'input.paused').is(':checked')
+    try
+      backgroundFormMessages.resetMessages()
+      Meteor.call 'pause-background', checked, (error) ->
+        if error
+          $(template.findAll 'input.paused').prop('checked', !!Meteor.user().settings?.backgroundPaused)
+          return backgroundFormMessages.setError error
+        resetBackgroundForm()
+        backgroundFormMessages.setInfoMessage if checked then "Background paused." else "Background resumed."
+    catch error
+      backgroundFormMessages.setError error
+
+    return # Make sure CoffeeScript does not return anything
