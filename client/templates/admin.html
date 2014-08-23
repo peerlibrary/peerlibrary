@@ -79,6 +79,16 @@
         {{> adminJobLogItem}}
       {{/each}}
     </ul>
+    {{#if canManageJob}}
+      <div class="admin-buttons">
+        {{#if isCancellable}}
+          <button class="admin-job-cancel">Cancel</button>
+        {{/if}}
+        {{#if isRestartable}}
+          <button class="admin-job-restart">Restart</button>
+        {{/if}}
+      </div>
+    {{/if}}
   </li>
 </template>
 

@@ -1,5 +1,6 @@
 Deps.autorun ->
   if Session.get 'publicationJobsId'
+    Meteor.subscribe 'publication-by-id', Session.get 'publicationJobsId'
     Meteor.subscribe 'jobs-by-publication', Session.get 'publicationJobsId'
 
 Template.publicationJobs.jobqueue = ->
