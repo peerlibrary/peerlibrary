@@ -1011,6 +1011,20 @@ Template.annotationFilteredCount.filteredAnnotationsCount = ->
       'publication._id': Session.get 'currentPublicationId'
     ).count() - displayedAnnotations(false).count()
 
+Template.annotationFilteredCount.rendered = ->
+  $(@find '.clear-filters').tooltip
+    position:
+      my: 'center bottom'
+      at: 'center top-10'
+    show: 200
+    hide: 200
+
+Template.annotationFilteredCount.events
+  'click .clear-filters': (event, template) ->
+    $(template.find '.clear-filters').tooltip('destroy')
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+    Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
+
 ###
 TODO: Temporary disabled, not yet finalized code
 
@@ -1989,7 +2003,7 @@ Template.annotationMetaMenu.canModifyAccess = ->
 Template.workInGroupsMenuGroupsCount.selectedGroups = ->
   getNewAnnotationWorkInsideGroups()
 
-Template.groupsFilter.inside = ->
+Template.annotationsControlFilters.inside = ->
   Group.documents.find
     _id:
       $in: getNewAnnotationWorkInsideGroups()
@@ -1999,6 +2013,9 @@ Template.groupsFilter.inside = ->
     sort: [
       ['slug', 'asc']
     ]
+
+Template.annotationsControlFilters.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
 
 Template.workInGroupsMenu.myGroups = Template.myGroups.myGroups
 

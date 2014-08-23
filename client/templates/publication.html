@@ -585,8 +585,7 @@
 <template name="annotationFilteredCount">
   {{#if filteredAnnotationsCount}}
     <li class="filtered-count hint">
-      {{filteredAnnotationsCount}} annotations filtered out
-      {{! TODO: Add a button to cancel any filtering }}
+      {{filteredAnnotationsCount}} annotations filtered out. <button class="clear-filters borderless icon-cancel" title="Clear filters"></button>
     </li>
   {{/if}}
 </template>
@@ -689,7 +688,7 @@
       }}
       {{> workInGroupsMenu}}
       {{> viewportFilter}}
-      {{> groupsFilter}}
+      {{> annotationsControlFilters}}
     {{/if}}
   </div>
 </template>
@@ -769,15 +768,18 @@
   <p class="hint">Show only annotations relating to highlights that are currently displayed on screen.</p>
 </template>
 
-<template name="groupsFilter">
-  {{#if inside.count}}
-    <div class="filter">
+<template name="annotationsControlFilters">
+  <div class="filter">
+    {{#if viewportFilter}}
+      Viewport filter{{#if inside.count}}, {{/if}}
+    {{/if}}
+    {{#if inside.count}}
       Groups filter:
       {{#each inside}}
         <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
       {{/each}}
-    </div>
-  {{/if}}
+    {{/if}}
+  </div>
 </template>
 
 <template name="editorLinkPrompt">
