@@ -1003,7 +1003,7 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
-Template.annotationsControl.filteredAnnotationsCount = ->
+Template.annotationFilteredCount.filteredAnnotationsCount = ->
   isolateValue ->
     LocalAnnotation.documents.find(
       local:
@@ -1986,7 +1986,7 @@ Template.annotationMetaMenu.canRemove = ->
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.contextMenuGroupsCount.selectedGroups = ->
+Template.workInGroupsMenuGroupsCount.selectedGroups = ->
   getNewAnnotationWorkInsideGroups()
 
 Template.groupsFilter.inside = ->
@@ -2000,20 +2000,20 @@ Template.groupsFilter.inside = ->
       ['slug', 'asc']
     ]
 
-Template.contextMenu.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenu.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenuGroups.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.private = Template.contextMenu.private
+Template.workInGroupsMenuGroups.private = Template.workInGroupsMenu.private
 
-Template.contextMenuGroups.selectedGroups = Template.contextMenuGroupsCount.selectedGroups
+Template.workInGroupsMenuGroups.selectedGroups = Template.workInGroupsMenuGroupsCount.selectedGroups
 
-Template.contextMenuGroups.selectedGroupsDescription = ->
+Template.workInGroupsMenuGroups.selectedGroupsDescription = ->
   groups = getNewAnnotationWorkInsideGroups()
   return unless groups
   if groups.length is 1 then "1 group" else "#{ groups.length } groups"
 
-Template.contextMenuGroups.events
+Template.workInGroupsMenuGroups.events
   'click .add-to-working-inside': (event, template) ->
     Session.set 'newAnnotationWorkInsideGroups', _.union getNewAnnotationWorkInsideGroups(), [@_id]
 
@@ -2024,8 +2024,22 @@ Template.contextMenuGroups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.contextMenuGroupListing.workingInside = ->
+Template.workInGroupsMenuGroupListing.workingInside = ->
   _.contains getNewAnnotationWorkInsideGroups(), @_id
+
+Template.viewportFilterContent.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
+
+Template.viewportFilterContent.events
+  'click .enable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .disable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()

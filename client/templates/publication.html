@@ -232,6 +232,7 @@
     {{#if realAnnotationsExist}}
       {{> annotationSignInInvite}}
     {{/if}}
+    {{> annotationFilteredCount}}
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
     {{/each}}
@@ -581,6 +582,15 @@
   {{/unless}}
 </template>
 
+<template name="annotationFilteredCount">
+  {{#if filteredAnnotationsCount}}
+    <li class="filtered-count hint">
+      {{filteredAnnotationsCount}} annotations filtered out
+      {{! TODO: Add a button to cancel any filtering }}
+    </li>
+  {{/if}}
+</template>
+
 <template name="highlightsControl">
   {{#if canRemove}}
     <button class="remove-button">Delete</button>
@@ -600,31 +610,6 @@
       </a></span>
     {{/each}}
   </p>
-</template>
-
-<template name="annotationsControl">
-  <div class="annotations-control">
-    {{#if currentPersonId}}
-      {{! TODO: Temporary disabled, not yet finalized code
-        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
-      }}
-      {{> contextMenu}}
-      {{#if inside.count}}
-        <div class="filter">
-          Groups filter:
-          {{#each inside}}
-            <span><a href="{{path}}">{{name}}</a></span>
-          {{/each}}
-        </div>
-      {{/if}}
-    {{/if}}
-    {{#if filteredAnnotationsCount}}
-      <div class="filteredCount">
-        {{filteredAnnotationsCount}} annotations filtered out
-        {{! TODO: Add a button to cancel any filtering }}
-      </div>
-    {{/if}}
-  </div>
 </template>
 
 <template name="annotationMetaMenu">
@@ -702,30 +687,25 @@
       {{! TODO: Temporary disabled, not yet finalized code
         <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
       }}
-      {{> contextMenu}}
+      {{> workInGroupsMenu}}
+      {{> viewportFilter}}
       {{> groupsFilter}}
     {{/if}}
-    {{#if filteredAnnotationsCount}}
-      <div class="filteredCount">
-        {{filteredAnnotationsCount}} annotations filtered out
-        {{! TODO: Add a button to cancel any filtering }}
-      </div>
-    {{/if}}
   </div>
 </template>
 
-<template name="contextMenu">
-  <div class="meta-menu context-menu control">
+<template name="workInGroupsMenu">
+  <div class="work-in-groups meta-menu context-menu control">
     <div class="icons">
-      {{> contextMenuGroupsCount}}
+      {{> workInGroupsMenuGroupsCount}}
     </div>
     <div class="meta-content">
-      {{> contextMenuGroups}}
+      {{> workInGroupsMenuGroups}}
     </div>
   </div>
 </template>
 
-<template name="contextMenuGroupsCount">
+<template name="workInGroupsMenuGroupsCount">
   {{#spaceless}}
     <i class="context-icon icon-group"></i>
     {{#if selectedGroups.length}}
@@ -734,14 +714,14 @@
   {{/spaceless}}
 </template>
 
-<template name="contextMenuGroups">
+<template name="workInGroupsMenuGroups">
   <h3>Work inside groups</h3>
   <p class="hint">Filter shown annotations and share new annotations with groups.</p>
   <div class="context-menu-groups access-menu">
     {{#if myGroups.count}}
       <ol class="toggle-list">
         {{#each myGroups}}
-          {{> contextMenuGroupListing}}
+          {{> workInGroupsMenuGroupListing}}
         {{/each}}
       </ol>
       <div class="description displayed">
@@ -759,12 +739,34 @@
   </div>
 </template>
 
-<template name="contextMenuGroupListing">
+<template name="workInGroupsMenuGroupListing">
   <li class="context-menu-group toggle-list-item">
     <button class="{{#if workingInside}}remove-from-working-inside icon-check{{else}}add-to-working-inside{{/if}}">
       <span class="group-name">{{name}}</span>
     </button>
   </li>
+</template>
+
+<template name="viewportFilter">
+  <div class="viewport-filter meta-menu context-menu control">
+    <div class="icons">
+      <i class="context-icon icon-view"></i>
+    </div>
+    <div class="meta-content">
+      {{> viewportFilterContent}}
+    </div>
+  </div>
+</template>
+
+<template name="viewportFilterContent">
+  <div class="toggle-list">
+    <div class="toggle-list-item">
+      <button class="{{#if viewportFilter}}disable-viewport-filter icon-check{{else}}enable-viewport-filter{{/if}}">
+        <span class="group-name">Viewport filter</span>
+      </button>
+    </div>
+  </div>
+  <p class="hint">Show only annotations relating to highlights that are currently displayed on screen.</p>
 </template>
 
 <template name="groupsFilter">
