@@ -127,7 +127,7 @@ class @ArXivMetadataJob extends Job
         else
           authorCreatedAt = moment.utc().toDate()
           author._id = Random.id()
-          Person.documents.insert Person.applyDefaultAccess null, _.extend author,
+          Person.documents.insert Person.applyDefaultAccess null, _.extend {}, author,
             slug: author._id # We set it manually to prevent two documents having temporary null value which is invalid and throws a duplicate key error
             user: null
             publications: []
