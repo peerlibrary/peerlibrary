@@ -183,11 +183,11 @@ changePassword = (currentPassword, newPassword, callback) ->
 
 Template.settingsBackground.checked = ->
   backgroundPaused = !!Meteor.user().settings?.backgroundPaused
-  # We also clear messages where so that if from somewhere a settings change come
-  # (like from the index page) any shown messages are cleared as well. The idea is
-  # that if what is displayed is different then we clear messages. In normal workflow
-  # checkbox is always first set, then method is called, and then this helper is rerun
-  # when value changes, so checkbox should already be set, so messages stay.
+  # We also clear messages here so that if a settings change comes from somewhere else
+  # (like from the index page) any shown messages are cleared as well. The idea is that
+  # if what is displayed is different from what it should be then we clear messages.
+  # In normal workflow checkbox is always first set, then method is called, and then this
+  # helper is rerun when value changes, so checkbox should already be set, so messages stay.
   backgroundFormMessages.resetMessages() if backgroundPaused isnt $('input.paused').is(':checked')
   backgroundPaused
 
