@@ -1,6 +1,6 @@
 Fiber = Npm.require 'fibers'
 fs = Npm.require 'fs'
-path = Npm.require 'path'
+pathModule = Npm.require 'path'
 url = Npm.require 'url'
 
 NON_ASCII_REGEX = /[^\040-\176]/
@@ -93,7 +93,7 @@ class @Storage extends Storage
     stats.mtime
 
 # Find .meteor directory
-directoryPath = process.mainModule.filename.split path.sep
+directoryPath = process.mainModule.filename.split pathModule.sep
 while directoryPath.length > 0
   if directoryPath[directoryPath.length - 1] == '.meteor'
     break
@@ -102,14 +102,14 @@ while directoryPath.length > 0
 assert directoryPath.length > 0
 
 directoryPath.push 'storage'
-Storage._storageDirectory = directoryPath.join path.sep
-Storage._path = path
+Storage._storageDirectory = directoryPath.join pathModule.sep
+Storage._path = pathModule
 
 # Taken from express utils.js
 contentDisposition = (filename) ->
   return 'attachment' unless filename
 
-  filename = path.basename filename
+  filename = pathModule.basename filename
 
   # If filename contains non-ASCII characters, add a UTF-8 version ala RFC 5987
   if NON_ASCII_REGEX.test filename
