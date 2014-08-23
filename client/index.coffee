@@ -53,12 +53,24 @@ Template.indexLatestBlogPost.blogPostsCount = ->
 Template.indexLatestBlogPost.blogUrl = ->
   Meteor.settings?.public?.blogUrl
 
-Meteor.startup ->
-  Session.setDefault 'backgroundPaused', false
+Meteor.autorun ->
+  # If user is not logged in, default will be false, which user can then modify locally in Session
+  backgroundPaused = !!Meteor.user()?.settings?.backgroundPaused
+  Session.set 'backgroundPaused', backgroundPaused
 
 Template.backgroundPause.events
   'click button': (event, template) ->
-    Session.set('backgroundPaused', not Session.get 'backgroundPaused')
+    backgroundPaused = not Session.get 'backgroundPaused'
+
+    if Meteor.personId()
+      # When method sets the value in the database on the server, new value will
+      # be pushed back to the client and autorun will set Session accordingly
+      Meteor.call 'pause-background', backgroundPaused, (error) ->
+        Notify.fromError error, true if error
+    else
+      # Otherwise modify only locally in Session
+      Session.set 'backgroundPaused', backgroundPaused
+
     return # Make sure CoffeeScript does not return anything
 
 Template.backgroundPauseButton.backgroundPaused = ->

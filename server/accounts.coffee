@@ -3,6 +3,40 @@ ADMIN_PERSON_ID = 'exYYMzAP6a2swNRCx'
 
 INVITE_SECRET = Random.id()
 
+class @User extends User
+  @Meta
+    name: 'User'
+    replaceParent: true
+
+  # A set of fields which are public and can be published to the client
+  @PUBLISH_FIELDS: ->
+    fields:
+      username: 1
+      emails: 1
+      settings: 1
+
+  # A subset of public fields used for automatic publishing
+  @PUBLISH_AUTO_FIELDS: ->
+    # username and emails fields (in addition to profile field which
+    # we do not use) are pushed already by Meteor accounts-base package.
+    # We list them here to more or less just document them. Few
+    # additional fields are pushed as well, used for login purposes.
+    fields: _.pick @PUBLISH_FIELDS().fields, [
+      'username'
+      'emails'
+      'settings'
+    ]
+
+# With null name, the record set is automatically sent to all connected clients
+Meteor.publish null, ->
+  return unless @userId
+
+  # No need for requireReadAccessSelector because we are sending data to the user themselves
+  User.documents.find
+    _id: @userId
+  ,
+    User.PUBLISH_AUTO_FIELDS()
+
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
@@ -63,7 +97,16 @@ Meteor.methods
         username: username
     throw new Meteor.Error 400, "Username already set." unless updatedCount is 1
 
-    return # Make sure CoffeeScript does not return anything
+  'pause-background': methodWrap (paused) ->
+    validateArgument 'paused', paused, Boolean
+
+    throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
+
+    User.documents.update
+      _id: Meteor.userId()
+    ,
+      $set:
+        'settings.backgroundPaused': paused
 
 Accounts.onCreateUser methodWrap (options, user) ->
   # Idea is that only server side knows invite secret and we can
@@ -130,16 +173,6 @@ Accounts.onCreateUser methodWrap (options, user) ->
     throw error
 
   user
-
-# With null name, the record set is automatically sent to all connected clients
-Meteor.publish null, ->
-  return unless @personId
-
-  # No need for requireReadAccessSelector because persons are public
-  Person.documents.find
-    _id: @personId
-  ,
-    Person.PUBLISH_AUTO_FIELDS()
 
 MAX_LINE_LENGTH = 68
 
