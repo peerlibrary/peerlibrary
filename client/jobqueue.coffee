@@ -12,5 +12,8 @@ Template.publicationJobs.jobqueue = ->
     ]
     transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
+Template.publicationJobs.publication = ->
+  Publication.documents.findOne Session.get 'publicationJobsId'
+
 Template.publicationJobs.publicationId = ->
   Session.get 'publicationJobsId'
