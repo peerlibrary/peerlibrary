@@ -38,13 +38,16 @@ Template.notificationsOverlayItem.rendered = ->
 
   $notification = $(@findAll '.notification')
 
+  return if @data.sticky
+
   @_timeout = new VisibleTimeout =>
     @_seen = true
     $notification.fadeOut 'slow', =>
       Notify.documents.remove @data._id
     @_timeout = null
   ,
-    3000 # ms
+    # Error messages are displayed longer
+    if @data.type is 'error' then 10000 else 3000 # ms
 
   # Pause the timeout while user is hovering over the notification
   $notification.on 'mouseenter.notification', (event) =>

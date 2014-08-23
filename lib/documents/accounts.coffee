@@ -1,3 +1,6 @@
+# Document is wrapping Meteor.users collection so additional
+# fields might be added by future versions of Meteor
+
 USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 

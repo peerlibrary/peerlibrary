@@ -9,6 +9,18 @@ class @Storage extends Storage
       if !fs.existsSync p
         fs.mkdirSync p
 
+  @_assurePathAsync: (path, callback) ->
+    path = path.split @_path.sep
+    i = 0
+    async.eachSeries path[1...path.length-1], (segment, callback) =>
+      i++
+      p = path[0..i].join @_path.sep
+      fs.exists p, (exists) =>
+        return callback null if exists
+        fs.mkdir p, callback
+    ,
+      callback
+
   @_fullPath: (filename) ->
     assert filename
     @_storageDirectory + @_path.sep + filename
@@ -17,6 +29,32 @@ class @Storage extends Storage
     path = @_fullPath filename
     @_assurePath path
     fs.writeFileSync path, data
+
+  @saveStream: (filename, stream, callback) ->
+    stream.pause()
+
+    path = @_fullPath filename
+    @_assurePathAsync path, (error) ->
+      return callback error if error
+
+      finished = false
+      stream.on('error', (error) ->
+        return if finished
+        finished = true
+        callback error
+      ).pipe(
+        fs.createWriteStream path
+      ).on('finish', ->
+        return if finished
+        finished = true
+        callback null
+      ).on('error', (error) ->
+        return if finished
+        finished = true
+        callback error
+      )
+
+      stream.resume()
 
   @saveMeteorFile: (meteorFile, filename) ->
     path = @_fullPath filename

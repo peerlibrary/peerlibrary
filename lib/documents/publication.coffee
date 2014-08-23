@@ -44,9 +44,9 @@ class @Publication extends BasicAccessDocument
   # cachedId: used for the the cached filename (available for open access publications, if user has the publication in the library, or is a private publication)
   # mediaType: which media type a cached file is (currently supported: pdf, tei)
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
-  # processError:
-  #   error: description of the publication processing error
-  #   stack: stack trace of the error
+  # jobs: list of (reverse field from JobQueue.publication)
+  #   _id: job id
+  #   status: status of the job
   # numberOfPages
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
@@ -71,16 +71,19 @@ class @Publication extends BasicAccessDocument
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
       annotationsCount: @GeneratedField 'self', ['annotations']
     # We are using publications in Person's updatedAt trigger, because it is part of person's metadata, but this
     # means that it also updates person's lastActivity, so we do not need to have a trigger here for authors field
     triggers: =>
-      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached','processed', 'processError', 'license']
+      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached', 'processed', 'license', 'jobs._id']
       personsLastActivity: RelatedLastActivityTrigger Person, ['importing.person._id'], (doc, oldDoc) ->
         newImporters = (importer.person._id for importer in doc.importing or [])
         oldImporters = (importer.person._id for importer in oldDoc.importing or [])
         _.difference newImporters, oldImporters
+      processPublication: @Trigger ['cached', 'cachedId', 'mediaType'], (doc, oldDoc) ->
+        return unless doc.cached and doc.cachedId and doc.mediaType
+        new ProcessPublicationJob(publication: _id: doc._id).enqueue
+          skipIfExisting: true
 
   @ACCESS:
     PRIVATE: ACCESS.PRIVATE
