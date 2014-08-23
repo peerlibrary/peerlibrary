@@ -7,6 +7,49 @@ class @JobQueue extends JobQueue
   @PUBLISH_FIELDS: ->
     fields: {} # All
 
+Meteor.methods
+  'admin-job-cancel': methodWrap (jobId, runId) ->
+    validateArgument 'jobId', jobId, DocumentId
+    validateArgument 'runId', runId, OptionalOrNull DocumentId
+
+    runId = null unless runId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    job = JobQueue.Meta.collection.getJob jobId
+    throw new Meteor.Error 400, "Invalid job." unless job and job._doc.runId is runId
+
+    if job.data.publication
+      publication = job.data.publication.refresh Publication.maintainerAccessSelfFields()
+      throw new Meteor.Error 403, "Permission denied." unless publication.hasMaintainerAccess person
+      job.cancel()
+    else if person.isAdmin
+      job.cancel()
+    else
+      throw new Meteor.Error 403, "Permission denied."
+
+  'admin-job-restart': methodWrap (jobId, runId) ->
+    validateArgument 'jobId', jobId, DocumentId
+    validateArgument 'runId', runId, OptionalOrNull DocumentId
+
+    runId = null unless runId
+
+    person = Meteor.person()
+    throw new Meteor.Error 401, "User not signed in." unless person
+
+    job = JobQueue.Meta.collection.getJob jobId
+    throw new Meteor.Error 400, "Invalid job." unless job and job._doc.runId is runId
+
+    if person.isAdmin
+      job.restart()
+    else if job.data.publication
+      publication = job.data.publication.refresh Publication.maintainerAccessSelfFields()
+      throw new Meteor.Error 403, "Permission denied." unless publication.hasMaintainerAccess person
+      job.restart()
+    else
+      throw new Meteor.Error 403, "Permission denied."
+
 Meteor.publish 'job-queue', ->
   @related (person) ->
     return unless person?.isAdmin

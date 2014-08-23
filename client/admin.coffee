@@ -58,6 +58,49 @@ Template.adminJobs.jobqueue = ->
     ]
     transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
+Template.adminJobQueueItem.canManageJob = ->
+  person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
+    isAdmin: 1
+
+  return false unless person
+
+  return true if person.isAdmin
+
+  if @data.publication
+    # We have to refresh manually the publication because data.publication is
+    # not an instance of Publication because we disable transform in the
+    # publicationJobs template to display data payload without client-only
+    # attributes like _pages and _highlighter.
+    publication = Publication.documents.findOne @data.publication._id, fields: Publication.maintainerAccessSelfFields()
+    # When used on the generic job queue page where we are not subscribed
+    # to all publications, publication will probably not be found, but this
+    # is probably OK because we are currently not showing anything on the
+    # generic job queue page to non-admins anyway.
+    return publication?.hasMaintainerAccess person
+
+Template.adminJobQueueItem.isRestartable = ->
+  @status in JobQueue.Meta.collection.jobStatusRestartable
+
+Template.adminJobQueueItem.isCancellable = ->
+  @status in JobQueue.Meta.collection.jobStatusCancellable
+
+Template.adminJobQueueItem.events
+  'click .admin-job-cancel': (event, template) ->
+    event.preventDefault()
+
+    Meteor.call 'admin-job-cancel', @_id, @runId, (error, result) ->
+      Notify.fromError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .admin-job-restart': (event, template) ->
+    event.preventDefault()
+
+    Meteor.call 'admin-job-restart', @_id, @runId, (error, result) ->
+      Notify.fromError error if error
+
+    return # Make sure CoffeeScript does not return anything
+
 Template.adminSources.events
   'click button.sync-local-pdf-cache': (event, template) ->
     Meteor.call 'sync-local-pdf-cache', (error, result) ->

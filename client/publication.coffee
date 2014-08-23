@@ -606,6 +606,9 @@ Deps.autorun ->
   LocalAnnotation.documents.insert annotation
 
 Deps.autorun ->
+  publicationSubscribing() # To register dependency
+  return unless publicationHandle?.ready()
+
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
@@ -621,6 +624,7 @@ Deps.autorun ->
   # To remove any existing notification for previous publication
   Notify.documents.remove
     'sticky.notProcessedPublicationId':
+      $exists: true
       $ne: publication._id
 
   if publication.processed
@@ -630,7 +634,7 @@ Deps.autorun ->
     # There was a notification displayed previously, so let's display
     # a new one informing about publication just being processed
     Notify.success "Publication successfully processed." if count
-  else
+  else if not Notify.documents.exists('sticky.notProcessedPublicationId': publication._id)
     # The content of this message is used also in the template, so keep it in sync
     Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
       notProcessedPublicationId: publication._id # Making it a sticky notification

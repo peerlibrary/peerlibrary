@@ -41,7 +41,7 @@ class @ProcessPublicationsJob extends Job
       fields:
         _id: 1
       transform: null
-    ).forEach (publication) =>
+    ).forEach (publication, i) =>
       count++ if new ProcessPublicationJob(publication: publication).enqueue(
         skipIfExisting: true
       )

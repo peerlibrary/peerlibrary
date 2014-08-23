@@ -1,9 +1,13 @@
+DEFAULT_JOB_TIMEOUT = 5 * 60 * 1000 # ms
+STALLED_JOB_CHECK_INTERVAL = 60 * 1000 # ms
+
 FatalJobError = Meteor.makeErrorType 'FatalJobError',
   (message) ->
     @message = message or ''
 
 class @Job
-  @types = {}
+  @types: {}
+  @timeout: DEFAULT_JOB_TIMEOUT
 
   constructor: (@data) ->
     @data ||= {}
@@ -145,7 +149,7 @@ runJobQueue = ->
 
 Meteor.startup ->
   # TODO: Allow configuration to run only on workers
-  # TODO: Set promote interval based on number of workers
+  # TODO: Set promote and job canceling interval based on number of workers
   JobQueue.Meta.collection.startJobs()
   Log.info "Worker enabled"
 
@@ -169,6 +173,20 @@ Meteor.startup ->
 
     changed: (newDocument, oldDocument) ->
       runJobQueue()
+
+  Meteor.setInterval ->
+    JobQueue.documents.find(status: 'running').forEach (jobQueueItem) ->
+      try
+        jobClass = Job.types[jobQueueItem.type]
+        return if moment.utc().valueOf() < jobQueueItem.updated.valueOf() + jobClass.timeout
+
+        job = JobQueue.Meta.collection.makeJob jobQueueItem
+        job.log "No progress for more than #{ jobClass.timeout / 1000 } seconds",
+          level: 'danger'
+        job.cancel()
+      catch error
+        Log.error "Error while canceling a stalled job #{ jobQueueItem.type }/#{ jobQueueItem._id }: #{ error.stack or error }"
+  , STALLED_JOB_CHECK_INTERVAL
 
 JobQueue.Meta.collection._ensureIndex
   type: 1
