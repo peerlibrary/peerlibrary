@@ -1,0 +1,16 @@
+<template name="publicationJobs">
+  {{#with publication}}
+    <h1>Jobs for <a href="{{path}}">{{> publicationMetaMenuTitle}}</a></h1>
+  {{/with}}
+  <ul class="admin-job-queue">
+    {{#each jobqueue}}
+      {{> adminJobQueueItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="failedJobLink">
+  <div>
+    <a href="{{publicationJobsPath _id}}">See all jobs</a> associated with the publication for more information.
+  </div>
+</template>

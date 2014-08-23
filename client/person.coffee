@@ -49,7 +49,7 @@ class @Person extends Person
     if person
       _id: personId # TODO: Remove when we will be able to access parent template context
       text: "@#{ person.slug }"
-      title: person.displayName
+      title: person.getDisplayName()
     else
       _id: personId # TODO: Remove when we will be able to access parent template context
       text: "@#{ personId }"

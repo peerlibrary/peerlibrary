@@ -35,11 +35,22 @@
       </p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/each}}
       </p>
-      <p>Source: {{source}}</p>
-      <p>{{createdAt}}</p>
+      <p>Source: {{source}}{{#if cached}}{{#if cachedId}} (<a href="{{url}}" class="download">download</a>){{/if}}{{/if}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
+      {{#if cached}}
+        <p class="time">Cached: {{cached}}</p>
+      {{/if}}
+      {{#if processed}}
+        <p class="time">Processed: {{processed}}</p>
+      {{else}}
+        {{! The content of this message is used also in the code, so keep it in sync }}
+        <p class="warning balance-text">Publication has not yet been processed and is thus unavailable to others regardless of the access settings below.</p>
+      {{/if}}
+      <p>Last job status: {{jobs.0.status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
       {{> publicationAccessMenu}}
     </div>
   </div>
@@ -194,7 +205,7 @@
 </template>
 
 <template name="publicationDisplay">
-  {{#if cached}}
+  {{#if cachedAvailable}}
     {{#constant}}
       <div class="display-wrapper">
         <div class="loading">
@@ -392,11 +403,11 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
-      <p class="time">{{createdAt}}</p>
-      <p class="time">{{updatedAt}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
     </div>
   </div>
 </template>
@@ -596,11 +607,11 @@
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{path}}">{{displayName}}</a></span>
+      <span><a href="{{path}}">{{getDisplayName}}</a></span>
     {{/with}}
   </p>
-  <p class="time">{{createdAt}}</p>
-  <p class="time">{{updatedAt}}</p>
+  <p class="time">Created: {{createdAt}}</p>
+  <p class="time">Updated: {{updatedAt}}</p>
   <p class="references">
     Referencing:
     {{#each referencingAnnotations}}
@@ -620,11 +631,11 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{path}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
-      <p class="time">{{createdAt}}</p>
-      <p class="time">{{updatedAt}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
       {{#if inside.length}}
         <p class="inside">
           Inside groups:

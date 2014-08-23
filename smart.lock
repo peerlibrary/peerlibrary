@@ -45,7 +45,12 @@
       "directcollection": {},
       "url-utils": {},
       "segfault-handler": {},
-      "crypto": {}
+      "crypto": {},
+      "jobCollection": {
+        "git": "https://github.com/peerlibrary/meteor-job-collection.git",
+        "branch": "peerlibrary"
+      },
+      "async": {}
     },
     "packages": {
       "router": {
@@ -65,8 +70,8 @@
       },
       "aws-sdk": {
         "git": "https://github.com/peerlibrary/meteor-aws-sdk.git",
-        "tag": "v2.0.4-1",
-        "commit": "8e5ef041df90a6a87df44273534611f420d8a2f8"
+        "tag": "v2.0.14-1",
+        "commit": "8f4a0ee6f8a395fb2b4a48d358520bd50b96dafa"
       },
       "tar": {
         "git": "https://github.com/peerlibrary/meteor-tar.git",
@@ -188,6 +193,16 @@
         "tag": "v0.1.1",
         "commit": "9e7e7096c45bb4de46a62d61d497a23198de463a"
       },
+      "jobCollection": {
+        "git": "https://github.com/peerlibrary/meteor-job-collection.git",
+        "branch": "peerlibrary",
+        "commit": "1d50d797dad944dcf084d46da474cf0a10cdcade"
+      },
+      "async": {
+        "git": "https://github.com/peerlibrary/meteor-async.git",
+        "tag": "v0.9.0-1",
+        "commit": "419ddf9711474738cddc6fa3c086a0875be3a5d1"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -202,11 +217,6 @@
         "git": "https://github.com/peerlibrary/meteor-blob.git",
         "tag": "v0.1.1",
         "commit": "59d4545bc73325987f4efc6ab74f995da8b2014c"
-      },
-      "async": {
-        "git": "https://github.com/peerlibrary/meteor-async.git",
-        "tag": "v0.9.0-1",
-        "commit": "419ddf9711474738cddc6fa3c086a0875be3a5d1"
       }
     }
   }

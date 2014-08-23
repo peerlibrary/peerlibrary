@@ -5,8 +5,8 @@ INVITE_SECRET = Random.id()
 
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
-    validateArgument email, EMail, 'email'
-    validateArgument message, Match.Optional(String), 'message'
+    validateArgument 'email', email, EMail
+    validateArgument 'message', message, Match.Optional String
 
     # We require that user inviting is logged in
     person = Meteor.person()
@@ -37,9 +37,9 @@ Meteor.methods
     invited._id
 
   'reset-password-with-username': methodWrap (token, verifier, username) ->
-    validateArgument token, String, 'token'
-    validateArgument verifier, Object, 'verifier'
-    validateArgument username, String, 'username'
+    validateArgument 'token', token, String
+    validateArgument 'verifier', verifier, Object
+    validateArgument 'username', username, String,
     User.validateUsername username, 'username'
 
     # We call Meteor's internal resetPassword method
@@ -49,7 +49,7 @@ Meteor.methods
     newUser
 
   'set-username': methodWrap (username) ->
-    validateArgument username, String, 'username'
+    validateArgument 'username', username, String
     User.validateUsername username, 'username'
 
     throw new Meteor.Error 401, "User not signed in." unless Meteor.person()
@@ -188,7 +188,7 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   person = Meteor.person user._id
 
   wrap """
-  Hello #{ person.displayName }!
+  Hello #{ person.getDisplayName() }!
 
   This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this email.
 
@@ -215,9 +215,6 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   url = url.replace '#/', ''
 
   invited = Meteor.person user._id
-  # Invitation can be very quickly after person creation, so maybe displayName
-  # generator has not yet run, so let's make sure we have displayName
-  invited.displayName = invited.getDisplayName() unless invited.displayName
 
   assert invited.invited?.by._id
 
@@ -230,9 +227,9 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   parts = []
 
   parts.push """
-  Hello #{ invited.displayName }!
+  Hello #{ invited.getDisplayName() }!
 
-  #{ person.displayName } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.displayName } is inviting you to join the conversation with them
+  #{ person.getDisplayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
   """
 
   message = invited.invited.message

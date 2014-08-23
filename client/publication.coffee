@@ -605,6 +605,52 @@ Deps.autorun ->
 
   LocalAnnotation.documents.insert annotation
 
+Deps.autorun ->
+  publicationSubscribing() # To register dependency
+  return unless publicationHandle?.ready()
+
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      processed: 1
+
+  unless publication
+    # To remove any existing notification when going away from the publication page
+    Notify.documents.remove
+      'sticky.notProcessedPublicationId':
+        $exists: true
+    return
+
+  # To remove any existing notification for previous publication
+  Notify.documents.remove
+    'sticky.notProcessedPublicationId':
+      $exists: true
+      $ne: publication._id
+
+  if publication.processed
+    # Publication is processed, so no notification is necessary anymore
+    count = Notify.documents.remove
+      'sticky.notProcessedPublicationId': publication._id
+    # There was a notification displayed previously, so let's display
+    # a new one informing about publication just being processed
+    Notify.success "Publication successfully processed." if count
+  else if not Notify.documents.exists('sticky.notProcessedPublicationId': publication._id)
+    # The content of this message is used also in the template, so keep it in sync
+    Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
+      notProcessedPublicationId: publication._id # Making it a sticky notification
+
+Deps.autorun ->
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      jobs: 1
+    transform: null # So that we don't have any complications passing it to Notify.error
+
+  # Only the latest job is pushed to the client, so index 0
+  return unless publication?.jobs?[0]?.status is 'failed'
+
+  Notify.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
+
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
@@ -615,6 +661,18 @@ Template.publication.notFound = ->
 
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
+
+Template.publicationMetaMenu.rendered = ->
+  $(@findAll '.balance-text').balanceText()
+
+Template.publicationMetaMenu.events =
+  'click .download': (event, template) ->
+    # We want default action to happen, but we do not want that our router processes
+    # it and tries to route it inside the Meteor app, which fails because there is no
+    # suitable route, so we stop propagation here for the event not to get to the
+    # document level where router has an event listener for link clicks.
+    event.stopPropagation()
+    return # Make sure CoffeeScript does not return anything
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (event, template) ->
@@ -793,7 +851,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
 Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionCatalogItem.countDescription
 
-Template.publicationDisplay.cached = ->
+Template.publicationDisplay.cachedAvailable = ->
   publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 

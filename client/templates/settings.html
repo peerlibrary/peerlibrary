@@ -1,6 +1,6 @@
 <template name="settings">
   {{#if currentPerson}}
-    <h1>{{currentPerson.displayName}} personal settings</h1>
+    <h1>{{currentPerson.getDisplayName}} personal settings</h1>
     {{#unless usernameExists}}
       {{> settingsUsername}}
     {{/unless}}

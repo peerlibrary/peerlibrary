@@ -56,7 +56,7 @@ parseReferences = (body) ->
 
 Meteor.methods
   'annotations-path': methodWrap (annotationId) ->
-    validateArgument annotationId, DocumentId, 'annotationId'
+    validateArgument 'annotationId', annotationId, DocumentId
 
     person = Meteor.person()
 
@@ -73,16 +73,16 @@ Meteor.methods
     [publication._id, publication.slug, annotation._id]
 
   'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
-    validateArgument publicationId, DocumentId, 'publicationId'
-    validateArgument body, Match.Optional(NonEmptyString), 'body'
-    validateArgument access, MatchAccess(Annotation.ACCESS), 'access'
-    validateArgument workInsideGroups, [DocumentId], 'workInsideGroups'
-    validateArgument readPersons, [DocumentId], 'readPersons'
-    validateArgument readGroups, [DocumentId], 'readGroups'
-    validateArgument maintainerPersons, [DocumentId], 'maintainerPersons'
-    validateArgument maintainerGroups, [DocumentId], 'maintainerGroups'
-    validateArgument adminPersons, [DocumentId], 'adminPersons'
-    validateArgument adminGroups, [DocumentId], 'adminGroups'
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'body', body, Match.Optional NonEmptyString
+    validateArgument 'access', access, MatchAccess Annotation.ACCESS
+    validateArgument 'workInsideGroups', workInsideGroups, [DocumentId]
+    validateArgument 'readPersons', readPersons, [DocumentId]
+    validateArgument 'readGroups', readGroups, [DocumentId]
+    validateArgument 'maintainerPersons', maintainerPersons, [DocumentId]
+    validateArgument 'maintainerGroups', maintainerGroups, [DocumentId]
+    validateArgument 'adminPersons', adminPersons, [DocumentId]
+    validateArgument 'adminGroups', adminGroups, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -172,8 +172,8 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'update-annotation-body': methodWrap (annotationId, body) ->
-    validateArgument annotationId, DocumentId, 'annotationId'
-    validateArgument body, NonEmptyString, 'body'
+    validateArgument 'annotationId', annotationId, DocumentId
+    validateArgument 'body', body, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -201,7 +201,7 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-annotation': methodWrap (annotationId) ->
-    validateArgument annotationId, DocumentId, 'DocumentId'
+    validateArgument 'DocumentId', annotationId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -221,7 +221,7 @@ Meteor.methods
     )
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
-  validateArgument publicationId, DocumentId, 'publicationId'
+  validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
@@ -241,12 +241,11 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
       fields: Publication.readAccessSelfFields()
 
 Meteor.publish 'annotations', (limit, filter, sortIndex) ->
-  validateArgument limit, PositiveNumber, 'limit'
-  validateArgument filter, OptionalOrNull(String), 'filter'
-  validateArgument sortIndex, OptionalOrNull(Number), 'sortIndex'
-  validateArgument sortIndex, Match.Where (sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
-  , 'sortIndex'
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'body') if filter

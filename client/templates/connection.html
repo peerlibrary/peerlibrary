@@ -1,0 +1,6 @@
+<template name="connectionLost">
+  {{#if reason}}
+    <div>Reason: {{reason}}</div>
+  {{/if}}
+  <button class="connection-lost" type="button">Try to reconnect</button>
+</template>
