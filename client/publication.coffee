@@ -1061,13 +1061,25 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
-Template.annotationsControl.filteredAnnotationsCount = ->
+Template.annotationFilteredCount.filteredAnnotationsCount = ->
   isolateValue ->
     LocalAnnotation.documents.find(
       local:
         $exists: false
       'publication._id': Session.get 'currentPublicationId'
     ).count() - displayedAnnotations(false).count()
+
+Template.annotationFilteredCount.filteredAnnotationsDescription = ->
+  Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
+
+Template.annotationFilteredCount.rendered = ->
+  $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
+
+Template.annotationFilteredCount.events
+  'click .clear-filters': (event, template) ->
+    $(template.find '.clear-filters').tooltip('destroy')
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+    Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
 
 ###
 TODO: Temporary disabled, not yet finalized code
@@ -2044,10 +2056,10 @@ Template.annotationMetaMenu.canRemove = ->
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.contextMenuGroupsCount.selectedGroups = ->
+Template.workInGroupsMenuGroupsCount.selectedGroups = ->
   getNewAnnotationWorkInsideGroups()
 
-Template.groupsFilter.inside = ->
+Template.annotationsControlFilters.inside = ->
   Group.documents.find
     _id:
       $in: getNewAnnotationWorkInsideGroups()
@@ -2058,20 +2070,23 @@ Template.groupsFilter.inside = ->
       ['slug', 'asc']
     ]
 
-Template.contextMenu.myGroups = Template.myGroups.myGroups
+Template.annotationsControlFilters.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
 
-Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenu.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.private = Template.contextMenu.private
+Template.workInGroupsMenuGroups.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.selectedGroups = Template.contextMenuGroupsCount.selectedGroups
+Template.workInGroupsMenuGroups.private = Template.workInGroupsMenu.private
 
-Template.contextMenuGroups.selectedGroupsDescription = ->
+Template.workInGroupsMenuGroups.selectedGroups = Template.workInGroupsMenuGroupsCount.selectedGroups
+
+Template.workInGroupsMenuGroups.selectedGroupsDescription = ->
   groups = getNewAnnotationWorkInsideGroups()
   return unless groups
   if groups.length is 1 then "1 group" else "#{ groups.length } groups"
 
-Template.contextMenuGroups.events
+Template.workInGroupsMenuGroups.events
   'click .add-to-working-inside': (event, template) ->
     Session.set 'newAnnotationWorkInsideGroups', _.union getNewAnnotationWorkInsideGroups(), [@_id]
 
@@ -2082,8 +2097,22 @@ Template.contextMenuGroups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.contextMenuGroupListing.workingInside = ->
+Template.workInGroupsMenuGroupListing.workingInside = ->
   _.contains getNewAnnotationWorkInsideGroups(), @_id
+
+Template.viewportFilterContent.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
+
+Template.viewportFilterContent.events
+  'click .enable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .disable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
