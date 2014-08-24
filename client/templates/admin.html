@@ -75,14 +75,17 @@
   <li class="catalog-item job">
     <div class="details">
       <h2>{{type}}, status: {{status}}</h2>
-      <p>updated: {{updated}}</p>
-      <p>after: {{after}}</p>
+      <p>ID: {{_id}}</p>
+      <p>last updated: {{updated}}</p>
+      {{#if inFuture}}
+        <p>scheduled after: {{after}}</p>
+      {{/if}}
+      <p>data: {{json data}}</p>
       <ul class="log">
         {{#each log}}
           {{> adminJobLogItem}}
         {{/each}}
       </ul>
-      <p>data: {{json data}}</p>
       {{#if canManageJob}}
         <div class="admin-buttons">
           {{#if isCancellable}}
@@ -99,7 +102,7 @@
 
 <template name="adminJobLogItem">
   <li class="level">
-    <p class="data">{{time}}, ID: {{runId}}</p>
+    <p class="data">{{time}}, runID: {{runId}}</p>
     <p class="message">{{message}}</p>
   </li>
 </template>

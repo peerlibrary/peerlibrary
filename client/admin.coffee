@@ -84,6 +84,9 @@ Template.adminJobQueueItem.isRestartable = ->
 Template.adminJobQueueItem.isCancellable = ->
   @status in JobQueue.Meta.collection.jobStatusCancellable
 
+Template.adminJobQueueItem.inFuture = ->
+  @after and @after > moment.utc().toDate()
+
 Template.adminJobQueueItem.events
   'click .admin-job-cancel': (event, template) ->
     event.preventDefault()
