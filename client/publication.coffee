@@ -606,9 +606,8 @@ Deps.autorun ->
   LocalAnnotation.documents.insert annotation
 
 Deps.autorun ->
-  publicationSubscribing() # To register dependency
-  return unless publicationHandle?.ready()
-
+  # We first register a dependency on the publication, so that we correctly
+  # remove the notification when we go away from the publication page
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
@@ -620,6 +619,10 @@ Deps.autorun ->
       'sticky.notProcessedPublicationId':
         $exists: true
     return
+
+  # We proceed only if we are fully subscribed to the publication
+  publicationSubscribing() # To register dependency
+  return unless publicationHandle?.ready()
 
   # To remove any existing notification for previous publication
   Notify.documents.remove
