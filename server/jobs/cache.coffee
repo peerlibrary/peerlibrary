@@ -79,7 +79,7 @@ class @CacheSyncJob extends Job
       cached:
         $exists: false
       source:
-        $in: Publication.foreignSources
+        $in: Publication.foreignSources()
     ,
       fields:
         _id: 1
