@@ -67,6 +67,7 @@
   <form class="set-background">
     <div class="section">
       <label>
+        {{! Hack: input needs an id to make messages appear correct for some reason. }}
         <input type="checkbox" id="set-background-paused" class="paused" {{#if checked}}checked="checked"{{/if}}/>
         Background paused
       </label>
