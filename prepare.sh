@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Change directory to the directory in which the script is in
+cd "$(dirname -- "$0")"
+
 # Update all git submodules
 git submodule update --init --recursive
 
