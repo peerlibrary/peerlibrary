@@ -130,8 +130,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.12.5",
-        "commit": "50cdc939c8f0821ffececcecf1285b71a1b9b940"
+        "tag": "v0.12.6",
+        "commit": "9974f6f1bea5fbd4d673fa04390c9ce79348b6f7"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -175,8 +175,8 @@
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
-        "tag": "v0.1.1",
-        "commit": "1092a6cb3aca2b6ed8e97d91b6e68f49493532b1"
+        "tag": "v0.2.0",
+        "commit": "b16b00f0659b5154765f6c7ba51c660942a709d0"
       },
       "url-utils": {
         "git": "https://github.com/peerlibrary/meteor-url-utils.git",
