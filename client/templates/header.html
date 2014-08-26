@@ -16,6 +16,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> userNotificationsButton}}
           {{> collectionsButton}}
           {{> groupsButton}}
           {{> importButton}}
@@ -89,4 +90,18 @@
   <li class="pull-right">
     <a href="{{collectionsPath}}">Collections</a>
   </li>
+</template>
+
+<template name="userNotificationsButton">
+  <li class="dropdown-trigger user-notifications-button pull-right">
+    <a class="icon-public"></a>
+    {{> userNotificationsDropdown }}
+  </li>
+</template>
+
+<template name="userNotificationsDropdown">
+  <div class="dropdown-anchor">
+    <div class="right-aligned dropdown">
+    </div>
+  </div>
 </template>

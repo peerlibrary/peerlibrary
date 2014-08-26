@@ -132,3 +132,13 @@ Deps.autorun ->
 
 Accounts.ui.config
   passwordSignupFields: 'USERNAME_AND_EMAIL'
+
+Template.userNotificationsButton.events
+  'click .dropdown-trigger': (event, template) ->
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
+    return if $.contains template.find('.dropdown-anchor'), event.target
+
+    $(template.findAll '.dropdown-anchor').show()
+
+    return # Make sure CoffeeScript does not return anything

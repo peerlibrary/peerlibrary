@@ -285,6 +285,21 @@ header
 input.import-file-input
   display none
 
+/* Notifications
+================ */
+
+header
+  .user-notifications-button.dropdown-trigger
+    a::before
+      margin 0
+
+    .dropdown-anchor
+      right 15px
+
+      .dropdown
+        width 200px
+        color black
+
 /* Index header
 =============== */
 
@@ -388,7 +403,7 @@ header.index-header
       font-size 14px
       font-weight normal
       line-height 14px
-      padding 8px 20px
+      padding 9px 13px
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
@@ -402,6 +417,10 @@ header.index-header
     li a.login-link-text
       margin-right 25px
       color white
+
+    li.user-notifications-button > a
+        height 14px
+        padding 9px
 
   .avatar
     margin-top -5px
