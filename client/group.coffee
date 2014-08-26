@@ -81,7 +81,7 @@ Editable.template Template.groupName, ->
 ,
 (name) ->
   Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return Notify.fromError error, true if error
+    return FlashMessage.fromError error, true if error
 ,
   "Enter group name"
 ,
@@ -103,9 +103,9 @@ Template.groupMembersList.events
   'click .remove-button': (event, template) ->
 
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Member removed." if count
+      FlashMessage.success "Member removed." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -190,9 +190,9 @@ Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
-    return Notify.fromError error, true if error
+    return FlashMessage.fromError error, true if error
 
-    Notify.success "Member added." if count
+    FlashMessage.success "Member added." if count
 
 Template.groupMembersAddControlNoResults.events
   'click .add-and-invite': (event, template) ->
@@ -265,11 +265,11 @@ Template.groupAdminTools.events
 
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 
-      Notify.success "Group removed."
+      FlashMessage.success "Group removed."
       Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
