@@ -18,6 +18,7 @@ RUN apt-get update -q -q && \
  npm config set unsafe-perm true && \
  npm install -g git+https://github.com/oortcloud/meteorite.git && \
  cd /peerlibrary && \
+ grep path .gitmodules | awk '{print $3}' | xargs rm -rf && \
  ./prepare.sh && \
  mrt bundle /bundle.tgz && \
  cd / && \
