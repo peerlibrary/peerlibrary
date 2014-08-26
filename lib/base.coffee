@@ -14,6 +14,7 @@ setSession = (session) ->
     searchActive: false
     searchFocused: false
     adminActive: false
+    publicationJobsId: null
     libraryActive: false
     settingsActive: false
     currentCollectionId: null
@@ -353,6 +354,13 @@ else
         setSession
           adminActive: true
         'admin'
+
+    '/admin/jobs/p/:publicationId':
+      as: 'publicationJobs'
+      to: (publicationId) ->
+        setSession
+          publicationJobsId: publicationId
+        'publicationJobs'
 
     '/library':
       as: 'library'

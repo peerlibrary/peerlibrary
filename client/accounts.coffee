@@ -9,13 +9,16 @@
     Notify.success "User #{ email } invited.", "We have created an account and sent them an invitation email with a link to set their password." if showNotification
 
 Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
-  Meteor.person(displayName: 1)?.displayName
+  Meteor.person(displayName: 1)?.getDisplayName()
 
 changingPasswordInResetPassword = false
 changingPasswordInEnrollAccount = false
 
 # To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
 $(document).on 'click focus keypress', (event) ->
+  # Do not act when interacting with notifications
+  return if $(event.target).closest('.notifications').length
+
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   unless event.originalEvent?.accountsDialogBoxEvent

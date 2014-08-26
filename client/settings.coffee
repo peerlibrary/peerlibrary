@@ -7,23 +7,33 @@ passwordFormMessages = new FormMessages()
 newPasswordReadyForValidation = false
 newPasswordFieldModified = false
 
+backgroundFormMessages = new FormMessages()
+
 resetUsernameForm = ->
   usernameFormMessages.resetMessages()
   usernameReadyForValidation = false
   usernameFieldModified = false
 
-resetPasswordForm = ->
+resetPasswordForm = (template) ->
   passwordFormMessages.resetMessages()
-  $('input.current-password').val('')
-  $('input.new-password').val('')
+  if template
+    $(template.findAll 'input.current-password').val('')
+    $(template.findAll 'input.new-password').val('')
+  else
+    $('input.current-password').val('')
+    $('input.new-password').val('')
   newPasswordReadyForValidation = false
   newPasswordFieldModified = false
+
+resetBackgroundForm = ->
+  backgroundFormMessages.resetMessages()
 
 # Reset forms when settings page becomes active
 Deps.autorun ->
   if Session.get 'settingsActive'
     resetUsernameForm()
     resetPasswordForm()
+    resetBackgroundForm()
 
 # Username settings
 Template.settingsUsername.events =
@@ -31,8 +41,7 @@ Template.settingsUsername.events =
     event.preventDefault()
 
     usernameSubmitted = true
-    usernameFormMessages.resetMessages()
-    username = $('input.username').val()
+    username = $(template.findAll 'input.username').val()
     try
       usernameFormMessages.resetMessages()
       Meteor.call 'set-username', username, (error) ->
@@ -52,7 +61,7 @@ Template.settingsUsername.events =
     Meteor.setTimeout ->
       usernameReadyForValidation = usernameFieldModified
       return if usernameSubmitted
-      username = $('input.username').val()
+      username = $(template.findAll 'input.username').val()
       validateUsername username, 'username'
     ,
       100 # ms
@@ -61,7 +70,7 @@ Template.settingsUsername.events =
 
   'keyup input.username, paste input.username': (event, template) ->
     usernameFieldModified = true
-    username = $('input.username').val()
+    username = $(template.findAll 'input.username').val()
     validateUsername username, 'username'
 
     return # Make sure CoffeeScript does not return anything
@@ -72,7 +81,7 @@ Template.settingsUsername.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.settings.usernameExists = ->
+Template.settingsUsername.usernameExists = ->
   !!Meteor.person?('user.username': 1).user?.username
 
 Template.settingsUsername.messageOnField = (field, options) ->
@@ -99,8 +108,8 @@ Template.settingsPassword.events =
 
     newPasswordReadyForValidation = true
     passwordFormMessages.resetMessages()
-    currentPassword = $('input.current-password').val()
-    newPassword = $('input.new-password').val()
+    currentPassword = $(template.findAll 'input.current-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
 
     passwordFormMessages.setErrorMessage 'Current password is required.', 'current-password' unless currentPassword
 
@@ -114,21 +123,21 @@ Template.settingsPassword.events =
         if error
           passwordFormMessages.setError error
         else
-          resetPasswordForm()
+          resetPasswordForm template
           passwordFormMessages.setInfoMessage "Password changed successfully."
 
     return # Make sure CoffeeScript does not return anything
 
   'blur input.new-password': (event, template) ->
     newPasswordReadyForValidation = newPasswordFieldModified
-    newPassword = $('input.new-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup input.new-password, paste input.new-password': (event, template) ->
     newPasswordFieldModified = true
-    newPassword = $('input.new-password').val()
+    newPassword = $(template.findAll 'input.new-password').val()
     validatePassword newPassword, 'new-password'
 
     return # Make sure CoffeeScript does not return anything
@@ -171,3 +180,35 @@ changePassword = (currentPassword, newPassword, callback) ->
       callback formError
   catch error
     callback error
+
+Template.settingsBackground.checked = ->
+  backgroundPaused = !!Meteor.user().settings?.backgroundPaused
+  # We also clear messages here so that if a settings change comes from somewhere else
+  # (like from the index page) any shown messages are cleared as well. The idea is that
+  # if what is displayed is different from what it should be then we clear messages.
+  # In normal workflow checkbox is always first set, then method is called, and then this
+  # helper is rerun when value changes, so checkbox should already be set, so messages stay.
+  backgroundFormMessages.resetMessages() if backgroundPaused isnt $('input.paused').is(':checked')
+  backgroundPaused
+
+Template.settingsBackground.messageOnField = (field, options) ->
+  field = null unless options
+  backgroundFormMessages.get field
+
+Template.settingsBackground.events
+  'change input.paused': (event, template) ->
+    event.preventDefault()
+
+    checked = $(template.findAll 'input.paused').is(':checked')
+    try
+      backgroundFormMessages.resetMessages()
+      Meteor.call 'pause-background', checked, (error) ->
+        if error
+          $(template.findAll 'input.paused').prop('checked', !!Meteor.user().settings?.backgroundPaused)
+          return backgroundFormMessages.setError error
+        resetBackgroundForm()
+        backgroundFormMessages.setInfoMessage if checked then "Background paused." else "Background resumed."
+    catch error
+      backgroundFormMessages.setError error
+
+    return # Make sure CoffeeScript does not return anything

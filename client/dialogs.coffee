@@ -7,6 +7,9 @@ DIALOG_VARIABLES =
 
 # To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
 $(document).on 'click focus keypress', (event) ->
+  # Do not act when interacting with notifications
+  return if $(event.target).closest('.notifications').length
+
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   for key, variable of DIALOG_VARIABLES

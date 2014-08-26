@@ -1,10 +1,12 @@
 # TODO: Also do something on normal exit, so that publications which are being processed at the moment of exit have some consistent state
 
-currentlyProcessedPublicationId = null
+currentlyProcessingPublicationJob = null
 
-@currentlyProcessingPublication = (id) ->
-  throw new Error "A publication is already being processed, only one publication can be processed at the time" if currentlyProcessedPublicationId and id
-  currentlyProcessedPublicationId = id
+# We force only one publication to be processed at a time
+# so that we know with which job to associate the signal with
+@currentlyProcessingPublication = (job) ->
+  throw new Error "A publication is already being processed, only one publication can be processed at the time" if currentlyProcessingPublicationJob and job
+  currentlyProcessingPublicationJob = job
 
 SegfaultHandler.registerHandler (stack, signal, address) ->
   message = "Received SIGSEGV/SIGBUS (#{ signal }) for address 0x#{ address.toString(16) }"
@@ -12,11 +14,7 @@ SegfaultHandler.registerHandler (stack, signal, address) ->
   Log.error "#{ message }\n#{ stack }"
 
   # TODO: Should we log also errors outside publication processing?
-  return unless currentlyProcessedPublicationId
+  return unless currentlyProcessingPublicationJob
 
-  Publication.documents.update currentlyProcessedPublicationId,
-    $set:
-      processError:
-        # TODO: Add a timestamp
-        error: message
-        stack: stack
+  currentlyProcessingPublicationJob.getQueueJob().fail EJSON.toJSONValue(value: message, stack: stack),
+    fatal: true

@@ -378,7 +378,7 @@ annotations-control-height = 30px
   .filter
     color white
     line-height annotations-control-height
-    margin-left 50px
+    margin 0 35px 0 50px
     padding-right 5px
     white-space nowrap
     overflow hidden
@@ -393,14 +393,8 @@ annotations-control-height = 30px
     span:last-child::after
       content ""
 
-  .filteredCount
-    color white
-    line-height annotations-control-height
-    margin-left 35px
-    padding-right 5px
-    white-space nowrap
-    overflow hidden
-    text-overflow ellipsis
+.clear-filters
+  margin-top 2px
 
 .annotations-editor
   height auto
@@ -541,6 +535,9 @@ annotations-control-height = 30px
   right annotations-right - 10px
   top header-height + 15px + annotations-control-height
   bottom 0
+
+  .filtered-count
+    margin 15px 0 10px 53px
 
   .avatar
     font-size 16px
@@ -818,8 +815,8 @@ annotations-control-height = 30px
 .editor-link-prompt-dialog
   position fixed
 
-/* Context menu
-=============== */
+/* Context menus
+================ */
 
 .context-menu.meta-menu
   position absolute
@@ -842,20 +839,20 @@ annotations-control-height = 30px
       display inline-block
       vertical-align middle
 
-    .icon-public, .icon-private
-      width 27px
-
-    .icon-public
-      font-size 19px
-      position relative
-      top -1px
-      left -2px
-
-    .group-count
-      font-size 13px
-
   .meta-content
     padding 10px 10px 12px
+
+.context-menu.meta-menu.no-groups
+  width 33px
+
+.context-menu.meta-menu:hover
+  width 255px
+  height auto
+
+.work-in-groups.context-menu.meta-menu
+  .icons
+    .group-count
+      font-size 13px
 
   .context-menu-groups
     .toggle-list
@@ -870,12 +867,12 @@ annotations-control-height = 30px
     .no-groups.description
       padding 10px
 
-.context-menu.meta-menu.no-groups
-  width 33px
+.viewport-filter.context-menu.meta-menu
+  left auto
+  right 0
 
-.context-menu.meta-menu:hover
-  width 255px
-  height auto
+  .icons
+    text-align right
 
 /* Footer
 ========= */

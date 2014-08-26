@@ -38,13 +38,16 @@ Template.notificationsOverlayItem.rendered = ->
 
   $notification = $(@findAll '.notification')
 
+  return if @data.sticky
+
   @_timeout = new VisibleTimeout =>
     @_seen = true
     $notification.fadeOut 'slow', =>
       Notify.documents.remove @data._id
     @_timeout = null
   ,
-    3000 # ms
+    # Error messages are displayed longer
+    if @data.type is 'error' then 10000 else 3000 # ms
 
   # Pause the timeout while user is hovering over the notification
   $notification.on 'mouseenter.notification', (event) =>
@@ -93,6 +96,9 @@ Template.notificationsOverlayItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.notificationsOverlayItem.additional = ->
-  # We allow additional information to be raw HTML content,
-  # but we make sure that it can be plain text as well
-  @additional.replace '\n', '<br/>' if @additional
+  if @additional?.template
+    Template[@additional.template] @additional.data
+  else
+    # We allow additional information to be raw HTML content,
+    # but we make sure that it can be plain text as well
+    @additional.replace '\n', '<br/>' if @additional

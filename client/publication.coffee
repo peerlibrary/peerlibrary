@@ -605,6 +605,55 @@ Deps.autorun ->
 
   LocalAnnotation.documents.insert annotation
 
+Deps.autorun ->
+  # We first register a dependency on the publication, so that we correctly
+  # remove the notification when we go away from the publication page
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      processed: 1
+
+  unless publication
+    # To remove any existing notification when going away from the publication page
+    Notify.documents.remove
+      'sticky.notProcessedPublicationId':
+        $exists: true
+    return
+
+  # We proceed only if we are fully subscribed to the publication
+  publicationSubscribing() # To register dependency
+  return unless publicationHandle?.ready()
+
+  # To remove any existing notification for previous publication
+  Notify.documents.remove
+    'sticky.notProcessedPublicationId':
+      $exists: true
+      $ne: publication._id
+
+  if publication.processed
+    # Publication is processed, so no notification is necessary anymore
+    count = Notify.documents.remove
+      'sticky.notProcessedPublicationId': publication._id
+    # There was a notification displayed previously, so let's display
+    # a new one informing about publication just being processed
+    Notify.success "Publication successfully processed." if count
+  else if not Notify.documents.exists('sticky.notProcessedPublicationId': publication._id)
+    # The content of this message is used also in the template, so keep it in sync
+    Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
+      notProcessedPublicationId: publication._id # Making it a sticky notification
+
+Deps.autorun ->
+  publication = Publication.documents.findOne Session.get('currentPublicationId'),
+    fields:
+      _id: 1
+      jobs: 1
+    transform: null # So that we don't have any complications passing it to Notify.error
+
+  # Only the latest job is pushed to the client, so index 0
+  return unless publication?.jobs?[0]?.status is 'failed'
+
+  Notify.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
+
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
   not publicationHandle?.ready() or not publicationCacheHandle?.ready()
@@ -615,6 +664,18 @@ Template.publication.notFound = ->
 
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
+
+Template.publicationMetaMenu.rendered = ->
+  $(@findAll '.balance-text').balanceText()
+
+Template.publicationMetaMenu.events =
+  'click .download': (event, template) ->
+    # We want default action to happen, but we do not want that our router processes
+    # it and tries to route it inside the Meteor app, which fails because there is no
+    # suitable route, so we stop propagation here for the event not to get to the
+    # document level where router has an event listener for link clicks.
+    event.stopPropagation()
+    return # Make sure CoffeeScript does not return anything
 
 addAccessEvents =
   'mousedown .add-access, mouseup .add-access': (event, template) ->
@@ -793,7 +854,7 @@ Template.publicationLibraryMenuCollectionListing.events
 
 Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionCatalogItem.countDescription
 
-Template.publicationDisplay.cached = ->
+Template.publicationDisplay.cachedAvailable = ->
   publicationSubscribing() # To register dependency
   publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
@@ -1003,13 +1064,25 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
-Template.annotationsControl.filteredAnnotationsCount = ->
+Template.annotationFilteredCount.filteredAnnotationsCount = ->
   isolateValue ->
     LocalAnnotation.documents.find(
       local:
         $exists: false
       'publication._id': Session.get 'currentPublicationId'
     ).count() - displayedAnnotations(false).count()
+
+Template.annotationFilteredCount.filteredAnnotationsDescription = ->
+  Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
+
+Template.annotationFilteredCount.rendered = ->
+  $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
+
+Template.annotationFilteredCount.events
+  'click .clear-filters': (event, template) ->
+    $(template.find '.clear-filters').tooltip('destroy')
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+    Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
 
 ###
 TODO: Temporary disabled, not yet finalized code
@@ -1986,10 +2059,10 @@ Template.annotationMetaMenu.canRemove = ->
 Template.annotationMetaMenu.canModifyAccess = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.contextMenuGroupsCount.selectedGroups = ->
+Template.workInGroupsMenuGroupsCount.selectedGroups = ->
   getNewAnnotationWorkInsideGroups()
 
-Template.groupsFilter.inside = ->
+Template.annotationsControlFilters.inside = ->
   Group.documents.find
     _id:
       $in: getNewAnnotationWorkInsideGroups()
@@ -2000,20 +2073,23 @@ Template.groupsFilter.inside = ->
       ['slug', 'asc']
     ]
 
-Template.contextMenu.myGroups = Template.myGroups.myGroups
+Template.annotationsControlFilters.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
 
-Template.contextMenuGroups.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenu.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.private = Template.contextMenu.private
+Template.workInGroupsMenuGroups.myGroups = Template.myGroups.myGroups
 
-Template.contextMenuGroups.selectedGroups = Template.contextMenuGroupsCount.selectedGroups
+Template.workInGroupsMenuGroups.private = Template.workInGroupsMenu.private
 
-Template.contextMenuGroups.selectedGroupsDescription = ->
+Template.workInGroupsMenuGroups.selectedGroups = Template.workInGroupsMenuGroupsCount.selectedGroups
+
+Template.workInGroupsMenuGroups.selectedGroupsDescription = ->
   groups = getNewAnnotationWorkInsideGroups()
   return unless groups
   if groups.length is 1 then "1 group" else "#{ groups.length } groups"
 
-Template.contextMenuGroups.events
+Template.workInGroupsMenuGroups.events
   'click .add-to-working-inside': (event, template) ->
     Session.set 'newAnnotationWorkInsideGroups', _.union getNewAnnotationWorkInsideGroups(), [@_id]
 
@@ -2024,8 +2100,22 @@ Template.contextMenuGroups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.contextMenuGroupListing.workingInside = ->
+Template.workInGroupsMenuGroupListing.workingInside = ->
   _.contains getNewAnnotationWorkInsideGroups(), @_id
+
+Template.viewportFilterContent.viewportFilter = ->
+  Session.get 'currentPublicationLimitAnnotationsToViewport'
+
+Template.viewportFilterContent.events
+  'click .enable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', true
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .disable-viewport-filter': (event, template) ->
+    Session.set 'currentPublicationLimitAnnotationsToViewport', false
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.footer.publicationDisplayed = ->
   'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()

@@ -57,11 +57,11 @@ class @FormMessages
         argument = error.details.substring 'Argument: '.length
       else
         argument = ''
-      @setErrorMessage error.reason, @mapArgumentToField argument
+      @setErrorMessage _.ensureSentence(error.reason), @mapArgumentToField argument
     else if error instanceof Error
-      @setErrorMessage error.message
+      @setErrorMessage _.ensureSentence(error.message)
     else
-      @setErrorMessage error.toString()
+      @setErrorMessage _.ensureSentence(error.toString?() or "Unknown error")
 
   # Sets error message for given field or global error message if field is not set
   setErrorMessage: (message, field) =>

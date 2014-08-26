@@ -1,0 +1,34 @@
+@import 'variables.import'
+
+section.settings
+  .section
+    margin-left 20px
+
+  .set-background
+    .paused
+      display inline
+      width auto
+
+  .form-message
+    border-radius 2px
+    border-width 1px
+    border-style solid
+    padding 5px
+    font-size 13px
+    margin 10px 0
+    width 235px
+    box-sizing border-box
+    text-align center
+
+    &.info
+      color success-green
+      border-color success-green-border
+      background-color success-green-background
+
+    &.error
+      color error-red
+      border-color error-red-border
+      background-color error-red-background
+
+  label + .form-message
+    margin-top 0
