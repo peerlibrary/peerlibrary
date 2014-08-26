@@ -92,17 +92,21 @@ class @Storage extends Storage
     stats = fs.statSync @_fullPath filename
     stats.mtime
 
-# Find .meteor directory
-directoryPath = process.mainModule.filename.split pathModule.sep
-while directoryPath.length > 0
-  if directoryPath[directoryPath.length - 1] == '.meteor'
-    break
-  directoryPath.pop()
+if process.env.STORAGE_DIRECTORY
+  Storage._storageDirectory = process.env.STORAGE_DIRECTORY
+else
+  # Find .meteor directory
+  directoryPath = process.mainModule.filename.split pathModule.sep
+  while directoryPath.length > 0
+    if directoryPath[directoryPath.length - 1] == '.meteor'
+      break
+    directoryPath.pop()
 
-assert directoryPath.length > 0
+  assert directoryPath.length > 0
 
-directoryPath.push 'storage'
-Storage._storageDirectory = directoryPath.join pathModule.sep
+  directoryPath.push 'storage'
+  Storage._storageDirectory = directoryPath.join pathModule.sep
+
 Storage._path = pathModule
 
 # Taken from express utils.js
