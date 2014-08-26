@@ -155,7 +155,7 @@ computeChecksum = (file, callback) ->
 
   hash.update file.content, (error) ->
     if error
-      Notify.error "Crypto error: #{ error }", null, true, error.stack
+      FlashMessage.error "Crypto error: #{ error }", null, true, error.stack
       ImportingFile.documents.update file._id,
         $set:
           state: 'errored'
@@ -208,7 +208,7 @@ Deps.autorun ->
             state: 'preprocessed'
 
   reader.onerror = (error) ->
-    Notify.error "FileReader error: #{ error }", null, true, error.stack
+    FlashMessage.error "FileReader error: #{ error }", null, true, error.stack
     ImportingFile.documents.update document._id,
       $set:
         state: 'errored'
@@ -467,10 +467,10 @@ Deps.autorun ->
   return if $('.dropdown-anchor:visible').length
 
   if importedFilesCount is 1
-    Notify.success "Imported the publication."
+    FlashMessage.success "Imported the publication."
     Meteor.Router.toNew Meteor.Router.publicationPath ImportingFile.documents.findOne(state: 'imported').publicationId
   else
-    Notify.success "Imported #{ importedFilesCount } publications."
+    FlashMessage.success "Imported #{ importedFilesCount } publications."
     Meteor.Router.toNew Meteor.Router.libraryPath()
 
   Session.set 'importOverlayActive', false

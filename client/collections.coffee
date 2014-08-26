@@ -35,12 +35,12 @@ Template.addNewCollection.events
     return unless name
 
     Meteor.call 'create-collection', name, (error, collectionId) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
       # Clear the collection name from the form
       $(template.findAll '.name').val('')
 
-      Notify.success "Collection created."
+      FlashMessage.success "Collection created."
 
     return # Make sure CoffeeScript does not return anything
 
@@ -49,7 +49,7 @@ Editable.template Template.collectionCatalogItemName, ->
 ,
   (name) ->
     Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 ,
   "Enter collection name"
 ,

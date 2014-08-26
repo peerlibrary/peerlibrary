@@ -72,9 +72,9 @@ Template.accessMenuPrivacyForm.events
       documentName = @constructor.Meta._name
 
     Meteor.call 'set-access', documentName, @_id, access, (error, changed) ->
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Access changed." if changed
+      FlashMessage.success "Access changed." if changed
 
     return # Make sure CoffeeScript does not return anything
 
@@ -180,15 +180,15 @@ changeRole = (data, newRole) ->
   return if oldRole is newRole
 
   notification = ->
-    Notify.success "Permissions changed."
+    FlashMessage.success "Permissions changed."
 
   unless oldRole
     notification = ->
-      Notify.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } added."
+      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } added."
 
   else unless newRole
     notification = ->
-      Notify.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } removed."
+      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } removed."
 
   if data.personOrGroup instanceof Person
     methodName = 'set-role-for-person'
@@ -205,7 +205,7 @@ changeRole = (data, newRole) ->
 
   # TODO: When will be possible to better access parent data context from event handler, we should use that
   Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, changed) =>
-    return Notify.fromError error, true if error
+    return FlashMessage.fromError error, true if error
 
     notification() if changed
 
