@@ -1,11 +1,12 @@
 #!/bin/bash -e
 
-mkdir -p "$STORAGE_DIRECTORY"
-chown -Rhf peerlibrary:peerlibrary "$STORAGE_DIRECTORY" /.meteorsession
+mkdir -p /storage
+chown -Rhf peerlibrary:peerlibrary /storage /.meteorsession
 
 export PATH=/.meteor/tools/latest/bin:$PATH
 export NODE_PATH=/.meteor/tools/latest/lib/node_modules
 export NODE_ENV='PRODUCTION'
+export STORAGE_DIRECTORY='/storage'
 
 cd /bundle
 exec chpst -u peerlibrary:peerlibrary node main.js 2>&1
