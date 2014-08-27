@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
 mkdir -p /storage
-chown -Rhf peerlibrary:peerlibrary /storage /.meteorsession
+# We don't do it recursively, because it could be a lot of files
+chown -f peerlibrary:peerlibrary /storage /storage/publication /storage/publication/* /.meteorsession
 
 export PATH=/.meteor/tools/latest/bin:$PATH
 export NODE_PATH=/.meteor/tools/latest/lib/node_modules
