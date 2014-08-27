@@ -243,6 +243,9 @@
   .member
     .inline-item
       padding-right 0
-
+.read-only.member-list:not(.can-modify-self)
     .remove-button
+      display none
+.read-only.member-list.can-modify-self
+    a:not(.current-user) + .remove-button
       display none
