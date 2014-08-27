@@ -647,7 +647,7 @@ Deps.autorun ->
     fields:
       _id: 1
       jobs: 1
-    transform: null # So that we don't have any complications passing it to Notify.error
+    transform: null # So that we don't have any complications passing it to FlashMessage.error
 
   # Only the latest job is pushed to the client, so index 0
   return unless publication?.jobs?[0]?.status is 'failed'
@@ -1092,7 +1092,7 @@ Template.annotationsControl.events
   'click .add': (event, template) ->
     Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
