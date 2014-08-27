@@ -66,7 +66,7 @@ Template.backgroundPause.events
       # When method sets the value in the database on the server, new value will
       # be pushed back to the client and autorun will set Session accordingly
       Meteor.call 'pause-background', backgroundPaused, (error) ->
-        Notify.fromError error, true if error
+        FlashMessage.fromError error, true if error
     else
       # Otherwise modify only locally in Session
       Session.set 'backgroundPaused', backgroundPaused

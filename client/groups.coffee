@@ -25,9 +25,9 @@ Template.groups.events
     return unless name
 
     Meteor.call 'create-group', name, (error, groupId) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Group created."
+      FlashMessage.success "Group created."
 
     return # Make sure CoffeeScript does not return anything
 
@@ -56,7 +56,7 @@ Editable.template Template.groupCatalogItemName, ->
 ,
   (name) ->
     Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 ,
   "Enter group name"
 ,
