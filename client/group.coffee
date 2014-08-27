@@ -131,10 +131,10 @@ Template.groupMembership.events
 Template.groupMembers.canModifyMembership = ->
   @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.groupMembers.pendingMembers = ->
-  group = Group.documents.findOne
-    _id: Session.get 'currentGroupId'
-  group.pendingMembers?.length > 0
+#Template.groupMembers.pendingMembers = ->
+#  group = Group.documents.findOne
+#    _id: Session.get 'currentGroupId'
+#  group.pendingMembers?.length > 0
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -151,6 +151,9 @@ Template.groupMembersList.events
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
+
+Template.groupRequests.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupRequests.events =
   'click .join-requests .approve-button': (event, template) ->
@@ -318,24 +321,24 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupTools.POLICY = ->
+Template.groupSettings.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+
+Template.groupAdminTools.POLICY = ->
   Group.POLICY
 
-Template.groupTools.isCurrentJoinPolicy = (policy) ->
+Template.groupAdminTools.isCurrentJoinPolicy = (policy) ->
   group = Group.documents.findOne(_id: Session.get 'currentGroupId')
   return false unless group
   group.joinPolicy is policy
 
-Template.groupTools.isCurrentLeavePolicy = (policy) ->
+Template.groupAdminTools.isCurrentLeavePolicy = (policy) ->
   group = Group.documents.findOne(_id: Session.get 'currentGroupId')
   return false unless group
   group.leavePolicy is policy
 
-Template.groupTools.canModify = ->
+Template.groupAdminTools.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
-
-Template.groupSettings.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupAdminTools.events
   'click .dropdown-trigger': (event, template) ->

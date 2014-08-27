@@ -92,7 +92,7 @@
         {{/each}}
       </ol>
     {{/if}}
-  {{/if}} 
+  {{/if}}
 </template>
 
 <template name="groupMembersAddControl">
@@ -123,6 +123,12 @@
   {{/if}}
 </template>
 
+<template name="groupMembersAddControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
+</template>
+
 <template name="groupMembersAddControlResults">
   {{#if results.count}}
     <ul class="group-member-results add-control-results">
@@ -135,12 +141,6 @@
 
 <template name="groupMembersAddControlResultsItem">
   {{> memberAdd}}
-</template>
-
-<template name="groupMembersAddControlLoading">
-  {{#if loading}}
-    <div class="results-loading add-control-results">Loading …</div>
-  {{/if}}
 </template>
 
 <template name="groupSettings">
