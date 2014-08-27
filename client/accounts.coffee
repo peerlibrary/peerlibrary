@@ -2,20 +2,23 @@
   Meteor.call 'invite-user', email, (message or ''), (error, newPersonId) =>
     if error
       showNotification = if onError then onError error else true
-      Notify.fromError error, true if showNotification
+      FlashMessage.fromError error, true if showNotification
       return
 
     showNotification = if onSuccess then onSuccess newPersonId else true
-    Notify.success "User #{ email } invited.", "We have created an account and sent them an invitation email with a link to set their password." if showNotification
+    FlashMessage.success "User #{ email } invited.", "We have created an account and sent them an invitation email with a link to set their password." if showNotification
 
 Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
-  Meteor.person(displayName: 1)?.displayName
+  Meteor.person(displayName: 1)?.getDisplayName()
 
 changingPasswordInResetPassword = false
 changingPasswordInEnrollAccount = false
 
 # To close sign in buttons dialog box when clicking, focusing or pressing a key somewhere outside
 $(document).on 'click focus keypress', (event) ->
+  # Do not act when interacting with notifications
+  return if $(event.target).closest('.flash-messages').length
+
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   unless event.originalEvent?.accountsDialogBoxEvent
@@ -85,7 +88,7 @@ lastResetPasswordToken = null
 Deps.autorun ->
   resetPasswordToken = Accounts._loginButtonsSession.get 'resetPasswordToken'
   if resetPasswordToken is null and lastResetPasswordToken
-    Notify.success "Password reset." if changingPasswordInResetPassword
+    FlashMessage.success "Password reset." if changingPasswordInResetPassword
     Meteor.Router.toNew Meteor.Router.indexPath()
   lastResetPasswordToken = resetPasswordToken
   changingPasswordInResetPassword = false
@@ -128,7 +131,7 @@ lastEnrollAccountToken = null
 Deps.autorun ->
   enrollAccountToken = Accounts._loginButtonsSession.get 'enrollAccountToken'
   if enrollAccountToken is null and lastEnrollAccountToken
-    Notify.success "Password set." if changingPasswordInEnrollAccount
+    FlashMessage.success "Password set." if changingPasswordInEnrollAccount
     Meteor.Router.toNew Meteor.Router.indexPath()
   lastEnrollAccountToken = enrollAccountToken
   changingPasswordInEnrollAccount = false
@@ -144,9 +147,9 @@ Deps.autorun ->
   personId = Meteor.personId()
   if personId isnt lastPersonId
     if personId
-      Notify.success "Signed in."
+      FlashMessage.success "Signed in."
     else
-      Notify.success "Signed out."
+      FlashMessage.success "Signed out."
     lastPersonId = personId
 
 enrollAccount = ->

@@ -24,6 +24,6 @@ if Meteor.settings?.public?.debug?.rendering
     counter = 0
 
     template.rendered = (args...) ->
-      Notify.debug name, "render count: #{ ++counter }"
+      FlashMessage.debug name, "render count: #{ ++counter }"
       oldRendered.apply @, args if oldRendered
       $(@findAll '> *').each pulseNode

@@ -24,7 +24,7 @@
   {{#spaceless}}
     <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#if addLink}}href="{{path}}"{{/if}}>
       {{> personAvatar}}
-      <span class="name" title="{{displayName}}">{{displayName}}</span>
+      <span class="name" title="{{getDisplayName}}">{{getDisplayName}}</span>
     </a>
   {{/spaceless}}
 </template>
@@ -43,7 +43,7 @@
 
     <div class="details">
       <h2>
-        {{displayName}}
+        {{getDisplayName}}
       </h2>
 
       {{#if publications.length}}

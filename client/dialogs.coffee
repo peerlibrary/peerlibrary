@@ -7,6 +7,9 @@ DIALOG_VARIABLES =
 
 # To close newsletter dialog box when clicking, focusing, or pressing a key somewhere outside
 $(document).on 'click focus keypress', (event) ->
+  # Do not act when interacting with notifications
+  return if $(event.target).closest('.flash-messages').length
+
   # originalEvent is defined only for native events, but we are triggering
   # click manually as well, so originalEvent is not always defined
   for key, variable of DIALOG_VARIABLES
@@ -94,7 +97,7 @@ Template.newsletterDialog.events
         Session.set 'newsletterDialogActive', false
         $(template.findAll '#newsletter-dialog-email').val('')
 
-        Notify.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
+        FlashMessage.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
 
     return # Make sure CoffeeScript does not return anything
 

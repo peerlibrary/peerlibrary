@@ -15,7 +15,7 @@ Development installation
 
 PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can install it with:
 
-    curl https://install.meteor.com | sh
+    curl http://meteor.peerlibrary.org/ | sh
 
 If you do not have [node.js](http://nodejs.org) installed on your system, you can use one
 provided by Meteor. To add it into your environment, add `~/.meteor/tools/latest/bin` to

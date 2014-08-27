@@ -67,6 +67,16 @@ class @Person extends Person
       'inGroups'
     ]
 
+# With null name, the record set is automatically sent to all connected clients
+Meteor.publish null, ->
+  return unless @personId
+
+  # No need for requireReadAccessSelector because we are sending data to the person themselves
+  Person.documents.find
+    _id: @personId
+  ,
+    Person.PUBLISH_AUTO_FIELDS()
+
 Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
   validateArgument 'idsOrSlugs', idsOrSlugs, Match.OneOf NonEmptyString, [NonEmptyString]
 

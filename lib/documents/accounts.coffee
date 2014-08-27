@@ -1,3 +1,6 @@
+# Document is wrapping Meteor.users collection so additional
+# fields might be added by future versions of Meteor
+
 USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/
 FORBIDDEN_USERNAME_REGEX = /^(webmaster|root|peerlib.*|adm|admn|admin.+)$/i
 
@@ -12,6 +15,8 @@ class @User extends BaseDocument
   # services: list of authentication/linked services
   # person:
   #   _id: id of related person document
+  # settings:
+  #  backgroundPaused: should index page background be paused
 
   @Meta
     name: 'User'

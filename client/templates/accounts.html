@@ -1,7 +1,7 @@
 <template name="_loginButtonsLoggedInDropdown">
   <div class="login-link-and-dropdown-list dropdown-trigger">
     <a class="login-link-text" id="login-name-link">
-      {{currentPerson.displayName}} {{> personAvatar currentPerson}}
+      {{currentPerson.getDisplayName}} {{> personAvatar currentPerson}}
     </a>
 
     {{#if dropdownVisible}}
