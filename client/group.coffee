@@ -128,14 +128,6 @@ Template.groupMembership.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
-
-#Template.groupMembers.pendingMembers = ->
-#  group = Group.documents.findOne
-#    _id: Session.get 'currentGroupId'
-#  group.pendingMembers?.length > 0
-
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
 
@@ -143,7 +135,8 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+Template.groupMembersList.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
