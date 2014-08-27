@@ -82,7 +82,7 @@ Editable.template Template.collectionName, ->
 ,
   (name) ->
     Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 ,
   "Enter collection name"
 ,
@@ -118,7 +118,7 @@ Template.collectionPublications.rendered = ->
         newOrder.push $(element).data('publication-id')
 
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
-        return Notify.fromError error, true if error
+        return FlashMessage.fromError error, true if error
 
 Template.collectionSettings.canModify = ->
   @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
@@ -138,11 +138,11 @@ Template.collectionAdminTools.events
 
   'click .delete-collection': (event, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 
-      Notify.success "Collection removed."
+      FlashMessage.success "Collection removed."
       # TODO: Consider redirecting back to the page where we came from (maybe /c, maybe /library)
       Meteor.Router.toNew Meteor.Router.libraryPath()
 
@@ -165,9 +165,9 @@ Template.publicationLibraryMenuButtons.events
     return unless collection
 
     Meteor.call 'remove-from-library', @_id, collection._id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication removed from the collection." if count
+      FlashMessage.success "Publication removed from the collection." if count
 
     return # Make sure CoffeeScript does not return anything
 

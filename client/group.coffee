@@ -83,7 +83,7 @@ Editable.template Template.groupName, ->
 ,
 (name) ->
   Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return Notify.fromError error, true if error
+    return FlashMessage.fromError error, true if error
 ,
   "Enter group name"
 ,
@@ -110,21 +110,21 @@ Template.groupMembership.events
   'click .join-group': (event, template) ->
     console.log "Join group clicked"
     Meteor.call 'request-to-join-group', Session.get('currentGroupId'), (error) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (event, template) ->
     console.log "Leave group clicked"
     Meteor.call 'request-to-leave-group', Session.get('currentGroupId'), (error) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .cancel-request-to-join-group': (event, template) ->
     console.log "Cancel request clicked"
     Meteor.call 'cancel-request-to-join-group', Session.get('currentGroupId'), (error) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -148,32 +148,32 @@ Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyM
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupRequests.events =
   'click .join-requests .approve-button': (event, template) ->
     Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .join-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-join-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-requests .approve-button': (event, template) ->
     Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-requests .remove-button': (event, template) ->
     Meteor.call 'deny-request-to-leave-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -258,9 +258,9 @@ Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
-    return Notify.fromError error, true if error
+    return FlashMessage.fromError error, true if error
 
-    Notify.success "Member added." if count
+    FlashMessage.success "Member added." if count
 
 Template.groupMembersAddControlNoResults.events
   'click .add-and-invite': (event, template) ->
@@ -349,11 +349,11 @@ Template.groupAdminTools.events
 
   'click .delete-group': (event, template) ->
     Meteor.call 'remove-group', @_id, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 
-      Notify.success "Group removed."
+      FlashMessage.success "Group removed."
       Meteor.Router.toNew Meteor.Router.groupsPath()
 
     return # Make sure CoffeeScript does not return anything
@@ -362,7 +362,7 @@ Template.groupAdminTools.events
     policy = parseInt $('.group-join-policy').val()
     console.log "New join policy: " + policy
     Meteor.call 'group-set-join-policy', @_id, policy, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -370,7 +370,7 @@ Template.groupAdminTools.events
     policy = parseInt $('.group-join-policy').val()
     console.log "New leave policy: " + policy
     Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 

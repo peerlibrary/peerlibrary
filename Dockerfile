@@ -14,7 +14,7 @@ RUN apt-get update -q -q && \
  apt-get install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++ --yes --force-yes && \
  adduser --system --group peerlibrary --home /home/peerlibrary && \
  export PATH=/.meteor/tools/latest/bin:$PATH && \
- curl --silent https://install.meteor.com/ | sh && \
+ curl --silent http://meteor.peerlibrary.org/ | sh && \
  npm config set unsafe-perm true && \
  npm install -g git+https://github.com/oortcloud/meteorite.git && \
  cd /peerlibrary && \

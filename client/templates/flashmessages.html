@@ -1,13 +1,13 @@
-<template name="notificationsOverlay">
-  <ul class="notifications">
-    {{#each notifications}}
-      {{> notificationsOverlayItem}}
+<template name="flashMessagesOverlay">
+  <ul class="flash-messages">
+    {{#each flashMessages}}
+      {{> flashMessagesOverlayItem}}
     {{/each}}
   </ul>
 </template>
 
-<template name="notificationsOverlayItem">
-  <li class="notification {{type}}">
+<template name="flashMessagesOverlayItem">
+  <li class="flash-message {{type}}">
     {{#if additional}}
       <i class="icon-down button" title="Additional information"></i>
     {{/if}}

@@ -165,12 +165,12 @@ class @Publication extends Publication
     Session.set('currentPublicationProgress', progress) if progress > Session.get 'currentPublicationProgress'
 
   show: (@_$displayWrapper) =>
-    Notify.debug "Showing publication #{ @_id }"
+    FlashMessage.debug "Showing publication #{ @_id }"
 
     switch @mediaType
       when 'pdf' then @showPDF()
       when 'tei' then @showTEI()
-      else Notify.error "Unsupported media type: #{ @mediaType }.", null, true
+      else FlashMessage.error "Unsupported media type: #{ @mediaType }.", null, true
 
   # We allow passing the publication slug if caller knows it
   @pathFromId: (publicationId, slug, options) ->
@@ -300,18 +300,18 @@ class @Publication extends Publication
 
           , (args...) =>
             # TODO: Handle errors better (call destroy?, don't pass args as an array)
-            Notify.error "Error getting page #{ pageNumber }.", args
+            FlashMessage.error "Error getting page #{ pageNumber }.", args
 
       $(window).on 'scroll.publication resize.publication', @checkRender
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?)
-      Notify.error "Error showing #{ @_id }.", args
+      FlashMessage.error "Error showing #{ @_id }.", args
 
     currentPublication = @
 
   _getTextContent: (pdfPage) =>
-    Notify.debug "Getting text content for page #{ pdfPage.pageNumber }"
+    FlashMessage.debug "Getting text content for page #{ pdfPage.pageNumber }"
 
     pdfPage.getTextContent().then (textContent) =>
       # Maybe this instance has been destroyed in meantime
@@ -349,7 +349,7 @@ class @Publication extends Publication
         fontSize--
         $textLayerDummy.css('font-size', fontSize)
 
-      Notify.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
+      FlashMessage.debug "Getting text content for page #{ pdfPage.pageNumber } complete"
 
       # Check if the page should be maybe rendered, but we
       # skipped it because text content was not yet available
@@ -357,7 +357,7 @@ class @Publication extends Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?, don't pass args as an array)
-      Notify.error "Error getting text content for page #{ pdfPage.pageNumber }.", args
+      FlashMessage.error "Error getting text content for page #{ pdfPage.pageNumber }.", args
 
   checkRender: =>
     for page in @_pages or []
@@ -379,7 +379,7 @@ class @Publication extends Publication
     return # Make sure CoffeeScript does not return anything
 
   destroy: =>
-    Notify.debug "Destroying publication #{ @_id }"
+    FlashMessage.debug "Destroying publication #{ @_id }"
 
     currentPublication = null
 
@@ -419,7 +419,7 @@ class @Publication extends Publication
     return if page.rendering
     page.rendering = true
 
-    Notify.debug "Rendering page #{ page.pdfPage.pageNumber }"
+    FlashMessage.debug "Rendering page #{ page.pdfPage.pageNumber }"
 
     $displayPage = $("#display-page-#{ page.pageNumber }", @_$displayWrapper)
     $canvas = $displayPage.find('canvas')
@@ -444,7 +444,7 @@ class @Publication extends Publication
       # Maybe this instance has been destroyed in meantime
       return if @_pages is null
 
-      Notify.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
+      FlashMessage.debug "Rendering page #{ page.pdfPage.pageNumber } complete"
 
       $("#display-page-#{ page.pageNumber } .loading", @_$displayWrapper).hide()
 
@@ -453,7 +453,7 @@ class @Publication extends Publication
 
     , (args...) =>
       # TODO: Handle errors better (call destroy?, don't pass args as an array)
-      Notify.error "Error rendering page #{ page.pdfPage.pageNumber }.", args
+      FlashMessage.error "Error rendering page #{ page.pdfPage.pageNumber }.", args
 
   showTEI: =>
     # To make sure we are starting with empty slate
@@ -615,7 +615,7 @@ Deps.autorun ->
 
   unless publication
     # To remove any existing notification when going away from the publication page
-    Notify.documents.remove
+    FlashMessage.documents.remove
       'sticky.notProcessedPublicationId':
         $exists: true
     return
@@ -625,21 +625,21 @@ Deps.autorun ->
   return unless publicationHandle?.ready()
 
   # To remove any existing notification for previous publication
-  Notify.documents.remove
+  FlashMessage.documents.remove
     'sticky.notProcessedPublicationId':
       $exists: true
       $ne: publication._id
 
   if publication.processed
     # Publication is processed, so no notification is necessary anymore
-    count = Notify.documents.remove
+    count = FlashMessage.documents.remove
       'sticky.notProcessedPublicationId': publication._id
     # There was a notification displayed previously, so let's display
     # a new one informing about publication just being processed
-    Notify.success "Publication successfully processed." if count
-  else if not Notify.documents.exists('sticky.notProcessedPublicationId': publication._id)
+    FlashMessage.success "Publication successfully processed." if count
+  else if not FlashMessage.documents.exists('sticky.notProcessedPublicationId': publication._id)
     # The content of this message is used also in the template, so keep it in sync
-    Notify.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
+    FlashMessage.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
       notProcessedPublicationId: publication._id # Making it a sticky notification
 
 Deps.autorun ->
@@ -647,12 +647,12 @@ Deps.autorun ->
     fields:
       _id: 1
       jobs: 1
-    transform: null # So that we don't have any complications passing it to Notify.error
+    transform: null # So that we don't have any complications passing it to FlashMessage.error
 
   # Only the latest job is pushed to the client, so index 0
   return unless publication?.jobs?[0]?.status is 'failed'
 
-  Notify.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
+  FlashMessage.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
 
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
@@ -786,9 +786,9 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'add-to-library', @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication added to the library." if count
+      FlashMessage.success "Publication added to the library." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -796,9 +796,9 @@ Template.publicationLibraryMenuButtons.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication removed from the library." if count
+      FlashMessage.success "Publication removed from the library." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -836,9 +836,9 @@ Template.publicationLibraryMenuCollectionListing.events
 
     Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication added to the collection." if count
+      FlashMessage.success "Publication added to the collection." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -846,9 +846,9 @@ Template.publicationLibraryMenuCollectionListing.events
     return unless Meteor.personId()
 
     Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication removed from the collection." if count
+      FlashMessage.success "Publication removed from the collection." if count
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1043,7 +1043,7 @@ Template.highlightsControl.canRemove = ->
 Template.highlightsControl.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-highlight', @_id, (error, count) =>
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1092,7 +1092,7 @@ Template.annotationsControl.events
   'click .add': (event, template) ->
     Meteor.call 'create-annotation', Session.get('currentPublicationId'), (error, annotationId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
@@ -1494,14 +1494,14 @@ Template.annotationEditor.events
       readGroups = if isPrivate then getNewAnnotationReadGroups() else []
 
       Meteor.call 'create-annotation', @publication._id, body, access, getNewAnnotationWorkInsideGroups(), readPersons, readGroups, getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups(), getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), (error, annotationId) =>
-        return Notify.fromError error, true if error
+        return FlashMessage.fromError error, true if error
 
         LocalAnnotation.documents.remove @_id
 
         Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
     else
       Meteor.call 'update-annotation-body', @_id, body, (error, count) =>
-        return Notify.fromError error, true if error
+        return FlashMessage.fromError error, true if error
 
         return unless count
 
@@ -1958,7 +1958,7 @@ Template.annotationCommentsListItem.events
     annotationId = @annotation._id
     Meteor.call 'remove-comment', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 
@@ -2026,7 +2026,7 @@ Template.annotationCommentEditor.events
     body = $editor.html().trim()
 
     Meteor.call 'create-comment', @_id, body, (error, commentId) =>
-      return Notify.fromError error, true if error
+      return FlashMessage.fromError error, true if error
 
       # Reset editor
       $editor.empty()
@@ -2043,7 +2043,7 @@ Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
     Meteor.call 'remove-annotation', @_id, (error, count) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      Notify.fromError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 

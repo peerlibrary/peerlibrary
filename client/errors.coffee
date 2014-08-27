@@ -1,6 +1,6 @@
 oldOnError = window.onerror
 window.onerror = (errorMsg, url, lineNumber) ->
-  Notify._logError errorMsg, url, lineNumber, null
+  FlashMessage._logError errorMsg, url, lineNumber, null
 
   if oldOnError
     oldOnError errorMsg, url, lineNumber
