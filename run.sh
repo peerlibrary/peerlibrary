@@ -8,7 +8,8 @@ if [[ -n "$TAG" ]]; then
 fi
 
 if [[ -n "$METEOR_SETTINGS" && -e "$METEOR_SETTINGS" ]]; then
-	METEOR_SETTINGS="$(cat $METEOR_SETTINGS | sed ':a;N;$!ba;s/\n/ /g' | sed 's/\s//g')"
+	# sed replaces newlines with spaces
+	METEOR_SETTINGS="$(cat $METEOR_SETTINGS | sed ':a;N;$!ba;s/\n/ /g')"
 fi
 
 if [[ -z "$PEERDB_INSTANCES" ]]; then
@@ -34,5 +35,8 @@ done
 
 mkdir -p "/srv/${PREFIX}public"
 mkdir -p "/srv/log/${PREFIX}peerlibrary/web1"
+
+# We copy public files out and then map them back in, so that they are available both to nginx and Meteor
+docker run --rm=true --entrypoint=/bin/bash "peerlibrary/peerlibrary$TAG" -c 'tar -C /bundle/programs/client/app -c .' | tar -C "/srv/${PREFIX}public" -x
 
 docker run -d --name "${PREFIX}web1" -h "${PREFIX}web1.peerlibrary.server1.docker" -e MONGO_URL="mongodb://${PREFIX}mongodb.mongodb.server1.docker/peerlibrary" -e MONGO_OPLOG_URL="mongodb://${PREFIX}mongodb.mongodb.server1.docker/local" -e WORKER_INSTANCES=0 -e PEERDB_INSTANCES=0 -e ROOT_URL -e MAIL_URL -e METEOR_SETTINGS -v "/srv/log/${PREFIX}peerlibrary/web1:/var/log/peerlibrary" -v "/srv/${PREFIX}storage:/storage" -v "/srv/${PREFIX}public:/bundle/programs/client/app" "peerlibrary/peerlibrary$TAG"
