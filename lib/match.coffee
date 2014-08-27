@@ -1,5 +1,5 @@
 # From Meteor's random/random.js
-UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+@UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
 INVALID_ID_CHARS_REGEX = new RegExp "[^#{ UNMISTAKABLE_CHARS }]"
 INVALID_SHA256_CHARS_REGEX = new RegExp '[^a-f0-9]'
 

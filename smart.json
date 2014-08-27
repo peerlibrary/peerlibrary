@@ -43,6 +43,11 @@
     "directcollection": {},
     "url-utils": {},
     "segfault-handler": {},
-    "crypto": {}
+    "crypto": {},
+    "jobCollection": {
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-job-collection.git"
+    },
+    "async": {}
   }
 }
