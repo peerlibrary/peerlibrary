@@ -11,28 +11,6 @@
     event.preventDefault()
     return # Make sure CoffeeScript does not return anything
 
-  # For inline editor block elements and no <br/>
-  tags =
-    b: {}
-    i: {}
-    a:
-      href: true
-    # Used for saving and restoring selection by rangy. It is using also
-    # class and style attributes, but we set those ourselves through CSS.
-    # TODO: We should make sure we remove any on the server side
-    span:
-      id: true
-
-  unless inline
-    tags = _.extend tags,
-      p: {}
-      br: {}
-      blockquote: {}
-      ol: {}
-      ul: {}
-      li: {}
-      h4: {} # TODO: We need a toolbar icon for this
-
   commandsToKeyboardShortcutsMap =
     bold: (event) -> (event.metaKey or event.ctrlKey) && event.keyCode is 66 # b
     italic: (event) -> (event.metaKey or event.ctrlKey) && event.keyCode is 73 # i
@@ -44,7 +22,7 @@
   scribe.use Scribe.plugins['keyboard-shortcuts'] commandsToKeyboardShortcutsMap
   scribe.use Scribe.plugins['link-prompt-command'](template)
   scribe.use Scribe.plugins['sanitizer']
-    tags: tags
+    tags: if inline then INLINE_ALLOWED_TAGS else @BLOCK_ALLOWED_TAGS
   scribe.use Scribe.plugins['toolbar'] $toolbar.get(0) if $toolbar
 
   template._destroyDialog = null
