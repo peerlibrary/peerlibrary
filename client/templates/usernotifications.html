@@ -1,0 +1,38 @@
+<template name="userNotificationsButton">
+  <li class="dropdown-trigger user-notifications-button pull-right">
+    {{> userNotificationsButtonContent }}
+    {{> userNotificationsDropdown }}
+  </li>
+</template>
+
+<template name="userNotificationsButtonContent">
+  <a class="menu-item icon-public">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
+</template>
+
+<template name="userNotificationsDropdown">
+  <div class="dropdown-anchor">
+    <div class="user-notifications-menu right-aligned dropdown">
+      <button class="mark-all-as-read borderless">Mark all as read <i class="icon-check"></i></button>
+      {{#if userNotifications}}
+        <ol class="user-notifications">
+          {{#each userNotifications}}
+            {{> userNotification }}
+          {{/each}}
+        </ol>
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<template name="userNotification">
+  <li class="user-notification icon-{{icon}} {{#if read}}read{{/if}}">
+    <a href="{{link}}">
+      <span class="message">
+        {{{message}}}
+      </span>
+    </a>
+    {{#unless read}}
+      <button class="mark-as-read borderless icon-check tooltip" title="Mark as read"></button>
+    {{/unless}}
+  </li>
+</template>

@@ -40,12 +40,12 @@ ul.top-menu
   margin 0
   color white
 
-  li
+  > li
     display block
     float left
     line-height 48px // Vertically centers header items
 
-    a
+    .menu-item
       color white
       display block
       padding 0 20px
@@ -219,27 +219,29 @@ header.logged-in
     font-size 14px
     line-height 20px
 
-  .menu-item
-    padding 5px 0
-    background transparent
-    text-align center
-    font-weight bold
-    color blue-accent
-    cursor pointer
-
-    a
+    .menu-item
+      padding 5px 0
+      background transparent
+      text-align center
+      font-weight bold
       color blue-accent
-      padding 0 5px
+      cursor pointer
 
-  .menu-item:hover
-      background blue-accent
-      color white
-      a
+      &:hover
+        background blue-accent
         color white
 
-  .menu-item a:hover
-    color white
-    background blue-accent
+        a
+          color white
+
+      a
+        color blue-accent
+        padding 0 5px
+
+        &:hover
+          color white
+          background blue-accent
+
 
 header.index-header.logged-in
   .login-link-and-dropdown-list
@@ -290,15 +292,8 @@ input.import-file-input
 
 header
   .user-notifications-button.dropdown-trigger
-    a::before
+    .menu-item::before
       margin 0
-
-    .dropdown-anchor
-      right 15px
-
-      .dropdown
-        width 200px
-        color black
 
 /* Index header
 =============== */
@@ -399,7 +394,8 @@ header.index-header
     a
       cursor pointer
 
-    li > a, li a.login-link-text
+    > li > .menu-item
+    > li .menu-item.login-link-text
       font-size 14px
       font-weight normal
       line-height 14px
@@ -411,16 +407,21 @@ header.index-header
       border 1px solid border-blue
       border-radius 3px
 
-    li > a:hover, li a.login-link-text:hover
+    > li > .menu-item:hover
+    > li .menu-item.login-link-text:hover
       background hover-blue
 
-    li a.login-link-text
+    > li .menu-item.login-link-text
       margin-right 25px
       color white
 
-    li.user-notifications-button > a
+    > li.user-notifications-button
+      .menu-item
         height 14px
         padding 9px
+
+      .dropdown-anchor
+        right 15px
 
   .avatar
     margin-top -5px

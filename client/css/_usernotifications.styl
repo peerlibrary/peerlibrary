@@ -1,0 +1,78 @@
+@import 'variables.import'
+
+.user-notifications-menu
+  width 400px
+  color black
+
+  .mark-all-as-read
+    float right
+    margin 5px
+    font-size 12px
+
+  .user-notifications
+    list-style none
+    padding 0
+    margin 0
+    font-size 14px
+    clear both
+
+    .user-notification
+      position relative
+      line-height 18px
+
+      &::before
+        display table-cell
+        position absolute
+        left 12px
+        top 10px
+        width 20px
+        height 20px
+        padding 5px
+        font-size 18px
+        text-align center
+        vertical-align middle
+        background blue-accent
+        color white
+
+      a
+        display table
+        padding 10px 35px 10px 60px
+        min-height 50px
+        width 100%
+        transition all 0.2s
+        box-sizing border-box
+
+        .message
+          display table-cell
+          vertical-align middle
+
+      .inline-item
+        font-size 14px
+        height auto
+        line-height 18px
+
+      .mark-as-read
+        display none
+        position absolute
+        right 5px
+        top 50%
+        margin-top -16px
+        font-size 12px
+
+      &:hover
+        a
+          background box-shadow-border
+
+        .mark-as-read
+          display block
+          opacity 0.3
+
+          &:hover
+            opacity 1
+
+      &.read
+        &::before
+          background-color box-shadow-border
+
+        a
+          color black
