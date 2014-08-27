@@ -370,7 +370,7 @@ Template.groupAdminTools.events
     return # Make sure CoffeeScript does not return anything
 
   'change .group-leave-policy': (event, template) ->
-    policy = parseInt $('.group-join-policy').val()
+    policy = parseInt $('.group-leave-policy').val()
     console.log "New leave policy: " + policy
     Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
       FlashMessage.fromError error, true if error

@@ -194,7 +194,7 @@ Meteor.methods
   'group-set-join-policy': methodWrap (groupId, policy) ->
     console.log "Group set join policy called"
     validateArgument 'groupId', groupId, DocumentId
-    validateArgument 'policy', policy, MatchAccessi Group.POLICY
+    validateArgument 'policy', policy, MatchAccess Group.POLICY
     person = getValidPerson()
     group = getValidGroup groupId, person
 
