@@ -151,27 +151,10 @@ runJobQueue = ->
     finally
       jobQueueRunning = false
 
-Meteor.startup ->
-  workerInstances = parseInt(process.env.WORKER_INSTANCES || '1')
-  workerInstances = 1 unless _.isFinite workerInstances
-
-  # Worker is disabled
-  return Log.info "Worker disabled" unless workerInstances
+startJobs = ->
+  JobQueue.Meta.collection.startJobs()
 
   Log.info "Worker enabled"
-
-  # Check for promoted jobs at this interval. Jobs scheduled in the
-  # future has to be made ready at regular intervals because time-based
-  # queries are not reactive. time < NOW, NOW does not change as times go
-  # on, once you make a query. More instances we have, less frequently
-  # each particular instance should check.
-  JobQueue.Meta.collection.promote workerInstances * PROMOTE_INTERVAL
-
-  # We randomly delay start so that not all instances are promoting
-  # at the same time, but dispersed over the whole interval.
-  Meteor.setTimeout ->
-    JobQueue.Meta.collection.startJobs()
-  , Random.fraction() * workerInstances * PROMOTE_INTERVAL
 
   # The query and sort here is based on the query in jobCollection's
   # getWork query. We want to have a query which is the same, just
@@ -193,6 +176,24 @@ Meteor.startup ->
 
     changed: (newDocument, oldDocument) ->
       runJobQueue()
+
+Meteor.startup ->
+  workerInstances = parseInt(process.env.WORKER_INSTANCES || '1')
+  workerInstances = 1 unless _.isFinite workerInstances
+
+  # Worker is disabled
+  return Log.info "Worker disabled" unless workerInstances
+
+  # Check for promoted jobs at this interval. Jobs scheduled in the
+  # future has to be made ready at regular intervals because time-based
+  # queries are not reactive. time < NOW, NOW does not change as times go
+  # on, once you make a query. More instances we have, less frequently
+  # each particular instance should check.
+  JobQueue.Meta.collection.promote workerInstances * PROMOTE_INTERVAL
+
+  # We randomly delay start so that not all instances are promoting
+  # at the same time, but dispersed over the whole interval.
+  Meteor.setTimeout startJobs, Random.fraction() * workerInstances * PROMOTE_INTERVAL
 
   # Same deal with delaying and spreading the interval based on
   # the number of worker instances that we have for job promotion.
