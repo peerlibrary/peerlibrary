@@ -15,9 +15,6 @@ Template.persons.catalogSettings = ->
 Template.personAvatar.status = ->
   if @user then "Registered User" else "Unregistered Person"
 
-Template.personInlineItem.isCurrentUser = ->
-  @_id == Meteor.personId()
-
 EnableCatalogItemLink Template.personCatalogItem
 
 Template.personCatalogItem.person = ->
