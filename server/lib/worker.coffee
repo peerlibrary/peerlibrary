@@ -2,6 +2,9 @@ DEFAULT_JOB_TIMEOUT = 5 * 60 * 1000 # ms
 STALLED_JOB_CHECK_INTERVAL = 60 * 1000 # ms
 PROMOTE_INTERVAL = 15 * 1000 # ms
 
+# We cannot directly extend Error type, because instanceof check
+# does not work correctly, but we can use makeErrorType. Extending
+# an error made with makeErrorType further works.
 FatalJobError = Meteor.makeErrorType 'FatalJobError',
   (message) ->
     @message = message or ''
