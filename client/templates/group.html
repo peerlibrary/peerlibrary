@@ -31,7 +31,12 @@
 
 <template name="groupMembership">
   {{#if currentPersonId}}
-    {{#unless isMember}}
+    {{#if isMember}}
+      {{#if isPendingLeaveRequest}}
+      {{> groupPendingLeaveRequest}}
+      <br/><br/>
+      {{/if}}
+    {{else}}
       <h3 class="directory-title">Group membership</h3>
       {{#if isPendingMember}}
         {{> groupPendingMembership}}
@@ -39,7 +44,7 @@
         {{> groupNoMembership}}
       {{/if}}
       <br/><br/>
-    {{/unless}}
+    {{/if}}
   {{/if}}
 </template>
 
@@ -54,6 +59,11 @@
 <template name="groupPendingMembership">
   You have requested membership in this group. Please wait for one of the group admins to approve your request.
   <button class="cancel-request-to-join-group">Cancel request</button>
+</template>
+
+<template name="groupPendingLeaveRequest">
+  You have requested to leave this group. Please wait for one of the group admins to approve your request.
+  <button class="cancel-request-to-leave-group">Cancel request</button>
 </template>
 
 <template name="groupMembers">

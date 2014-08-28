@@ -90,43 +90,45 @@ Editable.template Template.groupName, ->
   true
 
 Template.groupMembership.isMember = ->
-  person = Meteor.person()
-  return false unless person?.inGroups
-  _.some person.inGroups, (group) -> group._id is Session.get 'currentGroupId'
+  Meteor.personId() in _.pluck @members, '_id'
 
 Template.groupMembership.isPendingMember = ->
-  person = Meteor.person()
-  group = Group.documents.findOne(_id: Session.get 'currentGroupId')
-  return false unless person and group
-  _.some group.joinRequests, (person) -> person._id is Meteor.personId()
+  Meteor.personId() in _.pluck @joinRequests, '_id'
+
+Template.groupMembership.isPendingLeaveRequest = ->
+  Meteor.personId() in _.pluck @leaveRequests, '_id'
 
 Template.groupNoMembership.open = ->
-  Group.documents.findOne(_id: Session.get 'currentGroupId').joinPolicy is Group.POLICY.OPEN
+  @joinPolicy is Group.POLICY.OPEN
 
 Template.groupNoMembership.closed = ->
-  Group.documents.findOne(_id: Session.get 'currentGroupId').joinPolicy is Group.POLICY.CLOSED
+  @joinPolicy is Group.POLICY.CLOSED
 
 Template.groupMembership.events
   'click .join-group': (event, template) ->
     console.log "Join group clicked"
-    Meteor.call 'request-to-join-group', Session.get('currentGroupId'), (error) =>
+    Meteor.call 'request-to-join-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (event, template) ->
     console.log "Leave group clicked"
-    Meteor.call 'request-to-leave-group', Session.get('currentGroupId'), (error) =>
+    Meteor.call 'request-to-leave-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .cancel-request-to-join-group': (event, template) ->
     console.log "Cancel request clicked"
-    Meteor.call 'cancel-request-to-join-group', Session.get('currentGroupId'), (error) =>
+    Meteor.call 'cancel-request-to-join-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
+
+  'click .cancel-request-to-leave-group': (event, template) ->
+    Meteor.call 'cancel-request-to-leave-group', @_id, (error) =>
+      return FlashMessage.fromError error, true if error
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -142,7 +144,6 @@ Template.groupMembersList.membersWithFlag = ->
     showFlag = if member._id is Meteor.personId() then canModifySelf or hasAdminAccess else hasAdminAccess
     member.readOnly = not showFlag
     member
-  #@members
 
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
