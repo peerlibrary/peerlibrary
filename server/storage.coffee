@@ -152,3 +152,7 @@ WebApp.connectHandlers.use '/storage/publication/cache', (req, res, next) ->
 # TODO: Add CORS headers
 # TODO: We have redirect == false because directory redirects do not take prefix into the account
 WebApp.connectHandlers.use '/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false})
+WebApp.connectHandlers.use '/storage', (req, res, next) ->
+  res.statusCode = 404
+  # TODO: Use our own 404 content, matching the 404 shown by nginx
+  res.end '404 Not Found', 'utf8'

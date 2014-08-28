@@ -34,5 +34,5 @@ COPY ./etc /etc
 ENV MONGO_URL mongodb://user:password@host:port/databasename
 ENV ROOT_URL http://example.com
 ENV MAIL_URL smtp://user:password@mailhost:port/
+ENV METEOR_SETTINGS {}
 ENV PORT 3000
-ENV STORAGE_DIRECTORY /storage

@@ -87,9 +87,11 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
-
+    # TODO: We should not allow empty body, but until we have drafts we have to
     body = '' unless body
+    body = cleanBlockHTML body
+
+    # TODO: Verify that text content all together, trimmed of space, is non-empty
 
     references = parseReferences body
 
@@ -178,7 +180,9 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+    body = cleanBlockHTML body
+
+    # TODO: Verify that text content all together, trimmed of space, is non-empty
 
     references = parseReferences body
 
