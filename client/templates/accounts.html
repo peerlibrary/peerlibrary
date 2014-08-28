@@ -31,7 +31,7 @@
         This text is covered by the dropdown, but duplicating it here
         makes the position of "Close" match the position of this text.
       }}
-      <a class="login-link-text" id="login-sign-in-link">Sign in</a>
+      <a class="menu-item login-link-text" id="login-sign-in-link">Sign in</a>
       <div id="login-dropdown-list" class="accounts-dialog dropdown">
         {{#if loggingIn}}
           {{> _loginButtonsLoggingIn}}
@@ -44,7 +44,7 @@
         {{! Not normally visible, but if the user closes the dropdown during login }}
         {{> _loginButtonsLoggingIn}}
       {{else}}
-        <a class="login-link-text" id="login-sign-in-link">Sign in</a>
+        <a class="menu-item login-link-text" id="login-sign-in-link">Sign in</a>
       {{/if}}
     {{/if}}
   </div>

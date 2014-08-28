@@ -1,13 +1,46 @@
 @import 'variables.import'
 
 .user-notifications-menu
+.item-list
+  .user-notification
+    .type-icon
+      position absolute
+      display table
+      text-align center
+      background blue-accent
+      color white
+
+      &::before
+        display table-cell
+        vertical-align middle
+        box-sizing border-box
+
+    .message-wrapper
+      display table
+      width 100%
+
+      .message
+        display table-cell
+        vertical-align middle
+
+    &.read
+      .type-icon
+        background-color box-shadow-border
+
+.user-notifications-menu
   width 400px
   color black
+  line-height normal
 
   .mark-all-as-read
     float right
     margin 5px
     font-size 12px
+
+  .view-all
+    margin 10px 15px
+    display inline-block
+    font-size 13px
 
   .user-notifications
     list-style none
@@ -15,36 +48,26 @@
     margin 0
     font-size 14px
     clear both
+    overflow-y scroll
 
     .user-notification
       position relative
       line-height 18px
+      padding 10px 35px 10px 60px
 
-      &::before
-        display table-cell
-        position absolute
-        left 12px
+      .type-icon
+        left 15px
         top 10px
-        width 20px
-        height 20px
-        padding 5px
-        font-size 18px
-        text-align center
-        vertical-align middle
-        background blue-accent
-        color white
+        width 30px
+        height 30px
+        font-size 16px
 
-      a
-        display table
-        padding 10px 35px 10px 60px
-        min-height 50px
-        width 100%
+      .message-wrapper
+        min-height 30px
         transition all 0.2s
-        box-sizing border-box
 
-        .message
-          display table-cell
-          vertical-align middle
+        &:hover
+          text-decoration none
 
       .inline-item
         font-size 14px
@@ -60,8 +83,7 @@
         font-size 12px
 
       &:hover
-        a
-          background box-shadow-border
+        background box-shadow-border
 
         .mark-as-read
           display block
@@ -71,8 +93,47 @@
             opacity 1
 
       &.read
-        &::before
-          background-color box-shadow-border
-
-        a
+        .message
           color black
+
+.item-list
+  .user-notification.catalog-item
+    padding 20px 50px 20px 90px
+
+    .type-icon
+      left 20px
+      top 20px
+      cursor pointer
+      margin-right 15px
+      transition border-color 0.2s
+      border solid 1px box-shadow-border
+      border-radius 2px
+      width 50px
+      height 50px
+      font-size 18px
+
+    .message-wrapper
+      display table
+      min-height 50px
+
+      .message
+        display table-cell
+        vertical-align middle
+        color blue-accent
+
+    .toolbar
+      position absolute
+      top 20px
+      right 20px
+      float none
+
+    &.read
+      .type-icon
+        background-color box-shadow-border
+
+      .message
+        color black
+
+    &:hover
+      .type-icon
+        border-color box-shadow-shadow

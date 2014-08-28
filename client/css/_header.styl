@@ -48,6 +48,7 @@ ul.top-menu
     .menu-item
       color white
       display block
+      height 45px
       padding 0 20px
       user-select none
       cursor pointer
@@ -95,14 +96,14 @@ ul.top-menu
     span.cursor
       visibility visible
 
-ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+ul.top-menu li .menu-item:hover, ul.top-menu .search-wrapper:hover
   text-decoration none !important
 
 .no-index-header ul.top-menu .search-wrapper
   cursor pointer
 
 .no-index-header
-  ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+  ul.top-menu li .menu-item:hover, ul.top-menu .search-wrapper:hover
     background white
     color blue-accent
 
@@ -292,8 +293,11 @@ input.import-file-input
 
 header
   .user-notifications-button.dropdown-trigger
-    .menu-item::before
-      margin 0
+    .menu-item
+      text-align center
+
+      &::before
+        margin 0
 
 /* Index header
 =============== */

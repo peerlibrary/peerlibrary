@@ -1,5 +1,5 @@
 Template.baseFooter.infiniteScroll = ->
-  for variable in _.union ['searchActive', 'libraryActive'], catalogActiveVariables
+  for variable in _.union ['searchActive', 'libraryActive', 'notificationsActive'], catalogActiveVariables
     return true if Session.get variable
 
   return false
