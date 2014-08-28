@@ -271,6 +271,7 @@ Accounts.emailTemplates.enrollAccount.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] #{ person.getDisplayName() } is inviting you to join them"""
 Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   url = url.replace '#/', ''
+  url = url.replace 'enroll-account', 'accept-invitation'
 
   invited = Meteor.person user._id
 
