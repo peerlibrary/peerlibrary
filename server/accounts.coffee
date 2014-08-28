@@ -213,6 +213,8 @@ wrapWithIndent = (text, indentAmount=2, wrapLength=MAX_LINE_LENGTH) ->
 Accounts.emailTemplates.siteName = SITENAME
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
 
+noReplyFrom = not Meteor.settings?.from or Meteor.settings?.fromNoReply
+
 Accounts.emailTemplates.resetPassword.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] Password reset"""
 Accounts.emailTemplates.resetPassword.text = (user, url) ->
@@ -220,7 +222,10 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
 
   person = Meteor.person user._id
 
-  wrap """
+  # Construct email body
+  parts = []
+
+  parts.push """
   Hello #{ person.getDisplayName() }!
 
   This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this email.
@@ -233,7 +238,16 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
 
   Your username, in case you have forgotten: #{ user.username }
 
-  If you have any problems resetting your password or have any other questions just reply to this email.
+  """
+
+  unless noReplyFrom
+    parts.push """
+
+    If you have any problems resetting your password or have any other questions just reply to this email.
+
+    """
+
+  parts.push """
 
   Yours,
 
@@ -242,8 +256,19 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   #{ Meteor.absoluteUrl() }
   """
 
+  wrap parts.join ''
+
 Accounts.emailTemplates.enrollAccount.subject = (user) ->
-  """[#{ Accounts.emailTemplates.siteName }] An account has been created for you"""
+  invited = Meteor.person user._id
+
+  assert invited.invited?.by._id
+
+  person = Person.documents.findOne
+    _id: invited.invited.by._id
+
+  assert person
+
+  """[#{ Accounts.emailTemplates.siteName }] #{ person.getDisplayName() } is inviting you to join them"""
 Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   url = url.replace '#/', ''
 
@@ -259,10 +284,12 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   # Construct email body
   parts = []
 
+  # We are forcing getDisplayName as all PeerDB generators
+  # might not yet ran invited.displayName might be obsolete.
   parts.push """
-  Hello #{ invited.getDisplayName() }!
+  Hello #{ invited.getDisplayName true }!
 
-  #{ person.getDisplayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
+  #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
   """
 
   message = invited.invited.message
@@ -272,20 +299,16 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
     #{ wrapWithIndent message }
 
-    To learn more about #{ Accounts.emailTemplates.siteName }, visit:
-
     """
   else
     parts.push """
-    . To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+    .
 
     """
 
   parts.push """
 
-  #{ Meteor.absoluteUrl() }
-
-  Please click the link below and choose your password:
+  Please click the link below to accept the invitation and sign up:
 
   #{ url }
 
@@ -293,9 +316,20 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
   Please also be careful to open a complete link. Your email client might have broken it into several lines.
 
-  You will be able to choose your username after you set your password.
+  To learn more about #{ Accounts.emailTemplates.siteName }, visit:
 
-  If you have any problems setting your password or have any other questions just reply to this email.
+  #{ Meteor.absoluteUrl() }
+
+  """
+
+  unless noReplyFrom
+    parts.push """
+
+    If you have any problems signing up or have any other questions just reply to this email.
+
+    """
+
+  parts.push """
 
   Yours,
 

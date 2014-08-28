@@ -110,8 +110,10 @@ class @Person extends AccessDocument
       ]
     ]
 
-  getDisplayName: =>
-    if @displayName
+  # Use force if you want the method to compute the value
+  # and not use a (possibly obsolete) cached one.
+  getDisplayName: (force) =>
+    if not force and @displayName
       return @displayName
     else if @givenName and @familyName
       return "#{ @givenName } #{ @familyName }"
