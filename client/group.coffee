@@ -135,13 +135,24 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.groupMembersList.membersWithFlag = ->
+  hasAdminAccess = @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+  canModifySelf = @leavePolicy isnt Group.POLICY.CLOSED
+  _.map @members, (member) ->
+    showFlag = if member._id is Meteor.personId() then canModifySelf or hasAdminAccess else hasAdminAccess
+    member.readOnly = not showFlag
+    member
+  #@members
 
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
-    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return FlashMessage.fromError error, true if error
+    currentGroupId = Session.get('currentGroupId')
+    if @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+      Meteor.call 'remove-from-group', currentGroupId, @_id, (error, count) =>
+        return FlashMessage.fromError error, true if error
+    else
+      Meteor.call 'request-to-leave-group', currentGroupId, (error, count) =>
+        return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
@@ -173,7 +184,8 @@ Template.groupRequests.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
+Template.groupMembersAddControl.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->

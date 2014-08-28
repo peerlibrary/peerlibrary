@@ -66,8 +66,8 @@
 </template>
 
 <template name="groupMembersList">
-  <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
-    {{#each members}}
+  <ol class="members member-list">
+    {{#each membersWithFlag}}
       {{> member}}
     {{/each}}
   </ol>
