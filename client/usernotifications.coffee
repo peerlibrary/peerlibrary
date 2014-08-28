@@ -9,7 +9,7 @@ Template.userNotificationsButton.rendered = ->
   # Only allow the user notifications button to get wider during one session,
   # by setting its mininmum width to the widest the button has been so far.
   $button = $(@find '.user-notifications-button')
-  $button.css('min-width', userNotificationsButtonCurrentMaxWidth + "px");
+  $button.css('min-width', userNotificationsButtonCurrentMaxWidth + "px")
   userNotificationsButtonCurrentMaxWidth = Math.max($button.width(), userNotificationsButtonCurrentMaxWidth)
 
 Template.userNotificationsButton.events
