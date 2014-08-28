@@ -143,7 +143,7 @@ Meteor.methods
     # We remove request to leave without checking because query checks
     requestApproved = Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
-      'leaveRequest._id': memberId
+      'leaveRequests._id': memberId
     ),
       $pull:
         leaveRequests:
@@ -169,10 +169,10 @@ Meteor.methods
     # We do not check here if member with given id exists because query checks
     requestDenied = Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
-      'membersPendingToLeave': memberId
+      'leaveRequests._id': memberId
     ),
       $pull:
-        membersPendingToLeave:
+        leaveRequests:
           _id: memberId
     # TODO: if requestDenied send e-mail to member
     requestDenied
