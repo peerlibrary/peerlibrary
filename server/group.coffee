@@ -198,11 +198,21 @@ Meteor.methods
     person = getValidPerson()
     group = getValidGroup groupId, person
 
+    modifier = $set:
+      joinPolicy: policy
+    # If new policy is CLOSED, deny all requests.
+    if policy is Group.POLICY.CLOSED
+      modifier['$set']['joinRequests'] = []
+    # If new policy is OPEN, accept all requests.
+    else if policy is Group.POLICY.OPEN
+      modifier['$set']['joinRequests']= []
+      modifier['$addToSet'] = members:
+        $each: group.joinRequests
+
     Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
     ),
-      $set:
-        joinPolicy: policy
+      modifier
 
   'group-set-leave-policy': methodWrap (groupId, policy) ->
     console.log "Group set leave policy called"
@@ -211,11 +221,20 @@ Meteor.methods
     person = getValidPerson()
     group = getValidGroup groupId, person
 
+    modifier = $set:
+      leavePolicy: policy
+    # If new policy is CLOSED, deny all requests.
+    if policy is Group.POLICY.CLOSED
+      modifier['$set']['leaveRequests'] = []
+    # If new policy is OPEN, accept all requests.
+    else if policy is Group.POLICY.OPEN
+      modifier['$set']['leaveRequests'] = []
+      modifier['$pullAll'] = members: group.leaveRequests
+
     Group.documents.update Group.requireAdminAccessSelector(person,
       _id: group._id
     ),
-      $set:
-        leavePolicy: policy
+      modifier
 
   'request-to-join-group': methodWrap (groupId) ->
     console.log "Request to join group called"
