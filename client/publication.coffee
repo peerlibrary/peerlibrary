@@ -184,8 +184,14 @@ class @Publication extends Publication
 
     Meteor.Router.publicationPath publicationId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    route: 'publication'
+    params:
+      publicationId: @_id
+      publicationSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (publicationId, publication, options) ->
@@ -200,7 +206,7 @@ class @Publication extends Publication
     text: "p:#{ publicationId }"
     title: publication?.title
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
   showPDF: =>
@@ -1857,7 +1863,7 @@ Template.newAnnotationRolesControlNoResults.events
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
+    inviteUser email, @_parent.publication.refresh().route(), (newPersonId) =>
       grantAccess new Person
         _id: newPersonId
 

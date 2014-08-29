@@ -52,7 +52,9 @@ Meteor.publish null, ->
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
-    validateArgument 'message', message, Match.Optional String
+    validateArgument 'message', message, Match.OneOf Match.Optional(String), Match.Optional
+      route: String
+      params: Match.OneOf [String], ObjectWithOnlyStrings
 
     # We require that user inviting is logged in
     person = Meteor.person()
@@ -80,7 +82,7 @@ Meteor.methods
         invited:
           by:
             _id: person._id
-          message: message?.trim() or null
+          message: if _.isString message then message.trim() else message or null
 
     Accounts.sendEnrollmentEmail userId
 
@@ -319,12 +321,33 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
   message = invited.invited[0].message
   if message
-    parts.push """
-    :
+    if _.isArray message.params
+      message = routePath message.route, message.params...
 
-    #{ wrapWithIndent message }
+      parts.push """
+       at:
 
-    """
+      #{ url }
+
+      """
+    else if _.isObject message.params
+      url = routePath message.route, message.params
+
+      parts.push """
+       at:
+
+      #{ url }
+
+      """
+    else
+      # Otherwise message is a string
+
+      parts.push """
+      :
+
+      #{ wrapWithIndent message }
+
+      """
   else
     parts.push """
     .

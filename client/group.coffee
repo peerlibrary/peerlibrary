@@ -15,8 +15,14 @@ class @Group extends Group
 
     Meteor.Router.groupPath groupId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    route: 'group'
+    params:
+      groupId: @_id
+      groupSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (groupId, group, options) ->
@@ -31,7 +37,7 @@ class @Group extends Group
     text: "g:#{ groupId }"
     title: group?.name or group?.slug
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 groupHandle = null
@@ -203,9 +209,9 @@ Template.groupMembersAddControlNoResults.events
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
-      addMemberToGroup newPersonId
-      return true # Show success notification
+    inviteUser email, @_parent.route(), (newPersonId) =>
+        addMemberToGroup newPersonId
+        return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 

@@ -363,7 +363,7 @@ Template.rolesControlNoResults.events
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
+    inviteUser email, @_parent.route(), (newPersonId) =>
       grantAccess @_parent, new Person
         _id: newPersonId
 

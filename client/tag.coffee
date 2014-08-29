@@ -15,8 +15,14 @@ class @Tag extends Tag
 
     Meteor.Router.tagPath tagId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    route: 'tag'
+    params:
+      tagId: @_id
+      tagSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (tagId, tag, options) ->
@@ -32,7 +38,7 @@ class @Tag extends Tag
     _id: tagId # TODO: Remove when we will be able to access parent template context
     text: "##{ tagId }"
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 Deps.autorun ->
