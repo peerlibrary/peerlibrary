@@ -99,7 +99,6 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'add-to-group': methodWrap (groupId, memberId) ->
-    console.log "Add to group method called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'groupId', memberId, DocumentId
     person = getValidPerson()
@@ -142,7 +141,6 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'deny-request-to-join-group': methodWrap (groupId, memberId) ->
-    console.log "Deny request to join group method called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'groupId', memberId, DocumentId
     person = getValidPerson()
@@ -173,7 +171,6 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'remove-from-group': methodWrap (groupId, memberId) ->
-    console.log "Remove from group called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'memberId', memberId, DocumentId
     person = getValidPerson()
@@ -211,7 +208,6 @@ Meteor.methods
         # TODO: What to do?
 
   'deny-request-to-leave-group': methodWrap (groupId, memberId) ->
-    console.log "Deny request to leave group called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'membrerId', memberId, DocumentId
     person = getValidPerson()
@@ -242,7 +238,6 @@ Meteor.methods
 
   # TODO: Use this code on the client side as well
   'group-set-name': methodWrap (groupId, name) ->
-    console.log "Group set name called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'name', name, NonEmptyString
     person = getValidPerson()
@@ -255,7 +250,6 @@ Meteor.methods
         name: name
 
   'group-set-join-policy': methodWrap (groupId, policy) ->
-    console.log "Group set join policy called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'policy', policy, MatchAccess Group.POLICY
     person = getValidPerson()
@@ -278,7 +272,6 @@ Meteor.methods
       modifier
 
   'group-set-leave-policy': methodWrap (groupId, policy) ->
-    console.log "Group set leave policy called"
     validateArgument 'groupId', groupId, DocumentId
     validateArgument 'policy', policy, MatchAccess Group.POLICY
     person = getValidPerson()
@@ -300,13 +293,11 @@ Meteor.methods
       modifier
 
   'request-to-join-group': methodWrap (groupId) ->
-    console.log "Request to join group called"
     validateArgument 'groupId', groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
     throw new Meteor.Error 400, "You are not allowed to join this group." if group.joinPolicy is Group.POLICY.CLOSED
 
-    console.log "Join policy is " + group.joinPolicy
     if group.joinPolicy is Group.POLICY.OPEN
       Group.documents.update
         _id: group._id
@@ -327,7 +318,6 @@ Meteor.methods
       requestAdded
 
   'cancel-request-to-join-group': methodWrap (groupId) ->
-    console.log "Cancel request to join group called"
     validateArgument 'groupId', groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
@@ -341,14 +331,12 @@ Meteor.methods
           _id: person._id
 
   'request-to-leave-group': methodWrap (groupId) ->
-    console.log "Request to leave group called"
     validateArgument 'groupId', groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person
     throw new Meteor.Error 400, "You are not allowed to leave this group." if group.leavePolicy is Group.POLICY.CLOSED
     throw new Meteor.Error 400, "You are the last remaining administrator of this group." if group.adminPersons.length is 1 and group.adminPersons[0]._id is person._id
 
-    console.log "Group leave policy is " + group.leavePolicy
     if group.leavePolicy is Group.POLICY.OPEN
       Group.documents.update
         _id: group._id
@@ -369,7 +357,6 @@ Meteor.methods
       requestAdded
 
   'cancel-request-to-leave-group': methodWrap (groupId) ->
-    console.log "Cancel request to leave group called"
     validateArgument 'groupId', groupId, DocumentId
     person = getValidPerson()
     group = getValidGroup groupId, person

@@ -106,21 +106,18 @@ Template.groupNoMembership.closed = ->
 
 Template.groupMembership.events
   'click .join-group': (event, template) ->
-    console.log "Join group clicked"
     Meteor.call 'request-to-join-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .leave-group': (event, template) ->
-    console.log "Leave group clicked"
     Meteor.call 'request-to-leave-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
   'click .cancel-request-to-join-group': (event, template) ->
-    console.log "Cancel request clicked"
     Meteor.call 'cancel-request-to-join-group', @_id, (error) =>
       return FlashMessage.fromError error, true if error
 
@@ -369,7 +366,6 @@ Template.groupAdminTools.events
 
   'change .group-join-policy': (event, template) ->
     policy = parseInt $('.group-join-policy').val()
-    console.log "New join policy: " + policy
     Meteor.call 'group-set-join-policy', @_id, policy, (error, count) =>
       FlashMessage.fromError error, true if error
 
@@ -377,7 +373,6 @@ Template.groupAdminTools.events
 
   'change .group-leave-policy': (event, template) ->
     policy = parseInt $('.group-leave-policy').val()
-    console.log "New leave policy: " + policy
     Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
       FlashMessage.fromError error, true if error
 
