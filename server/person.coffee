@@ -96,22 +96,14 @@ Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
 
 # TODO: Should we really publish whole person documents, because this publish endpoint exists just to get access to email address to display it in lists to which user was added when invited?
 Meteor.publish 'persons-invited', ->
-  @related (person) ->
-    return unless person?._id
-
-    # No need for requireReadAccessSelector because persons are public
-    Person.documents.find
-      'invited.by._id': person._id
-    ,
-      fields: _.extend Person.PUBLISH_FIELDS().fields,
-        # User who invited should have access to email address so that
-        # we can display it in lists to which user was added when invited
-        'user.emails': 1
+  # No need for requireReadAccessSelector because persons are public
+  Person.documents.find
+    'invited.by._id': @personId
   ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()
+    fields: _.extend Person.PUBLISH_FIELDS().fields,
+      # User who invited should have access to email address so that
+      # we can display it in lists to which user was added when invited
+      'user.emails': 1
 
 Meteor.publish 'my-person-library', ->
   return unless @personId
