@@ -119,6 +119,9 @@ class @Person extends AccessDocument
   # Use force if you want the method to compute the value
   # and not use a (possibly obsolete) cached one.
   getDisplayName: (force) =>
+    # When used as a template helper, options object is
+    # passed in, so let's make sure this is not happening.
+    force = false unless _.isBoolean force
     if not force and @displayName
       return @displayName
     else if @givenName and @familyName
@@ -131,12 +134,15 @@ class @Person extends AccessDocument
       return @user.username
     else if @email()
       return @email()
+    # We check displayName again, because we maybe skipped it above
+    else if @displayName
+      return @displayName
     else
       return @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
-    @user?.emails?[0]?.address
+    @user?.emails?[0]?.address or @invitedEmail
 
   @emailFields: ->
     EMAIL_FIELDS

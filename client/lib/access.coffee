@@ -355,8 +355,7 @@ grantAccess = (document, personOrGroup) ->
   changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
 Template.rolesControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
@@ -364,9 +363,6 @@ Template.rolesControlNoResults.events
     return unless email?.match EMAIL_REGEX
 
     inviteUser email, @_parent.route(), (newPersonId) =>
-      grantAccess @_parent, new Person
-        _id: newPersonId
-
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything

@@ -65,13 +65,16 @@ class @Person extends Person
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
-  if slug
-    # We also search by id because we may have to redirect to canonical URL
-    Meteor.subscribe 'persons-by-ids-or-slugs', slug
-    Meteor.subscribe 'publications-by-author-slug', slug
+  return unless slug
+
+  # We also search by id because we may have to redirect to canonical URL
+  Meteor.subscribe 'persons-by-ids-or-slugs', slug
+  Meteor.subscribe 'publications-by-author-slug', slug
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
+
+  return unless slug
 
   person = Person.documents.findOne
     $or: [

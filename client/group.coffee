@@ -201,8 +201,7 @@ addMemberToGroup = (personId) ->
     FlashMessage.success "Member added." if count
 
 Template.groupMembersAddControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
@@ -210,8 +209,7 @@ Template.groupMembersAddControlNoResults.events
     return unless email?.match EMAIL_REGEX
 
     inviteUser email, @_parent.route(), (newPersonId) =>
-        addMemberToGroup newPersonId
-        return true # Show success notification
+      return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 

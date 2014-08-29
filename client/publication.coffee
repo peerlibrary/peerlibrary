@@ -1855,8 +1855,7 @@ grantAccess = (personOrGroup) ->
     else changeRole data, ROLES.MAINTAINER
 
 Template.newAnnotationRolesControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
@@ -1864,13 +1863,6 @@ Template.newAnnotationRolesControlNoResults.events
     return unless email?.match EMAIL_REGEX
 
     inviteUser email, @_parent.publication.refresh().route(), (newPersonId) =>
-      grantAccess new Person
-        _id: newPersonId
-
-      # Clear autocomplete field
-      $(template.firstNode).closest('.add-control').find('.add-access').val('')
-      @_parent._query.set ''
-
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything

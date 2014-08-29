@@ -24,12 +24,7 @@
   {{#spaceless}}
     <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{#unless noLink}}href="{{path}}"{{/unless}}>
       {{> personAvatar}}
-      {{!
-        We use refresh before getDisplayName to merge subdocuments with all fields known on the client side.
-        This makes sure that on lists where also invited persons are displayed, their emails are displayed as
-        displayName to inviters (emails are not stored in subdocuments, but are subscribed to independently).
-      }}
-      <span class="name" title="{{refresh.getDisplayName}}">{{refresh.getDisplayName}}</span>
+      <span class="name" title="{{getDisplayName}}">{{getDisplayName}}</span>
     </a>
   {{/spaceless}}
 </template>

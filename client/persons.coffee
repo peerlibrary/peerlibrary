@@ -26,3 +26,10 @@ Template.personCatalogItem.publicationsCountDescription = ->
 
 Template.personCatalogItem.groupsCountDescription = ->
   Group.verboseNameWithCount @inGroups.length
+
+# We use refresh before getDisplayName to merge subdocuments with all fields known on the client side.
+# This makes sure that on lists where also invited persons are displayed, their emails are displayed as
+# displayName to inviters (emails are not stored in subdocuments, but are subscribed to independently
+# and received as invitedEmail field).
+Template.personInlineItem.getDisplayName = ->
+  a = @refresh().getDisplayName true
