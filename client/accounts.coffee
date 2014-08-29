@@ -6,7 +6,7 @@
       return
 
     showNotification = if onSuccess then onSuccess newPersonId else true
-    FlashMessage.success "User #{ email } invited.", "We sent them an invitation email with a link to sign up." if showNotification
+    FlashMessage.success "User #{ email } invited.", "We sent them an invitation email with a link to create an account." if showNotification
 
 Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
   Meteor.person(displayName: 1)?.getDisplayName()
@@ -131,7 +131,7 @@ lastEnrollAccountToken = null
 Deps.autorun ->
   enrollAccountToken = Accounts._loginButtonsSession.get 'enrollAccountToken'
   if enrollAccountToken is null and lastEnrollAccountToken
-    FlashMessage.success "Password set." if changingPasswordInEnrollAccount
+    FlashMessage.success "Account created." if changingPasswordInEnrollAccount
     Meteor.Router.toNew Meteor.Router.indexPath()
   lastEnrollAccountToken = enrollAccountToken
   changingPasswordInEnrollAccount = false
@@ -180,3 +180,11 @@ Accounts.resetPasswordWithUsername = (token, password, username, callback) ->
       userCallback: callback
   catch error
     callback error
+
+# We wrap Meteor's Accounts.createUser to display a flash message on registration
+unless originalAccountsCreateUser
+  originalAccountsCreateUser = Accounts.createUser
+  Accounts.createUser = (options, callback) ->
+    originalAccountsCreateUser options, (error) ->
+      callback error
+      FlashMessage.success "Account created." unless error

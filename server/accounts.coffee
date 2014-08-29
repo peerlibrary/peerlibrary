@@ -8,6 +8,18 @@ class @User extends User
     name: 'User'
     replaceParent: true
 
+  # Returns true if account has any service associated with it,
+  # like password set. It returns false if account has been created
+  # for an invitation but never claimed.
+  isRegistered: =>
+    # Check if password is set
+    return true unless _.isEmpty _.omit(@services?.password, 'reset')
+
+    # Otherwise check if some other service is set
+    return true unless _.isEmpty _.omit(@services, 'password', 'resume')
+
+    return false
+
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
     fields:
@@ -46,11 +58,14 @@ Meteor.methods
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    throw new Meteor.Error 400, "User is already a member." if User.documents.exists 'emails.address': email
-
-    userId = Accounts.createUser
-      email: email
-      secret: INVITE_SECRET
+    invitedUser = User.documents.findOne 'emails.address': email
+    if invitedUser
+      throw new Meteor.Error 400, "User is already a member." if invitedUser.isRegistered()
+      userId = invitedUser._id
+    else
+      userId = Accounts.createUser
+        email: email
+        secret: INVITE_SECRET
 
     invited = Person.documents.findOne
       'user._id': userId
@@ -60,7 +75,8 @@ Meteor.methods
     Person.documents.update
       _id: invited._id
     ,
-      $set:
+      # It is OK to add multiple invitations for the same inviter
+      $push:
         invited:
           by:
             _id: person._id
@@ -259,12 +275,16 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   wrap parts.join ''
 
 Accounts.emailTemplates.enrollAccount.subject = (user) ->
-  invited = Meteor.person user._id
+  invited = Meteor.person user._id,
+    invited:
+      # We assume that the last inviter is the one we want, not really a big problem if there was a race condition and we made a mistake
+      $slice: -1 # Using $slice does not exclude other fields by itself
 
-  assert invited.invited?.by._id
+  # The first (0) and only element in the array is here the last inviter
+  assert invited.invited?[0]?.by?._id
 
   person = Person.documents.findOne
-    _id: invited.invited.by._id
+    _id: invited.invited[0].by._id
 
   assert person
 
@@ -273,12 +293,16 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   url = url.replace '#/', ''
   url = url.replace 'enroll-account', 'accept-invitation'
 
-  invited = Meteor.person user._id
+  invited = Meteor.person user._id,
+    invited:
+      # We assume that the last inviter is the one we want, not really a big problem if there was a race condition and we made a mistake
+      $slice: -1 # Using $slice does not exclude other fields by itself
 
-  assert invited.invited?.by._id
+  # The first (0) and only element in the array is here the last inviter
+  assert invited.invited?[0]?.by?._id
 
   person = Person.documents.findOne
-    _id: invited.invited.by._id
+    _id: invited.invited[0].by._id
 
   assert person
 
@@ -293,7 +317,7 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
   """
 
-  message = invited.invited.message
+  message = invited.invited[0].message
   if message
     parts.push """
     :
@@ -309,7 +333,7 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
   parts.push """
 
-  Please click the link below to accept the invitation and sign up:
+  Please click the link below to accept the invitation and create an account:
 
   #{ url }
 

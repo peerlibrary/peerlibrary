@@ -101,8 +101,7 @@ Meteor.publish 'persons-invited', ->
 
     # No need for requireReadAccessSelector because persons are public
     Person.documents.find
-      "invited.by":
-        _id: person._id
+      'invited.by._id': person._id
     ,
       fields: _.extend Person.PUBLISH_FIELDS().fields,
         # User who invited should have access to email address so that

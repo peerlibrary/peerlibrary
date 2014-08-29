@@ -19,7 +19,7 @@ class @Person extends AccessDocument
   # familyName
   # displayName: combination of givenName, familyName, user.username, email, and slug
   # isAdmin: boolean, is user an administrator or not
-  # invited:
+  # invited: list of
   #   by: a person who invited this person
   #     _id
   #   message: optional message for invitation email
@@ -47,15 +47,19 @@ class @Person extends AccessDocument
       displayName: @GeneratedField 'self', ['givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
-      invited:
+      invited: [
         by: @ReferenceField 'self', [], false
+      ]
     # We are using publications in updatedAt trigger, because it is part of person's metadata, but this means
     # that it also updates lastActivity, so we do not need to have a trigger in Publication for authors field
     triggers: =>
       # We do not want only to update updateAt when user._id changes, but also emails and username, so we trigger for the whole user field
       updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'publications._id']
       lastActivity: LastActivityTrigger ['library._id']
-      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) -> doc.invited?.by._id
+      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) ->
+        oldInvited = _.pluck _.pluck(oldDoc?.invited, 'by'), '_id'
+        newInvited = _.pluck _.pluck(doc?.invited, 'by'), '_id'
+        _.difference newInvited, oldInvited
       # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
       publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->
         newPublications = (publication._id for publication in doc.library or [])
