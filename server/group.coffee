@@ -1,5 +1,22 @@
 SLUG_MAX_LENGTH = 80
 
+emailRequestToJoinDeniedSubject (person, group) ->
+  "Your request to join group #{{group.name}} has been declined."
+emailRequestToJoinDeniedText (person, group) ->
+  "Hi #{{person.displayName}}, administrators of group \"#{{group.name}}\" have declined your request to join."
+emailrequestToJoinApprovedSubject (person, group) ->
+  ""
+emailrequestToJoinApprovedtext (person, group) ->
+  ""
+emailRequestToLeaveDeniedSubject (person, group) ->
+  ""
+emailRequestToLeaveDeniedText (person, group) ->
+  ""
+emailRequestToLeaveApprovedSubject (person, group) ->
+  ""
+emailRequestToLeaveApprovedText (person, group) ->
+  ""
+
 class @Group extends Group
   @Meta
     name: 'Group'
@@ -100,7 +117,6 @@ Meteor.methods
       $pull:
         joinRequests:
           _id: member._id
-    # TODO: If request was approved send e-mail to new member
 
     # We do not check here if user is already a member of the group because query checks
     Group.documents.update Group.requireAdminAccessSelector(person,
@@ -111,6 +127,18 @@ Meteor.methods
       $addToSet:
         members:
           _id: member._id
+
+    # If request was approved send e-mail to new member.
+    if requestApproved
+      @unblock()
+      try
+        Email.send
+          from: Accounts.emailTemplates.from
+          to: person.user.emails[0].address
+          subject: emailRequestToJoinApprovedSubject person, group
+          text: emailRequestToJoinApprovedText person, group
+      catch error
+        # TODO: What to do?
 
   # TODO: Use this code on the client side as well
   'deny-request-to-join-group': methodWrap (groupId, memberId) ->
@@ -128,7 +156,19 @@ Meteor.methods
       $pull:
         joinRequests:
           _id: memberId
-    # TODO: if requestDenied send e-mail to member
+
+    # If request is denied, send e-mail to member.
+    if requestDenied
+      @unblock()
+      try
+        Email.send
+          from: Accounts.emailTemplates.from
+          to: person.user.emails[0].address
+          subject: emailRequestToJoinDeniedSubject person, group
+          text: emailRequestToJoinDeniedText person, group
+      catch error
+        # TODO: What to do?
+
     requestDenied
 
   # TODO: Use this code on the client side as well
@@ -148,7 +188,6 @@ Meteor.methods
       $pull:
         leaveRequests:
           _id: memberId
-    # TODO: if request was approved send e-mail to member
 
     # We do not check here if user is really a member of the group because query checks
     Group.documents.update Group.requireAdminAccessSelector(person,
@@ -158,6 +197,18 @@ Meteor.methods
       $pull:
         members:
           _id: memberId
+
+    # If request was approved send e-mail to member
+    if requestApproved
+      @unblock()
+      try
+        Email.send
+          from: Accounts.emailTemplates.from
+          to: person.user.emails[0].address
+          subject: emailRequestToLeaveApprovedSubject person, group
+          text: emailRequestToLeaveApprovedText person, group
+      catch error
+        # TODO: What to do?
 
   'deny-request-to-leave-group': methodWrap (groupId, memberId) ->
     console.log "Deny request to leave group called"
@@ -174,7 +225,19 @@ Meteor.methods
       $pull:
         leaveRequests:
           _id: memberId
-    # TODO: if requestDenied send e-mail to member
+
+    # if requestDenied send e-mail to member
+    if requestDenied
+      @unblock()
+      try
+        Email.send
+          from: Accounts.emailTemplates.from
+          to: person.user.emails[0].address
+          subject: emailRequestToLeaveDeniedSubject person, group
+          text: emailRequestToLeaveDeniedText person, group
+      catch error
+        # TODO: What to do?
+
     requestDenied
 
   # TODO: Use this code on the client side as well
