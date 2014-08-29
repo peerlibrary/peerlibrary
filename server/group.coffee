@@ -1,20 +1,20 @@
 SLUG_MAX_LENGTH = 80
 
-emailRequestToJoinDeniedSubject (person, group) ->
-  "Your request to join group #{{group.name}} has been declined."
-emailRequestToJoinDeniedText (person, group) ->
-  "Hi #{{person.displayName}}, administrators of group \"#{{group.name}}\" have declined your request to join."
-emailrequestToJoinApprovedSubject (person, group) ->
+emailRequestToJoinDeniedSubject = (person, group) ->
+  "Your request to join group #{group.name} has been declined."
+emailRequestToJoinDeniedText = (person, group) ->
+  "Hi #{person.displayName}, administrators of group \"#{group.name}\" have declined your request to join."
+emailrequestToJoinApprovedSubject = (person, group) ->
   ""
-emailrequestToJoinApprovedtext (person, group) ->
+emailrequestToJoinApprovedtext = (person, group) ->
   ""
-emailRequestToLeaveDeniedSubject (person, group) ->
+emailRequestToLeaveDeniedSubject = (person, group) ->
   ""
-emailRequestToLeaveDeniedText (person, group) ->
+emailRequestToLeaveDeniedText = (person, group) ->
   ""
-emailRequestToLeaveApprovedSubject (person, group) ->
+emailRequestToLeaveApprovedSubject = (person, group) ->
   ""
-emailRequestToLeaveApprovedText (person, group) ->
+emailRequestToLeaveApprovedText = (person, group) ->
   ""
 
 class @Group extends Group
