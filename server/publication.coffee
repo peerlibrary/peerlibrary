@@ -419,7 +419,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
           # (publication is private or open access)
           fields.hasCachedId = true
         else
-          fields.hasCachedId = new Publication(fields).hasCacheAccessSearchResult person
+          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
         fields
       changed: (id, fields) =>
         if 'abstract' of fields
@@ -432,7 +432,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
             # (publication is private or open access)
             fields.hasCachedId = true
           else
-            fields.hasCachedId = new Publication(fields).hasCacheAccessSearchResult person
+            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
         fields
   ,
     Person.documents.find
