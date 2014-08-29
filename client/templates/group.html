@@ -173,28 +173,25 @@
       <i class="icon-tools"></i> Admin tools
     </button>
     <div class="dropdown-anchor">
-
-      {{! TODO: There was a lot of conflicts while merging this - test it }}
+      <ul class="dropdown">
       {{#if canModify}}
-        <p>
+        <li class="menu-item">
           Join group policy:
           <select class="group-join-policy">
             <option value="{{POLICY.APPROVAL}}" {{#if isCurrentJoinPolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
             <option value="{{POLICY.OPEN}}" {{#if isCurrentJoinPolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
             <option value="{{POLICY.CLOSED}}" {{#if isCurrentJoinPolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
           </select>
-        </p>
-        <p>
+        </li>
+        <li class="menu-item">
           Leave group policy:
           <select class="group-leave-policy">
             <option value="{{POLICY.APPROVAL}}" {{#if isCurrentLeavePolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
             <option value="{{POLICY.OPEN}}" {{#if isCurrentLeavePolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
             <option value="{{POLICY.CLOSED}}" {{#if isCurrentLeavePolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
           </select>
-        </p>
+        </li>
       {{/if}}
-
-      <ul class="dropdown">
         <li class="menu-item">
           {{! TODO: Add confirmation or undo for this action }}
           <button class="delete-group danger tooltip" title="Warning: there is no undo for this action.">Delete group</button>
