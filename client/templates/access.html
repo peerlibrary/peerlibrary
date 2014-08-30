@@ -98,6 +98,10 @@
       {{> rolesControlList}}
       {{#if canModifyAccess}}
         {{> rolesControlAdd}}
+      {{else}}
+        {{#if currentPersonId}}
+          {{> rolesControlInvite}}
+        {{/if}}
       {{/if}}
     </div>
   {{/if}}
@@ -147,7 +151,7 @@
 
 <template name="rolesControlAdd">
   <div class="add-control control">
-    <input type="text" class="add-access" placeholder="Add users or groups" />
+    <input type="text" class="add-access" spellcheck="false" placeholder="Add users or groups" />
     {{> rolesControlNoResults}}
     {{> rolesControlResults}}
     {{> rolesControlLoading}}
@@ -181,6 +185,21 @@
 <template name="rolesControlLoading">
   {{#if loading}}
     <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
+</template>
+
+<template name="rolesControlInvite">
+  <div class="add-control control">
+    <input type="text" class="invite-only" spellcheck="false" placeholder="Enter an email to invite a new user" />
+    {{> rolesControlInviteButton}}
+  </div>
+</template>
+
+<template name="rolesControlInviteButton">
+  {{#if email}}
+    <div class="no-results add-control-results invite-only">
+      {{> addControlInviteByEmail email}}
+    </div>
   {{/if}}
 </template>
 
