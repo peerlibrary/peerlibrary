@@ -656,7 +656,7 @@ Deps.autorun ->
     transform: null # So that we don't have any complications passing it to FlashMessage.error
 
   # Only the latest job is pushed to the client, so index 0
-  return unless publication?.jobs?[0]?.status is 'failed'
+  return unless publication?.jobs?[0]?.status in ['failed', 'cancelled']
 
   FlashMessage.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
 
