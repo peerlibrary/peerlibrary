@@ -68,6 +68,7 @@
 
 <template name="addControlInviteByEmail">
   {{#if this}}
+    {{! TODO: Button and input box should get disabled and a loading icon should be displayed until the method returns, if error happens input box should be refocused so that user can fix the input }}
     <button class="invite">Invite {{this}}</button>
   {{/if}}
 </template>
