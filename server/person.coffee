@@ -12,12 +12,11 @@ class @Person extends Person
           [fields._id, fields._id]
 
       fields.displayName.generator = (fields) ->
-        person = new Person(fields)
-        # Display name is public, so we don't want to leak email until
-        # the user registers. We use a special publish endpoint to
-        # provide email addresses of all invitees to inviters.
-        if person.user.refresh().isRegistered()
-          [fields._id, new person.getDisplayName()]
+        person = new Person fields
+        # Display name is public, so we don't want to leak email until the user registers.
+        # We use a special publish endpoint to provide email addresses of all invitees to inviters.
+        if person.user.refresh(services: 1).isRegistered()
+          [fields._id, person.getDisplayName true]
         else
           [fields._id, fields._id]
 
