@@ -18,7 +18,7 @@ class @Person extends AccessDocument
   # givenName
   # familyName
   # displayName: combination of givenName, familyName, user.username, email, and slug
-  # invitedEmail (client only): e-mail address of the user, used only to provide it to inviters of a given person
+  # invitedEmail (client only): e-mail address of the user, used only to provide it to inviters of a given person (we cannot simply publish user.emails because Meteor merges fields only at the top level)
   # isAdmin: boolean, is user an administrator or not
   # invited: list of
   #   by: a person who invited this person
