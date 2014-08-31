@@ -199,7 +199,7 @@
       "jobCollection": {
         "git": "https://github.com/peerlibrary/meteor-job-collection.git",
         "branch": "peerlibrary",
-        "commit": "1d50d797dad944dcf084d46da474cf0a10cdcade"
+        "commit": "0e28a29ba1234369cb0996130c786e26973e102f"
       },
       "async": {
         "git": "https://github.com/peerlibrary/meteor-async.git",

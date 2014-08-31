@@ -128,7 +128,15 @@ runJobQueue = ->
   # when we go back to observe to wait for next ready job.
   Meteor.defer ->
     try
-      while job = JobQueue.Meta.collection.getWork _.keys Job.types
+      loop
+        try
+          job = JobQueue.Meta.collection.getWork _.keys Job.types
+          break unless job
+        catch error
+          # We retry if a race-condition was detected, there might still be jobs available
+          continue if /Find after update failed|Missing running job/.test "#{ error }"
+          throw error
+
         try
           try
             jobClass = Job.types[job.type]
