@@ -4,10 +4,25 @@ class @Annotation extends Annotation
   @Meta
     name: 'Annotation'
     replaceParent: true
+    fields: (fields) =>
+      fields.commentsCount.generator = (fields) ->
+        [fields._id, fields.comments?.length or 0]
+
+      fields
 
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
-    fields: {} # All
+    fields:
+      # We are sending only the count over, not all comments
+      comments: 0
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields:
+      author: 1
+      body: 1
+      publication: 1
+      commentsCount: 1
 
 registerForAccess Annotation
 
@@ -40,8 +55,8 @@ parseReferences = (body) ->
   references
 
 Meteor.methods
-  'annotations-path': (annotationId) ->
-    check annotationId, DocumentId
+  'annotations-path': methodWrap (annotationId) ->
+    validateArgument 'annotationId', annotationId, DocumentId
 
     person = Meteor.person()
 
@@ -57,18 +72,26 @@ Meteor.methods
 
     [publication._id, publication.slug, annotation._id]
 
-  'create-annotation': (publicationId, body, access, groups) ->
-    check publicationId, DocumentId
-    check body, Match.Optional NonEmptyString
-    check access, MatchAccess Annotation.ACCESS
-    check groups, [DocumentId]
+  'create-annotation': methodWrap (publicationId, body, access, workInsideGroups, readPersons, readGroups, maintainerPersons, maintainerGroups, adminPersons, adminGroups) ->
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'body', body, Match.Optional NonEmptyString
+    validateArgument 'access', access, MatchAccess Annotation.ACCESS
+    validateArgument 'workInsideGroups', workInsideGroups, [DocumentId]
+    validateArgument 'readPersons', readPersons, [DocumentId]
+    validateArgument 'readGroups', readGroups, [DocumentId]
+    validateArgument 'maintainerPersons', maintainerPersons, [DocumentId]
+    validateArgument 'maintainerGroups', maintainerGroups, [DocumentId]
+    validateArgument 'adminPersons', adminPersons, [DocumentId]
+    validateArgument 'adminGroups', adminGroups, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
-
+    # TODO: We should not allow empty body, but until we have drafts we have to
     body = '' unless body
+    body = cleanBlockHTML body
+
+    # TODO: Verify that text content all together, trimmed of space, is non-empty
 
     references = parseReferences body
 
@@ -78,14 +101,50 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid publication." unless publication
 
     personGroups = _.pluck person.inGroups, '_id'
-    throw new Meteor.Error 400, "Invalid groups." if _.difference(groups, personGroups).length
+    throw new Meteor.Error 400, "Invalid work-inside groups." if _.difference(workInsideGroups, personGroups).length
 
-    throw new Meteor.Error 400, "Invalid groups." if Group.documents.find(Group.requireReadAccessSelector(person,
+    throw new Meteor.Error 400, "Invalid work-inside groups." if Group.documents.find(Group.requireReadAccessSelector person,
       _id:
-        $in: groups
-    )).count() isnt groups.length
+        $in: workInsideGroups
+    ).count() isnt workInsideGroups.length
 
-    groups = (_id: groupId for groupId in groups)
+    throw new Meteor.Error 400, "Invalid read persons." if Person.documents.find(
+      _id:
+        $in: readPersons
+    ).count() isnt readPersons.length
+
+    throw new Meteor.Error 400, "Invalid read groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: readGroups
+    ).count() isnt readGroups.length
+
+    throw new Meteor.Error 400, "Invalid maintainer persons." if Person.documents.find(
+      _id:
+        $in: maintainerPersons
+    ).count() isnt maintainerPersons.length
+
+    throw new Meteor.Error 400, "Invalid maintainer groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: maintainerGroups
+    ).count() isnt maintainerGroups.length
+
+    throw new Meteor.Error 400, "Invalid admin persons." if Person.documents.find(
+      _id:
+        $in: adminPersons
+    ).count() isnt adminPersons.length
+
+    throw new Meteor.Error 400, "Invalid admin groups." if Group.documents.find(Group.requireReadAccessSelector person,
+      _id:
+        $in: adminGroups
+    ).count() isnt adminGroups.length
+
+    workInsideGroups = (_id: groupId for groupId in workInsideGroups)
+    readPersons = (_id: personId for personId in readPersons)
+    readGroups = (_id: groupId for groupId in readGroups)
+    maintainerPersons = (_id: personId for personId in maintainerPersons)
+    maintainerGroups = (_id: groupId for groupId in maintainerGroups)
+    adminPersons = (_id: personId for personId in adminPersons)
+    adminGroups = (_id: groupId for groupId in adminGroups)
 
     # TODO: Should we sync this somehow with createAnnotationDocument? Maybe move createAnnotationDocument to Annotation object?
     createdAt = moment.utc().toDate()
@@ -100,8 +159,13 @@ Meteor.methods
       tags: []
       body: body
       access: access
-      inside: groups
-      readGroups: groups
+      inside: workInsideGroups
+      readPersons: readPersons
+      readGroups: readGroups
+      maintainerPersons: maintainerPersons
+      maintainerGroups: maintainerGroups
+      adminPersons: adminPersons
+      adminGroups: adminGroups
       license: 'CC0-1.0+'
 
     annotation = Annotation.applyDefaultAccess person._id, annotation
@@ -109,14 +173,16 @@ Meteor.methods
     Annotation.documents.insert annotation
 
   # TODO: Use this code on the client side as well
-  'update-annotation-body': (annotationId, body) ->
-    check annotationId, DocumentId
-    check body, NonEmptyString
+  'update-annotation-body': methodWrap (annotationId, body) ->
+    validateArgument 'annotationId', annotationId, DocumentId
+    validateArgument 'body', body, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+    body = cleanBlockHTML body
+
+    # TODO: Verify that text content all together, trimmed of space, is non-empty
 
     references = parseReferences body
 
@@ -134,13 +200,12 @@ Meteor.methods
       _id: annotation._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         body: body
         references: references
 
   # TODO: Use this code on the client side as well
-  'remove-annotation': (annotationId) ->
-    check annotationId, DocumentId
+  'remove-annotation': methodWrap (annotationId) ->
+    validateArgument 'DocumentId', annotationId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -160,7 +225,7 @@ Meteor.methods
     )
 
 Meteor.publish 'annotations-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
@@ -178,3 +243,29 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
       _id: publicationId
     ,
       fields: Publication.readAccessSelfFields()
+
+Meteor.publish 'annotations', (limit, filter, sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Annotation.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'body') if filter
+
+  sort = if _.isNumber sortIndex then Annotation.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Annotation.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'annotations', [filter, sortIndex],
+      cursor: Annotation.documents.find restrictedFindQuery,
+        limit: limit
+        fields: Annotation.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Annotation.readAccessPersonFields()

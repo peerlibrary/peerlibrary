@@ -5,7 +5,7 @@
       <li><a href="{{helpPath}}">Help</a></li>
       <li><a href="{{privacyPath}}">Privacy</a></li>
       <li><a href="{{termsPath}}">Terms</a></li>
-      <li><a href="https://github.com/peerlibrary/peerlibrary" title="Running version {{VERSION}}">Source</a></li>
+      <li><a href="https://github.com/peerlibrary/peerlibrary" class="tooltip" title="Running version {{VERSION}}">Source</a></li>
       <li><a href="https://github.com/peerlibrary/peerlibrary/wiki/Public-API">API</a></li>
     </ul>
     <ul class="connect">
@@ -18,7 +18,7 @@
 </template>
 
 <template name="baseFooter">
-  {{#unless searchActive}}
+  {{#unless infiniteScroll}}
     {{> footer}}
   {{/unless}}
 </template>

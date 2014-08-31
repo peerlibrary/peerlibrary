@@ -1,13 +1,12 @@
 <template name="results">
   <div class="row">
-    <div class="results-list col12">
+    <div class="results-list catalog col12">
       {{> resultsCount}}
       {{> resultsSearchInvitation}}
-      {{> noResults}}
       {{#if publications}}
         <ol class="item-list">
           {{#each publications}}
-            {{> publicationSearchResult}}
+            {{> publicationCatalogItem}}
           {{/each}}
         </ol>
       {{/if}}
@@ -19,32 +18,50 @@
 
 <template name="resultsCount">
   {{#if publications}}
-    <div class="results-count">Found {{publications}} publications:</div>
+    <p class="status">Found {{publicationsCountDescription}}</p>
   {{/if}}
   {{#if persons}}
-    <div class="results-count">Found {{persons}} people:</div>
+    <p class="status">Found {{personsCountDescription}}</p>
   {{/if}}
-</template>
-
-<template name="noResults">
   {{#if noResults}}
-    <div class="no-results">No publications or people found.</div>
+    <p class="status">No publications or people found.</p>
+        <p class="hint">
+          {{#if currentPersonId}}
+            If you are not finding publications you expected, you can {{> importLink}} their PDFs yourself.
+          {{else}}
+            If you are not finding publications you expected, you might lack permissions to access them. Try signing in.
+            Moreover, after signing in you can import their PDFs yourself.
+          {{/if}}
+        </p>
+        <p class="hint">
+          PeerLibrary can be used for open access, closed access, or private publications, by marking them
+          accordingly once imported. For a closed access publication others will have to import its PDF
+          themselves to see its full text. For a private publication you can configure access permissions
+          for users and groups.
+        </p>
   {{/if}}
 </template>
 
 <template name="resultsLoad">
   {{#if loading}}
-    <div class="results-loading">Loading …</div>
+    <p class="status">Loading …</p>
   {{else}}
     {{#if more}}
-      <div class="results-load-more"><button class="load-more">Load more</button></div>
+      <button class="load-more">Load more</button>
+    {{else}}
+      {{#if publications}}
+        <p class="status">No more publications to display.</p>
+       {{/if}}
+      {{#if persons}}
+        <p class="status">No more people to display.</p>
+      {{/if}}
     {{/if}}
   {{/if}}
 </template>
 
 <template name="resultsSearchInvitation">
   {{#if searchInvitation}}
-    <div class="search-invitation">
+    <div class="search-invitation status">
       <p>Type in the search query</p>
       {{! TODO: Add this text when controls on the right actually work }}
       {{! <p>Refine your search with controls on the right.</p> }}
@@ -109,82 +126,4 @@
     </form>
     {{> footer}}
   </div>
-</template>
-
-<template name="publicationSearchResult">
-  <li class="result-item" data-publication-id="{{_id}}">
-    {{#if currentPersonId}}
-      {{> publicationLibraryMenu}}
-    {{/if}}
-    <div class="article-summary">
-      <div class="article-summary-data">
-        <h2 class="title">
-          {{> publicationSearchResultTitle}}
-        </h2>
-        <div class="clearfix"></div>
-        {{#if authors.length}}
-          <span class="authors">
-            {{#each authors}}
-              <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
-            {{/each}}
-          </span>
-          <br/>
-        {{/if}}
-        <span class="date">{{createdDay}}</span>
-        <br/>
-        <span class="actions">
-          {{#if hasAbstract}}
-            <a href="#" class="preview-link">Abstract</a> &middot;
-          {{else}}
-            {{#if abstract}}
-              <a href="#" class="preview-link">Abstract</a> &middot;
-            {{/if}}
-          {{/if}}
-          <a href="{{publicationPathFromId _id slug}}">Full text</a>{{> accessIcon}}
-        </span>
-      </div>
-      {{#if thumbnailUrls.length}}
-        <div class="article-thumbnail">
-          <ul class="scrubber">
-            {{#each thumbnailUrls}}
-              {{> publicationSearchResultThumbnail}}
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
-      <div class="clearfix"></div>
-      {{#if abstract}}
-        <div class="abstract">
-          <p class="abstract-content">{{abstract}}</p>
-        </div>
-      {{/if}}
-    </div>
-  </li>
-</template>
-
-<template name="publicationSearchResultTitle">
-  <span class="title {{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
-    {{#spaceless}}
-      <a href="{{publicationPathFromId _id slug}}">
-        {{#if title}}
-          {{title}}
-        {{else}}
-          {{#if importing.0.filename}}
-          {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
-            {{importing.0.filename}}
-          {{else}}
-            <i>title metadata missing</i>
-          {{/if}}
-        {{/if}}
-      </a>
-    {{/spaceless}}
-  </span>
-</template>
-
-<template name="accessIcon">
-  <i class="{{iconName}}"></i>
-</template>
-
-<template name="publicationSearchResultThumbnail">
-  <li><img src="{{this}}" width="95" height="125" alt="" title="Page {{page}}"></li>
 </template>

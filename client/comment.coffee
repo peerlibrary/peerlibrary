@@ -1,20 +1,52 @@
-# If we have the comment and the publication available on the client,
-# we can create full path directly, otherwise we have to use commentIdPath
-Handlebars.registerHelper 'commentPathFromId', (commentId, options) ->
-  comment = Comment.documents.findOne commentId
+class @Comment extends Comment
+  @Meta
+    name: 'Comment'
+    replaceParent: true
 
-  return Meteor.Router.commentIdPath commentId unless comment
+  # If we have the comment and the publication available on the client,
+  # we can create full path directly, otherwise we have to use commentIdPath
+  @pathFromId: (commentId, options) ->
+    assert _.isString commentId
 
-  publication = Publication.documents.findOne comment.publication._id
+    comment = @documents.findOne commentId
 
-  return Meteor.Router.commentIdPath commentId unless publication
+    return Meteor.Router.commentIdPath commentId unless comment
 
-  Meteor.Router.commentPath publication._id, publication.slug, commentId
+    publicationSlug = comment.publication?.slug
+    unless publicationSlug?
+      publication = Publication.documents.findOne comment.publication._id
+      publicationSlug = publication?.slug
 
-# Optional comment document
-Handlebars.registerHelper 'commentReference', (commentId, comment, options) ->
-  comment = Comment.documents.findOne commentId unless comment
-  assert commentId, comment._id if comment
+      return Meteor.Router.commentIdPath commentId unless publicationSlug?
 
-  _id: commentId # TODO: Remove when we will be able to access parent template context
-  text: "m:#{ commentId }"
+    Meteor.Router.commentPath comment.publication._id, publicationSlug, commentId
+
+  path: =>
+    @constructor.pathFromId @_id
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'comment'
+    params:
+      publicationId: @publication?._id
+      publicationSlug: @publication?.slug
+      commentId: @_id
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (commentId, comment, options) ->
+    assert _.isString commentId
+    # To allow calling template helper with only one argument (comment will be options then)
+    comment = null unless comment instanceof @
+
+    comment = @documents.findOne commentId unless comment
+    assert commentId, comment._id if comment
+
+    _id: commentId # TODO: Remove when we will be able to access parent template context
+    text: "m:#{ commentId }"
+
+  reference: =>
+    @constructor.reference @_id, @
+
+Handlebars.registerHelper 'commentPathFromId', _.bind Comment.pathFromId, Comment
+
+Handlebars.registerHelper 'commentReference', _.bind Comment.reference, Comment

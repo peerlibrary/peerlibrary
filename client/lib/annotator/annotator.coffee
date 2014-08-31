@@ -89,12 +89,12 @@ class @Annotator extends Annotator
   _setupDocumentEvents: =>
     # Overridden
 
-    $(document).on 'mousedown.annotator': (e) =>
+    $(document).on 'mousedown.annotator': (event) =>
       # Left mouse button and mousedown happened on a target inside a display-page
       # (We have mousedown evente handler on document to be able to always deselect,
       # but then we have to manually determine if event target is inside a display-page)
-      if e.which is 1 and $(e.target).closest('.display-page').length
-        inAnySelectedHighlight = @_inAnySelectedHighlight e.clientX, e.clientY
+      if event.which is 1 and $(event.target).closest('.display-page').length
+        inAnySelectedHighlight = @_inAnySelectedHighlight event.clientX, event.clientY
 
         # If mousedown happened outside any selected highlight, we deselect highlights,
         # but we leave location unchanged so that on a new possible new highlight we
@@ -105,10 +105,10 @@ class @Annotator extends Annotator
         # To be able to correctly deselect in mousemove handler
         @mouseStartingInsideSelectedHighlight = inAnySelectedHighlight
 
-        @checkForStartSelection e
+        @checkForStartSelection event
 
       # Left mouse button and mousedown happened on an annotation
-      else if e.which is 1 and $(e.target).closest('.annotations-list .annotation').length
+      else if event.which is 1 and $(event.target).closest('.annotations-list .annotation').length
         # If mousedown happened inside an annotation, we deselect highlights,
         # but we leave location unchanged so that we update location to the
         # annotation location without going through a publication-only location.
@@ -120,7 +120,7 @@ class @Annotator extends Annotator
 
       return # Make sure CoffeeScript does not return anything
 
-    $(document).on 'mousemove.annotator': (e) =>
+    $(document).on 'mousemove.annotator': (event) =>
       # We started moving for a new selection, so deselect any selected highlight
       if @mouseIsDown and @mouseStartingInsideSelectedHighlight
         # To deselect only at the first mousemove event, otherwise any (new) selection would be impossible
@@ -358,7 +358,7 @@ class @Annotator extends Annotator
     # Highlights are a special case and we provide _id from the client
     Meteor.call 'create-highlight', Session.get('currentPublicationId'), annotation._id, annotation.quote, target, (error, highlightId) =>
       # TODO: Does Meteor triggers removal if insertion was unsuccessful, so that we do not have to do anything?
-      return Notify.meteorError error, true if error
+      return FlashMessage.fromError error, true if error
 
       assert.equal annotation._id, highlightId
 
@@ -388,7 +388,7 @@ class @Annotator extends Annotator
       @_addHighlightToEditor id
 
       # On click on the highlight we are for sure inside the highlight, so we can
-      # immediatelly send a mouse enter event to make sure related annotation has
+      # immediately send a mouse enter event to make sure related annotation has
       # a hovered state. Even if _selectHighlight not really happened because of
       # a click, it is still a nice effect to emphasize the invitation.
       Meteor.defer ->
@@ -405,8 +405,26 @@ class @Annotator extends Annotator
   _getRenderedHighlights: =>
     highlights = {}
     for highlight in @getHighlights()
+      boundingBox = highlight.getBoundingBox()
+      # Sometimes when rendering highlight coordinates are not yet known so we skip those highlights
+      continue unless _.isFinite(boundingBox.left) and _.isFinite(boundingBox.top)
       if highlights[highlight.annotation._id]
-        highlights[highlight.annotation._id].push highlight.getBoundingBox()
+        highlights[highlight.annotation._id].push boundingBox
       else
-        highlights[highlight.annotation._id] = [highlight.getBoundingBox()]
+        highlights[highlight.annotation._id] = [boundingBox]
+    for highlightId, boundingBoxes of highlights
+      # We sort to assure array order does not change if values do not change,
+      # so that reactive variable change is not triggered, if there is only
+      # difference in highlights order returned by getHighlights
+      highlights[highlightId] = boundingBoxes.sort (a, b) ->
+        if a.left isnt b.left
+          a.left - b.left
+        else if a.top isnt b.top
+          a.top - b.top
+        else if a.width isnt b.width
+          a.width - b.width
+        else if a.height isnt b.height
+          a.height - b.height
+        else
+          0
     highlights

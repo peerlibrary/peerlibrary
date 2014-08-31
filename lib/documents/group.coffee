@@ -1,13 +1,14 @@
-class @Group extends ReadAccessDocument
+class @Group extends BasicAccessDocument
   # access: 0 (private, ACCESS.PRIVATE), 1 (public, ACCESS.PUBLIC)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
   # createdAt: timestamp when document was created
   # updatedAt: timestamp of this version
+  # lastActivity: time of the last group activity (annotation made inside a group, etc.)
   # slug: slug for URL
   # name: name of the group
   # members: list of people in the group
@@ -21,13 +22,42 @@ class @Group extends ReadAccessDocument
   @Meta
     name: 'Group'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField 'self', ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField 'self', ['slug', 'name']]
       slug: @GeneratedField 'self', ['name']
-      members: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username'], true, 'inGroups']
+      members: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'inGroups']
       membersCount: @GeneratedField 'self', ['members']
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['name', 'members._id']
+      # TODO: For now we are updating last activity of all persons in a group, but we might consider removing this and leave it to the "trending" view
+      personsLastActivity: RelatedLastActivityTrigger Person, ['members._id'], (doc, oldDoc) ->
+        newMembers = (member._id for member in doc.members or [])
+        oldMembers = (member._id for member in oldDoc.members or [])
+        _.difference newMembers, oldMembers
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "members count"
+      sort: [
+        ['membersCount', 'desc']
+        ['name', 'asc']
+      ]
+    ,
+      name: "name"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['name', 'asc']
+      ]
+    ]
 
   _hasReadAccess: (person) =>
     access = super
@@ -71,6 +101,17 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -92,11 +133,28 @@ class @Group extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
+
   hasRemoveAccess: (person) =>
     @hasAdminAccess person
 
   @requireRemoveAccessSelector: (person, selector) ->
     @requireAdminAccessSelector person, selector
+
+  @removeAccessPersonFields: ->
+    @adminAccessPersonFields()
+
+  @removeAccessSelfFields: ->
+    @adminAccessSelfFields()
 
   @applyDefaultAccess: (personId, document) ->
     document = super
@@ -105,5 +163,7 @@ class @Group extends ReadAccessDocument
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
+    document = @_applyDefaultAccess personId, document
 
     document

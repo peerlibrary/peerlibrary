@@ -11,15 +11,31 @@ class @Collection extends Collection
         else
           [fields._id, '']
 
+      fields.publicationsCount.generator = (fields) ->
+        [fields._id, fields.publications?.length or 0]
+
+      fields.authorName.generator = (fields) ->
+        [fields._id, fields.authorPerson?.displayName or fields.authorGroup?.name or '']
+
+      fields
+
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
     fields: {} # All
 
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    authorPerson: 1
+    authorGroup: 1
+    name: 1
+    slug: 1
+    publicationsCount: 1
+
 registerForAccess Collection
 
 Meteor.methods
-  'create-collection': (name) ->
-    check name, NonEmptyString
+  'create-collection': methodWrap (name) ->
+    validateArgument 'name', name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -38,8 +54,8 @@ Meteor.methods
     Collection.documents.insert collection
 
   # TODO: Use this code on the client side as well
-  'remove-collection': (collectionId) ->
-    check collectionId, DocumentId
+  'remove-collection': methodWrap (collectionId) ->
+    validateArgument 'collectionId', collectionId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -54,9 +70,9 @@ Meteor.methods
     )
 
   # TODO: Use this code on the client side as well
-  'add-to-library': (publicationId, collectionId) ->
-    check publicationId, DocumentId
-    check collectionId, Match.Optional DocumentId
+  'add-to-library': methodWrap (publicationId, collectionId) ->
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'collectionId', collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -72,8 +88,6 @@ Meteor.methods
       'library._id':
         $ne: publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         library:
           _id: publication._id
@@ -91,16 +105,14 @@ Meteor.methods
       'publications._id':
         $ne: publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $addToSet:
         publications:
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'remove-from-library': (publicationId, collectionId) ->
-    check publicationId, DocumentId
-    check collectionId, Match.Optional DocumentId
+  'remove-from-library': methodWrap (publicationId, collectionId) ->
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'collectionId', collectionId, Match.Optional DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -131,8 +143,6 @@ Meteor.methods
     result = Collection.documents.update Collection.requireMaintainerAccessSelector(person,
       collectionsQuery
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         publications:
           _id: publication._id
@@ -146,16 +156,14 @@ Meteor.methods
       '_id': person._id
       'library._id': publication._id
     ),
-      $set:
-        updatedAt: moment.utc().toDate()
       $pull:
         library:
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'reorder-collection': (collectionId, publicationIds) ->
-    check collectionId, DocumentId
-    check publicationIds, [DocumentId]
+  'reorder-collection': methodWrap (collectionId, publicationIds) ->
+    validateArgument 'collectionId', collectionId, DocumentId
+    validateArgument 'publicationIds', publicationIds, [DocumentId]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -179,13 +187,12 @@ Meteor.methods
         $size: oldOrderIds.length
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         publications: publications
 
   # TODO: Use this code on the client side as well
-  'collection-set-name': (collectionId, name) ->
-    check collectionId, DocumentId
-    check name, NonEmptyString
+  'collection-set-name': methodWrap (collectionId, name) ->
+    validateArgument 'collectionId', collectionId, DocumentId
+    validateArgument 'name', name, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -196,14 +203,13 @@ Meteor.methods
     throw new Meteor.Error 400, "Invalid collection." unless collection
 
     Collection.documents.update Group.requireMaintainerAccessSelector(person,
-        _id: collection._id
-      ),
+      _id: collection._id
+    ),
       $set:
-        updatedAt: moment.utc().toDate()
         name: name
 
 Meteor.publish 'collection-by-id', (collectionId) ->
-  check collectionId, DocumentId
+  validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person) ->
     Collection.documents.find Collection.requireReadAccessSelector(person,
@@ -231,7 +237,7 @@ Meteor.publish 'my-collections', ->
       fields: _.extend Collection.readAccessPersonFields()
 
 Meteor.publish 'publications-by-collection', (collectionId) ->
-  check collectionId, DocumentId
+  validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
@@ -253,3 +259,29 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
+
+Meteor.publish 'collections', (limit, filter, sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Collection.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'name') if filter
+
+  sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Collection.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'collections', [filter, sortIndex],
+      cursor: Collection.documents.find restrictedFindQuery,
+        limit: limit
+        fields: Collection.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Collection.readAccessPersonFields()

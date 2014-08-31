@@ -1,11 +1,11 @@
 <template name="publication">
   {{#if loading}}
-    <div class="simple loading">
+    <div class="loading">
       <h2>Loading</h2>
     </div>
   {{else}}
-    {{#if notfound}}
-      <div class="simple notfound">
+    {{#if notFound}}
+      <div class="not-found">
         <h2>404 Not found</h2>
         <p>Publication not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
@@ -35,14 +35,23 @@
       </p>
       <p class="authors">
         {{#each authors}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/each}}
       </p>
-      <p>Source: {{source}}</p>
-      <p>{{createdAt}}</p>
-      {{#if canModifyAccess}}
-        {{> publicationAccessControl}}
+      <p>Source: {{source}}{{#if cached}}{{#if cachedId}} (<a href="{{url}}" class="download">download</a>){{/if}}{{/if}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
+      {{#if cached}}
+        <p class="time">Cached: {{cached}}</p>
       {{/if}}
+      {{#if processed}}
+        <p class="time">Processed: {{processed}}</p>
+      {{else}}
+        {{! The content of this message is used also in the code, so keep it in sync }}
+        <p class="warning balance-text">Publication has not yet been processed and is thus unavailable to others regardless of the access settings below.</p>
+      {{/if}}
+      <p>Last job status: {{jobs.0.status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
+      {{> publicationAccessMenu}}
     </div>
   </div>
 </template>
@@ -51,7 +60,7 @@
   {{#if title}}
     <b class="title">{{title}}</b>
   {{else}}
-    <i class="title missing-value">title metadata missing</i>
+    <i class="title missing-value">&lt;title metadata missing&gt;</i>
   {{/if}}
 </template>
 
@@ -98,7 +107,7 @@
       <p class="hint">This will also add the publication to your library.</p>
     {{/unless}}
   {{else}}
-    {{> noCollections}}
+    {{> noMyCollections}}
   {{/if}}
 </template>
 
@@ -111,22 +120,50 @@
   </li>
 </template>
 
-<template name="publicationAccessControl">
-  <div class="access-menu">
+<template name="publicationAccessIconControl">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> publicationAccessIconButton}}
+    <div class="dropdown-anchor">
+      {{> publicationAccessMenu}}
+    </div>
+  </div>
+</template>
+
+<template name="publicationAccessIconButton">
+  <button class="access-button borderless tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
+    {{#if open}}<i class="icon-public"></i>{{/if}}
+    {{#if closed}}<i class="icon-closed"></i>{{/if}}
+    {{#if private}}<i class="icon-private"></i>{{/if}}
+  </button>
+</template>
+
+<template name="publicationAccessMenu">
+  <div class="access-menu dropdown control">
+    <h3>Permissions</h3>
+    {{#if canModifyAccess}}
+      {{> publicationAccessControlPrivacyForm}}
+    {{else}}
+      {{> publicationAccessControlPrivacyInfo}}
+    {{/if}}
+    {{> rolesControl}}
+  </div>
+</template>
+
+<template name="publicationAccessControlPrivacyForm">
     <form class="access publication-access">
       <div class="selections">
 
-        <label class="selection {{#if open}}selected{{/if}}">
+        <label class="selection {{#if open}}selected icon-check{{/if}}">
           <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
-          <i class="access-icon icon-public"></i> Open<br/>Access
+          <i class="access-icon icon-public"></i> Open Access
         </label>
 
-        <label class="selection {{#if closed}}selected{{/if}}">
+        <label class="selection {{#if closed}}selected icon-check{{/if}}">
           <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
-          <i class="access-icon icon-closed"></i> Closed<br/>Access
+          <i class="access-icon icon-closed"></i> Closed Access
         </label>
 
-        <label class="selection {{#if private}}selected{{/if}}">
+        <label class="selection {{#if private}}selected icon-check{{/if}}">
           <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
           <i class="access-icon icon-private"></i> Private
         </label>
@@ -136,17 +173,45 @@
       <div class="description closed {{#if closed}}displayed{{/if}}">The publication is public, but only those who import the PDF have access to its content.</div>
       <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
     </form>
+</template>
 
+<template name="publicationAccessControlPrivacyInfo">
+  <div class="access publication-access">
+    {{#if open}}
+      <div class="access-name">
+        <i class="access-icon icon-public"></i> Open access publication
+      </div>
+      <div class="description open displayed">
+        Everyone has access to the publication.
+      </div>
+    {{/if}}
+    {{#if closed}}
+      <div class="access-name">
+        <i class="access-icon icon-closed"></i> Closed access publication
+      </div>
+      <div class="description open displayed">
+        The publication is public, but only those who import the PDF have access to its content.
+      </div>
+    {{/if}}
     {{#if private}}
-      {{> privateAccessControl}}
+      <div class="access-name">
+        <i class="access-icon icon-private"></i> Private publication
+      </div>
+      <div class="description private displayed">
+        Only the users who import the PDF or are listed have access to the publication.
+      </div>
     {{/if}}
   </div>
 </template>
 
 <template name="publicationDisplay">
-  {{#if cached}}
+  {{#if cachedAvailable}}
     {{#constant}}
-      <div class="display-wrapper"></div>
+      <div class="display-wrapper">
+        <div class="loading">
+          <h2>Loading</h2>
+        </div>
+      </div>
     {{/constant}}
   {{else}}
     <div class="display-wrapper closed-access">
@@ -175,13 +240,14 @@
 
 <template name="publicationAnnotations">
   <ul class="annotations-list">
-    {{#if realAnnotations}}
+    {{#if realAnnotationsExist}}
       {{> annotationSignInInvite}}
     {{/if}}
+    {{> annotationFilteredCount}}
     {{#each annotations}}
       {{> publicationAnnotationsItem}}
     {{/each}}
-    {{#unless realAnnotations}}
+    {{#unless realAnnotationsExist}}
       {{> annotationInvite}}
     {{/unless}}
   </ul>
@@ -190,8 +256,8 @@
 <template name="publicationAnnotationsItem">
   <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
-      <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
-        <img src="{{currentPerson.avatar 30}}" class="avatar" />
+      <a class="author" href="{{currentPerson.path}}">
+        {{> personAvatar author}}
       </a>
     {{else}}
       {{> annotationMetaMenu}}
@@ -211,10 +277,8 @@
           </div>
         {{/if}}
         <div class="annotation-footer">
-          <a class="author-avatar" href="{{personPathFromId author._id author.slug}}">
-            <img src="{{author.avatar 30}}" class="avatar" />
-          </a>
-          <h4 class="author-name"><a href="{{personPathFromId author._id author.slug}}">{{author.displayName}}</a></h4>
+          {{> personInlineItem author}}
+          <span class="permissions">{{> accessIconControl}}</span>
           <span class="timestamp">{{updatedFromNow}}</span>
           {{#if editing}}
             <span class="cancel-button"><a href="">cancel</a></span>
@@ -236,7 +300,7 @@
   {{! editing can be false here only for local annotations }}
   <div class="annotations-editor {{#unless editing}}collapsed{{/unless}}">
     <div class="annotations-editor-form-wrapper">
-      <form class="annotations-form">
+      <div class="annotations-form">
         <div class="form-content">
           <div class="format-toolbar">
             {{#constant}}
@@ -269,10 +333,12 @@
           }}
         </div>
         <div class="form-control">
+          {{#if local}}
+            {{> newAnnotationAccessControl}}
+          {{/if}}
           <button type="button" class="btn blue save">Save</button>
-          {{> visibilityMenu}}
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
@@ -282,7 +348,7 @@
     <div class="tags">
       <ul class="annotation-tags-list">
         {{#each tags}}
-          <li><a href="{{tagPathFromId _id}}">{{tag.name.en}}</a></li>
+          <li><a href="{{path}}">{{tag.name.en}}</a></li>
         {{/each}}
       </ul>
     </div>
@@ -302,8 +368,8 @@
 
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
-    <a href="{{personPathFromId author_.id author.slug}}">
-      <img src="{{author.avatar 30}}" class="avatar" />
+    <a href="{{author.path}}">
+      {{> personAvatar author}}
     </a>
     <div class="comment-content">
       {{#if canRemove}}
@@ -316,8 +382,8 @@
 
 <template name="annotationCommentEditor">
   <li class="comment-editor">
-    <a href="{{personPathFromId currentPerson._id currentPerson.slug}}">
-      <img src="{{currentPerson.avatar 30}}" class="avatar" />
+    <a href="{{currentPerson.path}}">
+      {{> personAvatar currentPerson}}
     </a>
     <div class="comment-content">
       {{#constant}}
@@ -337,38 +403,147 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
-      <p class="time">{{createdAt}}</p>
-      <p class="time">{{updatedAt}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
     </div>
   </div>
 </template>
 
-<template name="visibilityMenu">
-  <div class="visibility-menu">
-    {{! TODO: Temporary disabled, not yet finalized code
-      <div class="ui-dropdown">
-        <div class="ui-selection-wrapper">
-          <span class="ui-selection">
-            <i class="icon-public"></i>
-            Public
-          </span>
-          <i class="icon-down"></i>
-        </div>
-      </div>
-    }}
-    <div class="hint">
-      {{#if public}}
-        <i class="icon-public"></i>
-        Public
-      {{else}}
-        <i class="icon-private"></i>
-        Private
-      {{/if}}
+<template name="newAnnotationAccessControl">
+  <div class="access-control dropdown-trigger">
+    {{> newAnnotationAccessButton}}
+    <div class="dropdown-anchor">
+      {{> newAnnotationAccessMenu}}
     </div>
   </div>
+</template>
+
+<template name="newAnnotationAccessButton">
+  <button class="access-button borderless tooltip" title="{{#if public}}Everyone will be able see the annotation.{{else}}Only the users listed will be able to see the annotation.{{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i> Public annotation
+    {{else}}
+      <i class="icon-private"></i> Private annotation
+    {{/if}}
+  </button>
+</template>
+
+<template name="newAnnotationAccessMenu">
+  <div class="access-menu control right-aligned dropdown">
+    <h3>Permissions</h3>
+    {{> newAnnotationAccessForm}}
+    {{> newAnnotationRolesControl}}
+    <p class="hint">You can always change and customize annotation permissions later.</p>
+  </div>
+</template>
+
+<template name="newAnnotationAccessForm">
+  <div class="access {{documentName}}-access">
+    <div class="selections">
+
+      <label class="selection {{#if public}}selected icon-check{{/if}}">
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <i class="access-icon icon-public"></i> Public
+      </label>
+
+      <label class="selection {{#if private}}selected icon-check{{/if}}">
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <i class="access-icon icon-private"></i> Private
+      </label>
+
+    </div>
+    <div class="description public {{#if public}}displayed{{/if}}">Everyone will be able see the annotation.</div>
+    <div class="description private {{#if private}}displayed{{/if}}">Only the users listed will be able to see the annotation.</div>
+  </div>
+</template>
+
+<template name="newAnnotationRolesControl">
+  <div class="roles-control">
+    {{> newAnnotationRolesControlList}}
+    {{> newAnnotationRolesControlAdd}}
+  </div>
+</template>
+
+<template name="newAnnotationRolesControlList">
+  <ol class="roles-control-list">
+    {{#each rolesList}}
+      {{> newAnnotationRolesControlRoleEditor}}
+    {{/each}}
+  </ol>
+</template>
+
+<template name="newAnnotationRolesControlRoleEditor">
+  <li>
+    <div class="item">
+      {{#if isPerson}}{{> personInlineItem personOrGroup}}{{/if}}
+      {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
+    </div>
+    <div class="role">
+      {{#spaceless}}
+        {{#unless locked}}
+          <div class="dropdown-trigger">
+        {{/unless}}
+
+        {{#if admin}}administrator{{/if}}
+        {{#if maintainer}}maintainer{{/if}}
+        {{#if readAccess}}view access{{/if}}
+
+        {{#unless locked}}
+            <i class="icon-down"></i>
+            <div class="dropdown-anchor">
+              <ul class="dropdown right-aligned">
+                <li class="menu-item"><button class="administrator-button">administrator</button></li>
+                <li class="menu-item"><button class="maintainer-button">maintainer</button></li>
+                {{#if private}}<li class="menu-item"><button class="read-access-button">view access</button></li>{{/if}}
+                {{#unless cantRemove}}<li class="menu-item"><button class="remove-button">remove</button></li>{{/unless}}
+              </ul>
+            </div>
+          </div>
+        {{/unless}}
+      {{/spaceless}}
+    </div>
+  </li>
+</template>
+
+<template name="newAnnotationRolesControlAdd">
+  <div class="add-control control">
+    <input type="text" class="add-access" placeholder="Add users or groups" />
+    {{> newAnnotationRolesControlNoResults}}
+    {{> newAnnotationRolesControlResults}}
+    {{> newAnnotationRolesControlLoading}}
+  </div>
+</template>
+
+<template name="newAnnotationRolesControlNoResults">
+  {{#if noResults}}
+    <div class="no-results add-control-results">
+      No people or groups found
+      {{> addControlInviteByEmail email}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="newAnnotationRolesControlResults">
+  {{#if results.length}}
+    <ul class="access-results add-control-results">
+      {{#each results}}
+        {{> newAnnotationRolesControlResultsItem}}
+      {{/each}}
+    </ul>
+  {{/if}}
+</template>
+
+<template name="newAnnotationRolesControlResultsItem">
+  {{> memberAdd}}
+</template>
+
+<template name="newAnnotationRolesControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
 </template>
 
 <template name="annotationInvite">
@@ -376,7 +551,11 @@
     <div class="vertical-align-outer">
       <div class="vertical-align-inner">
         <p class="no-annotations hint balance-text">
-          There are no annotations yet.
+          {{#if nonFilteredAnnotationsExist}}
+            There are no annotations yet for the displayed part of the publication.
+          {{else}}
+            There are no annotations yet.
+          {{/if}}
           {{#if currentPersonId}}
             Create the first above.
           {{else}}
@@ -384,7 +563,7 @@
           {{/if}}
         </p>
         <p class="hint balance-text">
-          {{#unless highlights}}
+          {{#unless highlightsExist}}
             There are no highlights yet.
             {{#if currentPersonId}}
               Select text in the publication to create one.
@@ -414,46 +593,33 @@
   {{/unless}}
 </template>
 
+<template name="annotationFilteredCount">
+  {{#if filteredAnnotationsCount}}
+    <li class="filtered-count hint">
+      {{filteredAnnotationsDescription}} filtered out. <button class="clear-filters borderless icon-cancel" title="Clear filters"></button>
+    </li>
+  {{/if}}
+</template>
+
 <template name="highlightsControl">
   {{#if canRemove}}
     <button class="remove-button">Delete</button>
   {{/if}}
   <p class="authors">
     {{#with author}}
-      <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+      <span><a href="{{path}}">{{getDisplayName}}</a></span>
     {{/with}}
   </p>
-  <p class="time">{{createdAt}}</p>
-  <p class="time">{{updatedAt}}</p>
+  <p class="time">Created: {{createdAt}}</p>
+  <p class="time">Updated: {{updatedAt}}</p>
   <p class="references">
     Referencing:
     {{#each referencingAnnotations}}
-      {{#with annotationReference _id this}}
-        <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-          {{text}}
-        </a></span>
-      {{/with}}
+      <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+        {{reference.text}}
+      </a></span>
     {{/each}}
   </p>
-</template>
-
-<template name="annotationsControl">
-  <div class="annotations-control">
-    {{#if currentPersonId}}
-      {{! TODO: Temporary disabled, not yet finalized code
-        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
-      }}
-      {{> contextMenu}}
-      {{#if inside.count}}
-        <div class="filter">
-          Groups filter:
-          {{#each inside}}
-            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
-          {{/each}}
-        </div>
-      {{/if}}
-    {{/if}}
-  </div>
 </template>
 
 <template name="annotationMetaMenu">
@@ -465,134 +631,107 @@
       {{/if}}
       <p class="authors">
         {{#with author}}
-          <span><a href="{{personPathFromId _id slug}}">{{displayName}}</a></span>
+          <span><a href="{{path}}">{{getDisplayName}}</a></span>
         {{/with}}
       </p>
-      <p class="time">{{createdAt}}</p>
-      <p class="time">{{updatedAt}}</p>
+      <p class="time">Created: {{createdAt}}</p>
+      <p class="time">Updated: {{updatedAt}}</p>
       {{#if inside.length}}
         <p class="inside">
           Inside groups:
           {{#each inside}}
-            <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
+            <span><a href="{{path}}">{{name}}</a></span>
           {{/each}}
         </p>
       {{/if}}
       <p class="references">
         Referencing:
         {{#each references.highlights}}
-          {{#with highlightReference _id this}}
-            <span><a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.annotations}}
-          {{#with annotationReference _id this}}
-            <span><a href="{{annotationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.publications}}
-          {{#with publicationReference _id this}}
-            <span><a href="{{publicationPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.persons}}
-          {{#with personReference _id this}}
-            <span><a href="{{personPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.groups}}
-          {{#with groupReference _id this}}
-            <span><a href="{{groupPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.tags}}
-          {{#with tagReference _id this}}
-            <span><a href="{{tagPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.collections}}
-          {{#with collectionReference _id this}}
-            <span><a href="{{collectionPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
         {{#each references.comments}}
-          {{#with commentReference _id this}}
-            <span><a href="{{commentPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>
-              {{text}}
-            </a></span>
-          {{/with}}
+          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+            {{reference.text}}
+          </a></span>
         {{/each}}
       </p>
-      {{#if canModifyAccess}}
-        {{> accessControl}}
-      {{/if}}
     </div>
   </div>
 </template>
 
-<template name="contextMenu">
-  <div class="meta-menu context-menu control {{#unless selectedGroups.length}}no-groups{{/unless}}">
+<template name="annotationsControl">
+  <div class="annotations-control">
+    {{#if currentPersonId}}
+      {{! TODO: Temporary disabled, not yet finalized code
+        <button class="add-button control" title="Add an annotation"><i class="icon-plus"></i></button>
+      }}
+      {{> workInGroupsMenu}}
+      {{> viewportFilter}}
+      {{> annotationsControlFilters}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="workInGroupsMenu">
+  <div class="work-in-groups meta-menu context-menu control">
     <div class="icons">
-      {{#if public}}<i class="context-icon icon-public"></i>{{/if}}
-      {{#if private}}<i class="context-icon icon-private"></i>{{/if}}
-      {{#if selectedGroups.length}}
-        <i class="context-icon icon-group"></i><span class="context-icon group-count">{{selectedGroups.length}}</span>
-      {{/if}}
+      {{> workInGroupsMenuGroupsCount}}
     </div>
     <div class="meta-content">
-      <p>Choose defaults for new annotations.</p>
-      <div class="context-controls access-menu">
-        <form class="access {{documentName}}-access">
-          <div class="selections">
-
-            <label class="selection {{#if public}}selected{{/if}}">
-              <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-              <i class="access-icon icon-public"></i> Public
-            </label>
-
-            <label class="selection {{#if private}}selected{{/if}}">
-              <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-              <i class="access-icon icon-private"></i> Private
-            </label>
-
-          </div>
-          <div class="description public {{#if public}}displayed{{/if}}">New annotations will be visible to everyone.</div>
-          <div class="description private {{#if private}}displayed{{/if}}">
-            {{#if myGroups.count}}
-              New annotations will be visible to you and members of groups selected below.
-            {{else}}
-              New annotations will be visible only to you.
-            {{/if}}
-          </div>
-        </form>
-      </div>
-      {{> contextMenuGroups}}
-      <p class="hint">You can always change and customize permissions for each annotation individually.</p>
+      {{> workInGroupsMenuGroups}}
     </div>
   </div>
 </template>
 
-<template name="contextMenuGroups">
-  {{#if myGroups.count}}
-    <h3>Work inside groups</h3>
-    <div class="context-menu-groups access-menu">
+<template name="workInGroupsMenuGroupsCount">
+  {{#spaceless}}
+    <i class="context-icon icon-group"></i>
+    {{#if selectedGroups.length}}
+      <span class="context-icon group-count">{{selectedGroups.length}}</span>
+    {{/if}}
+  {{/spaceless}}
+</template>
+
+<template name="workInGroupsMenuGroups">
+  <h3>Work inside groups</h3>
+  <p class="hint">Filter shown annotations and share new annotations with groups.</p>
+  <div class="context-menu-groups access-menu">
+    {{#if myGroups.count}}
       <ol class="toggle-list">
         {{#each myGroups}}
-          {{> contextMenuGroupListing}}
+          {{> workInGroupsMenuGroupListing}}
         {{/each}}
       </ol>
       <div class="description displayed">
@@ -602,16 +741,56 @@
           Select groups you want to share annotations with.
         {{/if}}
       </div>
-    </div>
-  {{/if}}
+    {{else}}
+      <div class="description displayed no-groups">
+        You are not a member of any groups.
+      </div>
+    {{/if}}
+  </div>
 </template>
 
-<template name="contextMenuGroupListing">
+<template name="workInGroupsMenuGroupListing">
   <li class="context-menu-group toggle-list-item">
     <button class="{{#if workingInside}}remove-from-working-inside icon-check{{else}}add-to-working-inside{{/if}}">
       <span class="group-name">{{name}}</span>
     </button>
   </li>
+</template>
+
+<template name="viewportFilter">
+  <div class="viewport-filter meta-menu context-menu control">
+    <div class="icons">
+      <i class="context-icon icon-view"></i>
+    </div>
+    <div class="meta-content">
+      {{> viewportFilterContent}}
+    </div>
+  </div>
+</template>
+
+<template name="viewportFilterContent">
+  <div class="toggle-list">
+    <div class="toggle-list-item">
+      <button class="{{#if viewportFilter}}disable-viewport-filter icon-check{{else}}enable-viewport-filter{{/if}}">
+        <span class="group-name">Viewport filter</span>
+      </button>
+    </div>
+  </div>
+  <p class="hint">Show only annotations relating to highlights that are currently displayed on screen.</p>
+</template>
+
+<template name="annotationsControlFilters">
+  <div class="filter">
+    {{#if viewportFilter}}
+      Viewport filter{{#if inside.count}}, {{/if}}
+    {{/if}}
+    {{#if inside.count}}
+      Groups filter:
+      {{#each inside}}
+        <span><a href="{{groupPathFromId _id slug}}">{{name}}</a></span>
+      {{/each}}
+    {{/if}}
+  </div>
 </template>
 
 <template name="editorLinkPrompt">

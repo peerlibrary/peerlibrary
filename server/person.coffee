@@ -10,11 +10,26 @@ class @Person extends Person
           [fields._id, fields.user.username]
         else
           [fields._id, fields._id]
-      fields.gravatarHash.generator = (fields) ->
-        address = fields.emails?[0]?.address
-        return [null, undefined] unless fields.person?._id and address
 
-        [fields.person._id, crypto.createHash('md5').update(address).digest('hex')]
+      fields.displayName.generator = (fields) ->
+        person = new Person fields
+        # Display name is public, so we don't want to leak email until the user registers.
+        # We use a special publish endpoint to provide email addresses of all invitees to inviters.
+        if person.user.refresh(services: 1).isRegistered()
+          [fields._id, person.getDisplayName true]
+        else
+          [fields._id, fields._id]
+
+      fields.gravatarHash.generator = (fields) ->
+        # Hash should come from user's email
+        source = fields.emails?[0]?.address
+
+        # Alternatively, if no email, use the display name
+        source = fields.person?.displayName unless source
+
+        return [null, undefined] unless fields.person?._id and source
+        [fields.person._id, crypto.createHash('md5').update(source).digest('hex')]
+
       fields
 
   # A set of fields which are public and can be published to the client
@@ -23,6 +38,7 @@ class @Person extends Person
       'user._id': 1
       'user.username': 1
       slug: 1
+      displayName: 1
       gravatarHash: 1
       givenName: 1
       familyName: 1
@@ -35,52 +51,78 @@ class @Person extends Person
 
   # A subset of public fields used for automatic publishing
   @PUBLISH_AUTO_FIELDS: ->
-    fields: _.extend _.pick(@PUBLISH_FIELDS().fields, [
+    fields: _.pick @PUBLISH_FIELDS().fields, [
       'user._id'
       'user.username'
       'slug'
+      'displayName'
       'gravatarHash'
-      'givenName'
-      'familyName'
       'isAdmin'
       'inGroups'
-    ]),
-      # Additionally, provide email address so that displayName can
-      # display something meaningful for users who have been invited
-      'user.emails': 1
+    ]
 
-Meteor.publish 'persons-by-id-or-slug', (slug) ->
-  check slug, NonEmptyString
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields: _.pick @PUBLISH_FIELDS().fields, [
+      'user._id'
+      'user.username'
+      'slug'
+      'displayName'
+      'gravatarHash'
+      'isAdmin'
+      'inGroups'
+    ]
+
+# With null name, the record set is automatically sent to all connected clients
+Meteor.publish null, ->
+  return unless @personId
+
+  # No need for requireReadAccessSelector because we are sending data to the person themselves
+  Person.documents.find
+    _id: @personId
+  ,
+    Person.PUBLISH_AUTO_FIELDS()
+
+Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
+  validateArgument 'idsOrSlugs', idsOrSlugs, Match.OneOf NonEmptyString, [NonEmptyString]
+
+  idsOrSlugs = [idsOrSlugs] unless _.isArray idsOrSlugs
 
   # No need for requireReadAccessSelector because persons are public
   Person.documents.find
     $or: [
-      slug: slug
+      slug:
+        $in: idsOrSlugs
     ,
-      _id: slug
+      _id:
+        $in: idsOrSlugs
     ]
   ,
     Person.PUBLISH_FIELDS()
 
-# TODO: Should we really publish whole person documents, because this publish endpoint exists just to get access to email address to display it in lists to which user was added when invited?
+# User who invited should have access to email address so that
+# we can display it in lists to which user was added when invited
 Meteor.publish 'persons-invited', ->
-  @related (person) ->
-    return unless person?._id
-
-    # No need for requireReadAccessSelector because persons are public
-    Person.documents.find
-      "invited.by":
-        _id: person._id
-    ,
-      fields: _.extend Person.PUBLISH_FIELDS().fields,
-        # User who invited should have access to email address so that
-        # we can display it in lists to which user was added when invited
-        'user.emails': 1
+  # No need for requireReadAccessSelector because persons are public
+  handle = Person.documents.find(
+    'invited.by._id': @personId
   ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()
+    fields:
+      'user.emails': 1
+  ).observeChanges
+    added: (id, fields) =>
+      @added 'Persons', id,
+        invitedEmail: new Person(_.extend {}, {_id: id}, fields).email()
+    changed: (id, fields) =>
+      @changed 'Persons', id,
+        invitedEmail: new Person(_.extend {}, {_id: id}, fields).email()
+    removed: (id) =>
+      @removed 'Persons', id
+
+  @ready()
+
+  @onStop ->
+    handle.stop()
 
 Meteor.publish 'my-person-library', ->
   return unless @personId
@@ -95,8 +137,8 @@ Meteor.publish 'my-person-library', ->
 Meteor.publish 'search-persons', (query, except) ->
   except ?= []
 
-  check query, NonEmptyString
-  check except, [DocumentId]
+  validateArgument 'query', query, NonEmptyString
+  validateArgument 'except', except, [DocumentId]
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
@@ -130,5 +172,25 @@ Meteor.publish 'search-persons', (query, except) ->
       # TODO: Optimize fields, we do not need all
       fields: Person.PUBLISH_FIELDS().fields
 
-Person.Meta.collection._ensureIndex 'slug',
+Person.Meta.collection._ensureIndex
+  slug: 1
+,
   unique: 1
+
+Meteor.publish 'persons', (limit, filter, sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Person.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'displayName') if filter
+
+  sort = if _.isNumber sortIndex then Person.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  searchPublish @, 'persons', [filter, sortIndex],
+    cursor: Person.documents.find findQuery,
+      limit: limit
+      fields: Person.PUBLISH_CATALOG_FIELDS().fields
+      sort: sort

@@ -22,7 +22,7 @@ class @Tag extends Tag
 TODO: Temporary disabled, not yet finalized code
 
 Meteor.publish 'tag-by-id', (tagId) ->
-  check tagId, DocumentId
+  validateArgument 'tagId', tagId, DocumentId
 
   Tag.documents.find
     _id: tagId

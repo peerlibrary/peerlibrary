@@ -45,7 +45,7 @@ class Vector
     @x = @originX + sin * @deltaX + distance
     @y = @originY + sin * @deltaY + distance
 
-  toString = =>
+  toString: =>
     "#<Vector x: #{ @x }, y: #{ @y }>"
 
 class Triangle
@@ -82,10 +82,17 @@ class @Background
   constructor: ->
     @renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
     @computeRatio()
+    @clearBackground()
 
+    # We randomize start time so that it is not always the same, which
+    # also helps when background is paused that it looks different every time
+    @randomizedStart = Math.random() * 10000 + 10000
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle = null
 
   destroy: =>
     @renderer = null
@@ -94,6 +101,10 @@ class @Background
     @stage = null
     @triangles = {}
     @vectors = {}
+    @pausedTime = 0
+    @pausedDelay = 0
+    @autorunHandle.stop() if @autorunHandle
+    @autorunHandle = null
 
   computeRatio: =>
     devicePixelRatio = window.devicePixelRatio or 1
@@ -106,6 +117,14 @@ class @Background
 
     @ratio = devicePixelRatio / backingStoreRatio
 
+  clearBackground: =>
+    # Used also in variables.import.styl, keep in sync
+    stage = new PIXI.Stage 0xf6f8f8
+    graphics = new PIXI.Graphics()
+    stage.addChild graphics
+    graphics.clear()
+    @renderer.render stage
+
   render: =>
     @resizeView()
     @generateTriangles()
@@ -117,6 +136,9 @@ class @Background
   resize: =>
     @resizeView()
     @generateTriangles()
+
+    # If paused, we have to call it ourselves here
+    frame @draw if Session.get('backgroundPaused') and @autorunHandle
 
     return # Make sure CoffeeScript does not return anything
 
@@ -177,12 +199,34 @@ class @Background
 
     return # To not have CoffeeScript return a result of for loop
 
+  # Is called regularly from requestAnimationFrame or from resize while paused
   draw: (time) =>
     return unless @renderer
 
-    vector.update time for key, vector of @vectors
-    triangle.draw() for key, triangle of @triangles
+    if not Session.get('backgroundPaused') and @autorunHandle
+      # Cleanup after resume (again, just to be sure)
+      @autorunHandle.stop()
+      @autorunHandle = null
 
+    @pausedDelay += time - @pausedTime if @pausedTime isnt 0
+    @pausedTime = 0
+
+    vector.update time - @pausedDelay + @randomizedStart for key, vector of @vectors
+    triangle.draw() for key, triangle of @triangles
     @renderer.render @stage
+
+    if Session.get 'backgroundPaused'
+      # Remember the time when we were paused
+      @pausedTime = time
+      if not @autorunHandle # autorunHandle is set if we are calling this from resize while paused
+        # And react to the change of backgroundPaused
+        @autorunHandle = Deps.autorun =>
+          unless Session.get 'backgroundPaused'
+            # Cleanup after resume
+            @autorunHandle.stop()
+            @autorunHandle = null
+            # Restart the loop
+            frame @draw
+      return
 
     frame @draw

@@ -1,24 +1,190 @@
 @import 'variables.import'
 
+.overlay-active
+  /* We prevent scrolling of the page content while overlay is visible */
+  overflow hidden
+
 .drop-overlay
   position fixed
   width 100%
   height 100%
+  overflow scroll
   top 0
   left 0
   /* Higher than header */
   z-index 6000
-  background black-translucent
+  background white-translucent
+  color black
+  text-align center
+  white-space nowrap
+
+  &::before
+    content ''
+    display inline-block
+    height 100%
+    vertical-align middle
+    margin-right -0.25em
 
   .content
-    position relative
-    top 40%
-    width 50%
-    margin auto
-    text-align center
-    color white
+    display inline-block
+    vertical-align middle
+    text-align left
+    white-space normal
 
-.import-progress-bar
-  background green
-  height 5px
-  margin-bottom 10px
+  &.imports-overlay
+    .content
+      width 70%
+      max-width 1200px
+      min-width 800px
+      margin 20px 0
+      padding 0 50px
+
+      h1
+        margin-bottom 30px
+
+        &.drop-hint-only
+          text-align center
+
+      .importing-files
+        list-style none
+        padding 0
+
+        .file
+          position relative
+          width 100%
+          height 30px
+          margin-bottom 10px
+
+          > *
+            display inline-block
+            vertical-align middle
+
+          .publication
+            position relative
+            width 30%
+            padding 5px 10px 0 20px
+            box-sizing border-box
+
+            &::before
+              position absolute
+              top 5px
+              left -3px
+
+            .name
+              display inline-block
+              vertical-align middle
+              white-space nowrap
+              text-overflow ellipsis
+              overflow hidden
+              box-sizing border-box
+              max-width 100%
+
+            .name-with-access
+              display inline-block
+              position relative
+              max-width 100%
+              box-sizing border-box
+
+              .name
+                padding-right 34px
+
+              > .access
+                display block
+                position absolute
+                right 0
+                top -10px
+
+          .progress
+            position relative
+            width 70%
+            height 25px
+            line-height 25px
+            border 1px solid box-shadow-border
+            border-radius 10px
+            box-sizing border-box
+            overflow hidden
+            text-align center
+
+            .status
+              position relative
+              display inline-block
+              vertical-align middle
+              z-index 2
+
+            .bar
+              position absolute
+              left 0
+              top 0
+              height 100%
+
+            .preprocessing
+              background-color debug-blue-background
+              z-index 1
+
+            .upload
+              background-color debug-blue-border
+              z-index 2
+
+          .cancel
+            position absolute
+            top -3px
+            right -40px
+            height 30px
+
+            .cancel-button
+              position relative
+              border 1px solid transparent
+              background-color transparent
+
+              .ui-tooltip
+                position absolute
+                bottom 40px
+                left 50%
+                width 100px
+                margin-left -50px
+                opacity 0
+                visibility hidden
+                transition all 0.5s
+                box-sizing border-box
+
+              &:hover
+                border-color box-shadow-border
+
+                .ui-tooltip
+                  opacity 1
+                  visibility visible
+
+          &.finished .progress .bar
+            background-color success-green-border
+
+          &.canceled .progress
+            background-color warn-yellow-border
+
+            .bar
+              background-color warn-yellow-border
+
+          &.errored .progress
+            background-color error-red-border
+
+          &::after
+            content ''
+            clear both
+
+      .hint
+        margin-top 30px
+        text-align center
+        border-top 2px solid rgba(40,40,40,0.2)
+        padding-top 30px
+
+        .import
+          border none
+          background transparent
+          padding 0
+          color blue-accent
+          font-size 14px
+          font-style italic
+
+          &:hover
+          &:focus
+            text-decoration underline
+            box-shadow none

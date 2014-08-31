@@ -1,6 +1,3 @@
-# Used for global variable assignments in local scopes
-root = @
-
 searchLimitIncreasing = false
 
 currentSearchQueryCount = ->
@@ -76,6 +73,8 @@ Template.results.publications = ->
       ['searchResult.order', 'asc']
     ]
     limit: Session.get 'currentSearchLimit'
+    fields:
+      searchResult: 0
 
 Template.resultsCount.publications = ->
   Session.get 'currentSearchQueryCountPublications'
@@ -83,8 +82,14 @@ Template.resultsCount.publications = ->
 Template.resultsCount.persons = ->
   Session.get 'currentSearchQueryCountPersons'
 
-Template.noResults.noResults = ->
+Template.resultsCount.noResults = ->
   Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
+
+Template.resultsCount.publicationsCountDescription = ->
+  Publication.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
+
+Template.resultsCount.personsCountDescription = ->
+  Person.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
 
 Template.resultsLoad.loading = ->
   Session.get('currentSearchQueryLoading')
@@ -92,9 +97,12 @@ Template.resultsLoad.loading = ->
 Template.resultsLoad.more = ->
   Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
 
+Template.resultsLoad.publications = ->
+  Session.get 'currentSearchQueryCountPublications'
+
 Template.resultsLoad.events =
-  'click .load-more': (e, template) ->
-    e.preventDefault()
+  'click .load-more': (event, template) ->
+    event.preventDefault()
     searchLimitIncreasing = false # We want to force loading more in every case
     increaseSearchLimit 10
 
@@ -102,39 +110,6 @@ Template.resultsLoad.events =
 
 Template.resultsSearchInvitation.searchInvitation = ->
   not Session.get('currentSearchQuery')
-
-Template.publicationSearchResult.events =
-  'click .preview-link': (e, template) ->
-    e.preventDefault()
-
-    if template._publicationHandle
-      # We ignore the click if handle is not yet ready
-      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
-    else
-      template._publicationHandle = Meteor.subscribe 'publications-by-id', @_id, =>
-        Deps.afterFlush =>
-          $(template.findAll '.abstract').slideToggle('fast')
-
-    return # Make sure CoffeeScript does not return anything
-
-Template.publicationSearchResult.created = ->
-  @_publicationHandle = null
-
-Template.publicationSearchResult.rendered = ->
-  $(@findAll '.scrubber').iscrubber()
-
-Template.publicationSearchResult.destroyed = ->
-  @_publicationHandle?.stop()
-  @_publicationHandle = null
-
-Template.publicationSearchResultTitle[method] = Template.publicationMetaMenuTitle[method] for method in ['created', 'rendered', 'destroyed']
-
-Template.publicationSearchResultThumbnail.events
-  'click li': (e, template) ->
-    root.startViewerOnPage = @page
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication = @publication
-    Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
 Template.sidebarSearch.created = ->
   @_searchQueryHandle = null
@@ -197,37 +172,30 @@ sidebarIntoQuery = (template) ->
   general: $(template.findAll '#general').val()
 
 Template.sidebarSearch.events =
-  'blur #general': (e, template) ->
+  'blur #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'change #general': (e, template) ->
+  'change #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'keyup #general': (e, template) ->
+  'keyup #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'paste #general': (e, template) ->
+  'paste #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'cut #general': (e, template) ->
+  'cut #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
 
-  'submit #sidebar-search': (e, template) ->
-    e.preventDefault()
+  'submit #sidebar-search': (event, template) ->
+    event.preventDefault()
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
-
-Template.accessIcon.iconName = ->
-  switch @access
-    when Publication.ACCESS.OPEN then 'icon-public'
-    when Publication.ACCESS.CLOSED then 'icon-closed'
-    when Publication.ACCESS.PRIVATE then 'icon-private'
-    else assert false
 
 # We do not want location to be updated for every key press, because this really makes browser history hard to navigate
 # TODO: This might make currentSearchQuery be overriden with old value if it happens that exactly after 500 ms user again presses a key, but location is changed to old value which sets currentSearchQuery and thus input field back to old value

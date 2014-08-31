@@ -1,5 +1,10 @@
+Fiber = Npm.require 'fibers'
 fs = Npm.require 'fs'
-path = Npm.require 'path'
+pathModule = Npm.require 'path'
+url = Npm.require 'url'
+
+NON_ASCII_REGEX = /[^\040-\176]/
+CACHE_ID_REGEX = new RegExp "^/([#{ UNMISTAKABLE_CHARS }]{17})\\.(\\w+)$"
 
 class @Storage extends Storage
   @_assurePath: (path) ->
@@ -9,6 +14,18 @@ class @Storage extends Storage
       if !fs.existsSync p
         fs.mkdirSync p
 
+  @_assurePathAsync: (path, callback) ->
+    path = path.split @_path.sep
+    i = 0
+    async.eachSeries path[1...path.length-1], (segment, callback) =>
+      i++
+      p = path[0..i].join @_path.sep
+      fs.exists p, (exists) =>
+        return callback null if exists
+        fs.mkdir p, callback
+    ,
+      callback
+
   @_fullPath: (filename) ->
     assert filename
     @_storageDirectory + @_path.sep + filename
@@ -17,6 +34,32 @@ class @Storage extends Storage
     path = @_fullPath filename
     @_assurePath path
     fs.writeFileSync path, data
+
+  @saveStream: (filename, stream, callback) ->
+    stream.pause()
+
+    path = @_fullPath filename
+    @_assurePathAsync path, (error) ->
+      return callback error if error
+
+      finished = false
+      stream.on('error', (error) ->
+        return if finished
+        finished = true
+        callback error
+      ).pipe(
+        fs.createWriteStream path
+      ).on('finish', ->
+        return if finished
+        finished = true
+        callback null
+      ).on('error', (error) ->
+        return if finished
+        finished = true
+        callback error
+      )
+
+      stream.resume()
 
   @saveMeteorFile: (meteorFile, filename) ->
     path = @_fullPath filename
@@ -45,21 +88,71 @@ class @Storage extends Storage
   @remove: (filename) ->
     fs.unlinkSync @_fullPath filename
 
-# Find .meteor directory
-directoryPath = process.mainModule.filename.split path.sep
-while directoryPath.length > 0
-  if directoryPath[directoryPath.length - 1] == '.meteor'
-    break
-  directoryPath.pop()
+  @lastModificationTime: (filename) ->
+    stats = fs.statSync @_fullPath filename
+    stats.mtime
 
-assert directoryPath.length > 0
+if process.env.STORAGE_DIRECTORY
+  Storage._storageDirectory = process.env.STORAGE_DIRECTORY
+else
+  # Find .meteor directory
+  directoryPath = process.mainModule.filename.split pathModule.sep
+  while directoryPath.length > 0
+    if directoryPath[directoryPath.length - 1] == '.meteor'
+      break
+    directoryPath.pop()
 
-directoryPath.push 'storage'
-Storage._storageDirectory = directoryPath.join path.sep
-Storage._path = path
+  assert directoryPath.length > 0
+
+  directoryPath.push 'storage'
+  Storage._storageDirectory = directoryPath.join pathModule.sep
+
+Storage._path = pathModule
+
+# Taken from express utils.js
+contentDisposition = (filename) ->
+  return 'attachment' unless filename
+
+  filename = pathModule.basename filename
+
+  # If filename contains non-ASCII characters, add a UTF-8 version ala RFC 5987
+  if NON_ASCII_REGEX.test filename
+    return "attachment; filename=\"#{ encodeURI filename }\"; filename*=UTF-8''#{ encodeURI filename }"
+  else
+    return "attachment; filename=\"#{ filename }\""
+
+setHeader = (req, res, next, filename) ->
+  res.setHeader 'Content-Disposition', contentDisposition filename
+  next()
+
+WebApp.connectHandlers.use '/storage/publication/cache', (req, res, next) ->
+  fiber = Fiber ->
+    parsedUrl = url.parse req.url
+    filename = parsedUrl.pathname
+    match = CACHE_ID_REGEX.exec filename
+
+    return setHeader req, res, next, filename unless match
+
+    cachedId = match[1]
+    extension = match[2]
+    publication = Publication.documents.findOne
+      cachedId: cachedId
+    ,
+      fields:
+        title: 1
+
+    filename = "#{ publication.title }.#{ extension }" if publication?.title
+
+    return setHeader req, res, next, filename
+
+  fiber.run()
 
 # TODO: What about security? If ../.. are passed in?
 # TODO: Currently, if there is no file, processing is passed further and Meteor return 200 content, we should return 404 for this files
 # TODO: Add CORS headers
 # TODO: We have redirect == false because directory redirects do not take prefix into the account
-WebApp.connectHandlers.use('/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false}))
+WebApp.connectHandlers.use '/storage', connect.static(Storage._storageDirectory, {maxAge: 24 * 60 * 60 * 1000, redirect: false})
+WebApp.connectHandlers.use '/storage', (req, res, next) ->
+  res.statusCode = 404
+  # TODO: Use our own 404 content, matching the 404 shown by nginx
+  res.end '404 Not Found', 'utf8'

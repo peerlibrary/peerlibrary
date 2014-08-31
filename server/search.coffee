@@ -1,18 +1,9 @@
 # TODO: Search for persons as well
 Meteor.publish 'search-results', (query, limit) ->
-  check query, NonEmptyString
-  check limit, PositiveNumber
+  validateArgument 'query', query, NonEmptyString
+  validateArgument 'limit', limit, PositiveNumber
 
-  keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
-
-  findQuery =
-    $and: []
-
-  # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex
-  for keyword in keywords when keyword
-    findQuery.$and.push
-      fullText: new RegExp keyword, 'i'
-
+  findQuery = createQueryCriteria query, 'fullText'
   return unless findQuery.$and.length
 
   @related (person) ->
@@ -26,11 +17,26 @@ Meteor.publish 'search-results', (query, limit) ->
       added: (id, fields) =>
         fields.hasAbstract = !!fields.abstract
         delete fields.abstract
+        if fields.access isnt Publication.ACCESS.CLOSED
+          # Both other cases are handled by the selector, if publication is in the
+          # query results, user has access to the full text of the publication
+          # (publication is private or open access)
+          fields.hasCachedId = true
+        else
+          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
         fields
       changed: (id, fields) =>
         if 'abstract' of fields
           fields.hasAbstract = !!fields.abstract
           delete fields.abstract
+        if 'access' of fields
+          if fields.access isnt Publication.ACCESS.CLOSED
+            # Both other cases are handled by the selector, if publication is in the
+            # query results, user has access to the full text of the publication
+            # (publication is private or open access)
+            fields.hasCachedId = true
+          else
+            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
         fields
   ,
     Person.documents.find

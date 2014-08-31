@@ -8,8 +8,8 @@ class @Comment extends Comment
     fields: {} # All
 
 Meteor.methods
-  'comments-path': (commentId) ->
-    check commentId, DocumentId
+  'comments-path': methodWrap (commentId) ->
+    validateArgument 'commentId', commentId, DocumentId
 
     person = Meteor.person()
 
@@ -32,14 +32,16 @@ Meteor.methods
 
     [publication._id, publication.slug, comment._id]
 
-  'create-comment': (annotationId, body) ->
-    check annotationId, DocumentId
-    check body, NonEmptyString
+  'create-comment': methodWrap (annotationId, body) ->
+    validateArgument 'annotationId', annotationId, DocumentId
+    validateArgument 'body', body, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    # TODO: Verify if body is valid HTML and does not contain anything we do not allow
+    body = cleanInlineHTML body
+
+    # TODO: Verify that text content all together, trimmed of space, is non-empty
     # TODO: Parse and store references in comment's body
 
     annotation = Annotation.documents.findOne Annotation.requireReadAccessSelector(person,
@@ -70,8 +72,8 @@ Meteor.methods
     Comment.documents.insert comment
 
   # TODO: Use this code on the client side as well
-  'remove-comment': (commentId) ->
-    check commentId, DocumentId
+  'remove-comment': methodWrap (commentId) ->
+    validateArgument 'commentId', commentId, DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -95,7 +97,7 @@ Meteor.methods
     )
 
 Meteor.publish 'comments-by-publication', (publicationId) ->
-  check publicationId, DocumentId
+  validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person

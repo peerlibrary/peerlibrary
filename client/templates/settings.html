@@ -1,0 +1,90 @@
+<template name="settings">
+  <h1>Settings</h1>
+  <div class="row">
+    {{#unless currentPersonId}}
+      <p>Sign in to view your settings.</p>
+    {{else}}
+      <p>Settings for {{> personInlineItem currentPerson}}</p>
+      {{> settingsUsername}}
+      {{> settingsPassword}}
+      <h2>User Interface</h2>
+      <div class="settings-group">
+        {{> settingsBackground}}
+      </div>
+    {{/unless}}
+  </div>
+</template>
+
+<template name="settingsUsername">
+  {{#unless usernameExists}}
+    <h2>Username</h2>
+    <form class="set-username settings-group">
+      <div class="section">
+        <label for="set-username-username">Username</label>
+        <input type="text" id="set-username-username" class="username {{validity 'username'}}" />
+        {{#with messageOnField "username"}}
+          {{> formMessage}}
+        {{/with}}
+      </div>
+
+      <div class="section">
+        <button class="set-username">Set username</button>
+        {{! Global form message }}
+        {{> formMessage messageOnField}}
+      </div>
+    </form>
+  {{/unless}}
+</template>
+
+<template name="settingsPassword">
+  <h2>Password</h2>
+  <form class="set-password settings-group">
+    <div class="section">
+      <label for="set-password-current-password">Current password</label>
+      <input type="password" id="set-password-current-password" class="current-password {{validity 'current-password'}}" />
+      {{#with messageOnField "current-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="section">
+      <label for="set-password-new-password">New password</label>
+      <input type="password" id="set-password-new-password" class="new-password {{validity 'new-password'}}" />
+      {{#with messageOnField "new-password"}}
+        {{> formMessage}}
+      {{/with}}
+    </div>
+
+    <div class="section">
+      <button class="change-password">Change password</button>
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
+    </div>
+  </form>
+</template>
+
+<template name="settingsBackground">
+  <form class="set-background">
+    <div class="section">
+      <label>
+        {{! TODO: Remove ID when we migrate to Blaze, currently it is needed for input field to keep state (which otherwise misbehave in combination with "checked" template helper) }}
+        <input type="checkbox" id="set-background-paused" class="paused" {{#if checked}}checked="checked"{{/if}}/>
+        Background paused
+      </label>
+      {{#with messageOnField "paused"}}
+        {{> formMessage}}
+      {{/with}}
+      {{! Global form message }}
+      {{> formMessage messageOnField}}
+    </div>
+  </form>
+</template>
+
+<template name="formMessage">
+  {{#if errorMessage}}
+    <div class="form-message error">{{errorMessage}}</div>
+  {{/if}}
+  {{#if infoMessage}}
+    <div class="form-message info">{{infoMessage}}</div>
+  {{/if}}
+</template>

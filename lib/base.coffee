@@ -1,7 +1,9 @@
-@INITIAL_SEARCH_LIMIT = INITIAL_SEARCH_LIMIT = 5
+@INITIAL_SEARCH_LIMIT = 5
+@INITIAL_CATALOG_LIMIT = 10
 
 setSession = (session) ->
   session = _.defaults session or {},
+    # TODO: All these variables should be encoded in the URL somehow, or they should not be reset when routing (use Session.setDefault; we are using it already, we should put all together; or should we use independent reactive variables instead of Session for such variables?)
     indexActive: false
     currentSearchQuery: null
     currentSearchQueryCountPublications: 0
@@ -12,12 +14,15 @@ setSession = (session) ->
     searchActive: false
     searchFocused: false
     adminActive: false
+    publicationJobsId: null
     libraryActive: false
+    settingsActive: false
     currentCollectionId: null
     currentCollectionSlug: null
     currentPublicationId: null
     currentPublicationSlug: null
-    currentPublicationProgress: null
+    currentPublicationProgress: null # TODO: This does not have to be a session variable, but just a normal reactive variable
+    currentPublicationLimitAnnotationsToViewport: false
     currentHighlightId: null
     currentAnnotationId: null
     currentCommentId: null
@@ -26,7 +31,54 @@ setSession = (session) ->
     currentTagSlug: null
     currentGroupId: null
     currentGroupSlug: null
+    publicationsActive: false
+    currentPublicationsFilter: null
+    currentPublicationsCount: 0
+    currentPublicationsLoading: false
+    currentPublicationsReady: false
+    currentPublicationsLimit: INITIAL_CATALOG_LIMIT
+    currentPublicationsLimitIncreasing: false
+    currentPublicationsSort: 0
+    personsActive: false
+    currentPersonsFilter: null
+    currentPersonsCount: 0
+    currentPersonsLoading: false
+    currentPersonsReady: false
+    currentPersonsLimit: INITIAL_CATALOG_LIMIT
+    currentPersonsLimitIncreasing: false
+    currentPersonsSort: 0
+    collectionsActive: false
+    currentCollectionsFilter: null
+    currentCollectionsCount: 0
+    currentCollectionsLoading: false
+    currentCollectionsReady: false
+    currentCollectionsLimit: INITIAL_CATALOG_LIMIT
+    currentCollectionsLimitIncreasing: false
+    currentCollectionsSort: 0
     groupsActive: false
+    currentGroupsFilter: null
+    currentGroupsCount: 0
+    currentGroupsLoading: false
+    currentGroupsReady: false
+    currentGroupsLimit: INITIAL_CATALOG_LIMIT
+    currentGroupsLimitIncreasing: false
+    currentGroupsSort: 0
+    annotationsActive: false
+    currentAnnotationsFilter: null
+    currentAnnotationsCount: 0
+    currentAnnotationsLoading: false
+    currentAnnotationsReady: false
+    currentAnnotationsLimit: INITIAL_CATALOG_LIMIT
+    currentAnnotationsLimitIncreasing: false
+    currentAnnotationsSort: 0
+    highlightsActive: false
+    currentHighlightsFilter: null
+    currentHighlightsCount: 0
+    currentHighlightsLoading: false
+    currentHighlightsReady: false
+    currentHighlightsLimit: INITIAL_CATALOG_LIMIT
+    currentHighlightsLimitIncreasing: false
+    currentHighlightsSort: 0
     inviteDialogActive: false
     inviteDialogSubscribing: false
     inviteDialogError: null
@@ -57,7 +109,7 @@ setSession = (session) ->
 
 notFound = ->
   # TODO: Is there a better/official way?
-  Meteor.Router._page = 'notfound'
+  Meteor.Router._page = 'notFound'
   Meteor.Router._pageDeps.changed()
 
 redirectHighlightId = (highlightId) ->
@@ -110,7 +162,7 @@ else
           resetPasswordToken: resetPasswordToken
         'index'
 
-    '/enroll-account/:enrollAccountToken':
+    '/accept-invitation/:enrollAccountToken':
       to: (enrollAccountToken) ->
         # Make sure nobody is logged in, it would be confusing otherwise
         # TODO: How to make it sure we do not log in in the first place? How could we set autoLoginEnabled in time? Because this logs out user in all tabs
@@ -158,6 +210,13 @@ else
           currentPublicationId: publicationId
           currentPublicationSlug: publicationSlug
         'publication'
+
+    '/p':
+      as: 'publications'
+      to: ->
+        setSession
+          publicationsActive: true
+        'publications'
 
     '/t/:tagId/:tagSlug?':
       as: 'tag'
@@ -212,6 +271,13 @@ else
           currentPersonSlug: personSlug
         'person'
 
+    '/u':
+      as: 'persons'
+      to: ->
+        setSession
+          personsActive: true
+        'persons'
+
     '/h/:highlightId':
       as: 'highlightId'
       documentId: 'highlightId'
@@ -221,6 +287,13 @@ else
         redirectHighlightId highlightId
         'redirecting'
 
+    '/h':
+      as: 'highlights'
+      to: ->
+        setSession
+          highlightsActive: true
+        'highlights'
+
     '/a/:annotationId':
       as: 'annotationId'
       documentId: 'annotationId'
@@ -229,6 +302,13 @@ else
         setSession()
         redirectAnnotationId annotationId
         'redirecting'
+
+    '/a':
+      as: 'annotations'
+      to: ->
+        setSession
+          annotationsActive: true
+        'annotations'
 
     '/m/:commentId':
       as: 'commentId'
@@ -261,6 +341,13 @@ else
           currentCollectionSlug: collectionSlug
         'collection'
 
+    '/c':
+      as: 'collections'
+      to: ->
+        setSession
+          collectionsActive: true
+        'collections'
+
     '/admin':
       as: 'admin'
       to: ->
@@ -268,12 +355,26 @@ else
           adminActive: true
         'admin'
 
+    '/admin/jobs/p/:publicationId':
+      as: 'publicationJobs'
+      to: (publicationId) ->
+        setSession
+          publicationJobsId: publicationId
+        'publicationJobs'
+
     '/library':
       as: 'library'
       to: ->
         setSession
           libraryActive: true
         'library'
+
+    '/settings':
+      as: 'settings'
+      to: ->
+        setSession
+          settingsActive: true
+        'settings'
 
 Meteor.Router.add
   '/about':
@@ -302,4 +403,4 @@ Meteor.Router.add
 
   '*': ->
     setSession()
-    'notfound'
+    'notFound'

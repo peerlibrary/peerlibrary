@@ -1,0 +1,76 @@
+@import 'variables.import'
+
+.flash-messages
+  position fixed
+  width 300px
+  top 60px
+  left 50%
+  margin-left -150px
+  list-style none
+  padding 0
+  /* Higher than importing overlay */
+  z-index 7000
+
+  .flash-message
+    border-radius 2px
+    border-width 1px
+    border-style solid
+    position absolute
+    display block
+    padding 20px
+    margin-bottom 10px
+    left 0
+    right 0
+    top 0
+
+    .button
+      float right
+      cursor pointer
+
+    .additional
+      display none
+      margin 10px 0
+
+      .stack
+        font-family Andale Mono, monospace
+        background #fdf6e3
+        color #073642
+        border 1px solid #eee8d5
+        margin 16px 0
+        white-space pre-wrap
+        word-wrap break-word
+        word-break break-all
+        white-space normal
+        resize none
+
+      .error-logged
+        font-size smaller
+        font-style italic
+        text-align center
+
+  .animate
+    transition top .5s
+
+  .fast-animate
+    /* Twice as fast as additional information slide down animation time */
+    transition top .1s ease-out
+
+  .success
+    color success-green
+    border-color success-green-border
+    background-color success-green-background
+
+  .debug
+    color debug-blue
+    border-color debug-blue-border
+    background-color debug-blue-background
+
+  .warn
+    color warn-yellow
+    border-color warn-yellow-border
+    background-color warn-yellow-background
+
+  .error
+    color error-red
+    border-color error-red-border
+    background-color error-red-background

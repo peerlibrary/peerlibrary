@@ -21,8 +21,8 @@
     "urlify2": {},
     "fs": {},
     "meteor-file": {
-      "branch": "master",
-      "git": "https://github.com/EventedMind/meteor-file.git"
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-file.git"
     },
     "digest": {},
     "peerdb": {},
@@ -35,11 +35,22 @@
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/meteor-variable.git"
     },
-    "async": {},
-    "cheerio": {},
+    "cheerio": {
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-cheerio.git"
+    },
     "isolate-value": {},
-    "apm": {},
     "stacktrace": {},
-    "related": {}
+    "related": {},
+    "kadira": {},
+    "directcollection": {},
+    "url-utils": {},
+    "segfault-handler": {},
+    "crypto": {},
+    "jobCollection": {
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-job-collection.git"
+    },
+    "async": {}
   }
 }

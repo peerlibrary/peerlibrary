@@ -27,7 +27,6 @@ accounts-ui-unstyled
 HTML5-History-API
 page-js-ie-support
 meteor-file
-digest
 peerdb
 logging
 audit-argument-checks
@@ -39,10 +38,14 @@ blob
 facts
 scribe
 variable
-async
 cheerio
 isolate-value
-apm
 url-utils
 stacktrace
+crypto
 related
+kadira
+directcollection
+jobCollection
+async
+srp

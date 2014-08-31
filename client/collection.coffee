@@ -1,3 +1,46 @@
+class @Collection extends Collection
+  @Meta
+    name: 'Collection'
+    replaceParent: true
+
+  # We allow passing the collection slug if caller knows it
+  @pathFromId: (collectionId, slug, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (slug will be options then)
+    slug = null unless _.isString slug
+
+    collection = @documents.findOne collectionId
+
+    return Meteor.Router.collectionPath collection._id, (collection.slug ? slug) if collection
+
+    Meteor.Router.collectionPath collectionId, slug
+
+  path: =>
+    @constructor.pathFromId @_id, @slug
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'collection'
+    params:
+      collectionId: @_id
+      collectionSlug: @slug
+
+  # Helper object with properties useful to refer to this document. Optional group document.
+  @reference: (collectionId, collection, options) ->
+    assert _.isString collectionId
+    # To allow calling template helper with only one argument (collection will be options then)
+    collection = null unless collection instanceof @
+
+    collection = @documents.findOne collectionId unless collection
+    assert collectionId, collection._id if collection
+
+    _id: collectionId # TODO: Remove when we will be able to access parent template context
+    text: "c:#{ collectionId }"
+    title: collection?.name or collection?.slug
+
+  reference: =>
+    @constructor.reference @_id, @
+
 collectionHandle = null
 
 # Mostly used just to force reevaluation of collectionHandle
@@ -34,23 +77,23 @@ Template.collection.loading = ->
   collectionSubscribing() # To register dependency
   not collectionHandle?.ready()
 
-Template.collection.notfound = ->
+Template.collection.notFound = ->
   collectionSubscribing() # To register dependency
   collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
+Template.collection.collection = ->
+  Collection.documents.findOne Session.get('currentCollectionId')
+
 Editable.template Template.collectionName, ->
-  @data.hasMaintainerAccess Meteor.person()
+  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
     Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
-      return Notify.meteorError error, true if error
+      return FlashMessage.fromError error, true if error
 ,
   "Enter collection name"
 ,
   true
-
-Template.collection.collection = ->
-  Collection.documents.findOne Session.get('currentCollectionId')
 
 Template.collectionPublications.publications = ->
   order = _.pluck @publications, '_id'
@@ -67,7 +110,7 @@ Template.collectionPublications.rendered = ->
 
   # Do not proceed if user cannot modify a collection
   # TODO: Can we make this reactive? So that if permissions change this is enabled or disabled?
-  unless collection?.hasMaintainerAccess Meteor.person()
+  unless collection?.hasMaintainerAccess Meteor.person collection?.constructor.maintainerAccessPersonFields()
     # Remove sortable functionality in case it was previously enabled
     $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
     return
@@ -76,28 +119,37 @@ Template.collectionPublications.rendered = ->
     opacity: 0.5
     cursor: 'ns-resize'
     axis: 'y'
-    update: (e, ui) ->
+    update: (event, ui) ->
       newOrder = []
-      $(e.target).children('li').each (index, element) ->
+      $(event.target).children('li').each (index, element) ->
         newOrder.push $(element).data('publication-id')
 
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
-        return Notify.meteorError error, true if error
+        return FlashMessage.fromError error, true if error
 
-Template.collectionDetails.canModify = ->
-  @hasMaintainerAccess Meteor.person()
+Template.collectionSettings.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.collectionDetails.canRemove = ->
-  @hasRemoveAccess Meteor.person()
+Template.collectionSettings.canRemove = ->
+  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.collectionDetails.events
-  'click .delete-collection': (e, template) ->
+Template.collectionAdminTools.events
+  'click .dropdown-trigger': (event, template) ->
+    # Make sure only the trigger toggles the dropdown, by
+    # excluding clicks inside the content of this dropdown
+    return if $.contains template.find('.dropdown-anchor'), event.target
+
+    $(template.findAll '.dropdown-anchor').toggle()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .delete-collection': (event, template) ->
     Meteor.call 'remove-collection', @_id, (error, count) =>
-      Notify.meteorError error, true if error
+      FlashMessage.fromError error, true if error
 
       return unless count
 
-      Notify.success "Collection removed."
+      FlashMessage.success "Collection removed."
       # TODO: Consider redirecting back to the page where we came from (maybe /c, maybe /library)
       Meteor.Router.toNew Meteor.Router.libraryPath()
 
@@ -110,9 +162,8 @@ Template.publicationLibraryMenuButtons.inCurrentCollection = ->
     'publications._id': @_id
 
 Template.publicationLibraryMenuButtons.events
-  'click .remove-from-current-collection': (e, template) ->
-    person = Meteor.person()
-    return unless person
+  'click .remove-from-current-collection': (event, template) ->
+    return unless Meteor.personId()
 
     collection = Collection.documents.findOne
       _id: Session.get 'currentCollectionId'
@@ -121,25 +172,12 @@ Template.publicationLibraryMenuButtons.events
     return unless collection
 
     Meteor.call 'remove-from-library', @_id, collection._id, (error, count) =>
-      return Notify.meteorError error, true if error
+      return FlashMessage.fromError error, true if error
 
-      Notify.success "Publication removed from the collection." if count
+      FlashMessage.success "Publication removed from the collection." if count
 
     return # Make sure CoffeeScript does not return anything
 
-# We allow passing the collection slug if caller knows it
-Handlebars.registerHelper 'collectionPathFromId', (collectionId, slug, options) ->
-  collection = Collection.documents.findOne collectionId
+Handlebars.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
 
-  return Meteor.Router.collectionPath collection._id, collection.slug if collection
-
-  Meteor.Router.collectionPath collectionId, slug
-
-# Optional collection document
-Handlebars.registerHelper 'collectionReference', (collectionId, collection, options) ->
-  collection = Collection.documents.findOne collectionId unless collection
-  assert collectionId, comment._id if collection
-
-  _id: collectionId # TODO: Remove when we will be able to access parent template context
-  text: "c:#{ collectionId }"
-  title: collection?.name or collection?.slug
+Handlebars.registerHelper 'collectionReference', _.bind Collection.reference, Collection

@@ -16,6 +16,7 @@
             {{> searchInput}}
           </li>
           {{> loginButtons}}
+          {{> collectionsButton}}
           {{> groupsButton}}
           {{> importButton}}
           {{!
@@ -38,7 +39,7 @@
     </span>
     <div class="search-form">
       <form id="search">
-        <input type="text" name="q" class="search-input" autocomplete="off" placeholder="{{searchInvitation}}" autofocus="autofocus">
+        <input type="text" name="q" class="search-input" autocomplete="off" placeholder="{{searchInvitation}}">
         <input type="hidden" name="ie" value="UTF-8">
         <span class="search-button">
           <i class="icon-search"></i>
@@ -46,10 +47,12 @@
       </form>
     </div>
     {{#if indexHeader}}
-      <p class="drop-files-to-import">or drop files to import</p>
+      <p class="drop-files-to-import">or drop files to {{> importLink}}</p>
       {{#if development}}
-        <p class="development-banner"><span class="warning left">⚠</span>Development instance<span class="warning right">⚠</span><br />Data is NOT stored permanently and is reset as needed!</p>
-        <p class="development-comment">The official website for users is at <a href="https://peerlibrary.org/">https://peerlibrary.org/</a>.</p>
+        <div class="development">
+          <p class="banner"><span class="warning-icon">⚠</span>Development instance<br />Data is NOT stored permanently and is reset as needed!</p>
+          <p class="comment">The official website for users is at <a href="https://peerlibrary.org/">https://peerlibrary.org/</a>.</p>
+        </div>
       {{/if}}
     {{/if}}
   </div>
@@ -79,5 +82,11 @@
 <template name="groupsButton">
   <li class="pull-right">
     <a href="{{groupsPath}}">Groups</a>
+  </li>
+</template>
+
+<template name="collectionsButton">
+  <li class="pull-right">
+    <a href="{{collectionsPath}}">Collections</a>
   </li>
 </template>

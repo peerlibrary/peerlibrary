@@ -16,23 +16,41 @@
   font-weight 300
   margin-top -150px !important
 
-  #reset-password-new-password-label, .reset-password-new-password-wrapper, #enroll-account-password-label, .enroll-account-password-wrapper
+  #reset-password-new-password-label
+  .reset-password-new-password-wrapper
+  #enroll-account-password-label
+  .enroll-account-password-wrapper
+  #enroll-account-with-username-username-label
+  .enroll-account-with-username-username-wrapper
+  #enroll-account-with-username-password-label
+  .enroll-account-with-username-password-wrapper
     margin 0 20px
 
-  #login-buttons-reset-password-button, #login-buttons-enroll-account-button
+  #login-buttons-reset-password-button
+  #login-buttons-enroll-account-button
+  #login-buttons-enroll-account-with-username-button
     padding 0
 
-  #reset-password-new-password-label, #enroll-account-password-label
-    margin-bottom 20px
+  #reset-password-new-password-label
+  #enroll-account-password-label
+  #enroll-account-with-username-username-label
+  #enroll-account-with-username-password-label
+    margin-bottom 10px
 
   /* Hacks to get "Cancel" instead of "x" */
-  #login-buttons-cancel-reset-password, #login-buttons-cancel-enroll-account
+  #login-buttons-cancel-reset-password
+  #login-buttons-cancel-enroll-account
     visibility hidden
     display block
     height 10px
 
-  #login-buttons-cancel-reset-password:after, #login-buttons-cancel-enroll-account:after
+  #login-buttons-cancel-reset-password::after
+  #login-buttons-cancel-enroll-account::after
     display block
     visibility visible
     content 'Cancel'
-    margin-top -20px
+    margin-top -18px // Determined by visual examination
+    cursor pointer
+
+    &:hover
+      text-decoration none

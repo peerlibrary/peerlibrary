@@ -14,7 +14,7 @@ class @PausableTimeout
   resume: =>
     return unless @isResumable()
 
-    @start = new Date().valueOf()
+    @start = moment.utc().valueOf()
     @timeoutId = Meteor.setTimeout @_run, @remaining
 
     # We return remaining
@@ -30,7 +30,7 @@ class @PausableTimeout
     @timeoutId = null
 
     # To guard against overflows and time jumps
-    @remaining = Math.max(0, Math.min(@remaining - (new Date().valueOf() - @start), @delay))
+    @remaining = Math.max(0, Math.min(@remaining - (moment.utc().valueOf() - @start), @delay))
 
     # We return remaining
 
@@ -70,7 +70,7 @@ class @VisibleTimeout extends @PausableTimeout
 Meteor.startup ->
   pausedTimeouts = []
 
-  Visibility.change (e, state) ->
+  Visibility.change (event, state) ->
     if state is 'hidden'
       pausedTimeouts = _.values visibleTimeouts
       timeout.pause() for timeout in pausedTimeouts

@@ -1,0 +1,19 @@
+<!-- Members
+Used when inline items appear in contexts of lists and need add/remove controls -->
+
+<template name="member">
+  <li class="member">
+    {{#if documentIsPerson}}{{> personInlineItem}}{{/if}}
+    {{#if documentIsGroup}}{{> groupInlineItem}}{{/if}}
+    <button class="remove-button icon-cancel"></button>
+  </li>
+</template>
+
+<template name="memberAdd">
+  <li class="member">
+    <button class="add-button">
+      {{#if documentIsPerson}}{{> personInlineItem noLinkDocument}}{{/if}}
+      {{#if documentIsGroup}}{{> groupInlineItem noLinkDocument}}{{/if}}
+    </button>
+  </li>
+</template>

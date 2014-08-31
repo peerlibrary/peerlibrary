@@ -22,7 +22,7 @@
 
       # Prepare the editable button
       $editableButton = $(Template.editableButton null)
-      $editableButton.click (e) ->
+      $editableButton.click (event) ->
         # Create the edit form
         $editView = $(Template.editable null)
 
@@ -35,8 +35,8 @@
         $editCancel = $editView.find('.editable-cancel')
         $editCancel.click(hideView)
 
-        $editView.submit (e) ->
-          e.preventDefault()
+        $editView.submit (event) ->
+          event.preventDefault()
 
           value = $editInput.val()
           updateFunction value

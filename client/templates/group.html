@@ -1,11 +1,11 @@
 <template name="group">
   {{#if loading}}
-    <div class="simple loading">
+    <div class="loading">
       <h2>Loading</h2>
     </div>
   {{else}}
-    {{#if notfound}}
-      <div class="simple notfound">
+    {{#if notFound}}
+      <div class="not-found">
         <h2>404 Not found</h2>
         <p>Group not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
@@ -17,7 +17,7 @@
         </div>
         <div class="col4 push12 sidebar group-members-panel">
           {{> groupMembers group}}
-          {{> groupDetails group}}
+          {{> groupSettings group}}
         </div>
       </div>
     {{/if}}
@@ -29,29 +29,32 @@
 </template>
 
 <template name="groupMembers">
-  <h2 class="directory-title">Members</h2>
-  {{> groupMembersList}}
-  {{#if canModifyMembership}}
+  <div class="section">
+    <h2>Members</h2>
+    {{> groupMembersList}}
     {{> groupMembersAddControl}}
-  {{/if}}
+  </div>
 </template>
 
 <template name="groupMembersList">
   <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
     {{#each members}}
-      {{> personMember}}
+      {{> member}}
     {{/each}}
   </ol>
 </template>
 
 <template name="groupMembersAddControl">
+  {{#if canModifyMembership}}
     <h3>Add a member</h3>
-    <div class="add-control">
+    <div class="add-control control">
       <input type="text" class="add-group-member" placeholder="Search by username, name, or email" />
       {{> groupMembersAddControlNoResults}}
       {{> groupMembersAddControlResults}}
       {{> groupMembersAddControlLoading}}
     </div>
+    {{> groupMembersAddControlInviteHint}}
+  {{/if}}
 </template>
 
 <template name="groupMembersAddControlNoResults">
@@ -65,13 +68,14 @@
 
 <template name="addControlInviteByEmail">
   {{#if this}}
-    <button class="add-and-invite">Add and invite {{this}}</button>
+    {{! TODO: Button and input box should get disabled and a loading icon should be displayed until the method returns, if error happens input box should be refocused so that user can fix the input }}
+    <button class="invite">Invite {{this}}</button>
   {{/if}}
 </template>
 
 <template name="groupMembersAddControlResults">
   {{#if results.count}}
-    <ul class="group-member-results add-control-results member-list">
+    <ul class="group-member-results add-control-results">
       {{#each results}}
         {{> groupMembersAddControlResultsItem}}
       {{/each}}
@@ -80,65 +84,47 @@
 </template>
 
 <template name="groupMembersAddControlResultsItem">
-  {{> personMemberAdd}}
+  {{> memberAdd}}
 </template>
 
 <template name="groupMembersAddControlLoading">
   {{#if loading}}
-    <div class="results-loading add-control-results">Loading...</div>
+    <div class="results-loading add-control-results">Loading …</div>
   {{/if}}
 </template>
 
-<template name="personMember">
-  <li class="member person">
-    <img src="{{avatar}}" class="avatar" />
-    <h4 class="member-name">
-      <a href="{{personPathFromId _id slug}}" title="{{displayName}}">{{displayName}}</a>
-    </h4>
-    <button class="remove-button icon-cancel"></button>
-  </li>
-</template>
-
-<template name="groupMember">
-  <li class="member group">
-    <i class="icon-group avatar"></i>
-    <h4 class="member-name">
-      <a href="{{groupPathFromId _id slug}}" title="{{name}}">{{name}}</a>
-    </h4>
-    <button class="remove-button icon-cancel"></button>
-  </li>
-</template>
-
-<template name="personMemberAdd">
-  <li>
-    <button class="add-button">
-      <div class="member person">
-        <img src="{{avatar}}" class="avatar" />
-        <div class="member-name">{{displayName}}</div>
-      </div>
-    </button>
-  </li>
-</template>
-
-<template name="groupMemberAdd">
-  <li>
-    <button class="add-button">
-      <div class="member group">
-        <i class="icon-group avatar"></i>
-        <div class="member-name">{{name}}</div>
-      </div>
-    </button>
-  </li>
-</template>
-
-<template name="groupDetails">
-  {{#if canModify}}
-    <h3>Tools</h3>
+<template name="groupSettings">
+  <div class="settings section">
+    <h2>Settings</h2>
+    <div class="section">
+      {{> accessControl}}
+    </div>
     {{#if canRemove}}
-      <p>
-        <button class="delete-group">Delete group</button>
-        {{! TODO: Add confirmation or undo for this action }}
-      </p>
+      <div class="section">
+        {{> groupAdminTools}}
+      </div>
     {{/if}}
+  </div>
+</template>
+
+<template name="groupAdminTools">
+  <div class="admin-tools dropdown-trigger">
+    <button class="borderless">
+      <i class="icon-tools"></i> Admin tools
+    </button>
+    <div class="dropdown-anchor">
+      <ul class="dropdown">
+        <li class="menu-item">
+          {{! TODO: Add confirmation or undo for this action }}
+          <button class="delete-group danger tooltip" title="Warning: there is no undo for this action.">Delete group</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<template name="groupMembersAddControlInviteHint">
+  {{#if visible}}
+    <p class="hint">Enter an email to invite a new user.</p>
   {{/if}}
 </template>

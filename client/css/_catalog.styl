@@ -1,0 +1,41 @@
+@import 'variables.import'
+
+.catalog
+  .controls
+    float right
+
+    .control
+      display inline-block
+      margin-left 2em
+
+      &:first-child
+        margin-left 0
+
+    .filter
+      input
+        border none
+        background none
+        font-weight 300
+
+    .sort
+      font-weight 300
+
+      .dropdown
+        box-sizing border-box
+        min-width 100%
+
+  .status
+    font-size 16px
+    font-weight 300
+
+  /* Status after the controls should be aligned with controls */
+  .controls + .status
+    margin-top 5px
+
+  /* Statuses appearing after the list of documents should be centered instead of left-aligned */
+  .item-list + .status
+    text-align center
+
+  .load-more
+    display block
+    margin 0 auto

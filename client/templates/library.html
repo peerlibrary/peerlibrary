@@ -1,13 +1,11 @@
 <template name="library">
   {{#unless currentPersonId}}
-    <div class="simple">
-      <h1>Library</h1>
-      <p>Sign in to view your library.</p>
-    </div>
+    <h1>Library</h1>
+    <p>Sign in to view your library.</p>
   {{else}}
     <div class="row">
       {{> libraryPublications}}
-      {{> collections}}
+      {{> libraryMyCollections}}
     </div>
   {{/unless}}
 </template>
@@ -18,7 +16,7 @@
     {{#if myPublications.count}}
       <ol class="library-publications item-list">
         {{#each myPublications}}
-          {{> publicationSearchResult}}
+          {{> publicationCatalogItem}}
         {{/each}}
       </ol>
     {{else}}
@@ -27,46 +25,24 @@
   </div>
 </template>
 
-<template name="collections">
+<template name="libraryMyCollections">
   <div class="library-collections-wrapper">
     <div class="col4 push12 sidebar library-collections">
       <h2>My Collections</h2>
       {{#if myCollections.count}}
-        <ol class="collections-list">
+        <ol class="item-list">
           {{#each myCollections}}
-            {{> collectionListing}}
+            {{> collectionCatalogItem}}
           {{/each}}
         </ol>
         <p class="drag-publications-hint hint">
           Drag and drop publications to add them to collections.
         </p>
       {{else}}
-        {{> noCollections}}
+        {{> noMyCollections}}
       {{/if}}
       {{> addNewCollection}}
+      {{> footer}}
     </div>
   </div>
-</template>
-
-<template name="collectionListing">
-  <li class="collection-listing" data-collection-id="{{_id}}">
-    <h3 class="collection-name">
-      <a href="{{collectionPathFromId _id slug}}">
-        {{name}}
-      </a>
-    </h3>
-    <span class="publications-count">{{countDescription}}</span>
-  </li>
-</template>
-
-<template name="noCollections">
-  <p class="no-collections hint">You don't have any collections. Create one below.</p>
-</template>
-
-<template name="addNewCollection">
-  <h3>Create a new collection</h3>
-  <form class="add-collection input-and-buttons">
-    <button type="submit" class="add">Create</button>
-    <div class="input"><input type="text" class="name" placeholder="Collection name" /></div>
-  </form>
 </template>

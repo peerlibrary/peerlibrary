@@ -1,17 +1,48 @@
-@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600")
 @import 'variables.import'
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Regular.eot')
+  src url('/fonts/FiraSans-Regular.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Regular.woff') format('woff'), url('/fonts/FiraSans-Regular.ttf') format('truetype')
+  font-weight normal
+  font-style normal
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Italic.eot')
+  src url('/fonts/FiraSans-Italic.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Italic.woff') format('woff'), url('/fonts/FiraSans-Italic.ttf') format('truetype')
+  font-weight normal
+  font-style italic
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Bold.eot')
+  src url('/fonts/FiraSans-Bold.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Bold.woff') format('woff'), url('/fonts/FiraSans-Bold.ttf') format('truetype')
+  font-weight bold
+  font-style normal
+
+@font-face
+  font-family 'Fira Sans'
+  src url('/fonts/FiraSans-Light.eot')
+  src url('/fonts/FiraSans-Light.eot?#iefix') format('embedded-opentype'), url('/fonts/FiraSans-Light.woff') format('woff'), url('/fonts/FiraSans-Light.ttf') format('truetype')
+  font-weight 300
+  font-style normal
+
+
 
 /* General
 ========== */
 
 html, button, input, select, textarea
   color #22
+  -webkit-font-smoothing antialiased
 
 body
-  font 14px "Source Sans Pro", sans-serif
+  font 14px "Fira Sans", sans-serif
   line-height default-line-height
   margin 0 auto
-  background light-grey
+  background light-grey // Keep in sync with public/css/initial.css
+  -webkit-font-smoothing antialiased
 
 ::-moz-selection
   background selection-color
@@ -44,10 +75,12 @@ fieldset
   padding 0
 
 button
-  font-family "Source Sans Pro", sans-serif
+  font-family "Fira Sans", sans-serif
 
 textarea
   resize vertical
+
+  font-weight: normal;
 
 .chromeframe
   margin 0.2em 0
@@ -55,7 +88,7 @@ textarea
   color #000
   padding 0.2em 0
 
-a, ul.top-menu li .search-wrapper .development-comment a
+a
   display inline
   padding 0
   color blue-accent
@@ -64,16 +97,20 @@ a, ul.top-menu li .search-wrapper .development-comment a
 a:hover
   text-decoration underline
 
-ul.top-menu li .search-wrapper .development-comment a:hover
-  text-decoration underline !important
-
 h2
   font-size 18px
   font-weight 300
+  margin 18px 0
+
+h3
+  font-size 16px
+  margin 10px 0
+
+h2:first-child, h3:first-child
   margin-top 0
 
 input
-  font-family "Source Sans Pro", sans-serif
+  font-family "Fira Sans", sans-serif
   outline none
 
 .balance-text
@@ -85,9 +122,18 @@ blockquote
   margin-left 0
   margin-right 0
 
+section
+  margin-top section-margin-top
+  margin-bottom 30px
+
+  .loading, .not-found
+    text-align center
+
+dl ul
+  margin 0
+
 /* Buttons
 ========== */
-
 .btn
   height 32px
   font-size 14px
@@ -111,17 +157,9 @@ blockquote
 .btn.blue:hover
   background hover-blue
 
-/* UI dropdown
-============== */
-.ui-dropdown
-  padding 6px 10px
-  border 1px solid transparent
-  color icon-gray
-  cursor pointer
-
-.ui-dropdown:hover
-  border-color #e3e3e3
-  color icon-gray-hover
+.connection-lost
+  width 100%
+  display block
 
 /* Helper classes
 ================= */
@@ -167,13 +205,6 @@ blockquote
   position static
   width auto
 
-section
-  .simple
-    margin-top simple-margin-top
-
-  .simple.loading
-    text-align center
-
 .invisible
   visibility hidden
 
@@ -192,6 +223,17 @@ section
 .hint
   font-style italic
   opacity 0.7
+
+/* Warnings
+=========== */
+.warning
+  color warn-yellow
+  border-color warn-yellow-border
+  background-color warn-yellow-background
+  border-radius 2px
+  border-width 1px
+  border-style solid
+  padding 5px
 
 /* Grid correction
 ================== */

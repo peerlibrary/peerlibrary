@@ -4,36 +4,87 @@
   {{else}}
     {{> indexMain}}
     {{> indexStatistics}}
+    {{> indexLatestBlogPost}}
+    {{> backgroundPause}}
   {{/if}}
-</template>
-
-<template name="indexStatistics">
-  <ul class="statistics">
-    <li>
-      <span class="value">{{publications}}</span>
-      <span class="label">Publications</span>
-    </li>
-    <li>
-      <span class="value">{{persons}}</span>
-      <span class="label">People</span>
-    </li>
-    <li>
-      <span class="value">{{highlights}}</span>
-      <span class="label">Highlights</span>
-    </li>
-    <li>
-      <span class="value">{{annotations}}</span>
-      <span class="label">Annotations</span>
-    </li>
-  </ul>
 </template>
 
 <template name="indexMain">
   {{#constant}}
     <div class="landing">
       <div class="big-logo">
-        <h1>PeerLibrary</h1>
+        <img src="/img/logo.svg"/>
+        <h1><span class="peer">Peer</span>Library</h1>
       </div>
     </div>
   {{/constant}}
+</template>
+
+<template name="indexStatistics">
+  <ul class="statistics">
+    <li>
+      <a href="{{publicationsPath}}">
+        <span class="value">{{publications}}</span>
+        <span class="label">Publications</span>
+      </a>
+    </li>
+    <li>
+      <a href="{{personsPath}}">
+        <span class="value">{{persons}}</span>
+        <span class="label">People</span>
+      </a>
+    </li>
+    <li>
+      <a href="{{highlightsPath}}">
+        <span class="value">{{highlights}}</span>
+        <span class="label">Highlights</span>
+      </a>
+    </li>
+    <li>
+      <a href="{{annotationsPath}}">
+        <span class="value">{{annotations}}</span>
+        <span class="label">Annotations</span>
+      </a>
+    </li>
+    <li>
+      <a href="{{groupsPath}}">
+        <span class="value">{{groups}}</span>
+        <span class="label">Groups</span>
+      </a>
+    </li>
+    <li>
+      <a href="{{collectionsPath}}">
+        <span class="value">{{collections}}</span>
+        <span class="label">Collections</span>
+      </a>
+    </li>
+  </ul>
+</template>
+
+<template name="indexLatestBlogPost">
+  {{#if latestBlogPost}}
+    <div class="latest-blog-post">
+      <h3><a href="{{latestBlogPost.tumblr.postUrl}}">{{#if latestBlogPost.tumblr.title}}{{latestBlogPost.tumblr.title}}{{else}}{{latestBlogPost.tumblr.caption}}{{/if}}</a></h3>
+      {{#if blogUrl}}
+        <p class="hint"><a href="{{blogUrl}}">View all {{blogPostsCount}} blog posts</a></p>
+      {{/if}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="backgroundPause">
+  <div class="background-pause">
+    {{> backgroundPauseButton}}
+    <div class="right ui-tooltip">
+      {{> backgroundPauseTooltipContent}}
+    </div>
+  </div>
+</template>
+
+<template name="backgroundPauseButton">
+  <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
+</template>
+
+<template name="backgroundPauseTooltipContent">
+  {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
 </template>

@@ -1,27 +1,29 @@
-class @Publication extends ReadAccessDocument
+class @Publication extends BasicAccessDocument
   # access: 0 (private, Publication.ACCESS.PRIVATE), 1 (closed, Publication.ACCESS.CLOSED), 2 (open, Publication.ACCESS.OPEN)
   # readPersons: if private access, list of persons who have read permissions
   # readGroups: if private access, list of groups who have read permissions
   # maintainerPersons: list of persons who have maintainer permissions
-  # maintainerGroups: ilist of groups who have maintainer permissions
+  # maintainerGroups: list of groups who have maintainer permissions
   # adminPersons: list of persons who have admin permissions
-  # adminGroups: ilist of groups who have admin permissions
+  # adminGroups: list of groups who have admin permissions
+  # TODO: We should probably have a separate timestamp for when publication was originally published
   # createdAt: timestamp when the publication was published (we match PeerLibrary document creation date with publication publish date)
+  # TODO: We sometimes use "foreign", sometimes "raw", should we unify this?
   # createdRaw: unparsed created string
   # updatedAt: timestamp when the publication (or its metadata) was last updated
+  # lastActivity: time of the last publication activity (annotation made, highlight made, etc.)
   # slug: slug for URL
   # authors: list of
   #   _id: author's person id
-  #   slug: author's person id
-  #   givenName
-  #   familyName
-  #   user
-  #     username
+  #   slug
+  #   displayName
+  #   gravatarHash
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
   # abstract
   # hasAbstract (client only): boolean if document has an abstract, used only in search results (cheaper to send than the whole abstract)
+  # hasCachedId (client only): boolean if user has access to the full text of the publication, used only in search results
   # doi
   # msc2010: list of MSC 2010 classes
   # acm1998: list of ACM 1998 classes
@@ -33,20 +35,23 @@ class @Publication extends ReadAccessDocument
   # sha256: SHA-256 hash of the file
   # size: size of the file (if cached)
   # importing: (temporary) list of
+  #   createdAt: timestamp when this instance of importing file was created
+  #   updatedAt: timestamp when this instance of importing file was last updated (the last file chunk received)
   #   person: person importing the document
   #   filename: original name of the imported file
   #   importingId: used for the temporary filename of the importing file
   # cached: timestamp when the publication was cached
-  # cachedId: used for the the cached filename (availble for open access publications, if user has the publication in the library, or is a private publication)
+  # cachedId: used for the the cached filename (available for open access publications, if user has the publication in the library, or is a private publication)
   # mediaType: which media type a cached file is (currently supported: pdf, tei)
   # processed: timestamp when the publication was processed (file checked, text extracted, thumbnails generated, etc.)
-  # processError:
-  #   error: description of the publication processing error
-  #   stack: stack trace of the error
+  # jobs: list of (reverse field from JobQueue.publication)
+  #   _id: job id
+  #   status: status of the job
   # numberOfPages
   # fullText: full plain text content suitable for searching
   # annotations: list of (reverse field from Annotation.publication)
   #   _id: annotation id
+  # annotationsCount: number of annotations for this publication
   # referencingAnnotations: list of (reverse field from Annotation.references.publications)
   #   _id: annotation id
   # license: license information, if known
@@ -57,16 +62,53 @@ class @Publication extends ReadAccessDocument
   @Meta
     name: 'Publication'
     fields: =>
-      maintainerPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      maintainerPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       maintainerGroups: [@ReferenceField Group, ['slug', 'name']]
-      adminPersons: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'gravatarHash', 'user.username']]
+      adminPersons: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']]
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
-      authors: [@ReferenceField Person, ['slug', 'givenName', 'familyName', 'user.username'], true, 'publications']
+      authors: [@ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username'], true, 'publications']
       importing: [
         person: @ReferenceField Person
       ]
       slug: @GeneratedField 'self', ['title']
-      fullText: @GeneratedField 'self', ['cached', 'cachedId', 'mediaType', 'processed', 'processError']
+      annotationsCount: @GeneratedField 'self', ['annotations']
+    # We are using publications in Person's updatedAt trigger, because it is part of person's metadata, but this
+    # means that it also updates person's lastActivity, so we do not need to have a trigger here for authors field
+    triggers: =>
+      updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached', 'processed', 'license', 'jobs._id']
+      personsLastActivity: RelatedLastActivityTrigger Person, ['importing.person._id'], (doc, oldDoc) ->
+        newImporters = (importer.person._id for importer in doc.importing or [])
+        oldImporters = (importer.person._id for importer in oldDoc.importing or [])
+        _.difference newImporters, oldImporters
+      processPublication: @Trigger ['cached', 'cachedId', 'mediaType'], (doc, oldDoc) ->
+        return unless doc.cached and doc.cachedId and doc.mediaType
+        new ProcessPublicationJob(publication: _id: doc._id).enqueue
+          skipIfExisting: true
+
+  @ACCESS:
+    PRIVATE: ACCESS.PRIVATE
+    CLOSED: 1
+    OPEN: 2
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+        ['title', 'asc']
+      ]
+    ,
+      name: "title"
+      # TODO: Sorting by names should be case insensitive
+      sort: [
+        ['title', 'asc']
+      ]
+    ,
+      name: "annotations"
+      sort: [
+        ['annotationsCount', 'desc']
+      ]
+    ]
 
   @_filenamePrefix: ->
     'publication' + Storage._path.sep
@@ -98,19 +140,14 @@ class @Publication extends ReadAccessDocument
   createdDay: =>
     moment(@createdAt).format 'MMMM Do YYYY'
 
-  @ACCESS:
-    PRIVATE: ACCESS.PRIVATE
-    CLOSED: 1
-    OPEN: 2
-
-  hasReadAccess: (person, cache=false) =>
-    return false unless @cached
+  hasReadAccess: (person, cache=false, searchResult=false) =>
+    return false unless searchResult or @cached
 
     return true if person?.isAdmin
 
     return true if @_id in _.pluck person?.library, '_id'
 
-    return false unless @processed
+    return false unless searchResult or @processed
 
     implementation = @_hasReadAccess person, cache
     return implementation if implementation is true or implementation is false
@@ -145,6 +182,14 @@ class @Publication extends ReadAccessDocument
 
   hasCacheAccess: (person) =>
     @hasReadAccess person, true
+
+  # Special version of hasCacheAccess to be used when checking for cache access
+  # for search results which were already preselected based on read access conditions.
+  # It checks only for the full text access and if not all necessary fields (like
+  # maintainer and admin fields) are present the result is an approximation (but good
+  # enough for the common case).
+  hasCacheAccessSearchResult: (person) =>
+    @hasReadAccess person, true, true
 
   @requireReadAccessSelector: (person, selector, cache=false) ->
     # To not modify input
@@ -225,18 +270,20 @@ class @Publication extends ReadAccessDocument
     conditions
 
   @readAccessPersonFields: ->
-    # _id field is implicitly added
-    isAdmin: 1
-    inGroups: 1
-    library: 1
+    _.extend @adminAccessPersonFields(), @maintainerAccessPersonFields(),
+      # _id field is implicitly added
+      isAdmin: 1
+      inGroups: 1
+      library: 1
 
   @readAccessSelfFields: ->
-    # _id field is implicitly added
-    cached: 1
-    processed: 1
-    access: 1
-    readPersons: 1
-    readGroups: 1
+    _.extend @adminAccessSelfFields(), @maintainerAccessSelfFields(),
+      # _id field is implicitly added
+      cached: 1
+      processed: 1
+      access: 1
+      readPersons: 1
+      readGroups: 1
 
   _hasMaintainerAccess: (person) =>
     # User has to be logged in
@@ -265,6 +312,18 @@ class @Publication extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
+  @maintainerAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @maintainerAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      authors: 1
+      maintainerPersons: 1
+      maintainerGroups: 1
+
   _hasAdminAccess: (person) =>
     # User has to be logged in
     return unless person?._id
@@ -288,15 +347,26 @@ class @Publication extends ReadAccessDocument
         $in: _.pluck person.inGroups, '_id'
     ]
 
-  @defaultAccess: ->
-    @ACCESS.OPEN
+  @adminAccessPersonFields: ->
+    fields = super
+    _.extend fields,
+      inGroups: 1
+
+  @adminAccessSelfFields: ->
+    fields = super
+    _.extend fields,
+      adminPersons: 1
+      adminGroups: 1
 
   @applyDefaultAccess: (personId, document) ->
     document = super
 
+    # TODO: Temporary, while we do not yet have karma points
     if personId and personId not in _.pluck document.adminPersons, '_id'
       document.adminPersons ?= []
       document.adminPersons.push
         _id: personId
+
+    document = @_applyDefaultAccess personId, document
 
     document

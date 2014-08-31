@@ -15,28 +15,17 @@ class @Publication extends Publication
           [fields._id, URLify2 fields.title, SLUG_MAX_LENGTH]
         else
           [fields._id, '']
-      fields.fullText.generator = (fields) ->
-        return [null, null] unless fields.cached
-        return [null, null] if fields.processed
-        # That we exit if processError is true is important becaus it is used in admin methods to force (re)precessing
-        return [null, null] if fields.processError
 
-        try
-          return [fields._id, new Publication(fields).process()]
-        catch error
-          # TODO: What if exception is just because of the concurrent processing? Should we retry? After a delay?
-
-          Publication.documents.update fields._id,
-            $set:
-              processError:
-                error: "#{ error.toString?() or error }"
-                stack: error.stack
-
-          Log.error "Error processing publication: #{ error.stack or error.toString?() or error }"
-
-          return [null, null]
+      fields.annotationsCount.generator = (fields) ->
+        [fields._id, fields.annotations?.length or 0]
 
       fields
+
+  @foreignSources: ->
+    [
+      'arXiv'
+      'FSM'
+    ]
 
   @_arXivFilename: (arXivId) ->
     # TODO: Verify that id is not insecure
@@ -46,65 +35,34 @@ class @Publication extends Publication
     # TODO: Verify that id is not insecure
     'FSM' + Storage._path.sep + fsmId + '.tei'
 
-  foreignFilename: =>
-    filename = switch @source
-      when 'arXiv' then Publication._arXivFilename @foreignId
-      when 'FSM' then Publication._FSMFilename @foreignId
+  @foreignFilename: (source, foreignId) ->
+    filename = switch source
+      when 'arXiv' then Publication._arXivFilename foreignId
+      when 'FSM' then Publication._FSMFilename foreignId
       else null
 
     return unless filename
 
     Publication._filenamePrefix() + filename
 
-  foreignUrl: =>
+  foreignFilename: =>
+    @constructor.foreignFilename @source, @foreignId
+
+  storageForeignUrl: =>
     Storage.url @foreignFilename()
 
-  checkCache: =>
-    return if @cached
+  process: (args...) =>
+    throw new Error "Publication not cached" unless @cached
 
-    if not Storage.exists @cachedFilename()
-      # We provide a way for easy caching of sample publications so that
-      # developers can easily bootstrap their local development instance
-      return unless @foreignFilename()
-
-      if Storage.exists @foreignFilename()
-        Log.info "Linking PDF for #{ @_id }: #{ @foreignFilename() } -> #{ @cachedFilename() }"
-
-        Storage.link @foreignFilename(), @cachedFilename()
-        assert Storage.exists @cachedFilename()
-
-      else
-        Log.info "Caching file for #{ @_id } from the central server: #{ @foreignFilename() } -> #{ @cachedFilename() }"
-
-        pdf = HTTP.get 'http://stage.peerlibrary.org' + @foreignUrl(),
-          timeout: 10000 # ms
-          encoding: null # PDFs are binary data
-
-        Storage.save @foreignFilename(), pdf.content
-        assert Storage.exists @foreignFilename()
-        Storage.link @foreignFilename(), @cachedFilename()
-        assert Storage.exists @cachedFilename()
-
-    if not @sha256
-      pdfContent = Storage.open @cachedFilename()
-      hash = new Crypto.SHA256()
-      hash.update pdfContent
-      @sha256 = hash.finalize()
-
-    @cached = moment.utc().toDate()
-    Publication.documents.update @_id,
-      $set:
-        cached: @cached
-        sha256: @sha256
-
-  process: =>
     switch @mediaType
-      when 'pdf' then @processPDF()
-      when 'tei' then @processTEI()
+      when 'pdf' then @processPDF args...
+      when 'tei' then @processTEI args...
       else throw new Error "Unsupported media type: #{ @mediaType }"
 
-  processPDF: =>
-    currentlyProcessingPublication @_id
+  processPDF: (job) =>
+    throw new Error "processPDF can be called only from a job" unless job
+
+    currentlyProcessingPublication job
 
     try
       pdf = Storage.open @cachedFilename()
@@ -132,24 +90,19 @@ class @Publication extends Publication
 
       progressCallback = (progress) =>
 
-      Log.info "Processing PDF for #{ @_id }: #{ @cachedFilename() }"
-
       PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
 
-      assert textContents.length, @numberOfPages
+      assert textContents.length
+      assert @numberOfPages
 
       @fullText = PDFJS.pdfExtractText textContents...
 
-      # TODO: We could also add some additional information (statistics, how long it took and so on)
       @processed = moment.utc().toDate()
       Publication.documents.update @_id,
         $set:
           numberOfPages: @numberOfPages
           processed: @processed
           fullText: @fullText
-
-      # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
-      return @fullText
 
     finally
       currentlyProcessingPublication null
@@ -160,22 +113,16 @@ class @Publication extends Publication
     $ = cheerio.load tei
     @fullText = $.root().text().replace(/\s+/g, ' ').trim()
 
-    # TODO: We could also add some additional information (statistics, how long it took and so on)
     @processed = moment.utc().toDate()
     Publication.documents.update @_id,
       $set:
         processed: @processed
         fullText: @fullText
 
-    # TODO: Maybe we should use instead of GeneratedField just something which is automatically triggered, but we then update multiple fields, or we should allow GeneratedField to return multiple fields?
-    @fullText
+  _importingFilename: (index=0) =>
+    assert @importing?[index]?.importingId
 
-  _importingFilename: =>
-    # We assume that importing contains only this person, see comment in uploadPublication
-    assert @importing?[0]?.person?._id
-    assert.equal @importing[0].person._id, Meteor.personId()
-
-    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[0].importingId + '.pdf'
+    Publication._filenamePrefix() + 'tmp' + Storage._path.sep + @importing[index].importingId + '.pdf'
 
   _verificationSamples: (personId) =>
     _.map _.range(NUMBER_OF_VERIFICATION_SAMPLES), (num) =>
@@ -189,8 +136,8 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A set of fields which are public and can be published to the client
-  # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+  # A set of fields which are public and can be published to the client. cachedId field is available for open
+  # access publications, if user has the publication in the library, or has necessary permissions over the publication.
   @PUBLISH_FIELDS: ->
     fields:
       slug: 1
@@ -205,12 +152,17 @@ class @Publication extends Publication
       source: 1
       mediaType: 1
       access: 1
+      annotationsCount: 1
       readPersons: 1
       readGroups: 1
       maintainerPersons: 1
       maintainerGroups: 1
       adminPersons: 1
       adminGroups: 1
+      cached: 1
+      processed: 1
+      jobs:
+        $slice: -1 # To have the latest job status available on the client
 
   # A subset of public fields used for search results to optimize transmission to a client
   @PUBLISH_SEARCH_RESULTS_FIELDS: ->
@@ -221,15 +173,19 @@ class @Publication extends Publication
       'title'
       'numberOfPages'
       'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-      'access'
+      'access' # Also needed to compute hasCachedId in search results
+      'annotationsCount'
     ]
+
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS = @PUBLISH_SEARCH_RESULTS_FIELDS
 
 registerForAccess Publication
 
 Meteor.methods
-  'create-publication': (filename, sha256) ->
-    check filename, String
-    check sha256, SHA256String
+  'create-publication': methodWrap (filename, sha256) ->
+    validateArgument 'filename', filename, String
+    validateArgument 'sha256', sha256, SHA256String
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -257,6 +213,7 @@ Meteor.methods
 
     else if existingPublication?
       # We have the publication, so add person to it
+      createdAt = moment.utc().toDate()
       Publication.documents.update
         _id: existingPublication._id
         'importing.person._id':
@@ -264,6 +221,8 @@ Meteor.methods
       ,
         $addToSet:
           importing:
+            createdAt: createdAt
+            updatedAt: createdAt
             person:
               _id: person._id
             filename: filename
@@ -276,11 +235,14 @@ Meteor.methods
 
     else
       # We don't have anything, so create a new publication and ask for upload
+      createdAt = moment.utc().toDate()
       id = Publication.documents.insert Publication.applyDefaultAccess person._id,
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
+        createdAt: createdAt
+        updatedAt: createdAt
         source: 'import'
         importing: [
+          createdAt: createdAt
+          updatedAt: createdAt
           person:
             _id: person._id
           filename: filename
@@ -299,10 +261,9 @@ Meteor.methods
     already: already
     samples: samples
 
-  'upload-publication': (file, options) ->
-    check file, MeteorFile
-    check options, Match.ObjectIncluding
-      publicationId: DocumentId
+  'upload-publication': methodWrap (file, options) ->
+    validateArgument 'file', file, MeteorFile
+    validateArgument 'options', options, Match.ObjectIncluding publicationId: DocumentId
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -329,6 +290,13 @@ Meteor.methods
     # TODO: Before writing verify that chunk size is as expected (we want to enforce this as a constant both on client size) and that buffer has the chunk size length, last chunk is a special case
     Storage.saveMeteorFile file, publication._importingFilename()
 
+    Publication.documents.update
+      _id: publication._id
+      'importing.person._id': person._id
+    ,
+      $set:
+        'importing.$.updatedAt': moment.utc().toDate()
+
     if file.end == file.size
       # TODO: Read and hash in chunks, when we will be processing PDFs as well in chunks
       pdf = Storage.open publication._importingFilename()
@@ -350,6 +318,14 @@ Meteor.methods
             cached: moment.utc().toDate()
             size: file.size
 
+      # Remove all other partially uploaded files, if there are any
+      for importing, i in Publication.documents.findOne(_id: options.publicationId).importing
+        filename = publication._importingFilename i
+        try
+          Storage.remove filename
+        catch error
+          # We ignore any error when removing partially uploaded files
+
       # Hash was verified, so add it to uploader's library
       Person.documents.update
         _id: person._id
@@ -360,9 +336,9 @@ Meteor.methods
           library:
             _id: publication._id
 
-  'verify-publication': (publicationId, samplesData) ->
-    check publicationId, DocumentId
-    check samplesData, [Uint8Array]
+  'verify-publication': methodWrap (publicationId, samplesData) ->
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'samplesData', samplesData, [Uint8Array]
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -396,9 +372,9 @@ Meteor.methods
           _id: publication._id
 
   # TODO: Use this code on the client side as well
-  'publication-set-title': (publicationId, title) ->
-    check publicationId, DocumentId
-    check title, NonEmptyString
+  'publication-set-title': methodWrap (publicationId, title) ->
+    validateArgument 'publicationId', publicationId, DocumentId
+    validateArgument 'title', title, NonEmptyString
 
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
@@ -412,11 +388,60 @@ Meteor.methods
       _id: publication._id
     ),
       $set:
-        updatedAt: moment.utc().toDate()
         title: title
 
+Meteor.publish 'publications', (limit, filter, sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'title') if filter
+
+  sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
+
+    searchPublish @, 'publications', [filter, sortIndex],
+      cursor: Publication.documents.find restrictedFindQuery,
+        limit: limit
+        fields: Publication.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+      added: (id, fields) =>
+        fields.hasAbstract = !!fields.abstract
+        delete fields.abstract
+        if fields.access isnt Publication.ACCESS.CLOSED
+          # Both other cases are handled by the selector, if publication is in the
+          # query results, user has access to the full text of the publication
+          # (publication is private or open access)
+          fields.hasCachedId = true
+        else
+          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
+        fields
+      changed: (id, fields) =>
+        if 'abstract' of fields
+          fields.hasAbstract = !!fields.abstract
+          delete fields.abstract
+        if 'access' of fields
+          if fields.access isnt Publication.ACCESS.CLOSED
+            # Both other cases are handled by the selector, if publication is in the
+            # query results, user has access to the full text of the publication
+            # (publication is private or open access)
+            fields.hasCachedId = true
+          else
+            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
+        fields
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields: _.extend Publication.readAccessPersonFields()
+
 Meteor.publish 'publications-by-author-slug', (slug) ->
-  check slug, NonEmptyString
+  validateArgument 'slug', slug, NonEmptyString
 
   @related (author, person) ->
     return unless author?._id
@@ -441,8 +466,8 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-id', (publicationId) ->
-  check publicationId, DocumentId
+Meteor.publish 'publication-by-id', (publicationId) ->
+  validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person) ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
@@ -458,14 +483,14 @@ Meteor.publish 'publications-by-id', (publicationId) ->
 # We could try to combine publications-by-id and publications-cached-by-id,
 # but it is easier to have two and leave to Meteor to merge them together
 Meteor.publish 'publications-cached-by-id', (id) ->
-  check id, DocumentId
+  validateArgument 'id', id, DocumentId
 
   @related (person) ->
     Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
     ),
       fields: _.extend Publication.PUBLISH_FIELDS().fields,
-        # cachedId field is availble for open access publications, if user has the publication in the library, or is a private publication
+        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication
         'cachedId': 1
   ,
     Person.documents.find

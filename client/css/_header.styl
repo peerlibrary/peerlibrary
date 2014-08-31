@@ -24,11 +24,10 @@ header
     text-decoration none
     line-height 45px
     font-size 22px
-    font-family "Source Sans Pro", sans-serif
+    font-family "Fira Sans", sans-serif
     background transparent
     display inline-block
     padding 0 20px
-    transition 0.2s
 
   a:hover
     background white
@@ -44,7 +43,7 @@ ul.top-menu
   li
     display block
     float left
-    line-height 45px
+    line-height 48px // Vertically centers header items
 
     a
       color white
@@ -52,7 +51,6 @@ ul.top-menu
       padding 0 20px
       user-select none
       cursor pointer
-      transition 0.2s
 
     span.search-button
       color blue-accent
@@ -64,6 +62,7 @@ ul.top-menu
   .search-wrapper
     padding 0 30px 0 20px
     width 400px
+    height 45px
     transition 0.2s
 
     .search-form
@@ -74,6 +73,7 @@ ul.top-menu
         border 0
         color blue-accent
         font-size 18px
+        line-height 38px // Vertically centers input text
         width 575px
         display inline
 
@@ -172,41 +172,18 @@ span.cursor
 .development
   position relative
 
-.development .banner, .development-banner
-  color red
-  position absolute
-  font-size 12px
-  line-height default-line-height
-  font-weight bold
-  text-align center
-  top 33%
-  left 0
-  right 0
-  padding 0
-  transform rotate(-10deg)
-
-.development-banner
-  transform none
-  position static
-  font-size 18px
-  width 90%
-  margin-left auto
-  margin-right auto
-  margin-bottom 0
-
-  .warning
-    font-size 36px
-    margin-top ((18px * default-line-height * 2 - 36px) / 2)
-
-  .left
-    float left
-
-  .right
-    float right
-
-.development-comment
-  text-align center
-  margin 0
+  .banner
+    color red
+    position absolute
+    font-size 12px
+    line-height default-line-height
+    font-weight bold
+    text-align center
+    top 33%
+    left 0
+    right 0
+    padding 0
+    transform rotate(-10deg)
 
 /* Sign in buttons
 ================== */
@@ -219,45 +196,28 @@ span.cursor
     color blue-accent
 
 header.logged-in
+  .login-link-and-dropdown-list
+    cursor pointer
+    a
+      cursor pointer
+
+    .dropdown-anchor
+      display block
+      bottom -2px
+
+    .dropdown-anchor::after
+    .dropdown-anchor::before
+      left auto
+      right 24px
+
   #login-dropdown-list
-    background white 
-    border-color rgb(210,210,210)
-    border-style solid
-    border-width 1px
-    border-radius 3px
     position  absolute
+    border-radius 3px
     width 180px
-    padding 5px 0
-    top 55px
     right 10px
+    left auto
     font-size 14px
     line-height 20px
-
-  #login-dropdown-list:after
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px
-    border-color #FFFFFF transparent
-    display block
-    width 0
-    z-index 1
-    margin-left -10px
-    top -8px
-    left 161px
-
-  #login-dropdown-list:before
-    content ''
-    position absolute
-    border-style solid
-    border-width 0 8px 8px;
-    border-color rgb(210,210,210) transparent
-    display block
-    width 0
-    z-index 0
-    margin-left -10px
-    top -9px
-    left 161px
 
   .menu-item
     padding 5px 0
@@ -266,7 +226,6 @@ header.logged-in
     font-weight bold
     color blue-accent
     cursor pointer
-    transition all 0.15s ease-in 0s
 
     a
       color blue-accent
@@ -277,25 +236,24 @@ header.logged-in
       color white
       a
         color white
-  
+
   .menu-item a:hover
     color white
     background blue-accent
 
-  .login-link-and-dropdown-list
-    cursor pointer
-    a
-      cursor pointer
-
 header.index-header.logged-in
-  #login-dropdown-list
-    top 56px
-    right 24px
+  .login-link-and-dropdown-list
+    .dropdown-anchor
+      right 14px
 
-  #login-dropdown-list:after
+      &::after
+      &::before
+        right 34px
+
+  #login-dropdown-list::after
     left 149px
 
-  #login-dropdown-list:before
+  #login-dropdown-list::before
     left 149px
 
 #login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
@@ -314,11 +272,12 @@ header.index-header.logged-in
 
 /* Auth form buttons
 ==================== */
-
-.avatar
-  width 24px
-  height 24px
-  margin-left 12px
+header
+  .avatar
+    width 24px
+    height 24px
+    margin-left 12px
+    vertical-align middle
 
 /* Import button
 ================ */
@@ -364,11 +323,11 @@ header.index-header
         background transparent
 
       input::-webkit-input-placeholder
-          font-family "Source Sans Pro", sans-serif
+          font-family "Fira Sans", sans-serif
           color rgba(20,20,20,0.8)
 
       input::-moz-placeholder
-          font-family "Source Sans Pro", sans-serif
+          font-family "Fira Sans", sans-serif
           color rgba(20,20,20,0.8)
 
   .search-wrapper:hover
@@ -379,7 +338,47 @@ header.index-header
 
   .drop-files-to-import
     text-align center
-    cursor pointer
+
+    a
+      display inline
+      padding 0
+      color blue-accent
+
+      &:hover
+        text-decoration underline !important
+
+  .development
+    position fixed
+    top 15px
+    left 75px
+    width 460px
+    padding-left 50px
+
+    .banner
+      transform none
+      position static
+      font-size 18px
+      margin 0
+      padding 0
+      text-align left
+
+      .warning-icon
+        position absolute
+        left 0
+        top 3px
+        font-size 36px
+
+    .comment
+      text-align left
+      margin 0
+
+      a
+        display inline
+        padding 0
+        color blue-accent
+
+        &:hover
+          text-decoration underline !important
 
   ul.top-menu
     a
@@ -387,7 +386,7 @@ header.index-header
 
     li > a, li a.login-link-text
       font-size 14px
-      font-weight 600
+      font-weight normal
       line-height 14px
       padding 8px 20px
       margin-top 15px
@@ -396,7 +395,6 @@ header.index-header
       background bg-blue
       border 1px solid border-blue
       border-radius 3px
-      transition 0.2s
 
     li > a:hover, li a.login-link-text:hover
       background hover-blue
@@ -418,7 +416,9 @@ header.no-index-header
   .container
     .progress-bar
       background #2dc7ff
-      bottom -2px
-      height 2px
+      top 0
+      bottom 0
       position absolute
+      z-index -1
+
 

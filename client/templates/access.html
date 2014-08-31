@@ -1,60 +1,165 @@
 <template name="accessControl">
-  <div class="access-menu">
-    <form class="access {{documentName}}-access">
-      <div class="selections">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> accessButton}}
+    <div class="dropdown-anchor">
+      {{> accessMenu}}
+    </div>
+  </div>
+</template>
 
-        <label class="selection {{#if public}}selected{{/if}}">
-          <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
-          <i class="access-icon icon-public"></i> Public
-        </label>
+<template name="accessButton">
+  <button class="access-button borderless tooltip" title="{{#if public}}Everyone can see the {{documentName}}{{else}}Only the  {{#if documentIsGroup}}group members and {{/if}} listed users can see the {{documentName}}{{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i> Public {{documentName}}
+    {{else}}
+      <i class="icon-private"></i> Private {{documentName}}
+    {{/if}}
+  </button>
+</template>
 
-        <label class="selection {{#if private}}selected{{/if}}">
-          <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="access-icon icon-private"></i> Private
-        </label>
+<template name="accessIconControl">
+  <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{> accessIconButton}}
+    <div class="dropdown-anchor">
+      {{> accessMenu}}
+    </div>
+  </div>
+</template>
 
+<template name="accessIconButton">
+  <button class="access-button borderless tooltip" title="{{#if public}}Public {{documentName}}{{else}}Private {{documentName}}{{/if}}">
+    {{#if public}}
+      <i class="icon-public"></i>
+    {{else}}
+      <i class="icon-private"></i>
+    {{/if}}
+  </button>
+</template>
+
+<template name="accessMenu">
+  <div class="access-menu dropdown control">
+    {{#if canModifyAccess}}
+      {{> accessMenuPrivacyForm}}
+    {{else}}
+      {{> accessMenuPrivacyInfo}}
+    {{/if}}
+    {{> rolesControl}}
+  </div>
+</template>
+
+<template name="accessMenuPrivacyForm">
+  <div class="access {{documentName}}-access">
+    <div class="selections">
+
+      <label class="selection {{#if public}}selected icon-check{{/if}}">
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <i class="access-icon icon-public"></i> Public
+      </label>
+
+      <label class="selection {{#if private}}selected icon-check{{/if}}">
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <i class="access-icon icon-private"></i> Private
+      </label>
+
+    </div>
+    <div class="description public {{#if public}}displayed{{/if}}">
+      Everyone can see the {{documentName}}.
+    </div>
+    <div class="description private {{#if private}}displayed{{/if}}">
+      Only the {{#if documentIsGroup}}group members and {{/if}}listed users can see the {{documentName}}.
+    </div>
+  </div>
+</template>
+
+<template name="accessMenuPrivacyInfo">
+  <div class="access {{documentName}}-access">
+    {{#if public}}
+      <div class="access-name">
+        <i class="access-icon icon-public"></i> Public
       </div>
-      <div class="description public {{#if public}}displayed{{/if}}">Everyone can see the {{documentName}}.</div>
-      <div class="description private {{#if private}}displayed{{/if}}">Only the users listed can see the {{documentName}}.</div>
-    </form>
+      <div class="description public displayed">
+        Everyone can see the {{documentName}}.
+      </div>
+    {{/if}}
     {{#if private}}
-      {{> privateAccessControl}}
+      <div class="access-name">
+        <i class="access-icon icon-private"></i> Private
+      </div>
+      <div class="description private displayed">
+        Only the {{#if documentIsGroup}}group members and {{/if}}listed users can see the {{documentName}}.
+      </div>
     {{/if}}
   </div>
 </template>
 
-<template name="privateAccessControl">
-  <div class="private-access-control">
-    {{> privateAccessControlList}}
-    {{> privateAccessControlAdd}}
-  </div>
+<template name="rolesControl">
+  {{#if showControl}}
+    <div class="roles-control">
+      {{> rolesControlList}}
+      {{#if canModifyAccess}}
+        {{> rolesControlAdd}}
+      {{else}}
+        {{#if currentPersonId}}
+          {{> rolesControlInvite}}
+        {{/if}}
+      {{/if}}
+    </div>
+  {{/if}}
 </template>
 
-<template name="privateAccessControlList">
-  <div class="private-access-control-members">
-    <ol class="access-list access-list-users member-list">
-      {{#each readPersonsList}}
-        {{>personMember}}
-      {{/each}}
-    </ol>
-    <ol class="access-list access-list-groups member-list">
-      {{#each readGroupsList}}
-        {{>groupMember}}
-      {{/each}}
-    </ol>
-  </div>
+<template name="rolesControlList">
+  <ol class="roles-control-list {{#unless canModifyAccess}}read-only{{/unless}}">
+    {{#each rolesList}}
+      {{> rolesControlRoleEditor}}
+    {{/each}}
+  </ol>
 </template>
 
-<template name="privateAccessControlAdd">
-  <div class="add-control">
-    <input type="text" class="add-access" placeholder="Add users or groups" />
-    {{> privateAccessControlNoResults}}
-    {{> privateAccessControlResults}}
-    {{> privateAccessControlLoading}}
-  </div>
+<template name="rolesControlRoleEditor">
+  <li>
+    <div class="item">
+      {{#if isPerson}}{{> personInlineItem personOrGroup}}{{/if}}
+      {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
+    </div>
+    <div class="role">
+      {{#spaceless}}
+        {{#if canModifyAccess}}
+          <div class="dropdown-trigger">
+
+        {{/if}}
+
+        {{#if admin}}administrator{{/if}}
+        {{#if maintainer}}maintainer{{/if}}
+        {{#if readAccess}}view access{{/if}}
+
+        {{#if canModifyAccess}}
+            <i class="icon-down"></i>
+            <div class="dropdown-anchor">
+              <ul class="dropdown right-aligned">
+                <li class="menu-item"><button class="administrator-button">administrator</button></li>
+                <li class="menu-item"><button class="maintainer-button">maintainer</button></li>
+                {{#if private}}<li class="menu-item"><button class="read-access-button">view access</button></li>{{/if}}
+                <li class="menu-item"><button class="remove-button">remove</button></li>
+              </ul>
+            </div>
+          </div>
+        {{/if}}
+      {{/spaceless}}
+    </div>
+  </li>
 </template>
 
-<template name="privateAccessControlNoResults">
+<template name="rolesControlAdd">
+  <div class="add-control control">
+    <input type="text" class="add-access" spellcheck="false" placeholder="Add users or groups" />
+    {{> rolesControlNoResults}}
+    {{> rolesControlResults}}
+    {{> rolesControlLoading}}
+  </div>
+  {{> rolesControlInviteHint}}
+</template>
+
+<template name="rolesControlNoResults">
   {{#if noResults}}
     <div class="no-results add-control-results">
       No people or groups found
@@ -63,26 +168,43 @@
   {{/if}}
 </template>
 
-<template name="privateAccessControlResults">
+<template name="rolesControlResults">
   {{#if results.length}}
-    <ul class="access-results add-control-results member-list">
+    <ul class="access-results add-control-results">
       {{#each results}}
-        {{> privateAccessControlResultsItem}}
+        {{> rolesControlResultsItem}}
       {{/each}}
      </ul>
   {{/if}}
 </template>
 
-<template name="privateAccessControlResultsItem">
-  {{#ifPerson}}
-    {{> personMemberAdd}}
-  {{else}}
-    {{> groupMemberAdd}}
-  {{/ifPerson}}
+<template name="rolesControlResultsItem">
+  {{> memberAdd}}
 </template>
 
-<template name="privateAccessControlLoading">
+<template name="rolesControlLoading">
   {{#if loading}}
-    <div class="results-loading add-control-results">Loading...</div>
+    <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
+</template>
+
+<template name="rolesControlInvite">
+  <div class="add-control control">
+    <input type="text" class="invite-only" spellcheck="false" placeholder="Enter an email to invite a new user" />
+    {{> rolesControlInviteButton}}
+  </div>
+</template>
+
+<template name="rolesControlInviteButton">
+  {{#if email}}
+    <div class="no-results add-control-results invite-only">
+      {{> addControlInviteByEmail email}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="rolesControlInviteHint">
+  {{#if visible}}
+    <p class="hint">Enter an email to invite a new user.</p>
   {{/if}}
 </template>

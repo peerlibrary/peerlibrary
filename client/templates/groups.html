@@ -1,69 +1,74 @@
 <template name="groups">
   <h1>Groups</h1>
   <div class="row">
-    <div class="col12 groups-directory">
-      <h2 class="directory-title">Directory</h2>
-      <div class="search-bar">
-        <form id="groups-search">
-          <span class="search-button">
-            <i class="icon-search"></i>
-          </span>
-          <input type="text" name="q" class="search-input" autocomplete="off" placeholder="Filter groups" autofocus="autofocus">
-        </form>
-      </div>
-      {{#if groups.count}}
-      <ul class="groups-list">
-        {{#each groups}}
-          {{> groupListing}}
-        {{/each}}
-      </ul>
-      {{else}}
-      <p class="no-groups">
-        {{#if searchQuery}}
-          The filter matches no groups.
-        {{else}}
-          There are no groups yet.
-            {{#if currentPersonId}}
-              Create the first using the form on the right.
-            {{else}}
-              Sing in and create the first.
-            {{/if}}
-        {{/if}}
-      </p>
-      {{/if}}
+    <div class="col12">
+      {{> catalog catalogSettings}}
     </div>
-    {{#if currentPersonId}}
-      {{> myGroups}}
-    {{/if}}
+    {{> myGroups}}
   </div>
-</template>
-
-<template name="groupListing">
-  <li class="group-listing">
-    <h2><a href="{{groupPathFromId _id slug}}" class="group-name">{{name}}</a></h2>
-    <span class="group-count">{{countDescription}}</span>
-  </li>
 </template>
 
 <template name="myGroups">
   <div class="col4 push12 sidebar my-groups">
-    <h2>My Groups</h2>
-    {{#if myGroups.count}}
-      <ul class="groups-list">
-        {{#each myGroups}}
-          {{> groupListing}}
-        {{/each}}
-      </ul>
-    {{else}}
-      <p class="no-groups hint">
-        You don't have any groups. Create one below.
-        {{! TODO: We should also add that you can request membership in a group }}
-      </p>
+    {{#if currentPersonId}}
+      <h2>My Groups</h2>
+      {{#if myGroups.count}}
+        <ul class="item-list">
+          {{#each myGroups}}
+            {{> groupCatalogItem}}
+          {{/each}}
+        </ul>
+      {{else}}
+        <p class="no-groups hint">
+          You don't have any groups. Create one below.
+          {{! TODO: We should also add that you can request membership in a group }}
+        </p>
+      {{/if}}
+      <h3>Create a new group</h3>
+      <form class="add-group input-and-buttons control">
+        <button type="submit" class="add">Create</button>
+        <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
+      </form>
     {{/if}}
-    <h3>Create a new group</h3>
-    <form class="add-group input-and-buttons">
-      <button type="submit" class="add">Create</button>
-      <div class="input"><input type="text" class="name" placeholder="Group name" /></div>
-    </form>
+    {{> footer}}
   </div>
+</template>
+
+<template name="groupInlineItem">
+  {{#spaceless}}
+    <a class="inline-item group" {{#unless noLink}}href="{{path}}"{{/unless}}>
+      <i class="avatar only-icon icon-group" title="Group"></i>
+      <span class="name" title="{{name}}">{{name}}</span>
+    </a>
+  {{/spaceless}}
+</template>
+
+<template name="groupCatalogItem">
+  <li class="catalog-item group">
+    <div class="details">
+      {{> groupCatalogItemName}}
+      <p class="members-count show-in-sidebar">
+        <i class="icon-group"></i>
+        {{#if private}}
+          <i class="icon-private"></i>
+        {{/if}}
+        {{countDescription}}
+      </p>
+        {{#if private}}
+          <p>
+            <span class="tooltip" title="Only the group members and listed users can see the group">
+              <i class="icon-private"></i> private group
+            </span>
+          </p>
+        {{/if}}
+    </div>
+
+    <a class="full-item-link" href="{{path}}"></a>
+  </li>
+</template>
+
+<template name="groupCatalogItemName">
+  <h2>
+    {{name}}
+  </h2>
 </template>

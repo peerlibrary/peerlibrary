@@ -1,13 +1,13 @@
 <template name="admin">
-  <div class="simple">
-    {{> adminCheck}}
-    {{> adminDevelopment}}
-    {{> adminPublications}}
-    {{> adminDatabase}}
-    {{> adminErrors}}
-    {{> adminSources}}
-    {{> adminFacts}}
-  </div>
+  {{> adminCheck}}
+  {{> adminDevelopment}}
+  {{> adminPublications}}
+  {{> adminDatabase}}
+  {{> adminErrors}}
+  {{> adminJobs}}
+  {{> adminSources}}
+  {{> adminBlog}}
+  {{> adminFacts}}
 </template>
 
 <template name="adminCheck">
@@ -58,6 +58,55 @@
   </li>
 </template>
 
+<template name="adminJobs">
+  <h2>Jobs</h2>
+  <div class="admin-buttons">
+    <button class="test-job">Create a test job</button>
+  </div>
+  <h3>Queue</h3>
+  <ul class="admin-job-queue item-list">
+    {{#each jobqueue}}
+      {{> adminJobQueueItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="adminJobQueueItem">
+  <li class="catalog-item job">
+    <div class="details">
+      <h2>{{type}}, status: {{status}}</h2>
+      <p>ID: {{_id}}</p>
+      <p>last updated: {{updated}}</p>
+      {{#if inFuture}}
+        <p>scheduled after: {{after}}</p>
+      {{/if}}
+      <p>data: {{json data}}</p>
+      <ul class="log">
+        {{#each log}}
+          {{> adminJobLogItem}}
+        {{/each}}
+      </ul>
+      {{#if canManageJob}}
+        <div class="admin-buttons">
+          {{#if isCancellable}}
+            <button class="admin-job-cancel">Cancel</button>
+          {{/if}}
+          {{#if isRestartable}}
+            <button class="admin-job-restart">Restart</button>
+          {{/if}}
+        </div>
+      {{/if}}
+    </div>
+  </li>
+</template>
+
+<template name="adminJobLogItem">
+  <li class="level">
+    <p class="data">{{time}}, runID: {{runId}}</p>
+    <p class="message">{{message}}</p>
+  </li>
+</template>
+
 <template name="adminSources">
   <h2>External Sources</h2>
   <div class="admin-buttons">
@@ -73,22 +122,19 @@
     <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
     <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
   </div>
-  <ul>
-    {{#each PDFs}}
-      {{> adminArXivPDFsItem}}
-    {{/each}}
-  </ul>
-</template>
-
-<template name="adminArXivPDFsItem">
-  <li>{{ key }}<br/>{{ lastModified }} | {{ size }} B | processing start: {{ processingStart }} | processing end: {{ processingEnd }} | PDFs: {{ PDFs.length }}</li>
 </template>
 
 <template name="adminFSM">
   <h3>Free Speech Movement</h3>
   <div class="admin-buttons">
     <button class="sync-fsm-metadata">Sync FSM metadata</button>
-    <button class="sync-fsm-cache">Sync FSM cache</button>
+  </div>
+</template>
+
+<template name="adminBlog">
+  <h2>Blog</h2>
+  <div class="admin-buttons">
+    <button class="sync-blog">Sync blog</button>
   </div>
 </template>
 

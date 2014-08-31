@@ -1,0 +1,38 @@
+<template name="highlights">
+  <h1>Highlights</h1>
+  <div class="row">
+    <div class="col12">
+      {{> catalog catalogSettings}}
+    </div>
+    {{> myHighlights}}
+  </div>
+</template>
+
+<template name="myHighlights">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's highlights? }}
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="highlightInlineItem">
+  <a class="inline-item highlight"{{#unless noLink}} href="{{path}}"{{/unless}}>
+    <i class="avatar only-icon icon-highlight" title="Highlight"></i>
+    <span class="name"{{#if reference.title}} title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
+  </a>
+</template>
+
+<template name="highlightCatalogItem">
+  <li class="catalog-item highlight">
+    <div class="details">
+      <blockquote>
+        {{quote}}
+      </blockquote>
+      <p><i class="icon-person"></i> Highlighted by {{> personInlineItem author}} in {{> publicationInlineItem publication}}</p>
+    </div>
+
+    <a class="full-item-link" href="{{path}}"></a>
+  </li>
+</template>

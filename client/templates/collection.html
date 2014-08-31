@@ -1,11 +1,11 @@
 <template name="collection">
   {{#if loading}}
-    <div class="simple loading">
+    <div class="loading">
       <h2>Loading</h2>
     </div>
   {{else}}
-    {{#if notfound}}
-      <div class="simple notfound">
+    {{#if notFound}}
+      <div class="not-found">
         <h2>404 Not found</h2>
         <p>Collection not found. You might lack permissions to access it.{{#unless currentPersonId}} Try signing in.{{/unless}}</p>
       </div>
@@ -27,7 +27,7 @@
   <div class="col12">
     <ol class="collection-publications item-list">
       {{#each publications}}
-        {{> publicationSearchResult}}
+        {{> publicationCatalogItem}}
       {{/each}}
     </ol>
   </div>
@@ -35,27 +35,50 @@
 
 <template name="collectionDetails">
   <div class="col4 push12 sidebar collection-details">
-    <h2>Collection by</h2>
-    <div class="member person">
-      <img src="{{authorPerson.avatar}}" class="avatar" />
-      <h4 class="member-name"><a href="{{personPathFromId authorPerson._id authorPerson.slug}}">{{authorPerson.displayName}}</a></h4>
+    <div class="section">
+      <h2>Collection by</h2>
+      {{> personInlineItem authorPerson}}
     </div>
+    {{> collectionSettings}}
+    <div class="section to-my-library">
+      <a href="{{libraryPath}}">To My Library</a>
+    </div>
+  </div>
+</template>
+
+<template name="collectionSettings">
+  <div class="settings section">
+    <h2>Settings</h2>
+    <div class="section">
+      {{> accessControl}}
+    </div>
+    {{#if canRemove}}
+      <div class="section">
+        {{> collectionAdminTools}}
+      </div>
+    {{/if}}
     {{#if canModify}}
-      <h3>Tools</h3>
-      {{#if canRemove}}
-        <p>
-          <button class="delete-collection">Delete collection</button>
+      <p class="hint reorder-hint section">
+        You can reorder publications in a collection by dragging them.
+      </p>
+    {{/if}}
+  </div>
+</template>
+
+<template name="collectionAdminTools">
+  <div class="admin-tools dropdown-trigger">
+    <button class="borderless">
+      <i class="icon-tools"></i> Admin tools
+    </button>
+    <div class="dropdown-anchor">
+      <ul class="dropdown">
+        <li class="menu-item">
           {{! TODO: Delete collection and remove publications from library? All or just those only in this collection? }}
           {{! TODO: Remove all publications from collection }}
           {{! TODO: Add confirmation or undo for this action }}
-        </p>
-      {{/if}}
-      <p class="hint">
-        You can reorder publications in a collection by dragging them.
-      </p>
-      <p class="to-my-library">
-        <a href="{{libraryPath}}">To My Library</a>
-      </p>
-    {{/if}}
+          <button class="delete-collection danger tooltip" title="Warning: there is no undo for this action.">Delete collection</button>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>

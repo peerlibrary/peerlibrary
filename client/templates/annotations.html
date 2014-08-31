@@ -1,0 +1,42 @@
+<template name="annotations">
+  <h1>Annotations</h1>
+  <div class="row">
+    <div class="col12">
+      {{> catalog catalogSettings}}
+    </div>
+    {{> myAnnotations}}
+  </div>
+</template>
+
+<template name="myAnnotations">
+  <div class="col4 push12 sidebar">
+    {{#if currentPersonId}}
+      {{! TODO: Add user's annotations? }}
+    {{/if}}
+    {{> footer}}
+  </div>
+</template>
+
+<template name="annotationInlineItem">
+    <a class="inline-item annotation"{{#unless noLink}} href="{{path}}"{{/unless}}>
+      <i class="avatar only-icon icon-annotation" title="Annotation"></i>
+      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
+    </a>
+</template>
+
+<template name="annotationCatalogItem">
+  <li class="catalog-item annotation">
+    <blockquote class="body">
+      {{{body}}}
+    </blockquote>
+
+    <div class="details">
+      <p><i class="icon-person"></i> Annotated by <span class="actionable">{{> personInlineItem author}}</span> in <span class="actionable">{{> publicationInlineItem publication}}</span></p>
+      {{#if commentsCount}}
+        <p><i class="icon-comment"></i> {{commentsCountDescription}}</p>
+      {{/if}}
+    </div>
+
+    <a class="full-item-link" href="{{path}}"></a>
+  </li>
+</template>
