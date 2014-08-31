@@ -177,23 +177,25 @@ startJobs = ->
     changed: (newDocument, oldDocument) ->
       runJobQueue()
 
-Meteor.startup ->
-  workerInstances = parseInt(process.env.WORKER_INSTANCES || '1')
-  workerInstances = 1 unless _.isFinite workerInstances
+WORKER_INSTANCES = parseInt(process.env.WORKER_INSTANCES || '1')
+WORKER_INSTANCES = 1 unless _.isFinite WORKER_INSTANCES
 
+@WORKER_INSTANCES = WORKER_INSTANCES
+
+Meteor.startup ->
   # Worker is disabled
-  return Log.info "Worker disabled" unless workerInstances
+  return Log.info "Worker disabled" unless WORKER_INSTANCES
 
   # Check for promoted jobs at this interval. Jobs scheduled in the
   # future has to be made ready at regular intervals because time-based
   # queries are not reactive. time < NOW, NOW does not change as times go
   # on, once you make a query. More instances we have, less frequently
   # each particular instance should check.
-  JobQueue.Meta.collection.promote workerInstances * PROMOTE_INTERVAL
+  JobQueue.Meta.collection.promote WORKER_INSTANCES * PROMOTE_INTERVAL
 
   # We randomly delay start so that not all instances are promoting
   # at the same time, but dispersed over the whole interval.
-  Meteor.setTimeout startJobs, Random.fraction() * workerInstances * PROMOTE_INTERVAL
+  Meteor.setTimeout startJobs, Random.fraction() * WORKER_INSTANCES * PROMOTE_INTERVAL
 
   # Same deal with delaying and spreading the interval based on
   # the number of worker instances that we have for job promotion.
@@ -210,8 +212,8 @@ Meteor.startup ->
           job.cancel()
         catch error
           Log.error "Error while canceling a stalled job #{ jobQueueItem.type }/#{ jobQueueItem._id }: #{ error.stack or error }"
-    , workerInstances * STALLED_JOB_CHECK_INTERVAL
-  , Random.fraction() * workerInstances * STALLED_JOB_CHECK_INTERVAL
+    , WORKER_INSTANCES * STALLED_JOB_CHECK_INTERVAL
+  , Random.fraction() * WORKER_INSTANCES * STALLED_JOB_CHECK_INTERVAL
 
 JobQueue.Meta.collection._ensureIndex
   type: 1
