@@ -1,4 +1,4 @@
-class Migration extends Document.AddSyncedFieldsMigration
+class Migration extends Document.AddReferenceFieldsMigration
   name: "Adding user.username to authors"
 
 Publication.addMigration new Migration()

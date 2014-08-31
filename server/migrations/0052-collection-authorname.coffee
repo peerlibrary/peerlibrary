@@ -1,4 +1,4 @@
-class Migration extends Document.AddAutoFieldsMigration
+class Migration extends Document.AddGeneratedFieldsMigration
   name: "Adding authorName field"
   fields: ['authorName']
 
