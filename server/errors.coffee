@@ -33,7 +33,13 @@ Meteor.publish 'logged-errors', ->
   @related (person) ->
     return unless person?.isAdmin
 
-    LoggedError.documents.find {}, LoggedError.PUBLISH_FIELDS()
+    LoggedError.documents.find {},
+      fields: LoggedError.PUBLISH_FIELDS().fields
+      # 30 most recently received errors
+      limit: 30
+      sort: [
+        ['serverTime', 'desc']
+      ]
   ,
     Person.documents.find
       _id: @personId
@@ -41,3 +47,6 @@ Meteor.publish 'logged-errors', ->
       fields:
         # _id field is implicitly added
         isAdmin: 1
+
+LoggedError.Meta.collection._ensureIndex
+  serverTime: -1
