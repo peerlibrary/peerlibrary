@@ -1,3 +1,4 @@
+fs = Npm.require 'fs'
 path = Npm.require 'path'
 
 gitversion = null

@@ -30,6 +30,13 @@ if Meteor.isServer
     if route.match path, null, params
       return name: name, route: route, params: params
 
+@routePath = (name, params...) ->
+  namedRoutes[name].pathWithContext params...
+
+@routeUrl = (name, params...) ->
+  path = routePath name, params...
+  Meteor.absoluteUrl path.substring 1
+
 localPath = (path) ->
   if Meteor.isClient
     internal =

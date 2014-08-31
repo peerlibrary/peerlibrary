@@ -26,8 +26,14 @@ class @Person extends Person
     # Otherwise use ID (which is maybe a slug) and let it be resolved later
     Meteor.Router.personPath personId
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'person'
+    params:
+      personSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional person document.
   # If you do not know if you have an ID or a slug, you can pass it in as an ID and hopefully
@@ -54,19 +60,22 @@ class @Person extends Person
       _id: personId # TODO: Remove when we will be able to access parent template context
       text: "@#{ personId }"
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
 
-  if slug
-    # We also search by id because we may have to redirect to canonical URL
-    Meteor.subscribe 'persons-by-ids-or-slugs', slug
-    Meteor.subscribe 'publications-by-author-slug', slug
+  return unless slug
+
+  # We also search by id because we may have to redirect to canonical URL
+  Meteor.subscribe 'persons-by-ids-or-slugs', slug
+  Meteor.subscribe 'publications-by-author-slug', slug
 
 Deps.autorun ->
   slug = Session.get 'currentPersonSlug'
+
+  return unless slug
 
   person = Person.documents.findOne
     $or: [

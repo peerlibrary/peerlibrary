@@ -18,11 +18,15 @@ class @Person extends AccessDocument
   # givenName
   # familyName
   # displayName: combination of givenName, familyName, user.username, email, and slug
+  # invitedEmail (client only): e-mail address of the user, used only to provide it to inviters of a given person (we cannot simply publish user.emails because Meteor merges fields only at the top level)
   # isAdmin: boolean, is user an administrator or not
-  # invited:
+  # invited: list of
   #   by: a person who invited this person
   #     _id
-  #   message: optional message for invitation email
+  #   message: optional message for invitation email, can be a string, or an object representing the source of invitation:
+  #     source: source name (eg. document's verbose name)
+  #     route: route name
+  #     params: list or object of parameters for the route
   # inGroups: list of (reverse field from Group.members)
   #   _id: id of a group the person is in
   # publications: list of (reverse field from Publication.authors)
@@ -47,15 +51,19 @@ class @Person extends AccessDocument
       displayName: @GeneratedField 'self', ['givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
-      invited:
+      invited: [
         by: @ReferenceField 'self', [], false
+      ]
     # We are using publications in updatedAt trigger, because it is part of person's metadata, but this means
     # that it also updates lastActivity, so we do not need to have a trigger in Publication for authors field
     triggers: =>
       # We do not want only to update updateAt when user._id changes, but also emails and username, so we trigger for the whole user field
       updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'publications._id']
       lastActivity: LastActivityTrigger ['library._id']
-      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) -> doc.invited?.by._id
+      personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) ->
+        oldInvited = _.pluck _.pluck(oldDoc?.invited, 'by'), '_id'
+        newInvited = _.pluck _.pluck(doc?.invited, 'by'), '_id'
+        _.difference newInvited, oldInvited
       # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
       publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->
         newPublications = (publication._id for publication in doc.library or [])
@@ -110,8 +118,13 @@ class @Person extends AccessDocument
       ]
     ]
 
-  getDisplayName: =>
-    if @displayName
+  # Use force if you want the method to compute the value
+  # and not use a (possibly obsolete) cached one.
+  getDisplayName: (force) =>
+    # When used as a template helper, options object is
+    # passed in, so let's make sure this is not happening.
+    force = false unless _.isBoolean force
+    if not force and @displayName
       return @displayName
     else if @givenName and @familyName
       return "#{ @givenName } #{ @familyName }"
@@ -123,12 +136,15 @@ class @Person extends AccessDocument
       return @user.username
     else if @email()
       return @email()
+    # We check displayName again, because we maybe skipped it above
+    else if @displayName
+      return @displayName
     else
       return @slug
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
-    @user?.emails?[0]?.address
+    @user?.emails?[0]?.address or @invitedEmail
 
   @emailFields: ->
     EMAIL_FIELDS

@@ -126,7 +126,7 @@ Template.catalogSortOption.events
 Template.catalogFilter.events
   'keyup .filter input': (event, template) ->
     filter = $(template.findAll '.filter input').val()
-    Session.set template.data.variables.filter, filter
+    Session.set @variables.filter, filter
 
     return # Make sure CoffeeScript does not return anything
 

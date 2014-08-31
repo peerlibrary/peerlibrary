@@ -338,6 +338,8 @@ Template.rolesControlNoResults.noResults = ->
   not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
 Template.rolesControlNoResults.email = ->
+  addAccessControlReactiveVariables @
+
   query = @_query().trim()
   return unless query?.match EMAIL_REGEX
 
@@ -354,18 +356,22 @@ grantAccess = (document, personOrGroup) ->
 
   changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
-Template.rolesControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+Template.addControlInviteByEmail.events
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
-      grantAccess @_parent, new Person
-        _id: newPersonId
+    inviteUser email, @_parent.route(), (newPersonId) =>
+      # Clear autocomplete field when we are only inviting.
+      # Otherwise we leave it in so that user can click again and
+      # add user to permissions.
+      $inviteOnlyField = $(template.firstNode).closest('.add-control').find('.invite-only')
+      if $inviteOnlyField.length
+        $inviteOnlyField.val('')
+        @_parent._query.set ''
 
       return true # Show success notification
 
@@ -441,3 +447,50 @@ Template.rolesControlInviteHint.visible = ->
   addAccessControlReactiveVariables @
 
   !@_query()
+
+Template.rolesControlInvite.events
+  'change .invite-only, keyup .invite-only': (event, template) ->
+    event.preventDefault()
+
+    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
+    @_query.set $(template.findAll '.invite-only').val()
+
+    return # Make sure CoffeeScript does not return anything
+
+# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
+addAccessControlInviteOnlyReactiveVariables = (data) ->
+  return if data._query
+  data._query = new Variable ''
+  data._newDataContext = true
+
+Template.rolesControlInvite.created = ->
+  @_rendered = false
+  addAccessControlInviteOnlyReactiveVariables @data
+
+Template.rolesControlInvite.rendered = ->
+  addAccessControlInviteOnlyReactiveVariables @data
+
+  if @_rendered and @data._newDataContext
+    @_rendered = false
+
+  delete @data._newDataContext
+
+  return if @_rendered
+  @_rendered = true
+
+Template.rolesControlInvite.destroyed = ->
+  @_rendered = false
+  @data._query = null
+  delete @data._newDataContext
+
+Template.rolesControlInviteButton.email = ->
+  addAccessControlInviteOnlyReactiveVariables @
+
+  query = @_query().trim()
+  return unless query?.match EMAIL_REGEX
+
+  # Because it is not possible to access parent data context from event handler, we store it into results
+  # TODO: When will be possible to better access parent data context from event handler, we should use that
+  query = new String(query)
+  query._parent = @
+  query

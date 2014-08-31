@@ -184,8 +184,15 @@ class @Publication extends Publication
 
     Meteor.Router.publicationPath publicationId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'publication'
+    params:
+      publicationId: @_id
+      publicationSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (publicationId, publication, options) ->
@@ -200,7 +207,7 @@ class @Publication extends Publication
     text: "p:#{ publicationId }"
     title: publication?.title
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
   showPDF: =>
@@ -650,7 +657,7 @@ Deps.autorun ->
     transform: null # So that we don't have any complications passing it to FlashMessage.error
 
   # Only the latest job is pushed to the client, so index 0
-  return unless publication?.jobs?[0]?.status is 'failed'
+  return unless publication?.jobs?[0]?.status in ['failed', 'cancelled']
 
   FlashMessage.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
 
@@ -1849,22 +1856,14 @@ grantAccess = (personOrGroup) ->
     else changeRole data, ROLES.MAINTAINER
 
 Template.newAnnotationRolesControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
-      grantAccess new Person
-        _id: newPersonId
-
-      # Clear autocomplete field
-      $(template.firstNode).closest('.add-control').find('.add-access').val('')
-      @_parent._query.set ''
-
+    inviteUser email, @_parent.publication.refresh().route(), (newPersonId) =>
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything

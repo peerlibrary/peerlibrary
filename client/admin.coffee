@@ -47,7 +47,7 @@ Template.adminErrors.errors = ->
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
     Meteor.call 'test-job', (error, result) ->
-      FlashMessage.meteorError error if error
+      FlashMessage.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 

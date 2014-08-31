@@ -1,6 +1,10 @@
 DEFAULT_JOB_TIMEOUT = 5 * 60 * 1000 # ms
 STALLED_JOB_CHECK_INTERVAL = 60 * 1000 # ms
+PROMOTE_INTERVAL = 15 * 1000 # ms
 
+# We cannot directly extend Error type, because instanceof check
+# does not work correctly, but we can use makeErrorType. Extending
+# an error made with makeErrorType further works.
 FatalJobError = Meteor.makeErrorType 'FatalJobError',
   (message) ->
     @message = message or ''
@@ -147,10 +151,9 @@ runJobQueue = ->
     finally
       jobQueueRunning = false
 
-Meteor.startup ->
-  # TODO: Allow configuration to run only on workers
-  # TODO: Set promote and job canceling interval based on number of workers
+startJobs = ->
   JobQueue.Meta.collection.startJobs()
+
   Log.info "Worker enabled"
 
   # The query and sort here is based on the query in jobCollection's
@@ -174,19 +177,41 @@ Meteor.startup ->
     changed: (newDocument, oldDocument) ->
       runJobQueue()
 
-  Meteor.setInterval ->
-    JobQueue.documents.find(status: 'running').forEach (jobQueueItem) ->
-      try
-        jobClass = Job.types[jobQueueItem.type]
-        return if moment.utc().valueOf() < jobQueueItem.updated.valueOf() + jobClass.timeout
+Meteor.startup ->
+  workerInstances = parseInt(process.env.WORKER_INSTANCES || '1')
+  workerInstances = 1 unless _.isFinite workerInstances
 
-        job = JobQueue.Meta.collection.makeJob jobQueueItem
-        job.log "No progress for more than #{ jobClass.timeout / 1000 } seconds",
-          level: 'danger'
-        job.cancel()
-      catch error
-        Log.error "Error while canceling a stalled job #{ jobQueueItem.type }/#{ jobQueueItem._id }: #{ error.stack or error }"
-  , STALLED_JOB_CHECK_INTERVAL
+  # Worker is disabled
+  return Log.info "Worker disabled" unless workerInstances
+
+  # Check for promoted jobs at this interval. Jobs scheduled in the
+  # future has to be made ready at regular intervals because time-based
+  # queries are not reactive. time < NOW, NOW does not change as times go
+  # on, once you make a query. More instances we have, less frequently
+  # each particular instance should check.
+  JobQueue.Meta.collection.promote workerInstances * PROMOTE_INTERVAL
+
+  # We randomly delay start so that not all instances are promoting
+  # at the same time, but dispersed over the whole interval.
+  Meteor.setTimeout startJobs, Random.fraction() * workerInstances * PROMOTE_INTERVAL
+
+  # Same deal with delaying and spreading the interval based on
+  # the number of worker instances that we have for job promotion.
+  Meteor.setTimeout ->
+    Meteor.setInterval ->
+      JobQueue.documents.find(status: 'running').forEach (jobQueueItem) ->
+        try
+          jobClass = Job.types[jobQueueItem.type]
+          return if moment.utc().valueOf() < jobQueueItem.updated.valueOf() + jobClass.timeout
+
+          job = JobQueue.Meta.collection.makeJob jobQueueItem
+          job.log "No progress for more than #{ jobClass.timeout / 1000 } seconds",
+            level: 'danger'
+          job.cancel()
+        catch error
+          Log.error "Error while canceling a stalled job #{ jobQueueItem.type }/#{ jobQueueItem._id }: #{ error.stack or error }"
+    , workerInstances * STALLED_JOB_CHECK_INTERVAL
+  , Random.fraction() * workerInstances * STALLED_JOB_CHECK_INTERVAL
 
 JobQueue.Meta.collection._ensureIndex
   type: 1
