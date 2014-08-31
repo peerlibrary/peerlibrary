@@ -25,6 +25,7 @@ class @Highlight extends Highlight
     @constructor.pathFromId @_id
 
   route: =>
+    source: @constructor.verboseName()
     route: 'highlight'
     params:
       publicationId: @publication?._id

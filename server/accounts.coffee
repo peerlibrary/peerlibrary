@@ -53,6 +53,7 @@ Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
     validateArgument 'message', message, Match.OneOf Match.Optional(String), Match.Optional
+      source: String
       route: String
       params: Match.OneOf [String], ObjectWithOnlyStrings
 
@@ -322,26 +323,21 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
   message = invited.invited[0].message
   if message
     if _.isArray message.params
-      message = routePath message.route, message.params...
-
       parts.push """
-       at:
+       at the #{ message.source }:
 
-      #{ url }
+      #{ routeUrl message.route, message.params... }
 
       """
     else if _.isObject message.params
-      url = routePath message.route, message.params
-
       parts.push """
-       at:
+       at the #{ message.source }:
 
-      #{ url }
+      #{ routeUrl message.route, message.params }
 
       """
     else
       # Otherwise message is a string
-
       parts.push """
       :
 

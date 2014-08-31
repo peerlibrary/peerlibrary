@@ -19,6 +19,7 @@ class @Tag extends Tag
     @constructor.pathFromId @_id, @slug
 
   route: =>
+    source: @constructor.verboseName()
     route: 'tag'
     params:
       tagId: @_id

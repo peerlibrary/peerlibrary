@@ -25,6 +25,7 @@ class @Annotation extends Annotation
     @constructor.pathFromId @_id
 
   route: =>
+    source: @constructor.verboseName()
     route: 'annotation'
     params:
       publicationId: @publication?._id

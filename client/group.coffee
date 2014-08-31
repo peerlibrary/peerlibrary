@@ -19,6 +19,7 @@ class @Group extends Group
     @constructor.pathFromId @_id, @slug
 
   route: =>
+    source: @constructor.verboseName()
     route: 'group'
     params:
       groupId: @_id

@@ -24,6 +24,7 @@ class @Person extends AccessDocument
   #   by: a person who invited this person
   #     _id
   #   message: optional message for invitation email, can be a string, or an object representing the source of invitation:
+  #     source: source name (eg. document's verbose name)
   #     route: route name
   #     params: list or object of parameters for the route
   # inGroups: list of (reverse field from Group.members)

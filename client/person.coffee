@@ -30,6 +30,7 @@ class @Person extends Person
     @constructor.pathFromId @_id, @slug
 
   route: =>
+    source: @constructor.verboseName()
     route: 'person'
     params:
       personSlug: @slug

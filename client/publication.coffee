@@ -188,6 +188,7 @@ class @Publication extends Publication
     @constructor.pathFromId @_id, @slug
 
   route: =>
+    source: @constructor.verboseName()
     route: 'publication'
     params:
       publicationId: @_id

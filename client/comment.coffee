@@ -25,6 +25,7 @@ class @Comment extends Comment
     @constructor.pathFromId @_id
 
   route: =>
+    source: @constructor.verboseName()
     route: 'comment'
     params:
       publicationId: @publication?._id

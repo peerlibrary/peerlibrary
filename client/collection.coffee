@@ -19,6 +19,7 @@ class @Collection extends Collection
     @constructor.pathFromId @_id, @slug
 
   route: =>
+    source: @constructor.verboseName()
     route: 'collection'
     params:
       collectionId: @_id
