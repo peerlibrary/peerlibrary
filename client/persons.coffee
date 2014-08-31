@@ -32,4 +32,4 @@ Template.personCatalogItem.groupsCountDescription = ->
 # displayName to inviters (emails are not stored in subdocuments, but are subscribed to independently
 # and received as invitedEmail field).
 Template.personInlineItem.getDisplayName = ->
-  a = @refresh().getDisplayName true
+  @refresh().getDisplayName true
