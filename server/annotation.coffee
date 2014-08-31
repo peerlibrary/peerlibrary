@@ -269,3 +269,5 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
       _id: @personId
     ,
       fields: _.extend Annotation.readAccessPersonFields()
+
+ensureCatalogSortIndexes Annotation

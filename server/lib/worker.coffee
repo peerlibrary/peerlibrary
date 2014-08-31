@@ -216,3 +216,8 @@ Meteor.startup ->
 JobQueue.Meta.collection._ensureIndex
   type: 1
   status: 1
+
+JobQueue.Meta.collection._ensureIndex
+  priority: 1
+  retryUntil: 1
+  after: 1

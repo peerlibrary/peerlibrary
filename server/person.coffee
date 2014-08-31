@@ -194,3 +194,5 @@ Meteor.publish 'persons', (limit, filter, sortIndex) ->
       limit: limit
       fields: Person.PUBLISH_CATALOG_FIELDS().fields
       sort: sort
+
+ensureCatalogSortIndexes Person
