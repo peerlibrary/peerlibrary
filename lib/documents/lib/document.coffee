@@ -27,6 +27,8 @@ class @BaseDocument extends Document
   # (with for example only _id) with additional fields, or
   # update fields if you think they were updated in the database.
   refresh: (fields) =>
+    throw new Error "Missing _id field" unless @_id
+
     fields ?= {}
     _.extend @, @constructor.documents.findOne @_id,
       fields: fields

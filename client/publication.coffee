@@ -1689,29 +1689,29 @@ changeRole = (data, role) ->
     readPersons: getNewAnnotationReadPersons()
     readGroups: getNewAnnotationReadGroups()
 
-  wasAdmin = _.contains roles["admin#{personOrGroupName}s"], personOrGroupId
-  wasMaintainer = _.contains roles["maintainer#{personOrGroupName}s"], personOrGroupId
-  hadReadAccess = _.contains roles["read#{personOrGroupName}s"], personOrGroupId
+  wasAdmin = _.contains roles["admin#{ personOrGroupName }s"], personOrGroupId
+  wasMaintainer = _.contains roles["maintainer#{ personOrGroupName }s"], personOrGroupId
+  hadReadAccess = _.contains roles["read#{ personOrGroupName }s"], personOrGroupId
 
   # For private documents, grant read access together with admin/maintainer privileges.
   if access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
-    Session.set "newAnnotationRead#{personOrGroupName}s", _.union roles["read#{personOrGroupName}s"], [personOrGroupId]
+    Session.set "newAnnotationRead#{ personOrGroupName }s", _.union roles["read#{ personOrGroupName }s"], [personOrGroupId]
 
   if role is ROLES.MAINTAINER
-    Session.set "newAnnotationMaintainer#{personOrGroupName}s", _.union roles["maintainer#{personOrGroupName}s"], [personOrGroupId]
+    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.union roles["maintainer#{ personOrGroupName }s"], [personOrGroupId]
 
   if role is ROLES.ADMIN
-    Session.set "newAnnotationAdmin#{personOrGroupName}s", _.union roles["admin#{personOrGroupName}s"], [personOrGroupId]
+    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.union roles["admin#{ personOrGroupName }s"], [personOrGroupId]
 
   # Only clear read access for private documents when specifically clearing all permissions
   if access is ACCESS.PRIVATE and hadReadAccess and role < ROLES.READ_ACCESS
-    Session.set "newAnnotationRead#{personOrGroupName}s", _.without roles["read#{personOrGroupName}s"], personOrGroupId
+    Session.set "newAnnotationRead#{ personOrGroupName }s", _.without roles["read#{ personOrGroupName }s"], personOrGroupId
 
   if wasMaintainer and role isnt ROLES.MAINTAINER
-    Session.set "newAnnotationMaintainer#{personOrGroupName}s", _.without roles["maintainer#{personOrGroupName}s"], personOrGroupId
+    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.without roles["maintainer#{ personOrGroupName }s"], personOrGroupId
 
   if wasAdmin and role isnt ROLES.ADMIN
-    Session.set "newAnnotationAdmin#{personOrGroupName}s", _.without roles["admin#{personOrGroupName}s"], personOrGroupId
+    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.without roles["admin#{ personOrGroupName }s"], personOrGroupId
 
 Template.newAnnotationRolesControlRoleEditor.events
   'click .dropdown-trigger': (event, template) ->

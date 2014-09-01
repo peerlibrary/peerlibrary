@@ -42,7 +42,10 @@ Template.adminErrors.events
     throw new Error "Dummy error"
 
 Template.adminErrors.errors = ->
-  LoggedError.documents.find {}
+  LoggedError.documents.find {},
+    sort: [
+      ['serverTime', 'desc']
+    ]
 
 Template.adminJobs.events
   'click button.test-job': (event, template) ->

@@ -91,3 +91,6 @@ Meteor.publish 'jobs-by-publication', (publicationId) ->
       _id: publicationId
     ,
       fields: Publication.readAccessSelfFields()
+
+JobQueue.Meta.collection._ensureIndex
+  updated: -1

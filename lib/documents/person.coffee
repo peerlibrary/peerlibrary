@@ -48,7 +48,7 @@ class @Person extends AccessDocument
       adminGroups: [@ReferenceField Group, ['slug', 'name']]
       user: @ReferenceField User, [emails: {$slice: 1}, 'username'], false
       slug: @GeneratedField 'self', ['user.username']
-      displayName: @GeneratedField 'self', ['givenName', 'familyName', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
+      displayName: @GeneratedField 'self', ['givenName', 'familyName', 'user._id', 'user.username', 'slug'].concat(_.keys EMAIL_FIELDS)
       library: [@ReferenceField Publication]
       gravatarHash: @GeneratedField User, [emails: {$slice: 1}, 'person']
       invited: [
@@ -61,8 +61,8 @@ class @Person extends AccessDocument
       updatedAt: UpdatedAtTrigger ['user', 'givenName', 'familyName', 'publications._id']
       lastActivity: LastActivityTrigger ['library._id']
       personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) ->
-        oldInvited = _.pluck _.pluck(oldDoc?.invited, 'by'), '_id'
-        newInvited = _.pluck _.pluck(doc?.invited, 'by'), '_id'
+        newInvited = (invited.by._id for invited in doc.invited or [])
+        oldInvited = (invited.by._id for invited in oldDoc.invited or [])
         _.difference newInvited, oldInvited
       # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
       publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->

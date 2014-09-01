@@ -535,3 +535,5 @@ Meteor.publish 'my-publications-importing', ->
       _id: @personId
     ,
       fields: Publication.readAccessPersonFields()
+
+ensureCatalogSortIndexes Publication
