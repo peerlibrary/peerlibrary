@@ -35,7 +35,10 @@
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/meteor-variable.git"
     },
-    "cheerio": {},
+    "cheerio": {
+      "branch": "peerlibrary",
+      "git": "https://github.com/peerlibrary/meteor-cheerio.git"
+    },
     "isolate-value": {},
     "stacktrace": {},
     "related": {},

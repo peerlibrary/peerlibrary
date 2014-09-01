@@ -1,11 +1,13 @@
 #!/bin/bash -e
 
-mkdir -p "$STORAGE_DIRECTORY"
-chown -Rhf peerlibrary:peerlibrary "$STORAGE_DIRECTORY" /.meteorsession
+mkdir -p /storage
+# We don't do it recursively, because it could be a lot of files
+chown -f peerlibrary:peerlibrary /storage /storage/publication /storage/publication/* /.meteorsession
 
 export PATH=/.meteor/tools/latest/bin:$PATH
 export NODE_PATH=/.meteor/tools/latest/lib/node_modules
 export NODE_ENV='PRODUCTION'
+export STORAGE_DIRECTORY='/storage'
 
 cd /bundle
 exec chpst -u peerlibrary:peerlibrary node main.js 2>&1

@@ -8,6 +8,18 @@ class @User extends User
     name: 'User'
     replaceParent: true
 
+  # Returns true if account has any service associated with it,
+  # like password set. It returns false if account has been created
+  # for an invitation but never claimed.
+  isRegistered: =>
+    # Check if password is set
+    return true unless _.isEmpty _.omit(@services?.password, 'reset')
+
+    # Otherwise check if some other service is set
+    return true unless _.isEmpty _.omit(@services, 'password', 'resume')
+
+    return false
+
   # A set of fields which are public and can be published to the client
   @PUBLISH_FIELDS: ->
     fields:
@@ -40,17 +52,23 @@ Meteor.publish null, ->
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
-    validateArgument 'message', message, Match.Optional String
+    validateArgument 'message', message, Match.OneOf Match.Optional(String), Match.Optional
+      source: String
+      route: String
+      params: Match.OneOf [String], ObjectWithOnlyStrings
 
     # We require that user inviting is logged in
     person = Meteor.person()
     throw new Meteor.Error 401, "User not signed in." unless person
 
-    throw new Meteor.Error 400, "User is already a member." if User.documents.exists 'emails.address': email
-
-    userId = Accounts.createUser
-      email: email
-      secret: INVITE_SECRET
+    invitedUser = User.documents.findOne 'emails.address': email
+    if invitedUser
+      throw new Meteor.Error 400, "User is already a member." if invitedUser.isRegistered()
+      userId = invitedUser._id
+    else
+      userId = Accounts.createUser
+        email: email
+        secret: INVITE_SECRET
 
     invited = Person.documents.findOne
       'user._id': userId
@@ -60,11 +78,12 @@ Meteor.methods
     Person.documents.update
       _id: invited._id
     ,
-      $set:
+      # It is OK to add multiple invitations for the same inviter
+      $push:
         invited:
           by:
             _id: person._id
-          message: message?.trim() or null
+          message: if _.isString message then message.trim() else message or null
 
     Accounts.sendEnrollmentEmail userId
 
@@ -213,6 +232,8 @@ wrapWithIndent = (text, indentAmount=2, wrapLength=MAX_LINE_LENGTH) ->
 Accounts.emailTemplates.siteName = SITENAME
 Accounts.emailTemplates.from = Meteor.settings?.from or "PeerLibrary <no-reply@peerlibrary.org>"
 
+noReplyFrom = not Meteor.settings?.from or Meteor.settings?.fromNoReply
+
 Accounts.emailTemplates.resetPassword.subject = (user) ->
   """[#{ Accounts.emailTemplates.siteName }] Password reset"""
 Accounts.emailTemplates.resetPassword.text = (user, url) ->
@@ -220,7 +241,10 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
 
   person = Meteor.person user._id
 
-  wrap """
+  # Construct email body
+  parts = []
+
+  parts.push """
   Hello #{ person.getDisplayName() }!
 
   This message was sent to you because you requested a password reset for your user account at #{ Accounts.emailTemplates.siteName } with username "#{ user.username }". If you have already done so or don't want to, you can safely ignore this email.
@@ -233,7 +257,16 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
 
   Your username, in case you have forgotten: #{ user.username }
 
-  If you have any problems resetting your password or have any other questions just reply to this email.
+  """
+
+  unless noReplyFrom
+    parts.push """
+
+    If you have any problems resetting your password or have any other questions just reply to this email.
+
+    """
+
+  parts.push """
 
   Yours,
 
@@ -242,50 +275,84 @@ Accounts.emailTemplates.resetPassword.text = (user, url) ->
   #{ Meteor.absoluteUrl() }
   """
 
+  wrap parts.join ''
+
 Accounts.emailTemplates.enrollAccount.subject = (user) ->
-  """[#{ Accounts.emailTemplates.siteName }] An account has been created for you"""
-Accounts.emailTemplates.enrollAccount.text = (user, url) ->
-  url = url.replace '#/', ''
+  invited = Meteor.person user._id,
+    invited:
+      # We assume that the last inviter is the one we want, not really a big problem if there was a race condition and we made a mistake
+      $slice: -1 # Using $slice does not exclude other fields by itself
 
-  invited = Meteor.person user._id
-
-  assert invited.invited?.by._id
+  # The first (0) and only element in the array is here the last inviter
+  assert invited.invited?[0]?.by?._id
 
   person = Person.documents.findOne
-    _id: invited.invited.by._id
+    _id: invited.invited[0].by._id
+
+  assert person
+
+  """[#{ Accounts.emailTemplates.siteName }] #{ person.getDisplayName() } is inviting you to join them"""
+Accounts.emailTemplates.enrollAccount.text = (user, url) ->
+  url = url.replace '#/', ''
+  url = url.replace 'enroll-account', 'accept-invitation'
+
+  invited = Meteor.person user._id,
+    invited:
+      # We assume that the last inviter is the one we want, not really a big problem if there was a race condition and we made a mistake
+      $slice: -1 # Using $slice does not exclude other fields by itself
+
+  # The first (0) and only element in the array is here the last inviter
+  assert invited.invited?[0]?.by?._id
+
+  person = Person.documents.findOne
+    _id: invited.invited[0].by._id
 
   assert person
 
   # Construct email body
   parts = []
 
+  # We are forcing getDisplayName as all PeerDB generators
+  # might not yet ran invited.displayName might be obsolete.
   parts.push """
-  Hello #{ invited.getDisplayName() }!
+  Hello #{ invited.getDisplayName true }!
 
-  #{ person.getDisplayName() } created an account for you at #{ Accounts.emailTemplates.siteName }. #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
+  #{ Accounts.emailTemplates.siteName } is a website facilitating the global conversation on academic literature and #{ person.getDisplayName() } is inviting you to join the conversation with them
   """
 
-  message = invited.invited.message
+  message = invited.invited[0].message
   if message
-    parts.push """
-    :
+    if _.isArray message.params
+      parts.push """
+       at the #{ message.source }:
 
-    #{ wrapWithIndent message }
+      #{ routeUrl message.route, message.params... }
 
-    To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+      """
+    else if _.isObject message.params
+      parts.push """
+       at the #{ message.source }:
 
-    """
+      #{ routeUrl message.route, message.params }
+
+      """
+    else
+      # Otherwise message is a string
+      parts.push """
+      :
+
+      #{ wrapWithIndent message }
+
+      """
   else
     parts.push """
-    . To learn more about #{ Accounts.emailTemplates.siteName }, visit:
+    .
 
     """
 
   parts.push """
 
-  #{ Meteor.absoluteUrl() }
-
-  Please click the link below and choose your password:
+  Please click the link below to accept the invitation and create an account:
 
   #{ url }
 
@@ -293,9 +360,20 @@ Accounts.emailTemplates.enrollAccount.text = (user, url) ->
 
   Please also be careful to open a complete link. Your email client might have broken it into several lines.
 
-  You will be able to choose your username after you set your password.
+  To learn more about #{ Accounts.emailTemplates.siteName }, visit:
 
-  If you have any problems setting your password or have any other questions just reply to this email.
+  #{ Meteor.absoluteUrl() }
+
+  """
+
+  unless noReplyFrom
+    parts.push """
+
+    If you have any problems signing up or have any other questions just reply to this email.
+
+    """
+
+  parts.push """
 
   Yours,
 

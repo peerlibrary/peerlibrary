@@ -130,3 +130,5 @@ Meteor.publish 'highlights', (limit, filter, sortIndex) ->
       limit: limit
       fields: Highlight.PUBLISH_CATALOG_FIELDS().fields
       sort: sort
+
+ensureCatalogSortIndexes Highlight

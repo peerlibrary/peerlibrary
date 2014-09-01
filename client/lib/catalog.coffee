@@ -62,7 +62,7 @@ Template.catalog.created = ->
   @_searchResultHandle?.stop()
   @_searchResultHandle = Deps.autorun =>
     fields = {}
-    fields["count#{@data.documentClass.name}s"] = 1
+    fields["count#{ @data.documentClass.Meta.collection._name }"] = 1
 
     searchResultCursor = SearchResult.documents.find
       name: @data.subscription
@@ -73,9 +73,9 @@ Template.catalog.created = ->
     # Store how many results there are
     searchResultCursor.observe
       added: (document) =>
-        Session.set variables.count, document["count#{@data.documentClass.name}s"]
+        Session.set variables.count, document["count#{ @data.documentClass.Meta.collection._name }"]
       changed: (newDocument, oldDocument) =>
-        Session.set variables.count, newDocument["count#{@data.documentClass.name}s"]
+        Session.set variables.count, newDocument["count#{ @data.documentClass.Meta.collection._name }"]
 
 Template.catalog.destroyed = ->
   @_resetSignalHandle?.stop()
@@ -126,7 +126,7 @@ Template.catalogSortOption.events
 Template.catalogFilter.events
   'keyup .filter input': (event, template) ->
     filter = $(template.findAll '.filter input').val()
-    Session.set template.data.variables.filter, filter
+    Session.set @variables.filter, filter
 
     return # Make sure CoffeeScript does not return anything
 

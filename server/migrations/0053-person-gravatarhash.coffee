@@ -1,4 +1,4 @@
-class Migration extends Document.ModifyAutoFieldsMigration
+class Migration extends Document.ModifyGeneratedFieldsMigration
   name: "Changing gravatarHash generator"
   fields: ['gravatarHash']
 

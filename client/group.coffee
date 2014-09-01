@@ -15,8 +15,15 @@ class @Group extends Group
 
     Meteor.Router.groupPath groupId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'group'
+    params:
+      groupId: @_id
+      groupSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (groupId, group, options) ->
@@ -31,7 +38,7 @@ class @Group extends Group
     text: "g:#{ groupId }"
     title: group?.name or group?.slug
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 groupHandle = null
@@ -195,16 +202,14 @@ addMemberToGroup = (personId) ->
     FlashMessage.success "Member added." if count
 
 Template.groupMembersAddControlNoResults.events
-  'click .add-and-invite': (event, template) ->
-
+  'click .invite': (event, template) ->
     # We get the email in @ (this), but it's a String object that also has
     # the parent context attached so we first convert it to a normal string.
     email = "#{ @ }"
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, null, (newPersonId) =>
-      addMemberToGroup newPersonId
+    inviteUser email, @_parent.route(), (newPersonId) =>
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything

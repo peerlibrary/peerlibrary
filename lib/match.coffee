@@ -16,6 +16,12 @@ INVALID_SHA256_CHARS_REGEX = new RegExp '[^a-f0-9]'
   check x, Match.Where (y) -> y.length is 17
   not INVALID_ID_CHARS_REGEX.test x
 
+@ObjectWithOnlyStrings = Match.Where (x) ->
+  check x, Object
+  for key, value of x
+    check key, String
+    check value, String
+
 @MatchAccess = (access) ->
   values = _.values access
   Match.Where (a) ->

@@ -21,8 +21,16 @@ class @Highlight extends Highlight
 
     Meteor.Router.highlightPath highlight.publication._id, publicationSlug, highlightId
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'highlight'
+    params:
+      publicationId: @publication?._id
+      publicationSlug: @publication?.slug
+      highlightId: @_id
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (highlightId, highlight, options) ->
@@ -36,7 +44,7 @@ class @Highlight extends Highlight
     _id: highlightId # TODO: Remove when we will be able to access parent template context
     text: "h:#{ highlightId }"
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 Handlebars.registerHelper 'highlightPathFromId', _.bind Highlight.pathFromId, Highlight

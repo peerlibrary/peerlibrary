@@ -11,6 +11,8 @@ class @FlashMessage extends BaseDocument
   # additional: additional data of the message
   # sticky: if true (can be any custom value useful for identifying the
   #         message) message is not removed automatically
+  # stickyHidden: boolean, if set, sticky flash message was hidden and should
+  #               not be recreated again
 
   @Meta
     name: 'FlashMessage'
