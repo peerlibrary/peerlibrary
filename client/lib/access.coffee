@@ -81,14 +81,14 @@ Template.accessMenuPrivacyForm.events
   'mouseenter .access .selection': (event, template) ->
     accessHover = $(event.currentTarget).find('input').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (event, template) ->
     accessHover = $(template.findAll '.access input:radio:checked').val()
     $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{accessHover}").addClass('displayed')
+    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
