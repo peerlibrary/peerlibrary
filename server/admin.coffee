@@ -3,8 +3,6 @@ Meteor.methods
     # If @connection is not set this means method is called from the server (eg., from auto installation)
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin or not @connection
 
-    @unblock()
-
     # Currently, a sample is simply current smaller set of arXiv metadata
     # publications which then has cache synced with PDFs from the central server
     # TODO: Think how to make a better sample which would contain both metadata and content

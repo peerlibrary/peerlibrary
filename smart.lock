@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary",
-    "commit": "31086054de832fc4cf9bbfc7e1933831be1f0e4b"
+    "commit": "aed87447e3eae766de91cddab6d9b5d290963df1"
   },
   "dependencies": {
     "basePackages": {
@@ -37,7 +37,10 @@
         "git": "https://github.com/peerlibrary/meteor-variable.git",
         "branch": "peerlibrary"
       },
-      "cheerio": {},
+      "cheerio": {
+        "git": "https://github.com/peerlibrary/meteor-cheerio.git",
+        "branch": "peerlibrary"
+      },
       "isolate-value": {},
       "stacktrace": {},
       "related": {},
@@ -130,8 +133,8 @@
       },
       "peerdb": {
         "git": "https://github.com/peerlibrary/meteor-peerdb.git",
-        "tag": "v0.12.6",
-        "commit": "9974f6f1bea5fbd4d673fa04390c9ce79348b6f7"
+        "tag": "v0.14.2",
+        "commit": "ae5e0aa0f9a2a92d2145986d59bcbda3ddc00482"
       },
       "useragent": {
         "git": "https://github.com/awwx/meteor-useragent.git",
@@ -149,9 +152,9 @@
         "commit": "ffe9875c0983bf2cb369f51da468f7d7307c5da3"
       },
       "cheerio": {
-        "git": "https://github.com/andreioprisan/meteor-cheerio.git",
-        "tag": "v0.3.2",
-        "commit": "f7b7b8c4ad4dbac7e9b34a4b110150cd5ec95bae"
+        "git": "https://github.com/peerlibrary/meteor-cheerio.git",
+        "branch": "peerlibrary",
+        "commit": "b237ff173b5f2be6eb44fdf35f947bdbcab08b4c"
       },
       "isolate-value": {
         "git": "https://github.com/awwx/meteor-isolate-value.git",
@@ -170,13 +173,13 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.4.13",
-        "commit": "1f3c1a427084af5a2eca2e299eb65bc01387df8a"
+        "tag": "v2.5.2",
+        "commit": "d42da1ef425ef4f7ead4a851cd3bd652deca8dd2"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
-        "tag": "v0.2.0",
-        "commit": "b16b00f0659b5154765f6c7ba51c660942a709d0"
+        "tag": "v0.2.1",
+        "commit": "a414ac4608180cc605969fcaf11b475b84340205"
       },
       "url-utils": {
         "git": "https://github.com/peerlibrary/meteor-url-utils.git",
@@ -196,7 +199,7 @@
       "jobCollection": {
         "git": "https://github.com/peerlibrary/meteor-job-collection.git",
         "branch": "peerlibrary",
-        "commit": "1d50d797dad944dcf084d46da474cf0a10cdcade"
+        "commit": "0e28a29ba1234369cb0996130c786e26973e102f"
       },
       "async": {
         "git": "https://github.com/peerlibrary/meteor-async.git",

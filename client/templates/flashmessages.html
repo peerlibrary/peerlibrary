@@ -7,19 +7,21 @@
 </template>
 
 <template name="flashMessagesOverlayItem">
-  <li class="flash-message {{type}}">
-    {{#if additional}}
-      <i class="icon-down button" title="Additional information"></i>
-    {{/if}}
-    <div class="message">{{message}}</div>
-    {{#if additional}}
-      <div class="additional">
-        {{!
-          We allow raw HTML content for additional information.
-          This means it should come only from trusted sources.
-        }}
-        {{{additional}}}
-      </div>
-    {{/if}}
-  </li>
+  {{#unless stickyHidden}}
+    <li class="flash-message {{type}}">
+      {{#if additional}}
+        <i class="icon-down button" title="Additional information"></i>
+      {{/if}}
+      <div class="message">{{message}}</div>
+      {{#if additional}}
+        <div class="additional">
+          {{!
+            We allow raw HTML content for additional information.
+            This means it should come only from trusted sources.
+          }}
+          {{{additional}}}
+        </div>
+      {{/if}}
+    </li>
+  {{/unless}}
 </template>

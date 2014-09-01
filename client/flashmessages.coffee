@@ -79,7 +79,14 @@ Template.flashMessagesOverlayItem.events
             $(event.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
 
     else if $(event.target).hasClass('icon-cancel')
-      FlashMessage.documents.remove @_id unless event.isDefaultPrevented()
+      return if event.isDefaultPrevented()
+
+      if @sticky
+        FlashMessage.documents.update @_id,
+          $set:
+            stickyHidden: true
+      else
+        FlashMessage.documents.remove @_id
 
     return # Make sure CoffeeScript does not return anything
 
@@ -91,7 +98,14 @@ Template.flashMessagesOverlayItem.events
     return
 
   'click': (event, template) ->
-    FlashMessage.documents.remove @_id unless event.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
+    return if event.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
+
+    if @sticky
+      FlashMessage.documents.update @_id,
+        $set:
+          stickyHidden: true
+    else
+      FlashMessage.documents.remove @_id
 
     return # Make sure CoffeeScript does not return anything
 

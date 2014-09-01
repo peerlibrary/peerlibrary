@@ -12,7 +12,13 @@ class @Person extends Person
           [fields._id, fields._id]
 
       fields.displayName.generator = (fields) ->
-        [fields._id, new Person(fields).getDisplayName()]
+        person = new Person(fields).refresh(invited: 1)
+        # Display name is public, so we don't want to leak email until the invited user registers.
+        # We use a special publish endpoint to provide email addresses of all invitees to inviters.
+        if not person.invited?.length or not person.user?.emails or person.user.refresh(services: 1).isRegistered()
+          [fields._id, person.getDisplayName true]
+        else
+          [fields._id, fields._id]
 
       fields.gravatarHash.generator = (fields) ->
         # Hash should come from user's email
@@ -94,25 +100,29 @@ Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
   ,
     Person.PUBLISH_FIELDS()
 
-# TODO: Should we really publish whole person documents, because this publish endpoint exists just to get access to email address to display it in lists to which user was added when invited?
+# User who invited should have access to email address so that
+# we can display it in lists to which user was added when invited
 Meteor.publish 'persons-invited', ->
-  @related (person) ->
-    return unless person?._id
-
-    # No need for requireReadAccessSelector because persons are public
-    Person.documents.find
-      "invited.by":
-        _id: person._id
-    ,
-      fields: _.extend Person.PUBLISH_FIELDS().fields,
-        # User who invited should have access to email address so that
-        # we can display it in lists to which user was added when invited
-        'user.emails': 1
+  # No need for requireReadAccessSelector because persons are public
+  handle = Person.documents.find(
+    'invited.by._id': @personId
   ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()
+    fields:
+      'user.emails': 1
+  ).observeChanges
+    added: (id, fields) =>
+      @added 'Persons', id,
+        invitedEmail: new Person(_.extend {}, {_id: id}, fields).email()
+    changed: (id, fields) =>
+      @changed 'Persons', id,
+        invitedEmail: new Person(_.extend {}, {_id: id}, fields).email()
+    removed: (id) =>
+      @removed 'Persons', id
+
+  @ready()
+
+  @onStop ->
+    handle.stop()
 
 Meteor.publish 'my-person-library', ->
   return unless @personId
@@ -184,3 +194,5 @@ Meteor.publish 'persons', (limit, filter, sortIndex) ->
       limit: limit
       fields: Person.PUBLISH_CATALOG_FIELDS().fields
       sort: sort
+
+ensureCatalogSortIndexes Person

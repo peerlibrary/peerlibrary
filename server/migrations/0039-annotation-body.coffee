@@ -21,8 +21,6 @@ class Migration extends Document.PatchMigration
 
         count += collection.update {_schema: currentSchema, _id: document._id, body: document.body}, {$set: {body: newBody, _schema: newSchema}}
 
-        document.body = newBody
-
     counts = super
     counts.migrated += count
     counts.all += count

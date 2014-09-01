@@ -42,12 +42,15 @@ Template.adminErrors.events
     throw new Error "Dummy error"
 
 Template.adminErrors.errors = ->
-  LoggedError.documents.find {}
+  LoggedError.documents.find {},
+    sort: [
+      ['serverTime', 'desc']
+    ]
 
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
     Meteor.call 'test-job', (error, result) ->
-      FlashMessage.meteorError error if error
+      FlashMessage.fromError error if error
 
     return # Make sure CoffeeScript does not return anything
 
