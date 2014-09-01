@@ -184,7 +184,7 @@ h1
         .name
           text-decoration none
 
-  .add-and-invite
+  .invite
     width 100%
     margin-top 10px
     white-space nowrap
@@ -236,7 +236,9 @@ h1
     color black
 
     input, input:focus
-      width 233px
+      /* For some reason it should be 231 in Chrome and not 233.
+         Otherwise the right border is cropped and not seen. */
+      width 231px
       border none
       box-shadow none
 
@@ -255,7 +257,7 @@ h1
       margin-bottom 0
 
   .add-control-results
-    padding 10px
+    padding 0 10px 10px
 
   .access-results
   .group-member-results

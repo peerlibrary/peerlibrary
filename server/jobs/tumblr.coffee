@@ -103,4 +103,5 @@ Job.addJobClass TumblrJob
 if Meteor.settings?.tumblr
   Meteor.startup ->
     # Start a periodic job
-    new TumblrJob().enqueue()
+    new TumblrJob().enqueue() if WORKER_INSTANCES
+

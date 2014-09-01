@@ -129,7 +129,8 @@
 
 <template name="addControlInviteByEmail">
   {{#if this}}
-    <button class="add-and-invite">Add and invite {{this}}</button>
+    {{! TODO: Button and input box should get disabled and a loading icon should be displayed until the method returns, if error happens input box should be refocused so that user can fix the input }}
+    <button class="invite">Invite {{this}}</button>
   {{/if}}
 </template>
 
@@ -203,6 +204,6 @@
 
 <template name="groupMembersAddControlInviteHint">
   {{#if visible}}
-    <p class="hint">Enter an email to add and invite the user.</p>
+    <p class="hint">Enter an email to invite a new user.</p>
   {{/if}}
 </template>

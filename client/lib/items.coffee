@@ -26,7 +26,7 @@ Template.memberAdd.noLinkDocument = ->
   template.events
     'mousedown': (event, template) ->
       # Save mouse position so we can later detect selection actions in click handler
-      template.data._previousMousePosition =
+      @_previousMousePosition =
         pageX: event.pageX
         pageY: event.pageY
 
@@ -40,17 +40,21 @@ Template.memberAdd.noLinkDocument = ->
         underMouse = document.elementFromPoint event.clientX, event.clientY
         $(template.find '.full-item-link').show() unless rangy.getSelection().containsNode underMouse, true
 
+      return # Make sure CoffeeScript does not return anything
+
     'mouseup': (event, template) ->
       # Don't redirect if user interacted with one of the actionable controls or a link on the item
       $target = $(event.target)
       return if $target.closest('.actionable').length > 0 or $target.closest('a').length > 0
 
       # Don't redirect if this might have been a selection
-      event.previousMousePosition = template.data._previousMousePosition
+      event.previousMousePosition = @_previousMousePosition
       return if event.previousMousePosition and (Math.abs(event.previousMousePosition.pageX - event.pageX) > 1 or Math.abs(event.previousMousePosition.pageY - event.pageY) > 1)
 
       # Redirect user to the publication
-      Meteor.Router.toNew template.data.path()
+      Meteor.Router.toNew @path()
+
+      return # Make sure CoffeeScript does not return anything
 
 # To make sure catalog item links are always restored we show them on any mouseup
 $(document).mouseup ->

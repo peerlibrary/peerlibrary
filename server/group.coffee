@@ -461,3 +461,5 @@ Meteor.publish 'groups', (limit, filter, sortIndex) ->
       _id: @personId
     ,
       fields: _.extend Group.readAccessPersonFields()
+
+ensureCatalogSortIndexes Group

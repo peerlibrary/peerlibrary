@@ -143,7 +143,7 @@ Template.publicationMetaMenuTitle[method] = Template.publicationCatalogItemTitle
 Template.publicationCatalogItemThumbnail.events
   'mouseenter li': (event, template) ->
     # Update page tooltip with current scrubbed over page
-    $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{@page} of #{@publication.numberOfPages}")
+    $(template.firstNode).closest('.thumbnail').find('.ui-tooltip').text("Page #{ @page } of #{ @publication.numberOfPages }")
 
     return # Make sure CoffeeScript does not return anything
 

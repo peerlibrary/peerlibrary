@@ -21,8 +21,16 @@ class @Annotation extends Annotation
 
     Meteor.Router.annotationPath annotation.publication._id, publicationSlug, annotationId
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'annotation'
+    params:
+      publicationId: @publication?._id
+      publicationSlug: @publication?.slug
+      annotationId: @_id
 
   # Helper object with properties useful to refer to this document. Optional annotation document.
   @reference: (annotationId, annotation, options) ->
@@ -36,7 +44,7 @@ class @Annotation extends Annotation
     _id: annotationId # TODO: Remove when we will be able to access parent template context
     text: "a:#{ annotationId }"
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 # A special client-only document which mirrors Annotation document. Anything

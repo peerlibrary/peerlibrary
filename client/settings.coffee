@@ -1,9 +1,12 @@
 usernameFormMessages = new FormMessages()
+usernameLastValue = null
 usernameReadyForValidation = false
 usernameFieldModified = false
 usernameSubmitted = false
 
 passwordFormMessages = new FormMessages()
+currentPasswordLastValue = null
+newPasswordLastValue = null
 newPasswordReadyForValidation = false
 newPasswordFieldModified = false
 
@@ -11,6 +14,7 @@ backgroundFormMessages = new FormMessages()
 
 resetUsernameForm = ->
   usernameFormMessages.resetMessages()
+  usernameLastValue = null
   usernameReadyForValidation = false
   usernameFieldModified = false
 
@@ -22,6 +26,8 @@ resetPasswordForm = (template) ->
   else
     $('input.current-password').val('')
     $('input.new-password').val('')
+  currentPasswordLastValue = null
+  newPasswordLastValue = null
   newPasswordReadyForValidation = false
   newPasswordFieldModified = false
 
@@ -40,16 +46,22 @@ Template.settingsUsername.events =
   'submit form.set-username': (event, template) ->
     event.preventDefault()
 
-    usernameSubmitted = true
+    usernameFormMessages.resetMessages()
     username = $(template.findAll 'input.username').val()
+
+    usernameFormMessages.setErrorMessage 'Username is required.', 'username' unless username
+
     try
-      usernameFormMessages.resetMessages()
+      User.validateUsername username, 'username'
+    catch error
+      usernameFormMessages.setError error
+
+    if usernameFormMessages.isValid()
+      usernameSubmitted = true
       Meteor.call 'set-username', username, (error) ->
         return usernameFormMessages.setError error if error
         resetUsernameForm()
-        usernameFormMessages.setInfoMessage "Username set successfully"
-    catch error
-      usernameFormMessages.setError error
+        usernameFormMessages.setInfoMessage "Username set successfully."
 
     return # Make sure CoffeeScript does not return anything
 
@@ -69,6 +81,13 @@ Template.settingsUsername.events =
     return # Make sure CoffeeScript does not return anything
 
   'keyup input.username, paste input.username': (event, template) ->
+    # Proceed only if something really changed
+    newValue = $(template.findAll 'input.username').val()
+    return if newValue is usernameLastValue
+    usernameLastValue = newValue
+
+    usernameFormMessages.resetMessages '' # Reset global messages
+
     usernameFieldModified = true
     username = $(template.findAll 'input.username').val()
     validateUsername username, 'username'
@@ -77,7 +96,6 @@ Template.settingsUsername.events =
 
   'focus input': (event, template) ->
     usernameSubmitted = false
-    usernameFormMessages.resetMessages '' # Reset global messages
 
     return # Make sure CoffeeScript does not return anything
 
@@ -111,7 +129,7 @@ Template.settingsPassword.events =
     currentPassword = $(template.findAll 'input.current-password').val()
     newPassword = $(template.findAll 'input.new-password').val()
 
-    passwordFormMessages.setErrorMessage 'Current password is required.', 'current-password' unless currentPassword
+    passwordFormMessages.setErrorMessage "Current password is required.", 'current-password' unless currentPassword
 
     try
       User.validatePassword newPassword, 'new-password'
@@ -120,11 +138,28 @@ Template.settingsPassword.events =
 
     if passwordFormMessages.isValid()
       changePassword currentPassword, newPassword, (error) ->
-        if error
-          passwordFormMessages.setError error
-        else
-          resetPasswordForm template
-          passwordFormMessages.setInfoMessage "Password changed successfully."
+        return passwordFormMessages.setError error if error
+        resetPasswordForm template
+        passwordFormMessages.setInfoMessage "Password changed successfully."
+
+    return # Make sure CoffeeScript does not return anything
+
+  'keyup input.current-password, paste input.current-password': (event, template) ->
+    # Proceed only if something really changed
+    newValue = $(template.findAll 'input.current-password').val()
+    return if newValue is currentPasswordLastValue
+    currentPasswordLastValue = newValue
+
+    passwordFormMessages.resetMessages '' # Reset global messages
+
+    # We cannot verify validity of the password on the client, so
+    # let's at least remove any error message to not confuse the user
+    # with a message that password is still invalid. In other fields
+    # we are providing feedback immediately, so we have to keep this
+    # the same. We cannot say that field is invalid if in fact maybe
+    # it is not. Better to err on the side of validity than saying that
+    # something is wrong when it is valid.
+    passwordFormMessages.resetMessages 'current-password'
 
     return # Make sure CoffeeScript does not return anything
 
@@ -136,14 +171,16 @@ Template.settingsPassword.events =
     return # Make sure CoffeeScript does not return anything
 
   'keyup input.new-password, paste input.new-password': (event, template) ->
+    # Proceed only if something really changed
+    newValue = $(template.findAll 'input.new-password').val()
+    return if newValue is newPasswordLastValue
+    newPasswordLastValue = newValue
+
+    passwordFormMessages.resetMessages '' # Reset global messages
+
     newPasswordFieldModified = true
     newPassword = $(template.findAll 'input.new-password').val()
     validatePassword newPassword, 'new-password'
-
-    return # Make sure CoffeeScript does not return anything
-
-  'focus input': (event, template) ->
-    passwordFormMessages.resetMessages '' # Reset global messages
 
     return # Make sure CoffeeScript does not return anything
 
@@ -172,14 +209,12 @@ changePassword = (currentPassword, newPassword, callback) ->
     callback error
     return
 
-  try
-    # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
-    throw new ValidationError "Incorrect password.", 'current-password' unless currentPassword
-    Accounts.changePassword currentPassword, newPassword, (error) ->
-      formError = new ValidationError (error.reason or error.toString() or "Unknown error"), 'current-password' if error
-      callback formError
-  catch error
-    callback error
+  # We check this manually because changePassword error throws global 'Match failed' error if current password is empty string
+  return callback new ValidationError "Current password is required.", 'current-password' unless currentPassword
+
+  Accounts.changePassword currentPassword, newPassword, (error) ->
+    formError = new ValidationError (error.reason or error.toString() or "Unknown error"), 'current-password' if error
+    callback formError
 
 Template.settingsBackground.checked = ->
   backgroundPaused = !!Meteor.user().settings?.backgroundPaused

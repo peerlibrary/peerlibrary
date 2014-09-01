@@ -1,5 +1,3 @@
-disconnectedErrorDisplayed = false
-
 Meteor.startup ->
   Deps.autorun ->
     status = Meteor.status()
@@ -8,7 +6,6 @@ Meteor.startup ->
       count = FlashMessage.documents.remove
         'sticky.disconnected':
           $exists: true
-      disconnectedErrorDisplayed = false
       FlashMessage.success "Connection to the server reestablished." if count
 
     else if status.status is 'connecting' and status.retryCount is 0 and not status.retryTime
@@ -16,10 +13,9 @@ Meteor.startup ->
       FlashMessage.documents.remove
         'sticky.disconnected':
           $exists: true
-      disconnectedErrorDisplayed = false
       return # Establishing initial connection, we do not want a notification
 
-    else if not disconnectedErrorDisplayed
+    else if not FlashMessage.documents.exists('sticky.disconnected': $exists: true)
       FlashMessage.error "Connection to the server lost.", {template: 'connectionLost', data: status}, false, false, # Don't display the stack
         disconnected: true
       disconnectedErrorDisplayed = true

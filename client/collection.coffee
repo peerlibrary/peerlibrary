@@ -15,8 +15,15 @@ class @Collection extends Collection
 
     Meteor.Router.collectionPath collectionId, slug
 
-  path: ->
+  path: =>
     @constructor.pathFromId @_id, @slug
+
+  route: =>
+    source: @constructor.verboseName()
+    route: 'collection'
+    params:
+      collectionId: @_id
+      collectionSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
   @reference: (collectionId, collection, options) ->
@@ -31,7 +38,7 @@ class @Collection extends Collection
     text: "c:#{ collectionId }"
     title: collection?.name or collection?.slug
 
-  reference: ->
+  reference: =>
     @constructor.reference @_id, @
 
 collectionHandle = null
