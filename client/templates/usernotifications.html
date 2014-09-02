@@ -8,7 +8,7 @@
 </template>
 
 <template name="userNotificationsButtonContent">
-  <a class="menu-item icon-public">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
+  <a class="menu-item {{#if unseenCount}}icon-notifications-active{{else}}icon-notifications{{/if}}">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
 </template>
 
 <template name="userNotificationsDropdown">
