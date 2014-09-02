@@ -1,6 +1,6 @@
 <template name="notificationsButton">
   {{#if currentPersonId}}
-    <li class="dropdown-trigger notifications-button pull-right">
+    <li class="dropdown-trigger notifications-button pull-right top-menu-item-wrapper">
       {{> notificationsButtonContent }}
       {{> notificationsDropdown }}
     </li>
@@ -8,7 +8,7 @@
 </template>
 
 <template name="notificationsButtonContent">
-  <a class="menu-item {{#if unseenCount}}icon-notifications-active{{else}}icon-notifications{{/if}}">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
+  <a class="top-menu-item {{#if unseenCount}}icon-notifications-active{{else}}icon-notifications{{/if}}">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
 </template>
 
 <template name="notificationsDropdown">

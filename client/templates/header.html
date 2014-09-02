@@ -12,7 +12,7 @@
           </div>
         {{/if}}
         <ul class="top-menu">
-          <li class="search">
+          <li class="top-menu-item-wrapper search">
             {{> searchInput}}
           </li>
           {{> loginButtons}}
@@ -66,14 +66,14 @@
 </template>
 
 <template name="loginButtons">
-  <li class="login pull-right">
+  <li class="login pull-right top-menu-item-wrapper">
     {{loginButtons align="right"}}
   </li>
 </template>
 
 <template name="importButton">
-  <li class="import pull-right">
-    <a href="" class="menu-item import-link-text">Import</a>
+  <li class="import pull-right top-menu-item-wrapper">
+    <a href="" class="top-menu-item import-link-text">Import</a>
   </li>
   {{#constant}}
     <input class="import-file-input" type="file" multiple="multiple" />
@@ -81,13 +81,13 @@
 </template>
 
 <template name="groupsButton">
-  <li class="pull-right">
-    <a class="menu-item" href="{{groupsPath}}">Groups</a>
+  <li class="pull-right top-menu-item-wrapper">
+    <a class="top-menu-item" href="{{groupsPath}}">Groups</a>
   </li>
 </template>
 
 <template name="collectionsButton">
-  <li class="pull-right">
-    <a class="menu-item" href="{{collectionsPath}}">Collections</a>
+  <li class="pull-right top-menu-item-wrapper">
+    <a class="top-menu-item" href="{{collectionsPath}}">Collections</a>
   </li>
 </template>
