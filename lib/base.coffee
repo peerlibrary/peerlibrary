@@ -17,7 +17,7 @@ setSession = (session) ->
     publicationJobsId: null
     libraryActive: false
     settingsActive: false
-    userNotificationsActive: false
+    notificationsActive: false
     currentCollectionId: null
     currentCollectionSlug: null
     currentPublicationId: null
@@ -378,11 +378,11 @@ else
         'settings'
 
     '/notifications':
-      as: 'userNotifications'
+      as: 'notifications'
       to: ->
         setSession
-          userNotificationsActive: true
-        'userNotifications'
+          notificationsActive: true
+        'notifications'
 
 Meteor.Router.add
   '/about':

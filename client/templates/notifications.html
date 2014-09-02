@@ -1,25 +1,25 @@
-<template name="userNotificationsButton">
-  {{#if currentUser }}
-    <li class="dropdown-trigger user-notifications-button pull-right">
-      {{> userNotificationsButtonContent }}
-      {{> userNotificationsDropdown }}
+<template name="notificationsButton">
+  {{#if currentUserId}}
+    <li class="dropdown-trigger notifications-button pull-right">
+      {{> notificationsButtonContent }}
+      {{> notificationsDropdown }}
     </li>
   {{/if}}
 </template>
 
-<template name="userNotificationsButtonContent">
+<template name="notificationsButtonContent">
   <a class="menu-item {{#if unseenCount}}icon-notifications-active{{else}}icon-notifications{{/if}}">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
 </template>
 
-<template name="userNotificationsDropdown">
+<template name="notificationsDropdown">
   <div class="dropdown-anchor">
-    <div class="user-notifications-menu right-aligned dropdown">
-      <a class="view-all" href="{{userNotificationsPath}}">View all notifications</a>
+    <div class="notifications-menu right-aligned dropdown">
+      <a class="view-all" href="{{notificationsPath}}">View all notifications</a>
       <button class="mark-all-as-read borderless">Mark all as read <i class="icon-check"></i></button>
-      {{#if userNotifications}}
-        <ol class="user-notifications">
-          {{#each userNotifications}}
-            {{> userNotification }}
+      {{#if notifications}}
+        <ol class="notifications">
+          {{#each notifications}}
+            {{> notification }}
           {{/each}}
         </ol>
       {{/if}}
@@ -27,8 +27,8 @@
   </div>
 </template>
 
-<template name="userNotification">
-  <li class="user-notification {{#if read}}read{{/if}}">
+<template name="notification">
+  <li class="notification {{#if read}}read{{/if}}">
     <i class="type-icon icon-{{icon}}"></i>
     <a class="message-wrapper" href="{{link}}">
       <span class="message">
@@ -41,17 +41,17 @@
   </li>
 </template>
 
-<template name="userNotifications">
+<template name="notifications">
   <div class="row">
     <h1>Notifications</h1>
     {{#unless currentPersonId}}
       <p>Sign in to view your notifications.</p>
     {{else}}
       <div class="col12">
-        {{#if userNotifications}}
-          <ol class="item-list user-notifications">
-            {{#each userNotifications}}
-              {{> userNotificationCatalogItem }}
+        {{#if notifications}}
+          <ol class="item-list notifications">
+            {{#each notifications}}
+              {{> notificationCatalogItem }}
             {{/each}}
           </ol>
         {{/if}}
@@ -64,8 +64,8 @@
   </div>
 </template>
 
-<template name="userNotificationCatalogItem">
-  <li class="user-notification catalog-item {{#if read}}read{{/if}}">
+<template name="notificationCatalogItem">
+  <li class="notification catalog-item {{#if read}}read{{/if}}">
     <i class="type-icon icon-{{icon}}"></i>
 
     {{#unless read}}

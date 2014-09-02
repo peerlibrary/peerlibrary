@@ -3,16 +3,16 @@ unseenNotifications = new Variable(2)
 
 # We only allow the user notifications button to get wider during
 # one session, so remember the widest it has been so far.
-userNotificationsButtonCurrentMaxWidth = 0
+notificationsButtonCurrentMaxWidth = 0
 
-Template.userNotificationsButton.rendered = ->
-  # Only allow the user notifications button to get wider during one session,
+Template.notificationsButton.rendered = ->
+  # Only allow the notifications button to get wider during one session,
   # by setting its mininmum width to the widest the button has been so far.
-  $button = $(@find '.user-notifications-button')
-  $button.css('min-width', userNotificationsButtonCurrentMaxWidth + "px")
-  userNotificationsButtonCurrentMaxWidth = Math.max($button.width(), userNotificationsButtonCurrentMaxWidth)
+  $button = $(@find '.notifications-button')
+  $button.css('min-width', notificationsButtonCurrentMaxWidth + "px")
+  notificationsButtonCurrentMaxWidth = Math.max($button.width(), notificationsButtonCurrentMaxWidth)
 
-Template.userNotificationsButton.events
+Template.notificationsButton.events
   'click .dropdown-trigger': (event, template) ->
     # Make sure only the trigger toggles the dropdown, by
     # excluding clicks inside the content of this dropdown
@@ -24,26 +24,26 @@ Template.userNotificationsButton.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.userNotificationsButtonContent.unseenCount = ->
+Template.notificationsButtonContent.unseenCount = ->
   # TODO: Replace with real logic
   unseenNotifications()
 
 # Set maximum height for the notifications dropdown dialog
 resizeNotificationsDropdown = ->
   windowHeight = $(window).height()
-  $('.user-notifications-menu .user-notifications').css 'max-height', windowHeight - 150
+  $('.notifications-menu .notifications').css 'max-height', windowHeight - 150
 
-Template.userNotificationsDropdown.created = ->
-  $(window).on 'resize.userNotifications', (event) =>
+Template.notificationsDropdown.created = ->
+  $(window).on 'resize.notifications', (event) =>
     resizeNotificationsDropdown()
 
-Template.userNotificationsDropdown.rendered = ->
+Template.notificationsDropdown.rendered = ->
   resizeNotificationsDropdown()
 
-Template.userNotificationsDropdown.destroyed = ->
-  $(window).off '.userNotifications'
+Template.notificationsDropdown.destroyed = ->
+  $(window).off '.notifications'
 
-Template.userNotificationsDropdown.userNotifications = ->
+Template.notificationsDropdown.notifications = ->
   # TODO: Replace with real logic
   [
     icon: 'annotation'
@@ -75,4 +75,4 @@ Template.userNotificationsDropdown.userNotifications = ->
     read: true
   ]
 
-Template.userNotifications.userNotifications = Template.userNotificationsDropdown.userNotifications
+Template.notifications.notifications = Template.notificationsDropdown.notifications
