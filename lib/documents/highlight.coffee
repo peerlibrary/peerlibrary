@@ -7,6 +7,7 @@ class @Highlight extends AccessDocument
   #   slug
   #   displayName
   #   gravatarHash
+  #   user.username
   # publication:
   #   _id: publication's id
   #   slug

@@ -7,6 +7,7 @@ class @Comment extends AccessDocument
   #   slug
   #   displayName
   #   gravatarHash
+  #   user.username
   # annotation
   #   _id
   # publication

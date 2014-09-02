@@ -14,6 +14,7 @@ class @Collection extends BasicAccessDocument
   #   slug
   #   displayName
   #   gravatarHash
+  #   user.username
   # authorGroup:
   #   _id: author's group id
   #   slug

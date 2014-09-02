@@ -14,6 +14,7 @@ class @Annotation extends BasicAccessDocument
   #   slug
   #   displayName
   #   gravatarHash
+  #   user.username
   # body: in HTML
   # publication:
   #   _id: publication's id
@@ -33,6 +34,7 @@ class @Annotation extends BasicAccessDocument
   #     slug
   #     displayName
   #     gravatarHash
+  #     user.username
   #   groups: list of
   #     _id
   #     slug

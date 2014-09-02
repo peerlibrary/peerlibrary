@@ -18,6 +18,7 @@ class @Publication extends BasicAccessDocument
   #   slug
   #   displayName
   #   gravatarHash
+  #   user.username
   # authorsRaw: unparsed authors string
   # title
   # comments: comments about the publication, a free-form text, metadata provided by the source
