@@ -146,6 +146,15 @@ and running `mrt` again:
 
     rm -rf ~/.meteorite/packages/pdf.js/
 
+If you are getting an error like:
+
+    Error: Could not locate the bindings file.
+
+Then you upgraded your system and the package which was previously compiled now does not work anymore. You have to
+force recompilation by, for example, removing the package. Example for `segfault-handler` package:
+
+    rm -rf ~/.meteorite/packages/segfault-handler/
+
 If you are getting Stylus errors like:
 
     error: Stylus compiler error: client/css/_viewer.styl:2
