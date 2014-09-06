@@ -22,7 +22,7 @@ hslToRgb = (h, s, l) ->
   ((r * 255) << 16) + ((g * 255) << 8) + (b * 255)
 
 # If not supported use an identity function which will never call a callback to disable animation
-frame = requestAnimationFrame or webkitRequestAnimationFrame or mozRequestAnimationFrame or (->)
+frame = @requestAnimationFrame or @webkitRequestAnimationFrame or @mozRequestAnimationFrame or (->)
 
 class Vector
   constructor: (@x, @y) ->
