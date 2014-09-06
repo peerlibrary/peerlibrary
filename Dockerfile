@@ -4,8 +4,6 @@ MAINTAINER Mitar <mitar.docker@tnode.com>
 
 EXPOSE 3000/tcp
 
-COPY . /peerlibrary
-
 COPY ./etc/apt /etc/apt
 
 RUN apt-get update -q -q && \
@@ -16,7 +14,11 @@ RUN apt-get update -q -q && \
  export PATH=/.meteor/tools/latest/bin:$PATH && \
  curl --silent http://meteor.peerlibrary.org/ | sh && \
  npm config set unsafe-perm true && \
- npm install -g git+https://github.com/oortcloud/meteorite.git && \
+ npm install -g git+https://github.com/oortcloud/meteorite.git
+
+COPY . /peerlibrary
+
+RUN export PATH=/.meteor/tools/latest/bin:$PATH && \
  cd /peerlibrary && \
  grep path .gitmodules | awk '{print $3}' | xargs rm -rf && \
  ./prepare.sh && \
