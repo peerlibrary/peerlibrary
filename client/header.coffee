@@ -1,3 +1,9 @@
+Deps.autorun ->
+  return unless Meteor.settings?.public?.examples
+
+  if Session.get 'indexActive'
+    Meteor.subscribe 'publication-by-id', Random.choice Meteor.settings.public.examples
+
 Template.header.events =
   'click .top-menu .search': (event, template) ->
     # Only if focused on no-index header
@@ -110,6 +116,17 @@ Template.searchInput.searchInvitation = ->
     "Search academic publications and people"
 
 Template.searchInput.development = Template.header.development
+
+Template.searchInput.examplePublication = ->
+  return unless Meteor.settings?.public?.examples
+
+  Publication.documents.findOne
+    _id:
+      $in: Meteor.settings.public.examples
+  ,
+    fields:
+      _id: 1
+      slug: 1
 
 Template.progressBar.progress = ->
   100 * Session.get 'currentPublicationProgress'
