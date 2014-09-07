@@ -515,10 +515,13 @@ Meteor.publish 'my-publications', ->
         library: 1
 
 # Use use this publish endpoint so that users can see their own filename
-# of the imported file, before a publication has metadata.
-# We could try to combine my-publications and my-publications-importing,
-# but it is easier to have two and leave to Meteor to merge them together,
-# because we are using $ in fields.
+# of the imported file, before a publication has metadata. We could try
+# to combine my-publications and my-publications-importing, but it is easier
+# to have two and leave to Meteor to merge them together, because we are
+# using $ in fields. We publish only importing field for current person
+# because other fields are already published by my-publications. We tried
+# to publish all public fields again, but query became too complicated for
+# MongoDB. See https://github.com/peerlibrary/peerlibrary/issues/626
 Meteor.publish 'my-publications-importing', ->
   @related (person) ->
     return unless person?._id
@@ -526,7 +529,7 @@ Meteor.publish 'my-publications-importing', ->
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'importing.person._id': person._id
     ),
-      fields: _.extend Publication.PUBLISH_FIELDS().fields,
+      fields:
         # TODO: We should not push temporaryFile to the client
         # Ensure that importing contains only this person
         'importing.$': 1
