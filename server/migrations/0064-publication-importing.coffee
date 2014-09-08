@@ -8,7 +8,7 @@ getImportingFilename = (document, index) ->
   'publication' + Storage._path.sep + 'tmp' + Storage._path.sep + document.importing[index].importingId + '.pdf'
 
 class Migration extends Document.MinorMigration
-  name: "Adding createdAt and updatedAt to importing array"
+  name: "Adding createdAt and updatedAt to importing array, take 2"
 
   forward: (document, collection, currentSchema, newSchema) =>
     count = 0
