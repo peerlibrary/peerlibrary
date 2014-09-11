@@ -35,7 +35,7 @@ If you would like to start contributing code and are searching for some ideas:
 * While reading the code if you do not understand anything, feel free to ask and then contribute a comment describing the code so that the next person will understand.
 * Sometimes there are stylistic or other non-critical issues with the code. Feel free to improve it.
 
-We are using GitHub and pull requests for development. If pull requests are new to you, see [this tutorial](https://help.github.com/articles/fork-a-repo) to find out how to fork and contribute to our repository.
+We are using GitHub and pull requests for development. If pull requests are new to you, see [this tutorial](https://help.github.com/articles/fork-a-repo) to find out how to fork and contribute to our repository. GitHub is build around [git](http://git-scm.com/). If you are unfamiliar with git, [this tutorial will help you](https://try.github.io/). Also familiarize yourself with general [version control vocabulary](http://producingoss.com/en/producingoss.html#vc-vocabulary).
 
 Before submitting a pull request, make sure that it follows these guidelines:
 * Make sure that your branch is based off of the `development` branch. The `development` branch is where active development happens. Development in `master` branch is done only for bugfixes and smaller features which do not change data and APIs. We cannot merge non-trivial patches off `master` branch. See [PeerLibrary development model](https://github.com/peerlibrary/peerlibrary/wiki/Development-Model) for more details.
