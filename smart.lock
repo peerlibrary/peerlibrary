@@ -63,8 +63,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.1003-5",
-        "commit": "31c9644c23e009e10a86353a24db39dd70f6745c"
+        "tag": "v0.8.1003-6",
+        "commit": "1decb1d533847f5121d6fcb15ce6d895eefaacf6"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
@@ -173,8 +173,8 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.5.2",
-        "commit": "d42da1ef425ef4f7ead4a851cd3bd652deca8dd2"
+        "tag": "v2.8.1",
+        "commit": "5a53798429577f9b7dc3da29c63c2c32435d75bd"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
