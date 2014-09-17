@@ -6,9 +6,12 @@ Facilitating the global conversation on academic literature.
 [https://peerlibrary.org/](https://peerlibrary.org/) | [http://blog.peerlibrary.org/](http://blog.peerlibrary.org/) | [@PeerLibrary](https://twitter.com/PeerLibrary)
 
 * [GitHub](https://github.com/peerlibrary/peerlibrary)
-* [Wiki](https://github.com/peerlibrary/peerlibrary/wiki)
+* [Development wiki](https://github.com/peerlibrary/peerlibrary/wiki)
+* [Development tickets](https://github.com/peerlibrary/peerlibrary/issues)
 * [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
-* IRC at #rawpotato @ [Freenode](http://freenode.net/)
+* IRC at #peerlibrary @ [Freenode](http://freenode.net/)
+
+_PeerLibrary outreach is [done in another repository](https://github.com/peerlibrary/outreach)._
 
 Development installation
 ------------------------
@@ -177,3 +180,5 @@ discuss planned contributions in advance.
 
 See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/master/CONTRIBUTING.md) file for more
 details and ideas.
+
+You can also help with [PeerLibrary outreach, promotion, teaching, and community organizing](https://github.com/peerlibrary/outreach).
