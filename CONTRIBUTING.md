@@ -8,6 +8,7 @@ General ways to contribute to the development of PeerLibrary:
 * Help us test PeerLibrary.
 * Read (and contribute to) our [wiki](https://github.com/peerlibrary/peerlibrary/wiki) and other documentation.
 * If you have your favorite open access journal or repository not yet integrated into PeerLibrary, add support for it. This goes especially for possible non-English open access journals or repositories we might not even know about. You can just [open a ticket for it](https://github.com/peerlibrary/peerlibrary/issues/new) to let us know.
+* Help with [PeerLibrary outreach, promotion, teaching, and community organizing](https://github.com/peerlibrary/outreach).
 * Advocate at your local university to open its publications to be able to integrate into PeerLibrary.
 
 Reporting bugs
