@@ -63,8 +63,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.1003-6",
-        "commit": "1decb1d533847f5121d6fcb15ce6d895eefaacf6"
+        "tag": "v0.8.1003-7",
+        "commit": "79c0a7655b7636ec68d82d90e9210cf6a6c1db18"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
