@@ -46,7 +46,7 @@ Meteor.startup ->
   Session.setDefault 'newAnnotationMaintainerGroups', ANNOTATION_DEFAULTS.maintainerGroups
   Session.setDefault 'newAnnotationAdminPersons', ANNOTATION_DEFAULTS.adminPersons
   Session.setDefault 'newAnnotationAdminGroups', ANNOTATION_DEFAULTS.adminGroups
-  console.log "HI I'M TIM!"
+
 setNewAnnotationDefaults = ->
   Session.set 'newAnnotationAccess', ANNOTATION_DEFAULTS.access
   Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups

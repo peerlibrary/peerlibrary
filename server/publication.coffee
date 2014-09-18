@@ -399,11 +399,27 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
 
   findQuery = {}
   findQuery = createQueryCriteria(filter, 'title') if filter
+  ###
+  ids = getAllResultsFromES filter
+
+  findQuery =
+    _id:
+      $in: ids
+
+  findQuery =
+    $or: []
+
+  for id in ids
+    findQuery.$or.push
+      _id: id
+  ###
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+  
   ###
   Checks if Elasticsearch is reachable
   ###
+  console.log 
   ES.ping
     requestTimeout: 1000,
     hello: "elasticsearch!"
@@ -411,7 +427,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     if error
       console.log "Elasticsearch cluster is down!"
     else
-      console.log "All is well!"
+      console.log "Can connect to Elasticsearch!"
   ###
   ###
 
