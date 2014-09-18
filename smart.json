@@ -51,6 +51,7 @@
       "branch": "peerlibrary",
       "git": "https://github.com/peerlibrary/meteor-job-collection.git"
     },
-    "async": {}
+    "async": {},
+    "elasticsearch": {}
   }
 }

@@ -401,6 +401,19 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   findQuery = createQueryCriteria(filter, 'title') if filter
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+  ###
+  Checks if Elasticsearch is reachable
+  ###
+  ES.ping
+    requestTimeout: 1000,
+    hello: "elasticsearch!"
+  , (error) ->
+    if error
+      console.log "Elasticsearch cluster is down!"
+    else
+      console.log "All is well!"
+  ###
+  ###
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
