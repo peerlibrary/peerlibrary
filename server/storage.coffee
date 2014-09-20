@@ -35,7 +35,7 @@ class @Storage extends Storage
     @_assurePath path
     fs.writeFileSync path, data
 
-  @saveStream: (filename, stream, callback) ->
+  @saveStreamAsync: (filename, stream, callback) ->
     stream.pause()
 
     path = @_fullPath filename
@@ -60,6 +60,9 @@ class @Storage extends Storage
       )
 
       stream.resume()
+
+  @saveStream: (filename, stream) ->
+    blocking(@, @saveStreamAsync) filename, stream
 
   @saveMeteorFile: (meteorFile, filename) ->
     path = @_fullPath filename

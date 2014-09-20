@@ -1,13 +1,13 @@
 MAX_TEXT_LAYER_SEGMENTS_TO_RENDER = 100000
 
 class Page
-  constructor: (@highlighter, @pdfPage) ->
+  constructor: (@highlighter, @viewport, @pdfPage) ->
     @pageNumber = @pdfPage.pageNumber
 
     @textContent = null
     @textSegments = []
     @imageSegments = []
-    @textSegmentsDone = null
+    @textSegmentsDone = false
     @imageLayerDone = null
     @highlightsEnabled = false
     @rendering = false
@@ -21,25 +21,6 @@ class Page
     @highlighter = null
     @pdfPage = null
     @$displayPage = null
-
-  textLayer: =>
-    textContentIndex = 0
-
-    beginLayout: =>
-      @textSegmentsDone = false
-
-      textContentIndex = 0
-
-    endLayout: =>
-      @textSegmentsDone = true
-
-      @_enableHighlights()
-
-    appendText: (geom) =>
-      segment = PDFJS.pdfTextSegment @textContent, textContentIndex, geom
-      @textSegments.push segment if segment.width
-
-      textContentIndex++
 
   imageLayer: =>
     beginLayout: =>
@@ -87,23 +68,34 @@ class Page
     return if @highlightsEnabled
     @highlightsEnabled = true
 
-    @_cleanTextSegments()
-
     # For debugging
     #@_showSegments()
     #@_showTextSegments()
 
+  _generateTextSegments: =>
+    for geom in @textContent.items
+      segment = PDFJS.pdfTextSegment @viewport, geom, @textContent.styles
+
+      continue if segment.isWhitespace or not segment.hasArea
+
+      @textSegments.push segment
+
+    @_cleanTextSegments()
+
+    @textSegmentsDone = true
+
+  # TODO: A very specific fix which should be generalized, see https://github.com/peerlibrary/peerlibrary/issues/664
   _cleanTextSegments: =>
     # We traverse from the end and search for segments which should be before the first segment
     # and mark them unselectable. The rationale is that those segments which are spatially positioned
     # before the first segment, but are out-of-order in the array are watermarks or headers and other
-    # elements not connected with the content, but they interfer with highlighting. It seems they are
+    # elements not connected with the content, but they interfere with highlighting. It seems they are
     # simply appended at the end so we search them only near the end. We still allow unselectable
     # segments to be selected in the browser if user is directly over it.
     # See https://github.com/peerlibrary/peerlibrary/issues/387
 
     # Few segments can be correctly ordered among those at the end. For example, page numbers.
-    threshold = 5 # segments, currently chosen completely arbritrary (just that it is larger than 1)
+    threshold = 5 # segments, currently chosen completely arbitrary (just that it is larger than 1)
     for segment in @textSegments by -1
       if segment.boundingBox.left >= @textSegments[0].boundingBox.left and segment.boundingBox.top >= @textSegments[0].boundingBox.top
         threshold--
@@ -176,13 +168,13 @@ class Page
       # of the text segment. This helps when user is with mouse between two columns
       # of text. With this the text segment to the right (in the right column) is
       # still selected when mouse is a bit to the left of the right column. Otherwise
-      # selection would immediatelly jump the the left column. Good text editors put
+      # selection would immediately jump the the left column. Good text editors put
       # this location when selection switches from right column to left column to the
       # middle between columns, but we do not really have information about the columns
       # so we at least make it a bit easier to the user. The only issue would be if
       # columns would be so close that those additional pixels would move into the left
       # column. This is unlikely if we keep the number small.
-      segmentIndex = index if segment.boundingBox.left <= position.left + 10 * SCALE and segment.boundingBox.top <= position.top and index > segmentIndex
+      segmentIndex = index if segment.boundingBox.left <= position.left + 10 * @viewport.scale and segment.boundingBox.top <= position.top and index > segmentIndex
 
     segmentIndex
 
@@ -209,16 +201,16 @@ class Page
     distance = @_distance position, segment.boundingBox
     $dom = segment.$domElement
 
-    # Text layer segments can be rotated and scalled along x-axis
+    # Text layer segments can be rotated and scaled along x-axis
     angle = segment.angle
-    scale = segment.scale
+    scaleX = segment.scaleX
 
     # Padding is scaled later on, so we apply scaling inversely here so that it is
-    # exact after scalling later on. Without that when scaling is < 1, when user moves
+    # exact after scaling later on. Without that when scaling is < 1, when user moves
     # far away from the text segment, padding falls behind and does not reach mouse
     # position anymore.
     # Additionally, we add few pixels so that user can move mouse fast and still stay in.
-    padding = distance / scale + 20 * SCALE
+    padding = distance / scaleX + 20 * @viewport.scale
 
     # Padding (and text) rotation transformation is done through CSS and
     # we have to match it for margin, so we compute here margin under rotation.
@@ -226,8 +218,8 @@ class Page
     # x' = x cos(f) - y sin(f), y' = x sin(f) + y cos(f)
     # Additionally, we use CSS scaling transformation along x-axis on padding
     # (and text), so we have to scale margin as well.
-    left = padding * (scale * Math.cos(angle) - Math.sin(angle))
-    top = padding * (scale * Math.sin(angle) + Math.cos(angle))
+    left = padding * (scaleX * Math.cos(angle) - Math.sin(angle))
+    top = padding * (scaleX * Math.sin(angle) + Math.cos(angle))
 
     @$displayPage.find('.text-layer-segment').css
       padding: 0
@@ -417,12 +409,14 @@ class @Highlighter
   getNumPages: =>
     @_numPages
 
-  setPage: (pdfPage) =>
+  setPage: (viewport, pdfPage) =>
     # Initialize the page
-    @_pages[pdfPage.pageNumber - 1] = new Page @, pdfPage
+    @_pages[pdfPage.pageNumber - 1] = new Page @, viewport, pdfPage
 
   setTextContent: (pageNumber, textContent) =>
     @_pages[pageNumber - 1].textContent = textContent
+
+    @_pages[pageNumber - 1]._generateTextSegments()
 
     @_checkHighlighting()
 

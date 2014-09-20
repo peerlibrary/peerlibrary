@@ -1,7 +1,7 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-@SCALE = 1.25
+SCALE = 1.25
 
 draggingViewport = false
 currentPublication = null
@@ -294,7 +294,7 @@ class @Publication extends Publication
               rendering: false
             @_pagesDone++
 
-            @_highlighter.setPage pdfPage
+            @_highlighter.setPage viewport, pdfPage
 
             @_getTextContent pdfPage
 
@@ -443,7 +443,6 @@ class @Publication extends Publication
 
     renderContext =
       canvasContext: $canvas.get(0).getContext '2d'
-      textLayer: @_highlighter.textLayer page.pageNumber
       imageLayer: @_highlighter.imageLayer page.pageNumber
       viewport: @_viewport page
 

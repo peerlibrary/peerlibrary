@@ -266,7 +266,7 @@ class @ArXivTarCacheSyncJob extends Job
 
       filename = Publication.foreignFilename 'arXiv', id
 
-      Storage.saveStream filename, entry, bindWithOnException (error) =>
+      Storage.saveStreamAsync filename, entry, bindWithOnException (error) =>
         return callback null if mainFuture.isResolved()
 
         return callback error if error
