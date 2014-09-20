@@ -124,7 +124,7 @@
       "meteor-file": {
         "git": "https://github.com/peerlibrary/meteor-file.git",
         "branch": "peerlibrary",
-        "commit": "bb72cb741abc589976500f00f3585e8b2f9b8e25"
+        "commit": "3569a8bebe3d83b09b8e8c269714f5ff5170b593"
       },
       "digest": {
         "git": "https://github.com/peerlibrary/meteor-digest.git",
