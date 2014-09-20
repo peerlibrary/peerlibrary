@@ -178,7 +178,7 @@ Nevertheless, you are invited to join the development, but please understand
 that things might be changing under your feet so it is probably useful to
 discuss planned contributions in advance.
 
-See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/master/CONTRIBUTING.md) file for more
+See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/development/CONTRIBUTING.md) file for more
 details and ideas.
 
 You can also help with [PeerLibrary outreach, promotion, teaching, and community organizing](https://github.com/peerlibrary/outreach).
