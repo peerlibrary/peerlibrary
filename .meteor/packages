@@ -34,7 +34,6 @@ useragent
 dom-text-mapper
 annotator
 segfault-handler
-blob
 facts
 scribe
 variable
