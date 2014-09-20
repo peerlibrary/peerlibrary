@@ -173,8 +173,8 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.8.1",
-        "commit": "5a53798429577f9b7dc3da29c63c2c32435d75bd"
+        "tag": "v2.9.0",
+        "commit": "d1c256ba821712bb8620e94a7599990bd4bc9281"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
