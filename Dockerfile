@@ -13,6 +13,8 @@ RUN apt-get update -q -q && \
  adduser --system --group peerlibrary --home /home/peerlibrary && \
  export PATH=~/.meteor/tools/latest/bin:$PATH && \
  curl --silent http://meteor.peerlibrary.org/ | sh && \
+ echo "$PATH" && \
+ ls -al ~/.meteor/tools/latest/bin && \
  npm config set unsafe-perm true && \
  npm install -g git+https://github.com/oortcloud/meteorite.git
 
