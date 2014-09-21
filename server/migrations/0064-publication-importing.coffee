@@ -1,10 +1,14 @@
+# Original migration for renaming (0017) was not doing anything, so we fixed it,
+# added it again as 0063, but now we have a migration (0041) which depends on it
+# again here, so that it runs again with all fields really migrated.
+
 getImportingFilename = (document, index) ->
   assert document.importing[index].importingId
 
   'publication' + Storage._path.sep + 'tmp' + Storage._path.sep + document.importing[index].importingId + '.pdf'
 
 class Migration extends Document.MinorMigration
-  name: "Adding createdAt and updatedAt to importing array"
+  name: "Adding createdAt and updatedAt to importing array, take 2"
 
   forward: (document, collection, currentSchema, newSchema) =>
     count = 0
@@ -42,12 +46,7 @@ class Migration extends Document.MinorMigration
     counts.all += count
     counts
 
-  backward: (document, collection, currentSchema, oldSchema) =>
-    count = collection.update {_schema: currentSchema}, {$unset: {'importing.createdAt': '', 'importing.updatedAt': ''}, $set: {_schema: oldSchema}}, {multi: true}
-
-    counts = super
-    counts.migrated += count
-    counts.all += count
-    counts
+  # We don't define backward migration because this should be handled by the original migration.
+  # That is the proper time when the code doesn't expect createdAt or updatedAt.
 
 Publication.addMigration new Migration()
