@@ -13,6 +13,14 @@ Facilitating the global conversation on academic literature.
 
 _PeerLibrary outreach is [done in another repository](https://github.com/peerlibrary/outreach)._
 
+Weekly meeting
+--------------
+
+Regular general weekly meeting is every Monday 8 PM PST. Meeting is open to really
+everyone. Remote participation is possible: join us on our IRC channel at that time
+for more information. We are also using our IRC channel for a backchannel to the
+meeting. Notes are taken and sent to the mailing lists.
+
 Development installation
 ------------------------
 
