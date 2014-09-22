@@ -19,7 +19,8 @@ Weekly meeting
 Regular general weekly meeting is every Monday 8 PM PST. Meeting is open to really
 everyone. Remote participation is possible: join us on our IRC channel at that time
 for more information. We are also using our IRC channel for a backchannel to the
-meeting. Notes are taken and sent to the mailing lists.
+meeting. Notes are taken and sent to the mailing lists, and their address follow the
+following format `http://pad.peerlibrary.org/p/meeting-YYYY-MM-DD`.
 
 Development installation
 ------------------------
