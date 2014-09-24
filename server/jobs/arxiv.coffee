@@ -120,8 +120,10 @@ class @ArXivMetadataJob extends Job
         ,
           fields:
             # _id field is implicitly added
-            givenName: 1
-            familyName: 1
+            slug: 1
+            displayName: 1
+            gravatarHash: 1
+            'user.username': 1
         if existingAuthor
           existingAuthor
         else
@@ -133,7 +135,10 @@ class @ArXivMetadataJob extends Job
             publications: []
             createdAt: authorCreatedAt
             updatedAt: authorCreatedAt
-          author
+          # TODO: We should probably not try to manually recreate an author document because this can quickly become incomplete or incorrect when code elsewhere is changed
+          author = new Person author
+          author.displayName = author.getDisplayName true
+          _.pick author, '_id', 'slug', 'displayName'
 
       publication =
         createdAt: createdAt
