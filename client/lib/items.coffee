@@ -4,6 +4,12 @@ Template.member.documentIsPerson = ->
 Template.member.documentIsGroup = ->
   @ instanceof Group
 
+Template.request.documentIsPerson = ->
+  @ instanceof Person
+
+Template.request.documentIsGroup = ->
+  @ instanceof Group
+
 Template.memberAdd.documentIsPerson = Template.member.documentIsPerson
 Template.memberAdd.documentIsGroup = Template.member.documentIsGroup
 

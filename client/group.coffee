@@ -50,6 +50,8 @@ Deps.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
     groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
+    Meteor.subscribe 'my-join-requests', Session.get 'currentGroupId'
+    Meteor.subscribe 'my-leave-requests', Session.get 'currentGroupId'
   else
     groupSubscribing.set false
     groupHandle = null
@@ -94,8 +96,43 @@ Editable.template Template.groupName, ->
 ,
   true
 
-Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.groupMembership.isMember = ->
+  Meteor.personId() in _.pluck @members, '_id'
+
+Template.groupMembership.isPendingMember = ->
+  Meteor.personId() in _.pluck @joinRequests, '_id'
+
+Template.groupMembership.isPendingLeaveRequest = ->
+  Meteor.personId() in _.pluck @leaveRequests, '_id'
+
+Template.groupNoMembership.open = ->
+  @joinPolicy is Group.POLICY.OPEN
+
+Template.groupNoMembership.closed = ->
+  @joinPolicy is Group.POLICY.CLOSED
+
+Template.groupMembership.events
+  'click .join-group': (event, template) ->
+    Meteor.call 'request-to-join-group', @_id, (error) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .leave-group': (event, template) ->
+    Meteor.call 'request-to-leave-group', @_id, (error) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .cancel-request-to-join-group': (event, template) ->
+    Meteor.call 'cancel-request-to-join-group', @_id, (error) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .cancel-request-to-leave-group': (event, template) ->
+    Meteor.call 'cancel-request-to-leave-group', @_id, (error) =>
+      return FlashMessage.fromError error, true if error
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -104,19 +141,56 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+Template.groupMembersList.membersWithFlag = ->
+  hasAdminAccess = @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+  canModifySelf = @leavePolicy isnt Group.POLICY.CLOSED
+  _.map @members, (member) ->
+    showFlag = if member._id is Meteor.personId() then canModifySelf or hasAdminAccess else hasAdminAccess
+    member.readOnly = not showFlag
+    member
 
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
-
-    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
-      return FlashMessage.fromError error, true if error
-
-      FlashMessage.success "Member removed." if count
+    currentGroupId = Session.get('currentGroupId')
+    if @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+      Meteor.call 'remove-from-group', currentGroupId, @_id, (error, count) =>
+        return FlashMessage.fromError error, true if error
+    else
+      Meteor.call 'request-to-leave-group', currentGroupId, (error, count) =>
+        return FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
+Template.groupRequests.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+
+Template.groupRequests.events =
+  'click .join-requests .approve-button': (event, template) ->
+    Meteor.call 'add-to-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .join-requests .remove-button': (event, template) ->
+    Meteor.call 'deny-request-to-join-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .leave-requests .approve-button': (event, template) ->
+    Meteor.call 'remove-from-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'click .leave-requests .remove-button': (event, template) ->
+    Meteor.call 'deny-request-to-leave-group', Session.get('currentGroupId'), @_id, (error, count) =>
+      return FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+Template.groupMembersAddControl.canModifyMembership = ->
+  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->
@@ -258,6 +332,22 @@ Template.groupMembersAddControlResultsItem.events
 Template.groupSettings.canRemove = ->
   @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
+Template.groupAdminTools.POLICY = ->
+  Group.POLICY
+
+Template.groupAdminTools.isCurrentJoinPolicy = (policy) ->
+  group = Group.documents.findOne(_id: Session.get 'currentGroupId')
+  return false unless group
+  group.joinPolicy is policy
+
+Template.groupAdminTools.isCurrentLeavePolicy = (policy) ->
+  group = Group.documents.findOne(_id: Session.get 'currentGroupId')
+  return false unless group
+  group.leavePolicy is policy
+
+Template.groupAdminTools.canModify = ->
+  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
+
 Template.groupAdminTools.events
   'click .dropdown-trigger': (event, template) ->
     # Make sure only the trigger toggles the dropdown, by
@@ -276,6 +366,20 @@ Template.groupAdminTools.events
 
       FlashMessage.success "Group removed."
       Meteor.Router.toNew Meteor.Router.groupsPath()
+
+    return # Make sure CoffeeScript does not return anything
+
+  'change .group-join-policy': (event, template) ->
+    policy = parseInt $('.group-join-policy').val()
+    Meteor.call 'group-set-join-policy', @_id, policy, (error, count) =>
+      FlashMessage.fromError error, true if error
+
+    return # Make sure CoffeeScript does not return anything
+
+  'change .group-leave-policy': (event, template) ->
+    policy = parseInt $('.group-leave-policy').val()
+    Meteor.call 'group-set-leave-policy', @_id, policy, (error, count) =>
+      FlashMessage.fromError error, true if error
 
     return # Make sure CoffeeScript does not return anything
 

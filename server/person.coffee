@@ -59,6 +59,7 @@ class @Person extends Person
       'gravatarHash'
       'isAdmin'
       'inGroups'
+      'pendingGroups'
     ]
 
   # A subset of public fields used for catalog results

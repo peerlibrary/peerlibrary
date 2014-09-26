@@ -16,6 +16,7 @@
           <h2>Group Activity</h2>
         </div>
         <div class="col4 push12 sidebar group-members-panel">
+          {{> groupMembership group}}
           {{> groupMembers group}}
           {{> groupSettings group}}
         </div>
@@ -28,20 +29,80 @@
   <h1>{{name}}</h1>
 </template>
 
+<template name="groupMembership">
+  {{#if currentPersonId}}
+    {{#if isMember}}
+      {{#if isPendingLeaveRequest}}
+      {{> groupPendingLeaveRequest}}
+      <br/><br/>
+      {{/if}}
+    {{else}}
+      <h3 class="directory-title">Group membership</h3>
+      {{#if isPendingMember}}
+        {{> groupPendingMembership}}
+      {{else}}
+        {{> groupNoMembership}}
+      {{/if}}
+      <br/><br/>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="groupNoMembership">
+  {{#if closed}}
+    This group is closed. You can't join nor request membership.
+  {{else}}
+    <button class="join-group">{{#if open}}Join group{{else}}Request membership{{/if}}</button>
+  {{/if}}
+</template>
+
+<template name="groupPendingMembership">
+  You have requested membership in this group. Please wait for one of the group admins to approve your request.
+  <button class="cancel-request-to-join-group">Cancel request</button>
+</template>
+
+<template name="groupPendingLeaveRequest">
+  You have requested to leave this group. Please wait for one of the group admins to approve your request.
+  <button class="cancel-request-to-leave-group">Cancel request</button>
+</template>
+
 <template name="groupMembers">
   <div class="section">
     <h2>Members</h2>
     {{> groupMembersList}}
+    {{> groupRequests}}
     {{> groupMembersAddControl}}
   </div>
 </template>
 
 <template name="groupMembersList">
-  <ol class="members member-list {{#unless canModifyMembership}}read-only{{/unless}}">
-    {{#each members}}
+  <ol class="members member-list">
+    {{#each membersWithFlag}}
       {{> member}}
     {{/each}}
   </ol>
+</template>
+
+<template name="groupRequests">
+  {{#if canModifyMembership}}
+    {{#if joinRequestsCount}}
+      <h3>Requests to join group</h3>
+      <ol class="members member-list join-requests">
+        {{#each joinRequests}}
+          {{> request}}
+        {{/each}}
+      </ol>
+    {{/if}}
+
+    {{#if leaveRequestsCount}}
+      <h3>Requests to leave group</h3>
+      <ol class="members member-list leave-requests">
+        {{#each leaveRequests}}
+          {{> request}}
+        {{/each}}
+      </ol>
+    {{/if}}
+  {{/if}}
 </template>
 
 <template name="groupMembersAddControl">
@@ -73,6 +134,12 @@
   {{/if}}
 </template>
 
+<template name="groupMembersAddControlLoading">
+  {{#if loading}}
+    <div class="results-loading add-control-results">Loading …</div>
+  {{/if}}
+</template>
+
 <template name="groupMembersAddControlResults">
   {{#if results.count}}
     <ul class="group-member-results add-control-results">
@@ -85,12 +152,6 @@
 
 <template name="groupMembersAddControlResultsItem">
   {{> memberAdd}}
-</template>
-
-<template name="groupMembersAddControlLoading">
-  {{#if loading}}
-    <div class="results-loading add-control-results">Loading …</div>
-  {{/if}}
 </template>
 
 <template name="groupSettings">
@@ -114,6 +175,24 @@
     </button>
     <div class="dropdown-anchor">
       <ul class="dropdown">
+      {{#if canModify}}
+        <li class="menu-item">
+          Join group policy:
+          <select class="group-join-policy">
+            <option value="{{POLICY.APPROVAL}}" {{#if isCurrentJoinPolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
+            <option value="{{POLICY.OPEN}}" {{#if isCurrentJoinPolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
+            <option value="{{POLICY.CLOSED}}" {{#if isCurrentJoinPolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
+          </select>
+        </li>
+        <li class="menu-item">
+          Leave group policy:
+          <select class="group-leave-policy">
+            <option value="{{POLICY.APPROVAL}}" {{#if isCurrentLeavePolicy POLICY.APPROVAL}}selected="selected"{{/if}}> Approval </option>
+            <option value="{{POLICY.OPEN}}" {{#if isCurrentLeavePolicy POLICY.OPEN}}selected="selected"{{/if}}> Open </option>
+            <option value="{{POLICY.CLOSED}}" {{#if isCurrentLeavePolicy POLICY.CLOSED}}selected="selected"{{/if}}> Closed </option>
+          </select>
+        </li>
+      {{/if}}
         <li class="menu-item">
           {{! TODO: Add confirmation or undo for this action }}
           <button class="delete-group danger tooltip" title="Warning: there is no undo for this action.">Delete group</button>

@@ -5,7 +5,18 @@ Used when inline items appear in contexts of lists and need add/remove controls 
   <li class="member">
     {{#if documentIsPerson}}{{> personInlineItem}}{{/if}}
     {{#if documentIsGroup}}{{> groupInlineItem}}{{/if}}
+    {{#unless readOnly}}
     <button class="remove-button icon-cancel"></button>
+    {{/unless}}
+  </li>
+</template>
+
+<template name="request">
+  <li class="member">
+    {{#if documentIsPerson}}{{> personInlineItem}}{{/if}}
+    {{#if documentIsGroup}}{{> groupInlineItem}}{{/if}}
+    <button class="remove-button icon-cancel"></button>
+    <button class="approve-button icon-check"></button>
   </li>
 </template>
 
