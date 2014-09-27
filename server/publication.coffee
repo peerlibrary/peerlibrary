@@ -399,54 +399,26 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
 
   findQuery = {}
   ids = []
-  query = 'title:' + filter
-  ES.search { index: 'publication', q: query }, (error, response) ->
+  if filter
+    query = 'title:' + filter
+    response = blocking(ES, ES.search) { index: 'publication', q: query, size: 50 }
     if response.hits? and response.hits.hits?
+      console.log "ES Returns: "
       for doc in response.hits.hits
         console.log "doc_id:", doc._id, " title: ", doc._source.title, " _score: ", doc._score
         ids.push doc._id
-      console.log ids
       findQuery =
         _id:
           $in: ids
     else
-      console.log "Blank Search, Fix. Causes weird things in ES."
-
-  ###
-  ids = getAllResultsFromES filter
-
-  findQuery =
-    _id:
-      $in: ids
-
-  findQuery =
-    $or: []
-
-  for id in ids
-    findQuery.$or.push
-      _id: id
-  ###
+      console.log "No Hits"
+  else
+    console.log "Empty Search"
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
-  
-  ###
-  Checks if Elasticsearch is reachable
-  ###
-  # console.log 
-  # ES.ping
-  #   requestTimeout: 1000,
-  #   hello: "elasticsearch!"
-  # , (error) ->
-  #   if error
-  #     console.log "Elasticsearch cluster is down!"
-  #   else
-  #     console.log "Can connect to Elasticsearch!"
-  ###
-  ###
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
-
     searchPublish @, 'publications', [filter, sortIndex],
       cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
