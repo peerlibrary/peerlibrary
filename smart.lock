@@ -53,8 +53,7 @@
         "git": "https://github.com/peerlibrary/meteor-job-collection.git",
         "branch": "peerlibrary"
       },
-      "async": {},
-      "elasticsearch": {}
+      "async": {}
     },
     "packages": {
       "router": {
@@ -64,8 +63,8 @@
       },
       "pdf.js": {
         "git": "https://github.com/peerlibrary/meteor-pdf.js.git",
-        "tag": "v0.8.1003-7",
-        "commit": "79c0a7655b7636ec68d82d90e9210cf6a6c1db18"
+        "tag": "v1.0.791-3",
+        "commit": "7250b1cb760cb00afb8f1bc6ec916c930858d634"
       },
       "assert": {
         "git": "https://github.com/peerlibrary/meteor-assert.git",
@@ -125,7 +124,7 @@
       "meteor-file": {
         "git": "https://github.com/peerlibrary/meteor-file.git",
         "branch": "peerlibrary",
-        "commit": "bb72cb741abc589976500f00f3585e8b2f9b8e25"
+        "commit": "3569a8bebe3d83b09b8e8c269714f5ff5170b593"
       },
       "digest": {
         "git": "https://github.com/peerlibrary/meteor-digest.git",
@@ -207,11 +206,6 @@
         "tag": "v0.9.0-1",
         "commit": "419ddf9711474738cddc6fa3c086a0875be3a5d1"
       },
-      "elasticsearch": {
-        "git": "https://github.com/andrewreedy/meteor-elasticsearch.git",
-        "tag": "v0.0.5",
-        "commit": "da60735a238d9f8687a06686760d47081c359b2c"
-      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
@@ -224,13 +218,8 @@
       },
       "blob": {
         "git": "https://github.com/peerlibrary/meteor-blob.git",
-        "tag": "v0.1.1",
-        "commit": "59d4545bc73325987f4efc6ab74f995da8b2014c"
-      },
-      "log": {
-        "git": "https://github.com/andrewreedy/meteor-log.git",
-        "branch": "master",
-        "commit": "110251d7d973611a0ac56db7e2af76fb3cc77af5"
+        "tag": "v0.1.3",
+        "commit": "e16d2f1bb752f5e82b8b037a2702886977b78095"
       }
     }
   }

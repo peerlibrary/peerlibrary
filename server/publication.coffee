@@ -75,8 +75,6 @@ class @Publication extends Publication
       textContentCallback = (pageNumber, textContent) =>
         textContents.push textContent
 
-      textSegmentCallback = (pageNumber, segment) =>
-
       pageImageCallback = (pageNumber, canvasElement) =>
         thumbnailCanvas = new PDFJS.canvas 95, 125
         thumbnailContext = thumbnailCanvas.getContext '2d'
@@ -90,7 +88,7 @@ class @Publication extends Publication
 
       progressCallback = (progress) =>
 
-      PDF.process pdf, initCallback, textContentCallback, textSegmentCallback, pageImageCallback, progressCallback
+      PDF.process pdf, initCallback, textContentCallback, pageImageCallback, progressCallback
 
       assert textContents.length
       assert @numberOfPages
