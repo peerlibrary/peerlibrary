@@ -14,3 +14,4 @@ https://github.com/andrewreedy/meteor-elasticsearch
 TODO:  
 Implement english analyzer
 Fix Pagination
+Reset ES when Mongo is reset in admin panel
