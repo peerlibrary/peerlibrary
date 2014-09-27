@@ -3,28 +3,7 @@ Meteor.publish 'search-results', (query, limit) ->
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 
-  findQuery = {}
-  ids = []
-  if query
-    filter = 'title:' + query
-    response = blocking(ES, ES.search) { index: 'publication', q: filter, size: 50 }
-    if response.hits? and response.hits.hits?
-      console.log "ES Returns: "
-      for doc in response.hits.hits
-        console.log "fulldoc_id: ", doc._id, " title: ", doc._source.title, " _score: ", doc._score
-        ids.push doc._id
-      findQuery =
-        _id:
-          $in: ids
-    else
-      console.log "No Hits"
-  else
-    console.log "Empty Search"
-
-
-
-
-
+  findQuery = getIdsFromES query, 'publication'
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery

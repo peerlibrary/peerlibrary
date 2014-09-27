@@ -15,3 +15,4 @@ TODO:
 Implement english analyzer
 Fix Pagination
 Reset ES when Mongo is reset in admin panel
+Create a generator for ES queries

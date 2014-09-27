@@ -397,23 +397,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
-  findQuery = {}
-  ids = []
-  if filter
-    query = 'title:' + filter
-    response = blocking(ES, ES.search) { index: 'publication', q: query, size: 50 }
-    if response.hits? and response.hits.hits?
-      console.log "ES Returns: "
-      for doc in response.hits.hits
-        console.log "doc_id:", doc._id, " title: ", doc._source.title, " _score: ", doc._score
-        ids.push doc._id
-      findQuery =
-        _id:
-          $in: ids
-    else
-      console.log "No Hits"
-  else
-    console.log "Empty Search"
+  findQuery = getIdsFromES filter, 'publication'
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
