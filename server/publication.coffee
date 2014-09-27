@@ -398,7 +398,20 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = createQueryCriteria(filter, 'title') if filter
+  ids = []
+  query = 'title:' + filter
+  ES.search { index: 'publication', q: query }, (error, response) ->
+    if response.hits? and response.hits.hits?
+      for doc in response.hits.hits
+        console.log "doc_id:", doc._id, " title: ", doc._source.title, " _score: ", doc._score
+        ids.push doc._id
+      console.log ids
+      findQuery =
+        _id:
+          $in: ids
+    else
+      console.log "Blank Search, Fix. Causes weird things in ES."
+
   ###
   ids = getAllResultsFromES filter
 
@@ -419,15 +432,15 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   ###
   Checks if Elasticsearch is reachable
   ###
-  console.log 
-  ES.ping
-    requestTimeout: 1000,
-    hello: "elasticsearch!"
-  , (error) ->
-    if error
-      console.log "Elasticsearch cluster is down!"
-    else
-      console.log "Can connect to Elasticsearch!"
+  # console.log 
+  # ES.ping
+  #   requestTimeout: 1000,
+  #   hello: "elasticsearch!"
+  # , (error) ->
+  #   if error
+  #     console.log "Elasticsearch cluster is down!"
+  #   else
+  #     console.log "Can connect to Elasticsearch!"
   ###
   ###
 

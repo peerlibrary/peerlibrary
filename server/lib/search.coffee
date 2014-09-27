@@ -236,7 +236,6 @@
   queryCriteria =
     $and: []
 
-  console.log field
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
   # TODO: Use some smarter searching with provided query, probably using some real full-text search instead of regex

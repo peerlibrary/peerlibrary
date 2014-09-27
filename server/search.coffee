@@ -5,6 +5,7 @@ Meteor.publish 'search-results', (query, limit) ->
 
   findQuery = createQueryCriteria query, 'fullText'
   return unless findQuery.$and.length
+  console.log findQuery
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery

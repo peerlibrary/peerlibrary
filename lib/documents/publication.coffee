@@ -87,12 +87,13 @@ class @Publication extends BasicAccessDocument
           skipIfExisting: true
           #Decide triggers
       pushToES: @Trigger ['title', 'fullText'], (doc, oldDoc) ->
+        console.log EJSON.toJSONValue doc
         pubId = (_.pick doc, '_id')._id
         pubBody = _.pick doc, 'title', 'fullText'
         pubToES = { index: 'publication', type: 'publication', id: pubId, body: pubBody }
         ES.index pubToES, (error, response) ->
-          console.log response
-          console.log error
+          console.log response if response
+          console.log error if error
   @ACCESS:
     PRIVATE: ACCESS.PRIVATE
     CLOSED: 1
