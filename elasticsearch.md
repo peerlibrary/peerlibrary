@@ -16,3 +16,5 @@ Implement english analyzer
 Fix Pagination
 Reset ES when Mongo is reset in admin panel
 Create a generator for ES queries
+Creating a Person pushes it into ES twice
+Create function that validates ES query

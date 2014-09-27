@@ -246,12 +246,11 @@
 
   queryCriteria
 
-@getIdsFromES = (query, index) ->
+@getIdsFromES = (ESQuery) ->
   findQuery = {}
   ids = []
-  if query
-    title_query = 'title:' + query
-    response = blocking(ES, ES.search) { index: index, q: title_query, size: 50 }
+  if ESQuery
+    response = blocking(ES, ES.search) ESQuery
     if response.hits? and response.hits.hits?
       for hit in response.hits.hits
         ids.push hit._id

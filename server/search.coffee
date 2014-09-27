@@ -3,7 +3,12 @@ Meteor.publish 'search-results', (query, limit) ->
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 
-  findQuery = getIdsFromES query, 'publication'
+  if query
+    title_query = 'title:' + query  
+    ESQuery = { index: 'publication', q: title_query, size: 50 }
+    findQuery = getIdsFromES ESQuery
+  else
+    findQuery = {}
 
   @related (person) ->
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery

@@ -69,6 +69,14 @@ class @Person extends AccessDocument
         newPublications = (publication._id for publication in doc.library or [])
         oldPublications = (publication._id for publication in oldDoc.library or [])
         _.difference newPublications, oldPublications
+      pushToES: @Trigger ['displayName', 'familyName', 'givenName'], (doc, oldDoc) ->
+        pubId = (_.pick doc, '_id')._id
+        pubBody = _.pick doc, 'displayName', 'familyName', 'givenName'
+        pubToES = { index: 'person', type: 'person', id: pubId, body: pubBody }
+        ES.index pubToES, (error, response) ->
+          console.log "Response from ES: "
+          console.log response if response
+          console.log error if error
 
   @verboseNamePlural: ->
     "people"

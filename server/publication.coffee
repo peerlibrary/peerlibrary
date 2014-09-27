@@ -395,7 +395,12 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
-  findQuery = getIdsFromES filter, 'publication'
+  if filter
+    title_query = 'title:' + filter  
+    ESQuery = { index: 'publication', q: title_query, size: 50 }
+    findQuery = getIdsFromES ESQuery
+  else
+    findQuery = {}
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
