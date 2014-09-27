@@ -168,8 +168,8 @@
       },
       "related": {
         "git": "https://github.com/peerlibrary/meteor-related.git",
-        "tag": "v0.1.4",
-        "commit": "2c9a6c67282651fef8ff885dd459e9b90fa4f679"
+        "tag": "v0.1.6",
+        "commit": "d4fcc296478ad828428556ab81594dca9684b32c"
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
