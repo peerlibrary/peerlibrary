@@ -20,7 +20,9 @@ class MiddlewarePublish
     @_publishStop = @publish.stop.bind @publish
     @_publishError = @publish.error.bind @publish
 
-    @userId = @publish.userId
+    # We copy other fields as they are
+    for own key, value of @publish when key not in ['added', 'changed', 'removed', 'ready', 'stop', 'error']
+      @[key] = value
 
   added: (args...) =>
     @_publishAdded args...
@@ -39,18 +41,6 @@ class MiddlewarePublish
 
   error: (args...) =>
     @_publishError args...
-
-  # The following methods we do not override, so
-  # we can access them directly here.
-
-  onStop: (args...) =>
-    @publish.onStop args...
-
-  connection: (args...) =>
-    @publish.connection args...
-
-  params: (args...) =>
-    @publish.params()
 
 class globals.PublishEndpoint
   constructor: (@options, @publishFunction) ->
