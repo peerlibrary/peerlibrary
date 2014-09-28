@@ -18,6 +18,4 @@ unless originalPublish
 
       publish.personId = person?._id or null
 
-      # TODO: Modify publish._recreate so that it copies personId
-
       func.apply publish, args

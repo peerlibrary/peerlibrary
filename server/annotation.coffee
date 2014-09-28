@@ -224,11 +224,15 @@ Meteor.methods
       _id: annotation._id
     )
 
-Meteor.publish 'annotations-by-publication', (publicationId) ->
+new PublishEndpoint 'annotations-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+    @set 'publication', publication
 
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
       'publication._id': publication._id
@@ -244,7 +248,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
     ,
       fields: Publication.readAccessSelfFields()
 
-Meteor.publish 'annotations', (limit, filter, sortIndex) ->
+new PublishEndpoint 'annotations', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -257,6 +261,9 @@ Meteor.publish 'annotations', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Annotation.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Annotation.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'annotations', [filter, sortIndex],

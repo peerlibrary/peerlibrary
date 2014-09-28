@@ -1,4 +1,4 @@
-Meteor.publish 'search-persons-groups', (query, except) ->
+new PublishEndpoint 'search-persons-groups', (query, except) ->
   except ?= []
 
   validateArgument 'query', query, NonEmptyString
@@ -40,6 +40,9 @@ Meteor.publish 'search-persons-groups', (query, except) ->
   return unless findPersonQuery.$and.length + findGroupQuery.$and.length
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindGroupQuery = Group.requireReadAccessSelector person, findGroupQuery
 
     searchPublish @, 'search-persons-groups', query,

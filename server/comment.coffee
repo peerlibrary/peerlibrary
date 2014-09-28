@@ -96,13 +96,16 @@ Meteor.methods
       _id: comment._id
     )
 
-Meteor.publish 'comments-by-publication', (publicationId) ->
+new PublishEndpoint 'comments-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
     # TODO: We have also to limit only to comments on annotations user has access to
     # TODO: Assert that comment.publication._id == annotation.publication._id (make a query which returns only valid?)
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     # No need for requireReadAccessSelector because comments are public
     Comment.documents.find

@@ -29,9 +29,12 @@ Meteor.methods
 
     LoggedError.documents.insert errorDocument
 
-Meteor.publish 'logged-errors', ->
+new PublishEndpoint 'logged-errors', ->
   @related (person) ->
     return unless person?.isAdmin
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     LoggedError.documents.find {},
       fields: LoggedError.PUBLISH_FIELDS().fields

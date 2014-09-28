@@ -21,7 +21,7 @@ class @Tag extends Tag
 ###
 TODO: Temporary disabled, not yet finalized code
 
-Meteor.publish 'tag-by-id', (tagId) ->
+new PublishEndpoint 'tag-by-id', (tagId) ->
   validateArgument 'tagId', tagId, DocumentId
 
   Tag.documents.find

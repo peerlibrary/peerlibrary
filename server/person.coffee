@@ -74,7 +74,7 @@ class @Person extends Person
     ]
 
 # With null name, the record set is automatically sent to all connected clients
-Meteor.publish null, ->
+new PublishEndpoint null, ->
   return unless @personId
 
   # No need for requireReadAccessSelector because we are sending data to the person themselves
@@ -83,7 +83,7 @@ Meteor.publish null, ->
   ,
     Person.PUBLISH_AUTO_FIELDS()
 
-Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
+new PublishEndpoint 'persons-by-ids-or-slugs', (idsOrSlugs) ->
   validateArgument 'idsOrSlugs', idsOrSlugs, Match.OneOf NonEmptyString, [NonEmptyString]
 
   idsOrSlugs = [idsOrSlugs] unless _.isArray idsOrSlugs
@@ -102,7 +102,7 @@ Meteor.publish 'persons-by-ids-or-slugs', (idsOrSlugs) ->
 
 # User who invited should have access to email address so that
 # we can display it in lists to which user was added when invited
-Meteor.publish 'persons-invited', ->
+new PublishEndpoint 'persons-invited', ->
   # No need for requireReadAccessSelector because persons are public
   handle = Person.documents.find(
     'invited.by._id': @personId
@@ -124,7 +124,7 @@ Meteor.publish 'persons-invited', ->
   @onStop ->
     handle.stop()
 
-Meteor.publish 'my-person-library', ->
+new PublishEndpoint 'my-person-library', ->
   return unless @personId
 
   # No need for requireReadAccessSelector because persons are public
@@ -134,7 +134,7 @@ Meteor.publish 'my-person-library', ->
     fields:
       library: 1
 
-Meteor.publish 'search-persons', (query, except) ->
+new PublishEndpoint 'search-persons', (query, except) ->
   except ?= []
 
   validateArgument 'query', query, NonEmptyString
@@ -177,7 +177,7 @@ Person.Meta.collection._ensureIndex
 ,
   unique: 1
 
-Meteor.publish 'persons', (limit, filter, sortIndex) ->
+new PublishEndpoint 'persons', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number

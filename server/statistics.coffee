@@ -160,7 +160,7 @@ Meteor.startup ->
   initializingBlogPosts = false
 
 # We map local collection to the collection clients use
-Meteor.publish 'statistics', ->
+new PublishEndpoint 'statistics', ->
   handle = Statistics.documents.find().observeChanges
     added: (id, fields) =>
       @added 'Statistics', id, fields
