@@ -91,12 +91,13 @@ if Meteor.isServer
   class HasPostsMiddleware extends PublishMiddleware
     added: (publish, collection, id, fields) =>
       fields.hasPosts = !!fields.posts
-      super publish, collection, id, fields
+
+      super
 
     changed: (publish, collection, id, fields) =>
-      if 'posts' of fields
-        fields.hasPosts = !!fields.posts
-      super publish, collection, id, fields
+      fields.hasPosts = !!fields.posts if 'posts' of fields
+
+      super
 
   allUsers.use new TestMiddleware 'first'
   allUsers.use new HasPostsMiddleware()
