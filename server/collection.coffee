@@ -212,6 +212,9 @@ new PublishEndpoint 'collection-by-id', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Collection.documents.find Collection.requireReadAccessSelector(person,
       _id: collectionId
     ),
@@ -225,6 +228,9 @@ new PublishEndpoint 'collection-by-id', (collectionId) ->
 new PublishEndpoint 'my-collections', ->
   @related (person) ->
     return unless person?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Collection.documents.find Collection.requireReadAccessSelector(person,
       'authorPerson._id': person._id
@@ -242,6 +248,10 @@ new PublishEndpoint 'publications-by-collection', (collectionId) ->
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
     return unless collection?.publications
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+    @set 'collection', collection
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
@@ -273,6 +283,9 @@ new PublishEndpoint 'collections', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Collection.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'collections', [filter, sortIndex],

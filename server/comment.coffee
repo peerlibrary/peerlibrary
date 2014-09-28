@@ -104,6 +104,9 @@ new PublishEndpoint 'comments-by-publication', (publicationId) ->
     # TODO: We have also to limit only to comments on annotations user has access to
     # TODO: Assert that comment.publication._id == annotation.publication._id (make a query which returns only valid?)
 
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     # No need for requireReadAccessSelector because comments are public
     Comment.documents.find
       'publication._id': publication._id

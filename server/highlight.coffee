@@ -97,6 +97,9 @@ new PublishEndpoint 'highlights-by-publication', (publicationId) ->
   @related (person, publication) ->
     return unless publication?.hasCacheAccess person
 
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     # No need for requireReadAccessSelector because highlights are public
     Highlight.documents.find
       'publication._id': publication._id

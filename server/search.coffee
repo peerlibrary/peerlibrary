@@ -1,5 +1,5 @@
 # TODO: Search for persons as well
-new PublishEndpoint 'search-results', (query, limit) ->
+searchResults = new PublishEndpoint 'search-results', (query, limit) ->
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 
@@ -7,39 +7,21 @@ new PublishEndpoint 'search-results', (query, limit) ->
   return unless findQuery.$and.length
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'search-results', query,
-      cursor: Publication.documents.find(restrictedFindQuery,
+      cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
-      )
-      added: (id, fields) =>
-        fields.hasAbstract = !!fields.abstract
-        delete fields.abstract
-        if fields.access isnt Publication.ACCESS.CLOSED
-          # Both other cases are handled by the selector, if publication is in the
-          # query results, user has access to the full text of the publication
-          # (publication is private or open access)
-          fields.hasCachedId = true
-        else
-          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
-      changed: (id, fields) =>
-        if 'abstract' of fields
-          fields.hasAbstract = !!fields.abstract
-          delete fields.abstract
-        if 'access' of fields
-          if fields.access isnt Publication.ACCESS.CLOSED
-            # Both other cases are handled by the selector, if publication is in the
-            # query results, user has access to the full text of the publication
-            # (publication is private or open access)
-            fields.hasCachedId = true
-          else
-            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
   ,
     Person.documents.find
       _id: @personId
     ,
       fields: Publication.readAccessPersonFields()
+
+searchResults.use new HasAbstractMiddleware()
+
+searchResults.use new HasCachedIdMiddleware()

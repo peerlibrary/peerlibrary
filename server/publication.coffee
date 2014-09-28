@@ -134,8 +134,7 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A set of fields which are public and can be published to the client. cachedId field is available for open
-  # access publications, if user has the publication in the library, or has necessary permissions over the publication.
+  # A set of fields which are public and can be published to the client.
   @PUBLISH_FIELDS: ->
     fields:
       slug: 1
@@ -170,8 +169,8 @@ class @Publication extends Publication
       'authors'
       'title'
       'numberOfPages'
-      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-      'access' # Also needed to compute hasCachedId in search results
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in HasAbstractMiddleware
+      'access' # Also needed to compute hasCachedId in HasCachedIdMiddleware
       'annotationsCount'
     ]
 
@@ -388,7 +387,7 @@ Meteor.methods
       $set:
         title: title
 
-new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
+publications = new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -401,6 +400,9 @@ new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'publications', [filter, sortIndex],
@@ -408,41 +410,80 @@ new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
         limit: limit
         fields: Publication.PUBLISH_CATALOG_FIELDS().fields
         sort: sort
-      added: (id, fields) =>
-        fields.hasAbstract = !!fields.abstract
-        delete fields.abstract
-        if fields.access isnt Publication.ACCESS.CLOSED
-          # Both other cases are handled by the selector, if publication is in the
-          # query results, user has access to the full text of the publication
-          # (publication is private or open access)
-          fields.hasCachedId = true
-        else
-          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
-      changed: (id, fields) =>
-        if 'abstract' of fields
-          fields.hasAbstract = !!fields.abstract
-          delete fields.abstract
-        if 'access' of fields
-          if fields.access isnt Publication.ACCESS.CLOSED
-            # Both other cases are handled by the selector, if publication is in the
-            # query results, user has access to the full text of the publication
-            # (publication is private or open access)
-            fields.hasCachedId = true
-          else
-            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
   ,
     Person.documents.find
       _id: @personId
     ,
       fields: _.extend Publication.readAccessPersonFields()
 
-new PublishEndpoint 'publications-by-author-slug', (slug) ->
+class @HasAbstractMiddleware extends PublishMiddleware
+  added: (publish, collection, id, fields) =>
+    return super unless collection is 'Publications'
+
+    fields.hasAbstract = !!fields.abstract
+    delete fields.abstract
+
+    super
+
+  changed: (publish, collection, id, fields) =>
+    return super unless collection is 'Publications'
+
+    if 'abstract' of fields
+      fields.hasAbstract = !!fields.abstract
+      delete fields.abstract
+
+    super
+
+publications.use new HasAbstractMiddleware()
+
+# This middleware requires that "person" is set in publish context previously.
+class @HasCachedIdMiddleware extends PublishMiddleware
+  _hasCachedId: (publish, id, fields) =>
+    if fields.access isnt Publication.ACCESS.CLOSED
+      # Both other cases are handled by the selector, if publication is in the
+      # query results, user has access to the full text of the publication
+      # (publication is private or open access).
+      return true
+    else
+      # This is not perfect because publication object lacks many fields from
+      # Publication.readAccessSelfFields(), but this will impact only users
+      # with more permissions over the publication and they probably will not
+      # be confused with lack of a full text link. On the other hand, we could
+      # request all those fields from the database, but then we would have to
+      # locally cache between changed callbacks where only one of those fields
+      # might change, but we need all of them available to compute access.
+      # We would have to locally cache for the same reasons even in cases when
+      # were are using middleware in publish endpoints which request all necessary
+      # fields and not just search-related publish endpoints.
+      return new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult publish.get 'person'
+
+  added: (publish, collection, id, fields) =>
+    return super unless collection is 'Publications'
+
+    fields.hasCachedId = @_hasCachedId publish, id, fields
+    delete fields.cachedId
+
+    super
+
+  changed: (publish, collection, id, fields) =>
+    return super unless collection is 'Publications'
+
+    fields.hasCachedId = @_hasCachedId publish, id, fields if 'access' of fields
+    delete fields.cachedId
+
+    super unless _.isEmpty fields
+
+publications.use new HasCachedIdMiddleware()
+
+publicationsByAuthorSlug = new PublishEndpoint 'publications-by-author-slug', (slug) ->
   validateArgument 'slug', slug, NonEmptyString
 
   @related (author, person) ->
     return unless author?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'author', author
+    @set 'person', person
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'authors._id': author._id
@@ -464,10 +505,15 @@ new PublishEndpoint 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-new PublishEndpoint 'publication-by-id', (publicationId) ->
+publicationsByAuthorSlug.use new HasCachedIdMiddleware()
+
+publicationById = new PublishEndpoint 'publication-by-id', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id: publicationId
     ),
@@ -478,17 +524,22 @@ new PublishEndpoint 'publication-by-id', (publicationId) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-# We could try to combine publications-by-id and publications-cached-by-id,
-# but it is easier to have two and leave to Meteor to merge them together
-new PublishEndpoint 'publications-cached-by-id', (id) ->
+publicationById.use new HasCachedIdMiddleware()
+
+# We could try to combine publications-by-id and publication-cachedid-by-id,
+# but it is easier to have two and leave to Meteor to merge them together.
+new PublishEndpoint 'publication-cachedid-by-id', (id) ->
   validateArgument 'id', id, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
     ),
-      fields: _.extend Publication.PUBLISH_FIELDS().fields,
-        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication
+      fields:
+        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication.
         'cachedId': 1
   ,
     Person.documents.find
@@ -496,9 +547,12 @@ new PublishEndpoint 'publications-cached-by-id', (id) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-new PublishEndpoint 'my-publications', ->
+myPublications = new PublishEndpoint 'my-publications', ->
   @related (person) ->
     return unless person?.library
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
@@ -512,6 +566,8 @@ new PublishEndpoint 'my-publications', ->
       fields: _.extend Publication.readAccessPersonFields(),
         library: 1
 
+myPublications.use new HasCachedIdMiddleware()
+
 # Use use this publish endpoint so that users can see their own filename
 # of the imported file, before a publication has metadata. We could try
 # to combine my-publications and my-publications-importing, but it is easier
@@ -523,6 +579,9 @@ new PublishEndpoint 'my-publications', ->
 new PublishEndpoint 'my-publications-importing', ->
   @related (person) ->
     return unless person?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'importing.person._id': person._id

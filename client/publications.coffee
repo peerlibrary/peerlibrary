@@ -53,7 +53,10 @@ Template.publicationCatalogItem.annotationsCountDescription = ->
   Annotation.verboseNameWithCount @annotationsCount
 
 Template.publicationCatalogItem.hasAbstract = ->
-  @hasAbstract or @abstract
+  @abstract ? @hasAbstract
+
+Template.publicationCatalogItem.hasCachedId = ->
+  @cachedId ? @hasCachedId
 
 Template.publicationCatalogItem.open = ->
   @access is Publication.ACCESS.OPEN

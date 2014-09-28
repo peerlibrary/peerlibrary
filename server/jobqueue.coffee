@@ -54,6 +54,9 @@ new PublishEndpoint 'job-queue', ->
   @related (person) ->
     return unless person?.isAdmin
 
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     JobQueue.documents.find {},
       fields: _.extend JobQueue.PUBLISH_FIELDS().fields,
         # We limit to the last 10 entries in the log (it can grow quite big)
@@ -77,6 +80,9 @@ new PublishEndpoint 'jobs-by-publication', (publicationId) ->
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     JobQueue.documents.find
       'data.publication._id': publication._id

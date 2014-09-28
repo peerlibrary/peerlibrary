@@ -230,6 +230,10 @@ new PublishEndpoint 'annotations-by-publication', (publicationId) ->
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
 
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+    @set 'publication', publication
+
     Annotation.documents.find Annotation.requireReadAccessSelector(person,
       'publication._id': publication._id
     ), Annotation.PUBLISH_FIELDS()
@@ -257,6 +261,9 @@ new PublishEndpoint 'annotations', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Annotation.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Annotation.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'annotations', [filter, sortIndex],
