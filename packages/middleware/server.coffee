@@ -107,8 +107,7 @@ class globals.PublishEndpoint
 
       @publish otherMiddlewares, publish
     else
-      publish._handler = @publishFunction
-      publish._runHandler()
+      @publishFunction.apply publish, publish.params()
 
   use: (middleware) =>
     throw new Error "Middleware '#{ middleware }' is not an instance of a PublishMiddleware class" unless middleware instanceof PublishMiddleware
