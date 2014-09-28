@@ -116,11 +116,14 @@ Storage._path = pathModule
 contentDisposition = (filename) ->
   return 'attachment' unless filename
 
+  # Replace all whitespace with only single space
+  filename = filename.replace /\s+/g, ' '
+
   filename = pathModule.basename filename
 
   # If filename contains non-ASCII characters, add a UTF-8 version ala RFC 5987
   if NON_ASCII_REGEX.test filename
-    return "attachment; filename=\"#{ encodeURI filename }\"; filename*=UTF-8''#{ encodeURI filename }"
+    return "attachment; filename=\"#{ encodeURIComponent filename }\"; filename*=UTF-8''#{ encodeURIComponent filename }"
   else
     return "attachment; filename=\"#{ filename }\""
 
