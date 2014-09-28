@@ -56,8 +56,16 @@ class globals.PublishEndpoint
     Meteor.publish @options.name, ->
       publish = @
 
+      state = {}
+
       publish.params = ->
         @_params
+
+      publish.set = (key, value) ->
+        state[key] = value
+
+      publish.get = (key) ->
+        state[key]
 
       self.publish self.middlewares, publish
 
