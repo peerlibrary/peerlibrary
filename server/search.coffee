@@ -25,3 +25,5 @@ searchResults = new PublishEndpoint 'search-results', (query, limit) ->
 searchResults.use new HasAbstractMiddleware()
 
 searchResults.use new HasCachedIdMiddleware()
+
+searchResults.use new LimitImportingMiddleware()

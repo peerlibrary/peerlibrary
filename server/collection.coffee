@@ -242,7 +242,7 @@ new PublishEndpoint 'my-collections', ->
     ,
       fields: _.extend Collection.readAccessPersonFields()
 
-new PublishEndpoint 'publications-by-collection', (collectionId) ->
+publicationsByCollection = new PublishEndpoint 'publications-by-collection', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person, collection) ->
@@ -269,6 +269,10 @@ new PublishEndpoint 'publications-by-collection', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
+
+publicationsByCollection.use new HasCachedIdMiddleware()
+
+publicationsByCollection.use new LimitImportingMiddleware()
 
 new PublishEndpoint 'collections', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
