@@ -3,8 +3,6 @@ USERS_COLLECTION = 'Users_meteor_middleware_tests'
 Users = new Meteor.Collection USERS_COLLECTION
 LogActions = new Meteor.Collection 'LogActionsActions_meteor_middleware_tests'
 
-Error.stackTraceLimit = Infinity;
-
 if Meteor.isServer
   # Initialize the database
   Meteor.methods
