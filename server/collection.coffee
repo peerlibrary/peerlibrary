@@ -208,7 +208,7 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'collection-by-id', (collectionId) ->
+new PublishEndpoint 'collection-by-id', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person) ->
@@ -222,7 +222,7 @@ Meteor.publish 'collection-by-id', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessPersonFields()
 
-Meteor.publish 'my-collections', ->
+new PublishEndpoint 'my-collections', ->
   @related (person) ->
     return unless person?._id
 
@@ -236,7 +236,7 @@ Meteor.publish 'my-collections', ->
     ,
       fields: _.extend Collection.readAccessPersonFields()
 
-Meteor.publish 'publications-by-collection', (collectionId) ->
+new PublishEndpoint 'publications-by-collection', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person, collection) ->
@@ -260,7 +260,7 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
 
-Meteor.publish 'collections', (limit, filter, sortIndex) ->
+new PublishEndpoint 'collections', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number

@@ -140,7 +140,7 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'groups-by-ids', (groupIds) ->
+new PublishEndpoint 'groups-by-ids', (groupIds) ->
   validateArgument 'groupIds', groupIds, Match.OneOf DocumentId, [DocumentId]
 
   groupIds = [groupIds] unless _.isArray groupIds
@@ -157,7 +157,7 @@ Meteor.publish 'groups-by-ids', (groupIds) ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'my-groups', ->
+new PublishEndpoint 'my-groups', ->
   @related (person) ->
     return unless person?._id
 
@@ -171,7 +171,7 @@ Meteor.publish 'my-groups', ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'groups', (limit, filter, sortIndex) ->
+new PublishEndpoint 'groups', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number

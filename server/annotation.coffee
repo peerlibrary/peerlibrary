@@ -224,7 +224,7 @@ Meteor.methods
       _id: annotation._id
     )
 
-Meteor.publish 'annotations-by-publication', (publicationId) ->
+new PublishEndpoint 'annotations-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
@@ -244,7 +244,7 @@ Meteor.publish 'annotations-by-publication', (publicationId) ->
     ,
       fields: Publication.readAccessSelfFields()
 
-Meteor.publish 'annotations', (limit, filter, sortIndex) ->
+new PublishEndpoint 'annotations', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number

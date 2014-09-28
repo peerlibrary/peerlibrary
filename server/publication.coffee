@@ -388,7 +388,7 @@ Meteor.methods
       $set:
         title: title
 
-Meteor.publish 'publications', (limit, filter, sortIndex) ->
+new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -438,7 +438,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     ,
       fields: _.extend Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-author-slug', (slug) ->
+new PublishEndpoint 'publications-by-author-slug', (slug) ->
   validateArgument 'slug', slug, NonEmptyString
 
   @related (author, person) ->
@@ -464,7 +464,7 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publication-by-id', (publicationId) ->
+new PublishEndpoint 'publication-by-id', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person) ->
@@ -480,7 +480,7 @@ Meteor.publish 'publication-by-id', (publicationId) ->
 
 # We could try to combine publications-by-id and publications-cached-by-id,
 # but it is easier to have two and leave to Meteor to merge them together
-Meteor.publish 'publications-cached-by-id', (id) ->
+new PublishEndpoint 'publications-cached-by-id', (id) ->
   validateArgument 'id', id, DocumentId
 
   @related (person) ->
@@ -496,7 +496,7 @@ Meteor.publish 'publications-cached-by-id', (id) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'my-publications', ->
+new PublishEndpoint 'my-publications', ->
   @related (person) ->
     return unless person?.library
 
@@ -520,7 +520,7 @@ Meteor.publish 'my-publications', ->
 # because other fields are already published by my-publications. We tried
 # to publish all public fields again, but query became too complicated for
 # MongoDB. See https://github.com/peerlibrary/peerlibrary/issues/626
-Meteor.publish 'my-publications-importing', ->
+new PublishEndpoint 'my-publications-importing', ->
   @related (person) ->
     return unless person?._id
 

@@ -1,5 +1,5 @@
 # TODO: Search for persons as well
-Meteor.publish 'search-results', (query, limit) ->
+new PublishEndpoint 'search-results', (query, limit) ->
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 

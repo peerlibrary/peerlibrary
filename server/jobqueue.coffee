@@ -50,7 +50,7 @@ Meteor.methods
     else
       throw new Meteor.Error 403, "Permission denied."
 
-Meteor.publish 'job-queue', ->
+new PublishEndpoint 'job-queue', ->
   @related (person) ->
     return unless person?.isAdmin
 
@@ -72,7 +72,7 @@ Meteor.publish 'job-queue', ->
         # _id field is implicitly added
         isAdmin: 1
 
-Meteor.publish 'jobs-by-publication', (publicationId) ->
+new PublishEndpoint 'jobs-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->

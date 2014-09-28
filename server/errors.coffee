@@ -29,7 +29,7 @@ Meteor.methods
 
     LoggedError.documents.insert errorDocument
 
-Meteor.publish 'logged-errors', ->
+new PublishEndpoint 'logged-errors', ->
   @related (person) ->
     return unless person?.isAdmin
 

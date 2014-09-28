@@ -96,7 +96,7 @@ Meteor.methods
       _id: comment._id
     )
 
-Meteor.publish 'comments-by-publication', (publicationId) ->
+new PublishEndpoint 'comments-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->

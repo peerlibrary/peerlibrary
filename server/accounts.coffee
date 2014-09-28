@@ -40,7 +40,7 @@ class @User extends User
     ]
 
 # With null name, the record set is automatically sent to all connected clients
-Meteor.publish null, ->
+new PublishEndpoint null, ->
   return unless @userId
 
   # No need for requireReadAccessSelector because we are sending data to the user themselves

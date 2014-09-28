@@ -91,7 +91,7 @@ Meteor.methods
       _id: highlight._id
     )
 
-Meteor.publish 'highlights-by-publication', (publicationId) ->
+new PublishEndpoint 'highlights-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
@@ -113,7 +113,7 @@ Meteor.publish 'highlights-by-publication', (publicationId) ->
     ,
       fields: Publication.readAccessSelfFields()
 
-Meteor.publish 'highlights', (limit, filter, sortIndex) ->
+new PublishEndpoint 'highlights', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number

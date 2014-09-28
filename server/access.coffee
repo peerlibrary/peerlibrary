@@ -1,4 +1,4 @@
-Meteor.publish 'search-persons-groups', (query, except) ->
+new PublishEndpoint 'search-persons-groups', (query, except) ->
   except ?= []
 
   validateArgument 'query', query, NonEmptyString
