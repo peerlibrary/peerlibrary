@@ -17,8 +17,8 @@ Meteor.methods
 
   'reset-es': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
-    response = blocking(ES, ES.delete) {
-      index: 'publication'
+    response = blocking(ES, ES.indices.delete) {
+      index: '_all'
     }
 
   'test-job': methodWrap ->

@@ -20,11 +20,12 @@ Template.adminES.events
   'click button.reset-es': (event, template) ->
     Meteor.call 'reset-es', (error, result) ->
       FlashMessage.fromError error if error
-      FlashMessage.success("Resetting ES Response: " + result)
+      FlashMessage.success("Resetting ES Response: " + JSON.stringify(result, undefined, 2))
+
   'click button.ping-es': (event, template) ->
     Meteor.call 'ping-es', (error, result) ->
       FlashMessage.fromError error if error
-      FlashMessage.success("Can Reach Elasticsearch: " + result)
+      FlashMessage.success("Can Reach Elasticsearch: " + JSON.stringify(result, undefined, 2))
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events
