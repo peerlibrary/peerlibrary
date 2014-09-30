@@ -8,6 +8,19 @@ Meteor.methods
     # TODO: Think how to make a better sample which would contain both metadata and content
     Meteor.call 'sync-arxiv-metadata'
 
+  'ping-es': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
+    response = blocking(ES, ES.ping) { 
+      requestTimeout: 1000,
+      hello: "elasticsearch!"
+    }
+
+  'reset-es': methodWrap ->
+    throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
+    response = blocking(ES, ES.delete) {
+      index: 'publication'
+    }
+
   'test-job': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
 

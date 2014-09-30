@@ -1,5 +1,6 @@
 <template name="admin">
   {{> adminCheck}}
+  {{> adminES}}
   {{> adminDevelopment}}
   {{> adminPublications}}
   {{> adminDatabase}}
@@ -20,6 +21,15 @@
   <h2>Development</h2>
   <div class="admin-buttons">
     <button class="sample-data">Initialize database with sample data</button>
+  </div>
+</template>
+
+<template name="adminES">
+  <h2>Elasticsearch</h2>
+  <div class="admin-buttons">
+    <button class="ping-es">Ping ES</button>
+  <div class="admin-buttons">
+    <button class="reset-es">Reset ES</button>
   </div>
 </template>
 
