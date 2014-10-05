@@ -1,13 +1,38 @@
 <template name="admin">
-  {{> adminCheck}}
-  {{> adminDevelopment}}
-  {{> adminPublications}}
-  {{> adminDatabase}}
-  {{> adminErrors}}
-  {{> adminJobs}}
-  {{> adminSources}}
-  {{> adminBlog}}
-  {{> adminFacts}}
+  <div class="tabbable tabs-left">    
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#Development" data-toggle="tab">Development</a></li>
+      <li><a href="#Publications" data-toggle="tab">Publications</a></li>
+      <li><a href="#Database" data-toggle="tab">Database</a></li>
+      <li><a href="#Errors" data-toggle="tab">Errors</a></li>
+      <li><a href="#Sources" data-toggle="tab">External Sources</a></li>
+      <li><a href="#Blog" data-toggle="tab">Blog</a></li>
+      <li><a href="#Facts" data-toggle="tab">Facts</a></li>
+    </ul>
+    <div class="tab-content">
+      <div id="Development" class="tab-pane active">
+        <p></p>{{> adminDevelopment}}
+      </div> 
+      <div id="Publications" class="tab-pane">
+        <p></p>{{> adminPublications}}
+      </div>
+      <div id="Database" class="tab-pane">
+        <p></p>{{> adminDatabase}}
+      </div>
+      <div id="Errors" class="tab-pane">
+        <p></p>{{> adminErrors}}
+      </div>
+      <div id="Sources" class="tab-pane">
+        <p></p>{{> adminSources}}
+      </div>
+      <div id="Blog" class="tab-pane">
+        <p></p>{{> adminBlog}}
+      </div>  
+      <div id="Facts" class="tab-pane">
+        <p></p>{{> adminFacts}}
+      </div>
+    </div>
+  </div>  
 </template>
 
 <template name="adminCheck">
