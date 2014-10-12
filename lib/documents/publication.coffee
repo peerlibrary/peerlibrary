@@ -117,7 +117,7 @@ class @Publication extends BasicAccessDocument
   cachedFilename: =>
     throw new Error "Cached filename not available" unless @cachedId and @mediaType
 
-    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.' + @mediaType
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + '1.' + @mediaType
 
   url: =>
     Storage.url @cachedFilename()
