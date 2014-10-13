@@ -57,8 +57,7 @@ class @Publication extends Publication
     Future = Npm.require 'fibers/future'
     child_process = Npm.require 'child_process'
 
-    #if Meteor.settings.ghostScript
-    if true
+    if Meteor.settings.ghostScript
       path = Storage._fullPath(@cachedFilename()).split "/"
       path.pop()
       path = path.join "/"
