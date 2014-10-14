@@ -4,8 +4,8 @@ Meteor.publish 'search-results', (query, limit) ->
   validateArgument 'limit', limit, PositiveNumber
 
   if query
-    title_query = 'title:' + query  
-    ESQuery = { index: 'publication', q: query, fields: ["title"], size: 50 }
+    fullQuery = 'title:' + query  + ' OR fullText:' + query  
+    ESQuery = { index: 'publication', q: fullQuery, size: 50 }
     findQuery = getIdsFromES ESQuery
   else
     findQuery = {}
