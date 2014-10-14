@@ -19,9 +19,33 @@ Meteor.methods
 
   'reset-es': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
-    response = blocking(ES, ES.indices.delete) {
+    blocking(ES, ES.indices.delete) {
       index: '_all'
     }
+    response = blocking(ES, ES.indices.create) {
+      index: 'publication',
+      body: {
+        "mappings": {
+          "publication" : {
+            "properties" : {
+              "fullText" : {
+                "type" : "string",
+                "analyzer": "english"
+              },
+              "title" : {
+                "type" : "string",
+                "analyzer": "english"
+              }
+            }
+          }
+        }
+      }
+    },
+    (error, response) ->
+      console.log "Response from ES(Creating Index): "
+      console.log response if response
+      console.log error if error
+
     Publication.documents.find({}).forEach (publication, i, cursor) =>
       # console.log publication.title
       pubId = publication._id
