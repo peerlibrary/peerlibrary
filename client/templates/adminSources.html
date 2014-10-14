@@ -1,0 +1,24 @@
+<template name="adminSources">
+  <h2>External Sources</h2>
+  <div class="admin-buttons">
+    <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+  </div>
+  {{> adminArXiv}}
+  {{> adminFSM}}
+  {{> adminTabs}}
+</template>
+
+<template name="adminArXiv">
+  <h3>ArXiv</h3>
+  <div class="admin-buttons">
+    <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
+    <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
+  </div>
+</template>
+
+<template name="adminFSM">
+  <h3>Free Speech Movement</h3>
+  <div class="admin-buttons">
+    <button class="sync-fsm-metadata">Sync FSM metadata</button>
+  </div>
+</template>

@@ -1,0 +1,48 @@
+<template name="adminJobs">
+  <h2>Jobs</h2>
+  <div class="admin-buttons">
+    <button class="test-job">Create a test job</button>
+  </div>
+  <h3>Queue</h3>
+  <ul class="admin-job-queue item-list">
+    {{#each jobqueue}}
+      {{> adminJobQueueItem}}
+    {{/each}}
+  </ul>  {{> adminTabs}}
+</template>
+
+<template name="adminJobQueueItem">
+  <li class="catalog-item job">
+    <div class="details">
+      <h2>{{type}}, status: {{status}}</h2>
+      <p>ID: {{_id}}</p>
+      <p>last updated: {{updated}}</p>
+      {{#if inFuture}}
+        <p>scheduled after: {{after}}</p>
+      {{/if}}
+      <p>data: {{json data}}</p>
+      <ul class="log">
+        {{#each log}}
+          {{> adminJobLogItem}}
+        {{/each}}
+      </ul>
+      {{#if canManageJob}}
+        <div class="admin-buttons">
+          {{#if isCancellable}}
+            <button class="admin-job-cancel">Cancel</button>
+          {{/if}}
+          {{#if isRestartable}}
+            <button class="admin-job-restart">Restart</button>
+          {{/if}}
+        </div>
+      {{/if}}
+    </div>
+  </li>
+</template>
+
+<template name="adminJobLogItem">
+  <li class="level">
+    <p class="data">{{time}}, runID: {{runId}}</p>
+    <p class="message">{{message}}</p>
+  </li>
+</template>

@@ -1,0 +1,20 @@
+<template name="adminErrors">
+  <h2>Errors</h2>
+  <div class="admin-buttons">
+    <button class="dummy-error">Create a dummy error</button>
+  </div>
+  <h3>Error Log</h3>
+  <ul class="admin-errors">
+    {{#each errors}}
+      {{> adminErrorsItem}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="adminErrorsItem">
+  <li>
+    {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
+    | window {{windowWidth}}x{{windowHeight}}
+  </li>
+  {{> adminTabs}}
+</template>
