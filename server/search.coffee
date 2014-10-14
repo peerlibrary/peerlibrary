@@ -5,7 +5,7 @@ Meteor.publish 'search-results', (query, limit) ->
 
   if query
     title_query = 'title:' + query  
-    ESQuery = { index: 'publication', q: title_query, size: 50 }
+    ESQuery = { index: 'publication', q: query, fields: ["title"], size: 50 }
     findQuery = getIdsFromES ESQuery
   else
     findQuery = {}

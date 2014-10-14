@@ -10,6 +10,8 @@ Meteor.methods
 
   'ping-es': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
+    # Publication.documents.find({}).forEach (publication, i, cursor) =>
+    #   console.log publication._id, publication.title
     response = blocking(ES, ES.ping) { 
       requestTimeout: 1000,
       hello: "elasticsearch!"
@@ -20,6 +22,16 @@ Meteor.methods
     response = blocking(ES, ES.indices.delete) {
       index: '_all'
     }
+    Publication.documents.find({}).forEach (publication, i, cursor) =>
+      # console.log publication.title
+      pubId = publication._id
+      pubBody = {"title": publication.title, "fullText": publication.fullText}
+      pubToES = { index: 'publication', type: 'publication', id: pubId, body: pubBody }
+      # console.log pubToES
+      ES.index pubToES, (error, response) ->
+        console.log "Response from ES: "
+        console.log response if response
+        console.log error if error
 
   'test-job': methodWrap ->
     throw new Meteor.Error 403, "Permission denied." unless Meteor.person()?.isAdmin
