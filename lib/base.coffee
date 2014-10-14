@@ -14,6 +14,14 @@ setSession = (session) ->
     searchActive: false
     searchFocused: false
     adminActive: false
+    adminDevelopment: false
+    adminPublications: false
+    adminDatabase: false
+    adminErrors: false
+    adminJobs: false
+    adminSources: false
+    adminBlog: false
+    adminFacts: false
     publicationJobsId: null
     libraryActive: false
     settingsActive: false
@@ -354,6 +362,62 @@ else
         setSession
           adminActive: true
         'admin'
+
+    '/admin/development':
+      as: 'adminDevelopment'
+      to: ->
+        setSession
+        adminDevelopment: true
+        'adminDevelopment'
+
+    '/admin/publications':
+      as: 'adminPublications'
+      to: ->
+        setSession
+        adminPublications: true
+        'adminPublications'
+
+    '/admin/database':
+      as: 'adminDatabase'
+      to: ->
+        setSession
+        adminDatabase: true
+        'adminDatabase'
+
+    '/admin/errors':
+      as: 'adminErrors'
+      to: ->
+        setSession
+        adminErrors: true
+        'adminErrors'
+
+    '/admin/jobs':
+      as: 'adminJobs'
+      to: ->
+        setSession
+        adminJobs: true
+        'adminJobs'
+
+    '/admin/sources':
+      as: 'adminSources'
+      to: ->
+        setSession
+        adminSources: true
+        'adminSources'
+
+    '/admin/blog':
+      as: 'adminBlog'
+      to: ->
+        setSession
+        adminBlog: true
+        'adminBlog'
+
+    '/admin/facts':
+      as: 'adminFacts'
+      to: ->
+        setSession
+        adminFacts: true
+        'adminFacts'
 
     '/admin/jobs/p/:publicationId':
       as: 'publicationJobs'
