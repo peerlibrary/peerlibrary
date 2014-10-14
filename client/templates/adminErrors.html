@@ -9,6 +9,7 @@
       {{> adminErrorsItem}}
     {{/each}}
   </ul>
+  {{> adminTabs}}
 </template>
 
 <template name="adminErrorsItem">
@@ -16,5 +17,4 @@
     {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
     | window {{windowWidth}}x{{windowHeight}}
   </li>
-  {{> adminTabs}}
 </template>
