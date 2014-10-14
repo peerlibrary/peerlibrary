@@ -30,7 +30,6 @@ class @Job
     # some duplicate work done. Jobs ought to be idempotent anyway.
     return if options?.skipIfExisting and @constructor.exists @data, options?.skipIncludingCompleted
 
-    # We use EJSON.toJSONValue to convert to an object with only fields and no methods
     job = JobQueue.Meta.collection.createJob @type(), @data
 
     options = @enqueueOptions options

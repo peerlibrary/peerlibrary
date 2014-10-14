@@ -208,10 +208,13 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'collection-by-id', (collectionId) ->
+new PublishEndpoint 'collection-by-id', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Collection.documents.find Collection.requireReadAccessSelector(person,
       _id: collectionId
     ),
@@ -222,9 +225,12 @@ Meteor.publish 'collection-by-id', (collectionId) ->
     ,
       fields: _.extend Collection.readAccessPersonFields()
 
-Meteor.publish 'my-collections', ->
+new PublishEndpoint 'my-collections', ->
   @related (person) ->
     return unless person?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Collection.documents.find Collection.requireReadAccessSelector(person,
       'authorPerson._id': person._id
@@ -236,12 +242,16 @@ Meteor.publish 'my-collections', ->
     ,
       fields: _.extend Collection.readAccessPersonFields()
 
-Meteor.publish 'publications-by-collection', (collectionId) ->
+publicationsByCollection = new PublishEndpoint 'publications-by-collection', (collectionId) ->
   validateArgument 'collectionId', collectionId, DocumentId
 
   @related (person, collection) ->
     return unless collection?.hasReadAccess person
     return unless collection?.publications
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+    @set 'collection', collection
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
@@ -260,7 +270,11 @@ Meteor.publish 'publications-by-collection', (collectionId) ->
       fields: _.extend Collection.readAccessSelfFields(),
         publications: 1
 
-Meteor.publish 'collections', (limit, filter, sortIndex) ->
+publicationsByCollection.use new HasCachedIdMiddleware()
+
+publicationsByCollection.use new LimitImportingMiddleware()
+
+new PublishEndpoint 'collections', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -273,6 +287,9 @@ Meteor.publish 'collections', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Collection.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Collection.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'collections', [filter, sortIndex],

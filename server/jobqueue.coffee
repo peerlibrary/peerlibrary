@@ -50,9 +50,12 @@ Meteor.methods
     else
       throw new Meteor.Error 403, "Permission denied."
 
-Meteor.publish 'job-queue', ->
+new PublishEndpoint 'job-queue', ->
   @related (person) ->
     return unless person?.isAdmin
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     JobQueue.documents.find {},
       fields: _.extend JobQueue.PUBLISH_FIELDS().fields,
@@ -72,11 +75,14 @@ Meteor.publish 'job-queue', ->
         # _id field is implicitly added
         isAdmin: 1
 
-Meteor.publish 'jobs-by-publication', (publicationId) ->
+new PublishEndpoint 'jobs-by-publication', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person, publication) ->
     return unless publication?.hasReadAccess person
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     JobQueue.documents.find
       'data.publication._id': publication._id

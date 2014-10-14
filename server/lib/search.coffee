@@ -29,11 +29,17 @@
 @searchPublish = (publish, name, query, results...) ->
   queryId = Random.id()
 
-  initializing = results.length
+  initializedCounts =
+    name: name
+    query: query
+  for result, i in results
+    # We set all counts initially to null, until counts are ready
+    initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = null
 
-  counts = []
+  publish.added 'SearchResults', queryId, initializedCounts
+
+  initializingResults = results.length
   resultsHandles = []
-  countsHandles = []
   for result, i in results
     do (result, i) ->
       orderMap = {}
@@ -43,8 +49,6 @@
         assert.equal orderList.length, _.size orderMap
         for orderId, orderIndex in orderList
           assert.equal orderMap[orderId], orderIndex
-
-      counts[i] = 0
 
       resultsHandles[i] = result.cursor.observeChanges
         addedBefore: (id, fields, before) =>
@@ -190,16 +194,38 @@
 
           assertOrder()
 
+      initializingResults--
+
+  assert.equal initializingResults, 0
+
+  # We call ready before counts are available so that client side can start displaying results
+  # even before counts are available. Counting currently takes time (we have to go over whole
+  # query) so it quite delays sending of results and user feedback on the client.
+  publish.ready()
+
+  publish.onStop ->
+    for handle, i in resultsHandles
+      handle?.stop()
+      resultsHandles[i] = null
+
+  initializingCounts = results.length
+  counts = []
+  countsHandles = []
+  for result, i in results
+    do (result, i) ->
+      counts[i] = 0
+
       # For counting we want only _id field and no skip or limit restrictions
       result.cursor._cursorDescription.options.fields =
         _id: 1
       delete result.cursor._cursorDescription.options.skip
       delete result.cursor._cursorDescription.options.limit
 
+      # TODO: Counting in this way is very inefficient, better would be to first run .count() in MongoDB and then just tail oplog for adding and removing, without all added calls for all existing documents.
       countsHandles[i] = result.cursor.observeChanges
         added: (id, fields) =>
           counts[i]++
-          if initializing is 0
+          if initializingCounts is 0
             change = {}
             change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
             publish.changed 'SearchResults', queryId, change
@@ -210,24 +236,17 @@
           change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
           publish.changed 'SearchResults', queryId, change
 
-      initializing--
+      initializingCounts--
 
-  assert.equal initializing, 0
+  assert.equal initializingCounts, 0
 
-  initializedCounts =
-    name: name
-    query: query
   for result, i in results
     initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
 
-  publish.added 'SearchResults', queryId, initializedCounts
+  publish.changed 'SearchResults', queryId, initializedCounts
 
-  publish.ready()
 
   publish.onStop ->
-    for handle, i in resultsHandles
-      handle?.stop()
-      resultsHandles[i] = null
     for handle, i in countsHandles
       handle?.stop()
       countsHandles[i] = null

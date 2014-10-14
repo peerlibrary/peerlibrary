@@ -140,12 +140,15 @@ Meteor.methods
       $set:
         name: name
 
-Meteor.publish 'groups-by-ids', (groupIds) ->
+new PublishEndpoint 'groups-by-ids', (groupIds) ->
   validateArgument 'groupIds', groupIds, Match.OneOf DocumentId, [DocumentId]
 
   groupIds = [groupIds] unless _.isArray groupIds
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Group.documents.find Group.requireReadAccessSelector(person,
       _id:
         $in: groupIds
@@ -157,9 +160,12 @@ Meteor.publish 'groups-by-ids', (groupIds) ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'my-groups', ->
+new PublishEndpoint 'my-groups', ->
   @related (person) ->
     return unless person?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Group.documents.find Group.requireReadAccessSelector(person,
       'members._id': person._id
@@ -171,7 +177,7 @@ Meteor.publish 'my-groups', ->
     ,
       fields: _.extend Group.readAccessPersonFields()
 
-Meteor.publish 'groups', (limit, filter, sortIndex) ->
+new PublishEndpoint 'groups', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -184,6 +190,9 @@ Meteor.publish 'groups', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Group.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Group.requireReadAccessSelector person, findQuery
 
     searchPublish @, 'groups', [filter, sortIndex],

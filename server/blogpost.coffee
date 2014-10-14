@@ -10,7 +10,7 @@ class @BlogPost extends BlogPost
       'tumblr.title': 1
       'tumblr.caption': 1
 
-Meteor.publish 'latest-blog-post', ->
+new PublishEndpoint 'latest-blog-post', ->
   BlogPost.documents.find
     $or: [
       'tumblr.title':

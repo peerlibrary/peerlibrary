@@ -134,8 +134,9 @@ class @Publication extends Publication
       offset: parseInt(digest, 16) % (@size - VERIFICATION_SAMPLE_SIZE)
       size: VERIFICATION_SAMPLE_SIZE
 
-  # A set of fields which are public and can be published to the client. cachedId field is available for open
-  # access publications, if user has the publication in the library, or has necessary permissions over the publication.
+  # A set of fields which are public and can be published to the client.
+  # Make sure you use some mechanism which limits importing field only
+  # to the current user. For example, by using LimitImportingMiddleware.
   @PUBLISH_FIELDS: ->
     fields:
       slug: 1
@@ -149,6 +150,7 @@ class @Publication extends Publication
       foreignId: 1
       source: 1
       mediaType: 1
+      importing: 1 # This field has to be limited with LimitImportingMiddleware before publishing
       access: 1
       annotationsCount: 1
       readPersons: 1
@@ -170,9 +172,10 @@ class @Publication extends Publication
       'authors'
       'title'
       'numberOfPages'
-      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in search results
-      'access' # Also needed to compute hasCachedId in search results
-      'annotationsCount'
+      'abstract' # We do not really pass abstract on, just transform it to hasAbstract in HasAbstractMiddleware
+      'access' # Also needed to compute hasCachedId in HasCachedIdMiddleware
+      'annotationsCount',
+      'importing' # Has to be limited by LimitImportingMiddleware
     ]
 
   # A subset of public fields used for catalog results
@@ -388,7 +391,7 @@ Meteor.methods
       $set:
         title: title
 
-Meteor.publish 'publications', (limit, filter, sortIndex) ->
+publications = new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
@@ -405,47 +408,36 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
     searchPublish @, 'publications', [filter, sortIndex],
       cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_CATALOG_FIELDS().fields
         sort: sort
-      added: (id, fields) =>
-        fields.hasAbstract = !!fields.abstract
-        delete fields.abstract
-        if fields.access isnt Publication.ACCESS.CLOSED
-          # Both other cases are handled by the selector, if publication is in the
-          # query results, user has access to the full text of the publication
-          # (publication is private or open access)
-          fields.hasCachedId = true
-        else
-          fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
-      changed: (id, fields) =>
-        if 'abstract' of fields
-          fields.hasAbstract = !!fields.abstract
-          delete fields.abstract
-        if 'access' of fields
-          if fields.access isnt Publication.ACCESS.CLOSED
-            # Both other cases are handled by the selector, if publication is in the
-            # query results, user has access to the full text of the publication
-            # (publication is private or open access)
-            fields.hasCachedId = true
-          else
-            fields.hasCachedId = new Publication(_.extend {}, {_id: id}, fields).hasCacheAccessSearchResult person
-        fields
   ,
     Person.documents.find
       _id: @personId
     ,
       fields: _.extend Publication.readAccessPersonFields()
 
-Meteor.publish 'publications-by-author-slug', (slug) ->
+publications.use new HasAbstractMiddleware()
+
+publications.use new HasCachedIdMiddleware()
+
+publications.use new LimitImportingMiddleware()
+
+publicationsByAuthorSlug = new PublishEndpoint 'publications-by-author-slug', (slug) ->
   validateArgument 'slug', slug, NonEmptyString
 
   @related (author, person) ->
     return unless author?._id
+
+    # We store related fields so that they are available in middlewares.
+    @set 'author', author
+    @set 'person', person
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       'authors._id': author._id
@@ -467,10 +459,17 @@ Meteor.publish 'publications-by-author-slug', (slug) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'publication-by-id', (publicationId) ->
+publicationsByAuthorSlug.use new HasCachedIdMiddleware()
+
+publicationsByAuthorSlug.use new LimitImportingMiddleware()
+
+publicationById = new PublishEndpoint 'publication-by-id', (publicationId) ->
   validateArgument 'publicationId', publicationId, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id: publicationId
     ),
@@ -481,17 +480,24 @@ Meteor.publish 'publication-by-id', (publicationId) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-# We could try to combine publications-by-id and publications-cached-by-id,
-# but it is easier to have two and leave to Meteor to merge them together
-Meteor.publish 'publications-cached-by-id', (id) ->
+publicationById.use new HasCachedIdMiddleware()
+
+publicationById.use new LimitImportingMiddleware()
+
+# We could try to combine publications-by-id and publication-cachedid-by-id,
+# but it is easier to have two and leave to Meteor to merge them together.
+new PublishEndpoint 'publication-cachedid-by-id', (id) ->
   validateArgument 'id', id, DocumentId
 
   @related (person) ->
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
     Publication.documents.find Publication.requireCacheAccessSelector(person,
       _id: id
     ),
-      fields: _.extend Publication.PUBLISH_FIELDS().fields,
-        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication
+      fields:
+        # cachedId field is available for open access publications, if user has the publication in the library, or has necessary permissions over the publication.
         'cachedId': 1
   ,
     Person.documents.find
@@ -499,9 +505,12 @@ Meteor.publish 'publications-cached-by-id', (id) ->
     ,
       fields: Publication.readAccessPersonFields()
 
-Meteor.publish 'my-publications', ->
+myPublications = new PublishEndpoint 'my-publications', ->
   @related (person) ->
     return unless person?.library
+
+    # We store related fields so that they are available in middlewares.
+    @set 'person', person
 
     Publication.documents.find Publication.requireReadAccessSelector(person,
       _id:
@@ -515,29 +524,8 @@ Meteor.publish 'my-publications', ->
       fields: _.extend Publication.readAccessPersonFields(),
         library: 1
 
-# Use use this publish endpoint so that users can see their own filename
-# of the imported file, before a publication has metadata. We could try
-# to combine my-publications and my-publications-importing, but it is easier
-# to have two and leave to Meteor to merge them together, because we are
-# using $ in fields. We publish only importing field for current person
-# because other fields are already published by my-publications. We tried
-# to publish all public fields again, but query became too complicated for
-# MongoDB. See https://github.com/peerlibrary/peerlibrary/issues/626
-Meteor.publish 'my-publications-importing', ->
-  @related (person) ->
-    return unless person?._id
+myPublications.use new HasCachedIdMiddleware()
 
-    Publication.documents.find Publication.requireReadAccessSelector(person,
-      'importing.person._id': person._id
-    ),
-      fields:
-        # TODO: We should not push temporaryFile to the client
-        # Ensure that importing contains only this person
-        'importing.$': 1
-  ,
-    Person.documents.find
-      _id: @personId
-    ,
-      fields: Publication.readAccessPersonFields()
+myPublications.use new LimitImportingMiddleware()
 
 ensureCatalogSortIndexes Publication

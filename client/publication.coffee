@@ -6,7 +6,7 @@ SCALE = 1.25
 draggingViewport = false
 currentPublication = null
 publicationHandle = null
-publicationCacheHandle = null
+publicationCachedIdHandle = null
 myGroupsHandle = null
 
 # We use our own reactive variable for publicationDOMReady and not Session to
@@ -16,7 +16,7 @@ myGroupsHandle = null
 # a reactive value so that we can combine code logic easy.
 publicationDOMReady = new Variable false
 
-# Mostly used just to force reevaluation of publicationHandle and publicationCacheHandle
+# Mostly used just to force reevaluation of publicationHandle and publicationCachedIdHandle
 publicationSubscribing = new Variable false
 
 # To be able to limit shown annotations only to those with highlights in the current viewport
@@ -547,7 +547,7 @@ Deps.autorun ->
   if Session.get 'currentPublicationId'
     publicationSubscribing.set true
     publicationHandle = Meteor.subscribe 'publication-by-id', Session.get 'currentPublicationId'
-    publicationCacheHandle = Meteor.subscribe 'publications-cached-by-id', Session.get 'currentPublicationId'
+    publicationCachedIdHandle = Meteor.subscribe 'publication-cachedid-by-id', Session.get 'currentPublicationId'
     Meteor.subscribe 'highlights-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'annotations-by-publication', Session.get 'currentPublicationId'
     Meteor.subscribe 'comments-by-publication', Session.get 'currentPublicationId'
@@ -557,11 +557,11 @@ Deps.autorun ->
   else
     publicationSubscribing.set false
     publicationHandle = null
-    publicationCacheHandle = null
+    publicationCachedIdHandle = null
     myGroupsHandle = null
 
 Deps.autorun ->
-  if publicationSubscribing() and publicationHandle?.ready() and publicationCacheHandle?.ready()
+  if publicationSubscribing() and publicationHandle?.ready() and publicationCachedIdHandle?.ready()
     publicationSubscribing.set false
 
 Deps.autorun ->
@@ -662,11 +662,11 @@ Deps.autorun ->
 
 Template.publication.loading = ->
   publicationSubscribing() # To register dependency
-  not publicationHandle?.ready() or not publicationCacheHandle?.ready()
+  not publicationHandle?.ready() or not publicationCachedIdHandle?.ready()
 
 Template.publication.notFound = ->
   publicationSubscribing() # To register dependency
-  publicationHandle?.ready() and publicationCacheHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
+  publicationHandle?.ready() and publicationCachedIdHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
 Template.publication.publication = ->
   Publication.documents.findOne Session.get 'currentPublicationId'
@@ -862,7 +862,7 @@ Template.publicationLibraryMenuCollectionListing.countDescription = Template.col
 
 Template.publicationDisplay.cachedAvailable = ->
   publicationSubscribing() # To register dependency
-  publicationHandle?.ready() and publicationCacheHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
+  publicationHandle?.ready() and publicationCachedIdHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null

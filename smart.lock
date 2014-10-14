@@ -54,7 +54,8 @@
         "branch": "peerlibrary"
       },
       "async": {},
-      "elasticsearch": {}
+      "elasticsearch": {},
+      "middleware": {}
     },
     "packages": {
       "router": {
@@ -169,13 +170,13 @@
       },
       "related": {
         "git": "https://github.com/peerlibrary/meteor-related.git",
-        "tag": "v0.1.6",
-        "commit": "d4fcc296478ad828428556ab81594dca9684b32c"
+        "tag": "v0.1.7",
+        "commit": "4e658565932396df89a3d9e101c3a80a365ff82a"
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.9.4",
-        "commit": "fb849f3aaeb73570b375df4e7de8ce43595e9b66"
+        "tag": "v2.9.6",
+        "commit": "b564a0e32498889ca4633843c7a93d642f597ea0"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
@@ -211,6 +212,11 @@
         "git": "https://github.com/andrewreedy/meteor-elasticsearch.git",
         "tag": "v0.0.5",
         "commit": "da60735a238d9f8687a06686760d47081c359b2c"
+      },
+      "middleware": {
+        "git": "https://github.com/peerlibrary/meteor-middleware.git",
+        "tag": "v0.1.0",
+        "commit": "8ccbf03a78267f525ba871de0b01aae1d8a670e7"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
