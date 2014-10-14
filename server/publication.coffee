@@ -396,7 +396,7 @@ Meteor.publish 'publications', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
   if filter 
-    title_query = 'title:' + filter  
+    title_query = 'title:' + filter  + ' OR fullText:' + filter 
     ESQuery = { index: 'publication', q: title_query, size: 50 }
     findQuery = getIdsFromES ESQuery
   else
