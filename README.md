@@ -3,7 +3,7 @@ PeerLibrary
 
 Facilitating the global conversation on academic literature.
 
-[https://peerlibrary.org/](https://peerlibrary.org/) | [http://blog.peerlibrary.org/](http://blog.peerlibrary.org/) | [@PeerLibrary](https://twitter.com/PeerLibrary)
+[https://peerlibrary.org/](https://peerlibrary.org/) | [http://blog.peerlibrary.org/](http://blog.peerlibrary.org/) | [@PeerLibrary](https://twitter.com/PeerLibrary) | [Facebook](https://www.facebook.com/PeerLibrary)
 
 * [GitHub](https://github.com/peerlibrary/peerlibrary)
 * [Development wiki](https://github.com/peerlibrary/peerlibrary/wiki)
