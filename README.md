@@ -10,6 +10,7 @@ Facilitating the global conversation on academic literature.
 * [Development tickets](https://github.com/peerlibrary/peerlibrary/issues)
 * [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
 * IRC at #peerlibrary @ [Freenode](http://freenode.net/)
+* Email hello @ peerlibrary.org
 
 _PeerLibrary outreach is [done in another repository](https://github.com/peerlibrary/outreach)._
 
