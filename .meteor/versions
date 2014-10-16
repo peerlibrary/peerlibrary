@@ -61,7 +61,7 @@ peerlibrary:blocking@0.4.2
 peerlibrary:connect@2.22.0_3
 peerlibrary:crypto@0.1.3
 peerlibrary:dimsum@0.1.8_6
-peerlibrary:directcollection@0.2.2
+peerlibrary:directcollection@0.3.0
 peerlibrary:middleware@0.1.0
 peerlibrary:pdf.js@1.0.791_4
 peerlibrary:peerdb@0.14.3
