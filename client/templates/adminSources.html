@@ -1,11 +1,15 @@
 <template name="adminSources">
   <h2>External Sources</h2>
-  <div class="admin-buttons">
-    <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+        {{> adminArXiv}}
+        {{> adminFSM}}
+      </div>
+    </div>
+    {{> adminTabs}}
   </div>
-  {{> adminArXiv}}
-  {{> adminFSM}}
-  {{> adminTabs}}
 </template>
 
 <template name="adminArXiv">
