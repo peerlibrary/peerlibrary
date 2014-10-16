@@ -2,7 +2,7 @@ Package.describe({
   summary: "dom-text-mapper and dom-text-matcher libraries"
 });
 
-Package.on_use(function (api) {
+Package.onUse(function (api) {
   api.use(['coffeescript'], ['client', 'server']);
 
   api.export([
@@ -11,7 +11,7 @@ Package.on_use(function (api) {
     'DomTextMatcher'
   ]);
 
-  api.add_files([
+  api.addFiles([
     'dom-text-matcher/lib/diff_match_patch/diff_match_patch_uncompressed.js',
     'dom-text-matcher/src/text_match_engines.coffee',
     'dom-text-mapper/src/dom_text_mapper.coffee',
@@ -21,7 +21,7 @@ Package.on_use(function (api) {
   ], ['client', 'server']);
 });
 
-Package.on_test(function (api) {
+Package.onTest(function (api) {
   api.use(['dom-text-mapper', 'tinytest', 'test-helpers', 'coffeescript'], ['client', 'server']);
-  api.add_files('tests.coffee', ['client', 'server']);
+  api.addFiles('tests.coffee', ['client', 'server']);
 });
