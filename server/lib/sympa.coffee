@@ -14,10 +14,11 @@ if Meteor.settings?.sympa?.username and Meteor.settings?.sympa?.password
   Meteor.Router.serverAdd '/sympa', 'GET', ->
     lines = User.documents.find().map (user, index, cursor) ->
       # Process only registered users
-      return '' unless user.user
 
-      return '' unless user.isRegistered
+      return '' unless user.isRegistered()
 
-      "#{user.isRegistered } #{ user.getDisplayName() }\n"
+      return '' unless user.emails
+
+      "#{ user.emails[0].address } #{ user.username }\n"
 
     [200, {'Content-Type': 'text/plain'}, lines.join('')]
