@@ -22,7 +22,7 @@ class @User extends BaseDocument
     name: 'User'
     collection: Meteor.users
     fields: =>
-      person: @ReferenceField Person
+      person: @ReferenceField Person, ['slug', 'displayName', 'gravatarHash', 'user.username']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
       lastActivity: LastActivityTrigger ['services']
