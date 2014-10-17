@@ -1,7 +1,7 @@
 accounts-base@1.1.2
 accounts-password@1.0.3
 accounts-ui-unstyled@1.1.3
-amd:manager@0.0.5
+amd:manager@0.1.0
 annotator@0.0.0
 application-configuration@1.0.3
 audit-argument-checks@1.0.1
@@ -47,7 +47,7 @@ minimongo@1.0.4
 mobile-status-bar@1.0.1
 mongo-livedata@1.0.6
 mongo@1.0.7
-mrt:define@0.10.0
+mrt:define@0.11.0
 mrt:isolate-value@2.0.2
 mrt:moment@2.8.1
 mrt:useragent@0.0.2
@@ -66,6 +66,7 @@ peerlibrary:middleware@0.1.0
 peerlibrary:pdf.js@1.0.791_4
 peerlibrary:peerdb@0.14.3
 peerlibrary:related@0.1.7
+peerlibrary:segfault-handler@0.1.4
 peerlibrary:stacktrace@0.1.3
 peerlibrary:tar@0.1.20_4
 peerlibrary:url-utils@0.4.0_2

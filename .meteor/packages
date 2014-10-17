@@ -43,4 +43,4 @@ vsivsi:job-collection
 peerlibrary:async
 peerlibrary:middleware
 mrt:moment
-
+peerlibrary:segfault-handler

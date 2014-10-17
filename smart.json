@@ -12,10 +12,6 @@
       "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-file.git"
     },
-    "mrt:define": {
-      "branch": "peerlibrary-new",
-      "git": "https://github.com/peerlibrary/require.git"
-    },
     "variable": {
       "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-variable.git"

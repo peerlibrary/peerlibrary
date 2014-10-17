@@ -3,7 +3,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('mrt:define');
+  api.use('mrt:define@0.11.0');
 
   api.export('Scribe');
 

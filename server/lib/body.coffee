@@ -1,5 +1,5 @@
-WebApp.addHtmlBodyHook (request) ->
+WebApp.addExtraBodyHook (request) ->
   '<div class="peerlibrary-loading">PeerLibrary is loading. Please wait.</div>'
 
-WebApp.addHtmlBodyHook (request) ->
+WebApp.addExtraBodyHook (request) ->
   '<noscript>PeerLibrary requires JavaScript enabled.</noscript>'

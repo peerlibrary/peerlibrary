@@ -1,2 +1,2 @@
 WebApp.addHtmlAttributeHook (request) ->
-  'lang="en"'
+  lang: 'en'

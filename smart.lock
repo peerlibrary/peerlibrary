@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/peerlibrary/meteor.git",
     "branch": "peerlibrary-new",
-    "commit": "8029ed8774a74c95c7d1eb1d41d5f5fb00346778"
+    "commit": "4c80f9a327c3f82e47a11d00cbf1b84621467726"
   },
   "dependencies": {
     "basePackages": {
@@ -12,10 +12,6 @@
       },
       "meteor-file": {
         "git": "https://github.com/peerlibrary/meteor-file.git",
-        "branch": "peerlibrary-new"
-      },
-      "mrt:define": {
-        "git": "https://github.com/peerlibrary/require.git",
         "branch": "peerlibrary-new"
       },
       "variable": {
@@ -41,11 +37,6 @@
         "git": "https://github.com/peerlibrary/meteor-file.git",
         "branch": "peerlibrary-new",
         "commit": "aa3c6d4fb61ba17ebe3e72771d572c1e3addf36c"
-      },
-      "mrt:define": {
-        "git": "https://github.com/peerlibrary/require.git",
-        "branch": "peerlibrary-new",
-        "commit": "386c194230f7d00f1d267f5c5b02496b304395bc"
       },
       "variable": {
         "git": "https://github.com/peerlibrary/meteor-variable.git",
