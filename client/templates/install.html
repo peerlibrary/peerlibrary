@@ -14,11 +14,11 @@
       <div class="instruction">To begin, please create an admin account.</div>
       <form class="password">
         <div class="username">Username: <code>admin</code></div>
-        <input id="install-password-input" type="password" placeholder="Choose an admin password" {{#if installInProgress}}disabled="disabled"{{/if}} />
+        <input id="install-password-input" type="password" placeholder="Choose an admin password" disabled={{installInProgress}} />
         {{#if installError}}
           <div class="message error-message">{{installError}}</div>
         {{/if}}
-        <button type="submit" class="install-submit" {{#if installInProgress}}disabled="disabled"{{/if}}>Enter PeerLibrary</button>
+        <button type="submit" class="install-submit" disabled={{installInProgress}}>Enter PeerLibrary</button>
       </form>
     {{/if}}
   </div>

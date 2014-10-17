@@ -26,38 +26,43 @@ accessButtonEventHandlers =
 Template.accessControl.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
-Template.accessControl.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.accessControl.helpers
+  canModifyAccess: ->
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessButton.events accessButtonEventHandlers
 
-Template.accessButton.public = ->
-  @access is @constructor.ACCESS.PUBLIC
+Template.accessButton.helpers
+  public: ->
+    @access is @constructor.ACCESS.PUBLIC
 
-Template.accessButton.documentName = ->
-  # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-  if @constructor.Meta.collection._name is null
-    documentName = @constructor.Meta.parent._name
-  else
-    documentName = @constructor.Meta._name
+  documentName: ->
+    # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+    if @constructor.Meta.collection._name is null
+      documentName = @constructor.Meta.parent._name
+    else
+      documentName = @constructor.Meta._name
 
-  documentName.toLowerCase()
+    documentName.toLowerCase()
 
-Template.accessButton.documentIsGroup = ->
-  @ instanceof Group
+  documentIsGroup: ->
+    @ instanceof Group
 
-Template.accessIconControl.canModifyAccess = Template.accessControl.canModifyAccess
+Template.accessIconControl.helpers
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
 Template.accessIconButton.rendered = Template.accessButton.rendered
 
 Template.accessIconButton.events accessButtonEventHandlers
 
-Template.accessIconButton.public = Template.accessButton.public
+Template.accessIconButton.helpers
+  public: Template.accessButton.helpers 'public'
 
-Template.accessIconButton.documentName = Template.accessButton.documentName
+  documentName: Template.accessButton.helpers 'documentName'
 
-Template.accessMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.accessMenu.helpers
+  canModifyAccess: ->
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessMenuPrivacyForm.events
   'change .access input:radio': (event, template) ->
@@ -92,23 +97,25 @@ Template.accessMenuPrivacyForm.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.accessMenuPrivacyForm.public = ->
-  @access is @constructor.ACCESS.PUBLIC
+Template.accessMenuPrivacyForm.helpers
+  public: ->
+    @access is @constructor.ACCESS.PUBLIC
 
-Template.accessMenuPrivacyForm.private = ->
-  @access is @constructor.ACCESS.PRIVATE
+  private: ->
+    @access is @constructor.ACCESS.PRIVATE
 
-Template.accessMenuPrivacyForm.documentName = Template.accessButton.documentName
+  documentName: Template.accessButton.helpers 'documentName'
 
-Template.accessMenuPrivacyForm.documentIsGroup = Template.accessButton.documentIsGroup
+  documentIsGroup: Template.accessButton.helpers 'documentIsGroup'
 
-Template.accessMenuPrivacyInfo.public = Template.accessMenuPrivacyForm.public
+Template.accessMenuPrivacyInfo.helpers
+  public: Template.accessMenuPrivacyForm.helpers 'public'
 
-Template.accessMenuPrivacyInfo.private = Template.accessMenuPrivacyForm.private
+  private: Template.accessMenuPrivacyForm.helpers 'private'
 
-Template.accessMenuPrivacyInfo.documentName = Template.accessMenuPrivacyForm.documentName
+  documentName: Template.accessMenuPrivacyForm.helpers 'documentName'
 
-Template.accessMenuPrivacyInfo.documentIsGroup = Template.accessMenuPrivacyForm.documentIsGroup
+  documentIsGroup: Template.accessMenuPrivacyForm.helpers 'documentIsGroup'
 
 Template.rolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
@@ -119,57 +126,59 @@ Template.rolesControl.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.rolesControl.showControl = ->
-  return true if Template.accessControl.canModifyAccess.call @
+Template.rolesControl.helpers
+  showControl: ->
+    return true if Template.accessControl.canModifyAccess.call @
 
-  rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
-  rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
+    rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
+    rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
 
-  return rolesCount > 0
+    return rolesCount > 0
 
-Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
-Template.rolesControlList.rolesList = ->
-  rolesList = []
+Template.rolesControlList.helpers
+  rolesList: ->
+    rolesList = []
 
-  admins = []
-  admins = admins.concat @adminGroups if @adminGroups
-  admins = admins.concat @adminPersons if @adminPersons
-  for admin in admins
-    rolesList.push
-      personOrGroup: admin
-      admin: true
+    admins = []
+    admins = admins.concat @adminGroups if @adminGroups
+    admins = admins.concat @adminPersons if @adminPersons
+    for admin in admins
+      rolesList.push
+        personOrGroup: admin
+        admin: true
 
-  maintainers = []
-  maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
-  maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
-  for maintainer in maintainers
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is maintainer._id
-
-    rolesList.push
-      personOrGroup: maintainer
-      maintainer: true
-
-  if @access is ACCESS.PRIVATE
-    readers = []
-    readers = readers.concat @readGroups if @readGroups
-    readers = readers.concat @readPersons if @readPersons
-    for reader in readers
+    maintainers = []
+    maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
+    maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
+    for maintainer in maintainers
       continue if _.find rolesList, (item) ->
-        item.personOrGroup._id is reader._id
+        item.personOrGroup._id is maintainer._id
 
       rolesList.push
-        personOrGroup: reader
-        readAccess: true
+        personOrGroup: maintainer
+        maintainer: true
 
-  # Because it is not possible to access parent data context from event handler, we map it
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map rolesList, (role) =>
-    role._parent = @
-    role
+    if @access is ACCESS.PRIVATE
+      readers = []
+      readers = readers.concat @readGroups if @readGroups
+      readers = readers.concat @readPersons if @readPersons
+      for reader in readers
+        continue if _.find rolesList, (item) ->
+          item.personOrGroup._id is reader._id
 
-Template.rolesControlList.canModifyAccess = Template.accessControl.canModifyAccess
+        rolesList.push
+          personOrGroup: reader
+          readAccess: true
+
+    # Because it is not possible to access parent data context from event handler, we map it
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    _.map rolesList, (role) =>
+      role._parent = @
+      role
+
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
 changeRole = (data, newRole) ->
   oldRole = null
@@ -243,17 +252,18 @@ Template.rolesControlRoleEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlRoleEditor.isPerson = ->
-  @personOrGroup instanceof Person
+Template.rolesControlRoleEditor.helpers
+  isPerson: ->
+    @personOrGroup instanceof Person
 
-Template.rolesControlRoleEditor.isGroup = ->
-  @personOrGroup instanceof Group
+  isGroup: ->
+    @personOrGroup instanceof Group
 
-Template.rolesControlRoleEditor.private = ->
-  @_parent.access is ACCESS.PRIVATE
+  private: ->
+    @_parent.access is ACCESS.PRIVATE
 
-Template.rolesControlRoleEditor.canModifyAccess = ->
-  @_parent.hasAdminAccess Meteor.person @_parent.constructor.adminAccessPersonFields()
+  canModifyAccess: ->
+    @_parent.hasAdminAccess Meteor.person @_parent.constructor.adminAccessPersonFields()
 
 Template.rolesControlAdd.events
   'change .add-access, keyup .add-access': (event, template) ->
@@ -322,32 +332,33 @@ Template.rolesControlAdd.destroyed = ->
 
   delete @data._newDataContext
 
-Template.rolesControlNoResults.noResults = ->
-  addAccessControlReactiveVariables @
+Template.rolesControlNoResults.helpers
+  noResults: ->
+    addAccessControlReactiveVariables @
 
-  query = @_query()
+    query = @_query()
 
-  return unless query
+    return unless query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  return unless searchResult
+    return unless searchResult
 
-  not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+    not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
-Template.rolesControlNoResults.email = ->
-  addAccessControlReactiveVariables @
+  email: ->
+    addAccessControlReactiveVariables @
 
-  query = @_query().trim()
-  return unless query?.match EMAIL_REGEX
+    query = @_query().trim()
+    return unless query?.match EMAIL_REGEX
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  query = new String(query)
-  query._parent = @
-  query
+    # Because it is not possible to access parent data context from event handler, we store it into results
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    query = new String(query)
+    query._parent = @
+    query
 
 grantAccess = (document, personOrGroup) ->
   data =
@@ -377,64 +388,66 @@ Template.addControlInviteByEmail.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlLoading.loading = ->
-  addAccessControlReactiveVariables @
+Template.rolesControlLoading.helpers
+  loading: ->
+    addAccessControlReactiveVariables @
 
-  @_loading()
+    @_loading()
 
-Template.rolesControlResults.results = ->
-  addAccessControlReactiveVariables @
+  results: ->
+    addAccessControlReactiveVariables @
 
-  query = @_query()
+    query = @_query()
 
-  return unless query
+    return unless query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  return unless searchResult
+    return unless searchResult
 
-  personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
-  groupsLimit = 5 - personsLimit
+    personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
+    groupsLimit = 5 - personsLimit
 
-  if personsLimit
-    persons = Person.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: personsLimit
-    ).fetch()
-  else
-    persons = []
+    if personsLimit
+      persons = Person.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: personsLimit
+      ).fetch()
+    else
+      persons = []
 
-  if groupsLimit
-    groups = Group.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: groupsLimit
-    ).fetch()
-  else
-    groups = []
+    if groupsLimit
+      groups = Group.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: groupsLimit
+      ).fetch()
+    else
+      groups = []
 
-  results = persons.concat groups
+    results = persons.concat groups
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map results, (result) =>
-    result._parent = @
-    result
+    # Because it is not possible to access parent data context from event handler, we store it into results
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    _.map results, (result) =>
+      result._parent = @
+      result
 
-Template.rolesControlResultsItem.ifPerson = (options) ->
-  if @ instanceof Person
-    options.fn @
-  else
-    options.inverse @
+Template.rolesControlResultsItem.helpers
+  ifPerson: (options) ->
+    if @ instanceof Person
+      options.fn @
+    else
+      options.inverse @
 
 Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
@@ -443,10 +456,11 @@ Template.rolesControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlInviteHint.visible = ->
-  addAccessControlReactiveVariables @
+Template.rolesControlInviteHint.helpers
+  visible: ->
+    addAccessControlReactiveVariables @
 
-  !@_query()
+    !@_query()
 
 Template.rolesControlInvite.events
   'change .invite-only, keyup .invite-only': (event, template) ->
@@ -483,14 +497,15 @@ Template.rolesControlInvite.destroyed = ->
   @data._query = null
   delete @data._newDataContext
 
-Template.rolesControlInviteButton.email = ->
-  addAccessControlInviteOnlyReactiveVariables @
+Template.rolesControlInviteButton.helpers
+  email: ->
+    addAccessControlInviteOnlyReactiveVariables @
 
-  query = @_query().trim()
-  return unless query?.match EMAIL_REGEX
+    query = @_query().trim()
+    return unless query?.match EMAIL_REGEX
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  query = new String(query)
-  query._parent = @
-  query
+    # Because it is not possible to access parent data context from event handler, we store it into results
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    query = new String(query)
+    query._parent = @
+    query

@@ -87,15 +87,17 @@ Template.catalog.destroyed = ->
   @_searchResultHandle?.stop()
   @_searchResultHandle = null
 
-Template.catalogFilter.documentsName = ->
-  @documentClass.verboseNamePlural()
+Template.catalogFilter.helpers
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
-Template.catalogFilter.filter = ->
-  Session.get(@variables.filter) or ''
+  filter: ->
+    Session.get(@variables.filter) or ''
 
-Template.catalogSort.field = ->
-  index = Session.get @variables.sort
-  @documentClass.PUBLISH_CATALOG_SORT[index].name
+Template.catalogSort.helpers
+  field: ->
+    index = Session.get @variables.sort
+    @documentClass.PUBLISH_CATALOG_SORT[index].name
 
 Template.catalogSort.events
   'click .dropdown-trigger': (event, template) ->
@@ -107,14 +109,15 @@ Template.catalogSort.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.catalogSortSelection.options = ->
-  # Modify the data with parent variables
-  # TODO: Change when meteor allows to access parent context
-  index = 0
-  _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
-    sorting._parent = @
-    sorting._index = index++
-    sorting
+Template.catalogSortSelection.helpers
+  options: ->
+    # Modify the data with parent variables
+    # TODO: Change when meteor allows to access parent context
+    index = 0
+    _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
+      sorting._parent = @
+      sorting._index = index++
+      sorting
 
 Template.catalogSortOption.events
   'click button': (event, template) ->
@@ -130,20 +133,21 @@ Template.catalogFilter.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.catalogCount.ready = ->
-  Session.get @variables.ready
+Template.catalogCount.helpers
+  ready: ->
+    Session.get @variables.ready
 
-Template.catalogCount.count = ->
-  Session.get @variables.count
+  count: ->
+    Session.get @variables.count
 
-Template.catalogCount.countDescription = ->
-  @documentClass.verboseNameWithCount Session.get(@variables.count)
+  countDescription: ->
+    @documentClass.verboseNameWithCount Session.get(@variables.count)
 
-Template.catalogCount.filter = ->
-  Session.get @variables.filter
+  filter: ->
+    Session.get @variables.filter
 
-Template.catalogCount.documentsName = ->
-  @documentClass.verboseNamePlural()
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
 Template.catalogList.created = ->
   $(window).on 'scroll.catalog', =>
@@ -176,55 +180,58 @@ Template.catalogList.rendered = ->
 Template.catalogList.destroyed = ->
   $(window).off '.catalog'
 
-Template.catalogList.documents = ->
-  # Make sure we don't show documents if ready gets set to false
-  return unless Session.get @variables.ready
+Template.catalogList.helpers
+  documents: ->
+    # Make sure we don't show documents if ready gets set to false
+    return unless Session.get @variables.ready
 
-  searchResult = SearchResult.documents.findOne
-    name: @subscription
-    query: [Session.get(@variables.filter), Session.get(@variables.sort)]
+    searchResult = SearchResult.documents.findOne
+      name: @subscription
+      query: [Session.get(@variables.filter), Session.get(@variables.sort)]
 
-  return unless searchResult
+    return unless searchResult
 
-  @documentClass.documents.find
-    'searchResult._id': searchResult._id
-  ,
-    sort: [
-      ['searchResult.order', 'asc']
-    ]
-    limit: Session.get @variables.limit
-    fields:
-      searchResult: 0
+    @documentClass.documents.find
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: Session.get @variables.limit
+      fields:
+        searchResult: 0
 
-Template.catalogItem.documentIsPublication = ->
-  @ instanceof Publication
+Template.catalogItem.helpers
+  documentIsPublication: ->
+    @ instanceof Publication
 
-Template.catalogItem.documentIsPerson = ->
-  @ instanceof Person
+  documentIsPerson: ->
+    @ instanceof Person
 
-Template.catalogItem.documentIsHighlight = ->
-  @ instanceof Highlight
+  documentIsHighlight: ->
+    @ instanceof Highlight
 
-Template.catalogItem.documentIsAnnotation = ->
-  @ instanceof Annotation
+  documentIsAnnotation: ->
+    @ instanceof Annotation
 
-Template.catalogItem.documentIsGroup = ->
-  @ instanceof Group
+  documentIsGroup: ->
+    @ instanceof Group
 
-Template.catalogItem.documentIsCollection = ->
-  @ instanceof Collection
+  documentIsCollection: ->
+    @ instanceof Collection
 
-Template.catalogLoading.loading = ->
-  Session.get @variables.loading
+Template.catalogLoading.helpers
+  loading: ->
+    Session.get @variables.loading
 
-Template.catalogLoading.more = ->
-  Session.get(@variables.ready) and Session.get(@variables.limit) < Session.get(@variables.count)
+  more: ->
+    Session.get(@variables.ready) and Session.get(@variables.limit) < Session.get(@variables.count)
 
-Template.catalogLoading.count = ->
-  Session.get @variables.count
+  count: ->
+    Session.get @variables.count
 
-Template.catalogLoading.documentsName = ->
-  @documentClass.verboseNamePlural()
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
 Template.catalogLoading.events
   'click .load-more': (event, template) ->

@@ -8,7 +8,7 @@
 </template>
 
 <template name="accessButton">
-  <button class="access-button borderless tooltip" title="{{#if public}}Everyone can see the {{documentName}}{{else}}Only the  {{#if documentIsGroup}}group members and {{/if}} listed users can see the {{documentName}}{{/if}}">
+  <button class="access-button borderless tooltip" title="{{#if public}}Everyone can see the {{documentName}}{{else}}Only the {{#if documentIsGroup}}group members and {{/if}}listed users can see the {{documentName}}{{/if}}">
     {{#if public}}
       <i class="icon-public"></i> Public {{documentName}}
     {{else}}
@@ -52,12 +52,12 @@
     <div class="selections">
 
       <label class="selection {{#if public}}selected icon-check{{/if}}">
-        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" checked={{public}} />
         <i class="access-icon icon-public"></i> Public
       </label>
 
       <label class="selection {{#if private}}selected icon-check{{/if}}">
-        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" checked={{private}} />
         <i class="access-icon icon-private"></i> Private
       </label>
 
@@ -125,14 +125,7 @@
       {{#spaceless}}
         {{#if canModifyAccess}}
           <div class="dropdown-trigger">
-
-        {{/if}}
-
-        {{#if admin}}administrator{{/if}}
-        {{#if maintainer}}maintainer{{/if}}
-        {{#if readAccess}}view access{{/if}}
-
-        {{#if canModifyAccess}}
+            {{> rolesControlRoleEditorRole}}
             <i class="icon-down"></i>
             <div class="dropdown-anchor">
               <ul class="dropdown right-aligned">
@@ -143,10 +136,18 @@
               </ul>
             </div>
           </div>
+        {{else}}
+          {{> rolesControlRoleEditorRole}}
         {{/if}}
       {{/spaceless}}
     </div>
   </li>
+</template>
+
+<template name="rolesControlRoleEditorRole">
+  {{#if admin}}administrator{{/if}}
+  {{#if maintainer}}maintainer{{/if}}
+  {{#if readAccess}}view access{{/if}}
 </template>
 
 <template name="rolesControlAdd">

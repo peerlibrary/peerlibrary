@@ -42,7 +42,7 @@ Deps.autorun ->
     resetBackgroundForm()
 
 # Username settings
-Template.settingsUsername.events =
+Template.settingsUsername.events
   'submit form.set-username': (event, template) ->
     event.preventDefault()
 
@@ -99,17 +99,18 @@ Template.settingsUsername.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.settingsUsername.usernameExists = ->
-  !!Meteor.person?('user.username': 1).user?.username
+Template.settingsUsername.helpers
+  usernameExists: ->
+    !!Meteor.person?('user.username': 1).user?.username
 
-Template.settingsUsername.messageOnField = (field, options) ->
-  field = null unless options
-  usernameFormMessages.get field
+  messageOnField: (field, options) ->
+    field = null unless options
+    usernameFormMessages.get field
 
-Template.settingsUsername.validity = (field, options) ->
-  field = null unless options
-  return 'invalid' unless usernameFormMessages.isValid field
-  ''
+  validity: (field, options) ->
+    field = null unless options
+    return 'invalid' unless usernameFormMessages.isValid field
+    ''
 
 validateUsername = (username, messageField) ->
   return unless usernameReadyForValidation
@@ -120,7 +121,7 @@ validateUsername = (username, messageField) ->
     usernameFormMessages.setError error
 
 # Password settings
-Template.settingsPassword.events =
+Template.settingsPassword.events
   'submit form.set-password': (event, template) ->
     event.preventDefault()
 
@@ -184,14 +185,15 @@ Template.settingsPassword.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.settingsPassword.messageOnField = (field, options) ->
-  field = null unless options
-  passwordFormMessages.get field
+Template.settingsPassword.helpers
+  messageOnField: (field, options) ->
+    field = null unless options
+    passwordFormMessages.get field
 
-Template.settingsPassword.validity = (field, options) ->
-  field = null unless options
-  return 'invalid' unless passwordFormMessages.isValid field
-  ''
+  validity: (field, options) ->
+    field = null unless options
+    return 'invalid' unless passwordFormMessages.isValid field
+    ''
 
 validatePassword = (newPassword, messageField) ->
   return unless newPasswordReadyForValidation
@@ -216,19 +218,21 @@ changePassword = (currentPassword, newPassword, callback) ->
     formError = new ValidationError (error.reason or error.toString() or "Unknown error"), 'current-password' if error
     callback formError
 
-Template.settingsBackground.checked = ->
-  backgroundPaused = !!Meteor.user().settings?.backgroundPaused
-  # We also clear messages here so that if a settings change comes from somewhere else
-  # (like from the index page) any shown messages are cleared as well. The idea is that
-  # if what is displayed is different from what it should be then we clear messages.
-  # In normal workflow checkbox is always first set, then method is called, and then this
-  # helper is rerun when value changes, so checkbox should already be set, so messages stay.
-  backgroundFormMessages.resetMessages() if backgroundPaused isnt $('input.paused').is(':checked')
-  backgroundPaused
+Template.settingsBackground.helpers
+  checked: ->
+    backgroundPaused = !!Meteor.user().settings?.backgroundPaused
+    # We also clear messages here so that if a settings change comes from somewhere else
+    # (like from the index page) any shown messages are cleared as well. The idea is that
+    # if what is displayed is different from what it should be then we clear messages.
+    # In normal workflow checkbox is always first set, then method is called, and then this
+    # helper is rerun when value changes, so checkbox should already be set, so messages stay.
+    backgroundFormMessages.resetMessages() if backgroundPaused isnt $('input.paused').is(':checked')
+    backgroundPaused
 
-Template.settingsBackground.messageOnField = (field, options) ->
-  field = null unless options
-  backgroundFormMessages.get field
+Template.settingsBackground.helpers
+  messageOnField: (field, options) ->
+    field = null unless options
+    backgroundFormMessages.get field
 
 Template.settingsBackground.events
   'change input.paused': (event, template) ->

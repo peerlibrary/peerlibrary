@@ -48,9 +48,10 @@ Deps.autorun ->
   if tagId
     Meteor.subscribe 'tag-by-id', tagId
 
-Template.tag.tag = ->
-  Tag.documents.findOne
-    _id: Session.get 'currentTagId'
+Template.tag.helpers
+  tag: ->
+    Tag.documents.findOne
+      _id: Session.get 'currentTagId'
 
 Handlebars.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
 

@@ -1,20 +1,21 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-Template.publications.catalogSettings = ->
-  subscription: 'publications'
-  documentClass: Publication
-  variables:
-    active: 'publicationsActive'
-    ready: 'currentPublicationsReady'
-    loading: 'currentPublicationsLoading'
-    count: 'currentPublicationsCount'
-    filter: 'currentPublicationsFilter'
-    limit: 'currentPublicationsLimit'
-    limitIncreasing: 'currentPublicationsLimitIncreasing'
-    sort: 'currentPublicationsSort'
-  signedInNoDocumentsMessage: "Import the first from the menu on top."
-  signedOutNoDocumentsMessage: "Sign in and import the first."
+Template.publications.helpers
+  catalogSettings: ->
+    subscription: 'publications'
+    documentClass: Publication
+    variables:
+      active: 'publicationsActive'
+      ready: 'currentPublicationsReady'
+      loading: 'currentPublicationsLoading'
+      count: 'currentPublicationsCount'
+      filter: 'currentPublicationsFilter'
+      limit: 'currentPublicationsLimit'
+      limitIncreasing: 'currentPublicationsLimitIncreasing'
+      sort: 'currentPublicationsSort'
+    signedInNoDocumentsMessage: "Import the first from the menu on top."
+    signedOutNoDocumentsMessage: "Sign in and import the first."
 
 Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->
@@ -43,29 +44,30 @@ Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
   @_publicationHandle = null
 
-Template.publicationCatalogItem.documentLengthClass = ->
-  switch
-    when @numberOfPages < 10 then 'short'
-    when @numberOfPages < 25 then 'medium'
-    else 'long'
+Template.publicationCatalogItem.helpers
+  documentLengthClass: ->
+    switch
+      when @numberOfPages < 10 then 'short'
+      when @numberOfPages < 25 then 'medium'
+      else 'long'
 
-Template.publicationCatalogItem.annotationsCountDescription = ->
-  Annotation.verboseNameWithCount @annotationsCount
+  annotationsCountDescription: ->
+    Annotation.verboseNameWithCount @annotationsCount
 
-Template.publicationCatalogItem.hasAbstract = ->
-  @abstract ? @hasAbstract
+  hasAbstract: ->
+    @abstract ? @hasAbstract
 
-Template.publicationCatalogItem.hasCachedId = ->
-  @cachedId ? @hasCachedId
+  hasCachedId: ->
+    @cachedId ? @hasCachedId
 
-Template.publicationCatalogItem.open = ->
-  @access is Publication.ACCESS.OPEN
+  open: ->
+    @access is Publication.ACCESS.OPEN
 
-Template.publicationCatalogItem.closed = ->
-  @access is Publication.ACCESS.CLOSED
+  closed: ->
+    @access is Publication.ACCESS.CLOSED
 
-Template.publicationCatalogItem.private = ->
-  @access is Publication.ACCESS.PRIVATE
+  private: ->
+    @access is Publication.ACCESS.PRIVATE
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -116,7 +118,8 @@ Template.publicationCatalogItemLibraryMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationCatalogItemLibraryMenu.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
+Template.publicationCatalogItemLibraryMenu.helpers
+  inLibrary: Template.publicationLibraryMenuButtons.helpers 'inLibrary'
 
 Template.publicationCatalogItemLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++

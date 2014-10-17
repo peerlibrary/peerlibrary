@@ -3,26 +3,28 @@ Deps.autorun ->
     Meteor.subscribe 'statistics'
     Meteor.subscribe 'latest-blog-post'
 
-Template.indexStatistics.publications = ->
-  Statistics.documents.findOne()?.countPublications or 0
+Template.indexStatistics.helpers
+  publications: ->
+    Statistics.documents.findOne()?.countPublications or 0
 
-Template.indexStatistics.persons = ->
-  Statistics.documents.findOne()?.countPersons or 0
+  persons: ->
+    Statistics.documents.findOne()?.countPersons or 0
 
-Template.indexStatistics.highlights = ->
-  Statistics.documents.findOne()?.countHighlights or 0
+  highlights: ->
+    Statistics.documents.findOne()?.countHighlights or 0
 
-Template.indexStatistics.annotations = ->
-  Statistics.documents.findOne()?.countAnnotations or 0
+  annotations: ->
+    Statistics.documents.findOne()?.countAnnotations or 0
 
-Template.indexStatistics.groups = ->
-  Statistics.documents.findOne()?.countGroups or 0
+  groups: ->
+    Statistics.documents.findOne()?.countGroups or 0
 
-Template.indexStatistics.collections = ->
-  Statistics.documents.findOne()?.countCollections or 0
+  collections: ->
+    Statistics.documents.findOne()?.countCollections or 0
 
-Template.index.searchActive = ->
-  Session.get 'searchActive'
+Template.index.helpers
+  searchActive: ->
+    Session.get 'searchActive'
 
 Template.indexMain.created = ->
   @_background = new Background()
@@ -44,14 +46,16 @@ Template.indexMain.destroyed = ->
   @_background = null
   @_backgroundRendered = false
 
-Template.indexLatestBlogPost.latestBlogPost = ->
-  BlogPost.documents.findOne()
+Template.indexLatestBlogPost.helpers
+  latestBlogPost: ->
+    BlogPost.documents.findOne()
 
-Template.indexLatestBlogPost.blogPostsCount = ->
-  Statistics.documents.findOne()?.countBlogPosts or 0
+  blogPostsCount: ->
+    Statistics.documents.findOne()?.countBlogPosts or 0
 
-Template.indexLatestBlogPost.blogUrl = ->
-  Meteor.settings?.public?.blogUrl
+Template.indexLatestBlogPost.helpers
+  blogUrl: ->
+    Meteor.settings?.public?.blogUrl
 
 Meteor.autorun ->
   # If user is not logged in, default will be false, which user can then modify locally in Session
@@ -73,8 +77,10 @@ Template.backgroundPause.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.backgroundPauseButton.backgroundPaused = ->
-  Session.get 'backgroundPaused'
+Template.backgroundPauseButton.helpers
+  backgroundPaused: ->
+    Session.get 'backgroundPaused'
 
-Template.backgroundPauseTooltipContent.backgroundPaused = ->
-  Session.get 'backgroundPaused'
+Template.backgroundPauseTooltipContent.helpers
+  backgroundPaused: ->
+    Session.get 'backgroundPaused'

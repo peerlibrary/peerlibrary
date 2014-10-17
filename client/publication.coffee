@@ -660,21 +660,22 @@ Deps.autorun ->
 
   FlashMessage.error "The last job associated with the publication has failed.", {template: 'failedJobLink', data: publication}, false, false # Don't display the stack
 
-Template.publication.loading = ->
-  publicationSubscribing() # To register dependency
-  not publicationHandle?.ready() or not publicationCachedIdHandle?.ready()
+Template.publication.helpers
+  loading: ->
+    publicationSubscribing() # To register dependency
+    not publicationHandle?.ready() or not publicationCachedIdHandle?.ready()
 
-Template.publication.notFound = ->
-  publicationSubscribing() # To register dependency
-  publicationHandle?.ready() and publicationCachedIdHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
+  notFound: ->
+    publicationSubscribing() # To register dependency
+    publicationHandle?.ready() and publicationCachedIdHandle?.ready() and not Publication.documents.findOne Session.get('currentPublicationId'), fields: _id: 1
 
-Template.publication.publication = ->
-  Publication.documents.findOne Session.get 'currentPublicationId'
+  publication: ->
+    Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationMetaMenu.rendered = ->
   $(@findAll '.balance-text').balanceText()
 
-Template.publicationMetaMenu.events =
+Template.publicationMetaMenu.events
   'click .download': (event, template) ->
     # We want default action to happen, but we do not want that our router processes
     # it and tries to route it inside the Meteor app, which fails because there is no
@@ -699,8 +700,9 @@ addAccessEvents =
 
 Template.publicationAccessMenu.events addAccessEvents
 
-Template.publicationAccessMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.publicationAccessMenu.helpers
+  canModifyAccess: ->
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 onAccessDropdownHidden = (event) ->
   # Return the access button to default state.
@@ -730,32 +732,37 @@ accessButtonEventHandlers =
 Template.publicationAccessIconControl.rendered = ->
   $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
-Template.publicationAccessIconControl.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.publicationAccessIconControl.helpers
+  canModifyAccess: ->
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.publicationAccessIconButton.events accessButtonEventHandlers
 
-Template.publicationAccessIconButton.open = ->
-  @access is Publication.ACCESS.OPEN
+Template.publicationAccessIconButton.helpers
+  open: ->
+    @access is Publication.ACCESS.OPEN
 
-Template.publicationAccessIconButton.closed = ->
-  @access is Publication.ACCESS.CLOSED
+  closed: ->
+    @access is Publication.ACCESS.CLOSED
 
-Template.publicationAccessIconButton.private = ->
-  @access is Publication.ACCESS.PRIVATE
+  private: ->
+    @access is Publication.ACCESS.PRIVATE
 
-Template.publicationAccessControlPrivacyForm.open = ->
-  @access is Publication.ACCESS.OPEN
+  open: ->
+    @access is Publication.ACCESS.OPEN
 
-Template.publicationAccessControlPrivacyForm.closed = ->
-  @access is Publication.ACCESS.CLOSED
+  closed: ->
+    @access is Publication.ACCESS.CLOSED
 
-Template.publicationAccessControlPrivacyForm.private = ->
-  @access is Publication.ACCESS.PRIVATE
+  private: ->
+    @access is Publication.ACCESS.PRIVATE
 
-Template.publicationAccessControlPrivacyInfo.open = Template.publicationAccessControlPrivacyForm.open
-Template.publicationAccessControlPrivacyInfo.closed = Template.publicationAccessControlPrivacyForm.closed
-Template.publicationAccessControlPrivacyInfo.private = Template.publicationAccessControlPrivacyForm.private
+Template.publicationAccessControlPrivacyInfo.helpers
+  open: Template.publicationAccessControlPrivacyForm.helpers 'open'
+
+  closed: Template.publicationAccessControlPrivacyForm.helpers 'closed'
+
+  private: Template.publicationAccessControlPrivacyForm.helpers 'private'
 
 # We copy over event handlers from accessControl template (which are general enough to work)
 for spec, callbacks of Template.accessMenuPrivacyForm._tmpl_data.events
@@ -808,33 +815,38 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationLibraryMenuButtons.inLibrary = ->
-  person = Meteor.person library: 1
-  return false unless person and @_id
+Template.publicationLibraryMenuButtons.helpers
+  inLibrary: ->
+    person = Meteor.person library: 1
+    return false unless person and @_id
 
-  _.contains _.pluck(person.library, '_id'), @_id
+    _.contains _.pluck(person.library, '_id'), @_id
 
-Template.publicationLibraryMenuCollections.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
+Template.publicationLibraryMenuCollections.helpers
+  inLibrary: Template.publicationLibraryMenuButtons.helpers 'inLibrary'
 
-Template.publicationLibraryMenuCollections.myCollections = ->
-  return unless Meteor.personId()
+  myCollections: ->
+    return unless Meteor.personId()
 
-  collections = Collection.documents.find
-    'authorPerson._id': Meteor.personId()
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
-  .fetch()
+    collections = Collection.documents.find
+      'authorPerson._id': Meteor.personId()
+    ,
+      sort: [
+        ['slug', 'asc']
+      ]
+    .fetch()
 
-  # Because it is not possible to access parent data context from event handler, we map it
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map collections, (collection) =>
-    collection._parent = @
-    collection
+    # Because it is not possible to access parent data context from event handler, we map it
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    _.map collections, (collection) =>
+      collection._parent = @
+      collection
 
-Template.publicationLibraryMenuCollectionListing.inCollection = ->
-  _.contains _.pluck(@publications, '_id'), @_parent._id
+Template.publicationLibraryMenuCollectionListing.helpers
+  inCollection: ->
+    _.contains _.pluck(@publications, '_id'), @_parent._id
+
+  countDescription: Template.collectionCatalogItem.helpers 'countDescription'
 
 Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (event, template) ->
@@ -858,11 +870,10 @@ Template.publicationLibraryMenuCollectionListing.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationLibraryMenuCollectionListing.countDescription = Template.collectionCatalogItem.countDescription
-
-Template.publicationDisplay.cachedAvailable = ->
-  publicationSubscribing() # To register dependency
-  publicationHandle?.ready() and publicationCachedIdHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
+Template.publicationDisplay.helpers
+  cachedAvailable: ->
+    publicationSubscribing() # To register dependency
+    publicationHandle?.ready() and publicationCachedIdHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
   @_displayHandle = null
@@ -1020,17 +1031,18 @@ Template.publicationScroller.rendered = ->
 Template.publicationScroller.destroyed = ->
   $(window).off '.publicationScroller'
 
-Template.publicationScroller.sections = ->
-  return [] unless publicationDOMReady()
+Template.publicationScroller.helpers
+  sections: ->
+    return [] unless publicationDOMReady()
 
-  $displayWrapper = $('.viewer .display-wrapper')
-  displayTop = $displayWrapper.outerOffset().top
-  displayHeight = $displayWrapper.outerHeight(true)
-  for section in $displayWrapper.children()
-    $section = $(section)
+    $displayWrapper = $('.viewer .display-wrapper')
+    displayTop = $displayWrapper.outerOffset().top
+    displayHeight = $displayWrapper.outerHeight(true)
+    for section in $displayWrapper.children()
+      $section = $(section)
 
-    heightPercentage: 100 * $section.height() / displayHeight
-    topPercentage: 100 * ($section.offset().top - displayTop) / displayHeight
+      heightPercentage: 100 * $section.height() / displayHeight
+      topPercentage: 100 * ($section.offset().top - displayTop) / displayHeight
 
 Template.publicationScroller.events
   'click .scroller': (event, template) ->
@@ -1043,8 +1055,9 @@ Template.publicationScroller.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.highlightsControl.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+Template.highlightsControl.helpers
+  canRemove: ->
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.highlightsControl.events
   'click .remove-button': (event, template) ->
@@ -1070,16 +1083,17 @@ resizeAnnotationsWidth = ($annotationsList) ->
 Template.annotationsControl.rendered = ->
   resizeAnnotationsWidth()
 
-Template.annotationFilteredCount.filteredAnnotationsCount = ->
-  isolateValue ->
-    LocalAnnotation.documents.find(
-      local:
-        $exists: false
-      'publication._id': Session.get 'currentPublicationId'
-    ).count() - displayedAnnotations(false).count()
+Template.annotationFilteredCount.helpers
+  filteredAnnotationsCount: ->
+    isolateValue ->
+      LocalAnnotation.documents.find(
+        local:
+          $exists: false
+        'publication._id': Session.get 'currentPublicationId'
+      ).count() - displayedAnnotations(false).count()
 
-Template.annotationFilteredCount.filteredAnnotationsDescription = ->
-  Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
+  filteredAnnotationsDescription: ->
+    Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
 
 Template.annotationFilteredCount.rendered = ->
   $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
@@ -1124,19 +1138,20 @@ Template.annotationsControl.events
     return # Make sure CoffeeScript does not return anything
 ###
 
-Template.annotationInvite.highlightsExist = ->
-  isolateValue ->
-    !!Highlight.documents.find(
-      'publication._id': Session.get 'currentPublicationId'
-    ).count()
+Template.annotationInvite.helpers
+  highlightsExist: ->
+    isolateValue ->
+      !!Highlight.documents.find(
+        'publication._id': Session.get 'currentPublicationId'
+      ).count()
 
-Template.annotationInvite.nonFilteredAnnotationsExist = ->
-  isolateValue ->
-    !!LocalAnnotation.documents.find(
-      local:
-        $exists: false
-      'publication._id': Session.get 'currentPublicationId'
-    ).count()
+  nonFilteredAnnotationsExist: ->
+    isolateValue ->
+      !!LocalAnnotation.documents.find(
+        local:
+          $exists: false
+        'publication._id': Session.get 'currentPublicationId'
+      ).count()
 
 displayedAnnotations = (local) ->
   conditions = [
@@ -1205,12 +1220,13 @@ displayedAnnotations = (local) ->
       ['createdAt', 'asc']
     ]
 
-Template.publicationAnnotations.annotations = ->
-  displayedAnnotations true
+Template.publicationAnnotations.helpers
+  annotations: ->
+    displayedAnnotations true
 
-Template.publicationAnnotations.realAnnotationsExist = ->
-  isolateValue ->
-    !!displayedAnnotations(false).count()
+  realAnnotationsExist: ->
+    isolateValue ->
+      !!displayedAnnotations(false).count()
 
 # Reference to the current local annotation template, so we can access it from global event handlers
 localAnnotationEditorTemplate = null
@@ -1381,20 +1397,21 @@ Template.publicationAnnotationsItem.rendered = ->
     $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationAnnotationsItem.canModify = ->
-  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
+Template.publicationAnnotationsItem.helpers
+  canModify: ->
+    @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.publicationAnnotationsItem.selected = ->
-  'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
+  selected: ->
+    'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
 
-Template.publicationAnnotationsItem.updatedFromNow = ->
-  moment(@updatedAt).fromNow()
+  updatedFromNow: ->
+    moment(@updatedAt).fromNow()
 
-Template.publicationAnnotationsItem.author = ->
-  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-  # TODO: Change when Meteor allows sending parameters to templates
-  @author.avatarSize = 30
-  @author
+  author: ->
+    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
+    # TODO: Change when Meteor allows sending parameters to templates
+    @author.avatarSize = 30
+    @author
 
 Template.annotationTags.rendered = ->
   # TODO: Make links work
@@ -1547,8 +1564,9 @@ Template.newAnnotationAccessButton.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.newAnnotationAccessButton.public = ->
-  getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
+Template.newAnnotationAccessButton.helpers
+  public: ->
+    getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
 
 Template.newAnnotationAccessForm.events
   'change .access input:radio': (event, template) ->
@@ -1574,11 +1592,12 @@ Template.newAnnotationAccessForm.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.newAnnotationAccessForm.public = ->
-  getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
+Template.newAnnotationAccessForm.helpers
+  public: ->
+    getNewAnnotationAccess() is Annotation.ACCESS.PUBLIC
 
-Template.newAnnotationAccessForm.private = ->
-  getNewAnnotationAccess() is Annotation.ACCESS.PRIVATE
+  private: ->
+    getNewAnnotationAccess() is Annotation.ACCESS.PRIVATE
 
 Template.newAnnotationRolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
@@ -1589,78 +1608,79 @@ Template.newAnnotationRolesControl.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.newAnnotationRolesControlList.rolesList = ->
-  rolesList = [
-    # Creator will always be the administrator
-    personOrGroup: Meteor.person()
-    admin: true
-    locked: true
-  ]
-
-  for admin in getNewAnnotationAdminGroups()
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is admin
-
-    rolesList.push
-      personOrGroup: Group.documents.findOne admin, fields: searchResult: 0
+Template.newAnnotationRolesControlList.helpers
+  rolesList: ->
+    rolesList = [
+      # Creator will always be the administrator
+      personOrGroup: Meteor.person()
       admin: true
+      locked: true
+    ]
 
-  for admin in getNewAnnotationAdminPersons()
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is admin
-
-    rolesList.push
-      personOrGroup: Person.documents.findOne admin, fields: searchResult: 0
-      admin: true
-
-  for maintainer in getNewAnnotationMaintainerGroups()
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is maintainer
-
-    rolesList.push
-      personOrGroup: Group.documents.findOne maintainer, fields: searchResult: 0
-      maintainer: true
-
-  for maintainer in getNewAnnotationMaintainerPersons()
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is maintainer
-
-    rolesList.push
-      personOrGroup: Person.documents.findOne maintainer, fields: searchResult: 0
-      maintainer: true
-
-  if getNewAnnotationAccess() is ACCESS.PRIVATE
-    # Add working-in groups to read permissions
-    for group in getNewAnnotationWorkInsideGroups()
-      existing = _.find rolesList, (item) ->
-        item.personOrGroup._id is group
-
-      if existing
-        existing.cantRemove = true
-        continue
-
-      rolesList.push
-        personOrGroup: Group.documents.findOne group, fields: searchResult: 0
-        readAccess: true
-        cantRemove: true
-
-    for reader in getNewAnnotationReadGroups()
+    for admin in getNewAnnotationAdminGroups()
       continue if _.find rolesList, (item) ->
-        item.personOrGroup._id is reader
+        item.personOrGroup._id is admin
 
       rolesList.push
-        personOrGroup: Group.documents.findOne reader, fields: searchResult: 0
-        readAccess: true
+        personOrGroup: Group.documents.findOne admin, fields: searchResult: 0
+        admin: true
 
-    for reader in getNewAnnotationReadPersons()
+    for admin in getNewAnnotationAdminPersons()
       continue if _.find rolesList, (item) ->
-        item.personOrGroup._id is reader
+        item.personOrGroup._id is admin
 
       rolesList.push
-        personOrGroup: Person.documents.findOne reader, fields: searchResult: 0
-        readAccess: true
+        personOrGroup: Person.documents.findOne admin, fields: searchResult: 0
+        admin: true
 
-  rolesList
+    for maintainer in getNewAnnotationMaintainerGroups()
+      continue if _.find rolesList, (item) ->
+        item.personOrGroup._id is maintainer
+
+      rolesList.push
+        personOrGroup: Group.documents.findOne maintainer, fields: searchResult: 0
+        maintainer: true
+
+    for maintainer in getNewAnnotationMaintainerPersons()
+      continue if _.find rolesList, (item) ->
+        item.personOrGroup._id is maintainer
+
+      rolesList.push
+        personOrGroup: Person.documents.findOne maintainer, fields: searchResult: 0
+        maintainer: true
+
+    if getNewAnnotationAccess() is ACCESS.PRIVATE
+      # Add working-in groups to read permissions
+      for group in getNewAnnotationWorkInsideGroups()
+        existing = _.find rolesList, (item) ->
+          item.personOrGroup._id is group
+
+        if existing
+          existing.cantRemove = true
+          continue
+
+        rolesList.push
+          personOrGroup: Group.documents.findOne group, fields: searchResult: 0
+          readAccess: true
+          cantRemove: true
+
+      for reader in getNewAnnotationReadGroups()
+        continue if _.find rolesList, (item) ->
+          item.personOrGroup._id is reader
+
+        rolesList.push
+          personOrGroup: Group.documents.findOne reader, fields: searchResult: 0
+          readAccess: true
+
+      for reader in getNewAnnotationReadPersons()
+        continue if _.find rolesList, (item) ->
+          item.personOrGroup._id is reader
+
+        rolesList.push
+          personOrGroup: Person.documents.findOne reader, fields: searchResult: 0
+          readAccess: true
+
+    rolesList
 
 changeRole = (data, role) ->
   oldRole = null
@@ -1746,14 +1766,15 @@ Template.newAnnotationRolesControlRoleEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.newAnnotationRolesControlRoleEditor.isPerson = ->
-  @personOrGroup instanceof Person
+Template.newAnnotationRolesControlRoleEditor.helpers
+  isPerson: ->
+    @personOrGroup instanceof Person
 
-Template.newAnnotationRolesControlRoleEditor.isGroup = ->
-  @personOrGroup instanceof Group
+  isGroup: ->
+    @personOrGroup instanceof Group
 
-Template.newAnnotationRolesControlRoleEditor.private = ->
-  getNewAnnotationAccess() is ACCESS.PRIVATE
+  private: ->
+    getNewAnnotationAccess() is ACCESS.PRIVATE
 
 Template.newAnnotationRolesControlAdd.events
   'change .add-access, keyup .add-access': (event, template) ->
@@ -1821,30 +1842,31 @@ Template.newAnnotationRolesControlAdd.destroyed = ->
 
   delete @data._newDataContext
 
-Template.newAnnotationRolesControlNoResults.noResults = ->
-  addAccessControlReactiveVariables @
+Template.newAnnotationRolesControlNoResults.helpers
+  noResults: ->
+    addAccessControlReactiveVariables @
 
-  query = @_query()
+    query = @_query()
 
-  return unless query
+    return unless query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  return unless searchResult
+    return unless searchResult
 
-  not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+    not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
-Template.newAnnotationRolesControlNoResults.email = ->
-  query = @_query().trim()
-  return unless query?.match EMAIL_REGEX
+  email: ->
+    query = @_query().trim()
+    return unless query?.match EMAIL_REGEX
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  query = new String(query)
-  query._parent = @
-  query
+    # Because it is not possible to access parent data context from event handler, we store it into results
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    query = new String(query)
+    query._parent = @
+    query
 
 grantAccess = (personOrGroup) ->
   data =
@@ -1867,64 +1889,67 @@ Template.newAnnotationRolesControlNoResults.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.newAnnotationRolesControlLoading.loading = ->
-  addAccessControlReactiveVariables @
+Template.newAnnotationRolesControlLoading.helpers
+  loading: ->
+    addAccessControlReactiveVariables @
 
-  @_loading()
+    @_loading()
 
-Template.newAnnotationRolesControlResults.results = ->
-  addAccessControlReactiveVariables @
+Template.newAnnotationRolesControlResults.helpers
+  results: ->
+    addAccessControlReactiveVariables @
 
-  query = @_query()
+    query = @_query()
 
-  return unless query
+    return unless query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  return unless searchResult
+    return unless searchResult
 
-  personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
-  groupsLimit = 5 - personsLimit
+    personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
+    groupsLimit = 5 - personsLimit
 
-  if personsLimit
-    persons = Person.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: personsLimit
-    ).fetch()
-  else
-    persons = []
+    if personsLimit
+      persons = Person.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: personsLimit
+      ).fetch()
+    else
+      persons = []
 
-  if groupsLimit
-    groups = Group.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: groupsLimit
-    ).fetch()
-  else
-    groups = []
+    if groupsLimit
+      groups = Group.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: groupsLimit
+      ).fetch()
+    else
+      groups = []
 
-  results = persons.concat groups
+    results = persons.concat groups
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map results, (result) =>
-    result._parent = @
-    result
+    # Because it is not possible to access parent data context from event handler, we store it into results
+    # TODO: When will be possible to better access parent data context from event handler, we should use that
+    _.map results, (result) =>
+      result._parent = @
+      result
 
-Template.newAnnotationRolesControlResultsItem.ifPerson = (options) ->
-  if @ instanceof Person
-    options.fn @
-  else
-    options.inverse @
+Template.newAnnotationRolesControlResultsItem.helpers
+  ifPerson: (options) ->
+    if @ instanceof Person
+      options.fn @
+    else
+      options.inverse @
 
 Template.newAnnotationRolesControlResultsItem.events
   'click .add-button': (event, template) ->
@@ -1937,19 +1962,27 @@ Template.newAnnotationRolesControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.annotationCommentsList.comments = ->
-  Comment.documents.find
-    'annotation._id': @_id
-  ,
-    sort: [
-      ['createdAt', 'asc']
-    ]
+Template.annotationCommentsList.helpers
+  comments: ->
+    Comment.documents.find
+      'annotation._id': @_id
+    ,
+      sort: [
+        ['createdAt', 'asc']
+      ]
 
-Template.annotationCommentsListItem.selected = ->
-  'selected' if @_id is Session.get 'currentCommentId'
+Template.annotationCommentsListItem.helpers
+  selected: ->
+    'selected' if @_id is Session.get 'currentCommentId'
 
-Template.annotationCommentsListItem.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+  canRemove: ->
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+
+  author: ->
+    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
+    # TODO: Change when Meteor allows sending parameters to templates
+    @author.avatarSize = 30
+    @author
 
 Template.annotationCommentsListItem.events
   'click .remove-button': (event, template) ->
@@ -1963,12 +1996,6 @@ Template.annotationCommentsListItem.events
       Meteor.Router.toNew Meteor.Router.annotationPath Session.get('currentPublicationId'), Session.get('currentPublicationSlug'), annotationId
 
     return # Make sure CoffeeScript does not return anything
-
-Template.annotationCommentsListItem.author = ->
-  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-  # TODO: Change when Meteor allows sending parameters to templates
-  @author.avatarSize = 30
-  @author
 
 Template.annotationCommentEditor.created = ->
   @_scribe = null
@@ -2031,11 +2058,12 @@ Template.annotationCommentEditor.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.annotationCommentEditor.currentPerson = ->
-  # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-  # TODO: Change when Meteor allows sending parameters to templates
-  _.extend Meteor.person(),
-    avatarSize: 30
+Template.annotationCommentEditor.helpers
+  currentPerson: ->
+    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
+    # TODO: Change when Meteor allows sending parameters to templates
+    _.extend Meteor.person(),
+      avatarSize: 30
 
 Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
@@ -2051,41 +2079,46 @@ Template.annotationMetaMenu.events
 
 Template.annotationMetaMenu.events addAccessEvents
 
-Template.annotationMetaMenu.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+Template.annotationMetaMenu.helpers
+  canRemove: ->
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-Template.annotationMetaMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+  canModifyAccess: ->
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
-Template.workInGroupsMenuGroupsCount.selectedGroups = ->
-  getNewAnnotationWorkInsideGroups()
+Template.workInGroupsMenuGroupsCount.helpers
+  selectedGroups: ->
+    getNewAnnotationWorkInsideGroups()
 
-Template.annotationsControlFilters.inside = ->
-  Group.documents.find
-    _id:
-      $in: getNewAnnotationWorkInsideGroups()
-  ,
-    fields: searchResult: 0
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
+Template.annotationsControlFilters.helpers
+  inside: ->
+    Group.documents.find
+      _id:
+        $in: getNewAnnotationWorkInsideGroups()
+    ,
+      fields: searchResult: 0
+    ,
+      sort: [
+        ['slug', 'asc']
+      ]
 
-Template.annotationsControlFilters.viewportFilter = ->
-  Session.get 'currentPublicationLimitAnnotationsToViewport'
+  viewportFilter: ->
+    Session.get 'currentPublicationLimitAnnotationsToViewport'
 
-Template.workInGroupsMenu.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenu.helpers
+  myGroups: Template.myGroups.helpers 'myGroups'
 
-Template.workInGroupsMenuGroups.myGroups = Template.myGroups.myGroups
+Template.workInGroupsMenuGroups.helpers
+  myGroups: Template.myGroups.helpers 'myGroups'
 
-Template.workInGroupsMenuGroups.private = Template.workInGroupsMenu.private
+  private: Template.workInGroupsMenu.helpers 'private'
 
-Template.workInGroupsMenuGroups.selectedGroups = Template.workInGroupsMenuGroupsCount.selectedGroups
+  selectedGroups: Template.workInGroupsMenuGroupsCount.helpers 'selectedGroups'
 
-Template.workInGroupsMenuGroups.selectedGroupsDescription = ->
-  groups = getNewAnnotationWorkInsideGroups()
-  return unless groups
-  if groups.length is 1 then "1 group" else "#{ groups.length } groups"
+  selectedGroupsDescription: ->
+    groups = getNewAnnotationWorkInsideGroups()
+    return unless groups
+    if groups.length is 1 then "1 group" else "#{ groups.length } groups"
 
 Template.workInGroupsMenuGroups.events
   'click .add-to-working-inside': (event, template) ->
@@ -2098,11 +2131,13 @@ Template.workInGroupsMenuGroups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.workInGroupsMenuGroupListing.workingInside = ->
-  _.contains getNewAnnotationWorkInsideGroups(), @_id
+Template.workInGroupsMenuGroupListing.helpers
+  workingInside: ->
+    _.contains getNewAnnotationWorkInsideGroups(), @_id
 
-Template.viewportFilterContent.viewportFilter = ->
-  Session.get 'currentPublicationLimitAnnotationsToViewport'
+Template.viewportFilterContent.helpers
+  viewportFilter: ->
+    Session.get 'currentPublicationLimitAnnotationsToViewport'
 
 Template.viewportFilterContent.events
   'click .enable-viewport-filter': (event, template) ->
@@ -2115,8 +2150,9 @@ Template.viewportFilterContent.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.footer.publicationDisplayed = ->
-  'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
+Template.footer.helpers
+  publicationDisplayed: ->
+    'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
 
 # TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
 addParsedLinkReactiveVariable = (data) ->
@@ -2131,35 +2167,36 @@ Template.editorLinkPrompt.rendered = ->
 Template.editorLinkPrompt.destroyed = ->
   @data._parsedLink = null if @data._parsedLink
 
-Template.editorLinkPrompt.parsedLink = ->
-  addParsedLinkReactiveVariable @
+Template.editorLinkPrompt.helpers
+  parsedLink: ->
+    addParsedLinkReactiveVariable @
 
-  parsedLink = @_parsedLink()
+    parsedLink = @_parsedLink()
 
-  return parsedLink if parsedLink?.error
+    return parsedLink if parsedLink?.error
 
-  if parsedLink?.referenceName is 'external'
-    parsedLink.isExternal = true
-    return parsedLink
+    if parsedLink?.referenceName is 'external'
+      parsedLink.isExternal = true
+      return parsedLink
 
-  if parsedLink?.referenceName is 'internal'
-    parsedLink.isInternal = true
-    return parsedLink
+    if parsedLink?.referenceName is 'internal'
+      parsedLink.isInternal = true
+      return parsedLink
 
-  # For an empty input we might not have an error, but also no reference name and ID
-  return unless parsedLink?.referenceName and parsedLink?.referenceId
+    # For an empty input we might not have an error, but also no reference name and ID
+    return unless parsedLink?.referenceName and parsedLink?.referenceId
 
-  # If we have a helper to help us resolve a path from the ID, let's
-  # use that. This will build a canonical URL if possible to help
-  # user verify their URL.
-  if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
-    parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+    # If we have a helper to help us resolve a path from the ID, let's
+    # use that. This will build a canonical URL if possible to help
+    # user verify their URL.
+    if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
+      parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
 
-  # If we have a helper to help us create text and title, let's use that.
-  if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
-    parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
+    # If we have a helper to help us create text and title, let's use that.
+    if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
+      parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
 
-  parsedLink
+    parsedLink
 
 Template.editorLinkPrompt.events
   'keyup .editor-link-input, change .editor-link-input': (event, template) ->

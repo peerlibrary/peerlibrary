@@ -1,31 +1,33 @@
-Template.collections.catalogSettings = ->
-  subscription: 'collections'
-  documentClass: Collection
-  variables:
-    active: 'collectionsActive'
-    ready: 'currentCollectionsReady'
-    loading: 'currentCollectionsLoading'
-    count: 'currentCollectionsCount'
-    filter: 'currentCollectionsFilter'
-    limit: 'currentCollectionsLimit'
-    limitIncreasing: 'currentCollectionsLimitIncreasing'
-    sort: 'currentCollectionsSort'
-  signedInNoDocumentsMessage: "Create the first using the form on the right."
-  signedOutNoDocumentsMessage: "Sign in and create the first."
+Template.collections.helpers
+  catalogSettings: ->
+    subscription: 'collections'
+    documentClass: Collection
+    variables:
+      active: 'collectionsActive'
+      ready: 'currentCollectionsReady'
+      loading: 'currentCollectionsLoading'
+      count: 'currentCollectionsCount'
+      filter: 'currentCollectionsFilter'
+      limit: 'currentCollectionsLimit'
+      limitIncreasing: 'currentCollectionsLimitIncreasing'
+      sort: 'currentCollectionsSort'
+    signedInNoDocumentsMessage: "Create the first using the form on the right."
+    signedOutNoDocumentsMessage: "Sign in and create the first."
 
 Deps.autorun ->
   if Session.equals 'collectionsActive', true
     Meteor.subscribe 'my-collections'
 
-Template.myCollections.myCollections = ->
-  return unless Meteor.personId()
+Template.myCollections.helpers
+  myCollections: ->
+    return unless Meteor.personId()
 
-  Collection.documents.find
-    'authorPerson._id': Meteor.personId()
-  ,
-    sort: [
-      ['slug', 'asc']
-    ]
+    Collection.documents.find
+      'authorPerson._id': Meteor.personId()
+    ,
+      sort: [
+        ['slug', 'asc']
+      ]
 
 Template.addNewCollection.events
   'submit .add-collection': (event, template) ->
@@ -57,8 +59,9 @@ Editable.template Template.collectionCatalogItemName, ->
 
 EnableCatalogItemLink Template.collectionCatalogItem
 
-Template.collectionCatalogItem.private = ->
-  @access is ACCESS.PRIVATE
+Template.collectionCatalogItem.helpers
+  private: ->
+    @access is ACCESS.PRIVATE
 
-Template.collectionCatalogItem.countDescription = ->
-  Publication.verboseNameWithCount @publications?.length
+  countDescription: ->
+    Publication.verboseNameWithCount @publications?.length

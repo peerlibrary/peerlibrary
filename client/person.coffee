@@ -92,20 +92,21 @@ Deps.autorun ->
   # Assure URL is canonical
   Meteor.Router.toNew Meteor.Router.personPath person.slug unless slug is person.slug
 
-Template.person.person = ->
-  Person.documents.findOne
-    # We can search by only slug because we assured that the URL is canonical in autorun
-    slug: Session.get 'currentPersonSlug'
+Template.person.helpers
+  person: ->
+    Person.documents.findOne
+      # We can search by only slug because we assured that the URL is canonical in autorun
+      slug: Session.get 'currentPersonSlug'
 
-# Publications authored by this person
-Template.person.authoredPublications = ->
-  person = Person.documents.findOne
-    # We can search by only slug because we assured that the URL is canonical in autorun
-    slug: Session.get 'currentPersonSlug'
+  # Publications authored by this person
+  authoredPublications: ->
+    person = Person.documents.findOne
+      # We can search by only slug because we assured that the URL is canonical in autorun
+      slug: Session.get 'currentPersonSlug'
 
-  Publication.documents.find
-    _id:
-      $in: _.pluck person?.publications, '_id'
+    Publication.documents.find
+      _id:
+        $in: _.pluck person?.publications, '_id'
 
 Handlebars.registerHelper 'currentPerson', (options) ->
   Meteor.person()

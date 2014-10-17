@@ -51,14 +51,15 @@ Template.footer.events
     event.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
-Template.newsletterDialog.displayed = ->
-  Session.get 'newsletterDialogActive'
+Template.newsletterDialog.helpers
+  displayed: ->
+    Session.get 'newsletterDialogActive'
 
-Template.newsletterDialog.waiting = ->
-  Session.get 'newsletterDialogSubscribing'
+  waiting: ->
+    Session.get 'newsletterDialogSubscribing'
 
-Template.newsletterDialog.error = ->
-  Session.get 'newsletterDialogError'
+  error: ->
+    Session.get 'newsletterDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.newsletterDialog.events
@@ -121,14 +122,15 @@ Template._loginButtonsLoggedInDropdownActions.events
     event.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
-Template.inviteDialog.displayed = ->
-  Session.get 'inviteDialogActive'
+Template.inviteDialog.helpers
+  displayed: ->
+    Session.get 'inviteDialogActive'
 
-Template.inviteDialog.waiting = ->
-  Session.get 'inviteDialogSending'
+  waiting: ->
+    Session.get 'inviteDialogSending'
 
-Template.inviteDialog.error = ->
-  Session.get 'inviteDialogError'
+  error: ->
+    Session.get 'inviteDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.inviteDialog.events

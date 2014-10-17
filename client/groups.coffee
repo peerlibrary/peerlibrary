@@ -1,17 +1,18 @@
-Template.groups.catalogSettings = ->
-  subscription: 'groups'
-  documentClass: Group
-  variables:
-    active: 'groupsActive'
-    ready: 'currentGroupsReady'
-    loading: 'currentGroupsLoading'
-    count: 'currentGroupsCount'
-    filter: 'currentGroupsFilter'
-    limit: 'currentGroupsLimit'
-    limitIncreasing: 'currentGroupsLimitIncreasing'
-    sort: 'currentGroupsSort'
-  signedInNoDocumentsMessage: "Create the first using the form on the right."
-  signedOutNoDocumentsMessage: "Sign in and create the first."
+Template.groups.helpers
+  catalogSettings: ->
+    subscription: 'groups'
+    documentClass: Group
+    variables:
+      active: 'groupsActive'
+      ready: 'currentGroupsReady'
+      loading: 'currentGroupsLoading'
+      count: 'currentGroupsCount'
+      filter: 'currentGroupsFilter'
+      limit: 'currentGroupsLimit'
+      limitIncreasing: 'currentGroupsLimitIncreasing'
+      sort: 'currentGroupsSort'
+    signedInNoDocumentsMessage: "Create the first using the form on the right."
+    signedOutNoDocumentsMessage: "Sign in and create the first."
 
 Deps.autorun ->
   if Session.equals 'groupsActive', true
@@ -31,25 +32,27 @@ Template.groups.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.myGroups.myGroups = ->
-  Group.documents.find
-    _id:
-      $in: _.pluck Meteor.person(inGroups: 1)?.inGroups, '_id'
-  ,
-    sort: [
-      ['name', 'asc']
-    ]
-    fields:
-      searchResult: 0
+Template.myGroups.helpers
+  myGroups: ->
+    Group.documents.find
+      _id:
+        $in: _.pluck Meteor.person(inGroups: 1)?.inGroups, '_id'
+    ,
+      sort: [
+        ['name', 'asc']
+      ]
+      fields:
+        searchResult: 0
 
-Template.groupCatalogItem.countDescription = ->
-  if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
+Template.groupCatalogItem.helpers
+  countDescription: ->
+    if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
-Template.groupCatalogItem.public = ->
-  @access is ACCESS.OPEN
+  public: ->
+    @access is ACCESS.OPEN
 
-Template.groupCatalogItem.private = ->
-  @access is ACCESS.PRIVATE
+  private: ->
+    @access is ACCESS.PRIVATE
 
 Editable.template Template.groupCatalogItemName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()

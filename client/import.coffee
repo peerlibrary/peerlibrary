@@ -319,32 +319,34 @@ Template.importingFilesItemCancel.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importingFilesItem.hideCancel = ->
-  # We keep cancel shown even when canceled is set, until we get back
-  # in the file upload method callback and set finished as well
-  @state in ['finished', 'errored', 'imported']
+Template.importingFilesItem.helpers
+  hideCancel: ->
+    # We keep cancel shown even when canceled is set, until we get back
+    # in the file upload method callback and set finished as well
+    @state in ['finished', 'errored', 'imported']
 
-Template.importingFilesItem.state = ->
-  # Canceled could still be set, but state could be errored
-  # or imported if canceled was set to late in the process,
-  # in which case we want not to display it as canceled
-  return @state if @state in ['errored', 'imported']
-  # But otherwise if state is finished and canceled,
-  # we want to display it as canceled
-  return 'canceled' if @canceled and @state is 'finished'
-  return @state
+  state: ->
+    # Canceled could still be set, but state could be errored
+    # or imported if canceled was set to late in the process,
+    # in which case we want not to display it as canceled
+    return @state if @state in ['errored', 'imported']
+    # But otherwise if state is finished and canceled,
+    # we want to display it as canceled
+    return 'canceled' if @canceled and @state is 'finished'
+    return @state
 
-Template.importingFilesItem.publication = ->
-  publication = Publication.documents.findOne @publicationId
-  return unless publication
-  # TODO: Change when you are able to access parent context directly with Meteor
-  publication.filename = @name
-  publication
+  publication: ->
+    publication = Publication.documents.findOne @publicationId
+    return unless publication
+    # TODO: Change when you are able to access parent context directly with Meteor
+    publication.filename = @name
+    publication
 
-Template.signInOverlay.signInOverlayActive = ->
-  Session.get 'signInOverlayActive'
+Template.signInOverlay.helpers
+  signInOverlayActive: ->
+    Session.get 'signInOverlayActive'
 
-Template.signInOverlay.events =
+Template.signInOverlay.events
   'dragover': (event, template) ->
     event.preventDefault()
     event.dataTransfer.effectAllowed = 'none'
@@ -432,14 +434,15 @@ Template.signInOverlay.rendered = Template.importOverlay.rendered
 
 Template.signInOverlay.destroyed = Template.importOverlay.destroyed
 
-Template.importOverlay.importOverlayActive = ->
-  Session.get 'importOverlayActive'
+Template.importOverlay.helpers
+  importOverlayActive: ->
+    Session.get 'importOverlayActive'
 
-Template.importOverlay.importingFiles = ->
-  ImportingFile.documents.find()
+  importingFiles: ->
+    ImportingFile.documents.find()
 
-Template.importOverlay.importingFilesCount = ->
-  ImportingFile.documents.find().count()
+  importingFilesCount: ->
+    ImportingFile.documents.find().count()
 
 Deps.autorun ->
   if Session.get('importOverlayActive') or Session.get('signInOverlayActive')

@@ -36,7 +36,7 @@
 
 <template name="groupInlineItem">
   {{#spaceless}}
-    <a class="inline-item group" {{#unless noLink}}href="{{path}}"{{/unless}}>
+    <a class="inline-item group" {{collectionItemLink}}>
       <i class="avatar only-icon icon-group" title="Group"></i>
       <span class="name" title="{{name}}">{{name}}</span>
     </a>

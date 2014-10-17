@@ -73,16 +73,17 @@ Deps.autorun ->
 
   Meteor.Router.toNew Meteor.Router.collectionPath collection._id, collection.slug
 
-Template.collection.loading = ->
-  collectionSubscribing() # To register dependency
-  not collectionHandle?.ready()
+Template.collection.helpers
+  loading: ->
+    collectionSubscribing() # To register dependency
+    not collectionHandle?.ready()
 
-Template.collection.notFound = ->
-  collectionSubscribing() # To register dependency
-  collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
+  notFound: ->
+    collectionSubscribing() # To register dependency
+    collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
-Template.collection.collection = ->
-  Collection.documents.findOne Session.get('currentCollectionId')
+  collection: ->
+    Collection.documents.findOne Session.get('currentCollectionId')
 
 Editable.template Template.collectionName, ->
   @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
@@ -95,15 +96,16 @@ Editable.template Template.collectionName, ->
 ,
   true
 
-Template.collectionPublications.publications = ->
-  order = _.pluck @publications, '_id'
+Template.collectionPublications.helpers
+  publications: ->
+    order = _.pluck @publications, '_id'
 
-  Publication.documents.find
-    _id:
-      $in: order
-  # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
-  .fetch().sort (a, b) =>
-    return (order.indexOf a._id) - (order.indexOf b._id)
+    Publication.documents.find
+      _id:
+        $in: order
+    # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
+    .fetch().sort (a, b) =>
+      return (order.indexOf a._id) - (order.indexOf b._id)
 
 Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
@@ -127,11 +129,12 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return FlashMessage.fromError error, true if error
 
-Template.collectionSettings.canModify = ->
-  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
+Template.collectionSettings.helpers
+  canModify: ->
+    @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.collectionSettings.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+  canRemove: ->
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionAdminTools.events
   'click .dropdown-trigger': (event, template) ->
@@ -156,10 +159,11 @@ Template.collectionAdminTools.events
     return # Make sure CoffeeScript does not return anything
 
 # This provides functionality of the library menu (from publication.html) that is specific to the collection view
-Template.publicationLibraryMenuButtons.inCurrentCollection = ->
-  Collection.documents.findOne
-    _id: Session.get 'currentCollectionId'
-    'publications._id': @_id
+Template.publicationLibraryMenuButtons.helpers
+  inCurrentCollection: ->
+    Collection.documents.findOne
+      _id: Session.get 'currentCollectionId'
+      'publications._id': @_id
 
 Template.publicationLibraryMenuButtons.events
   'click .remove-from-current-collection': (event, template) ->

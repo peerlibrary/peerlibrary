@@ -1,11 +1,13 @@
-Template.baseFooter.infiniteScroll = ->
-  for variable in _.union ['searchActive', 'libraryActive'], catalogActiveVariables
-    return true if Session.get variable
+Template.baseFooter.helpers
+  infiniteScroll: ->
+    for variable in _.union ['searchActive', 'libraryActive'], catalogActiveVariables
+      return true if Session.get variable
 
-  return false
+    return false
 
-Template.footer.indexFooter = ->
-  'index-footer' if Session.get('indexActive') and not Session.get('searchActive')
+Template.footer.helpers
+  indexFooter: ->
+    'index-footer' if Session.get('indexActive') and not Session.get('searchActive')
 
-Template.footer.noIndexFooter = ->
-  'no-index-footer' if not Template.footer.indexFooter()
+  noIndexFooter: ->
+    'no-index-footer' if not Template.footer.helpers('indexFooter')()

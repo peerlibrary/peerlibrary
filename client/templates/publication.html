@@ -50,7 +50,7 @@
         {{! The content of this message is used also in the code, so keep it in sync }}
         <p class="warning balance-text">Publication has not yet been processed and is thus unavailable to others regardless of the access settings below.</p>
       {{/if}}
-      <p>Last job status: {{jobs.0.status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
+      <p>Last job status: {{jobs.[0].status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
       {{> publicationAccessMenu}}
     </div>
   </div>
@@ -154,17 +154,17 @@
       <div class="selections">
 
         <label class="selection {{#if open}}selected icon-check{{/if}}">
-          <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
+          <input type="radio" value="open" name="publication-access-{{_id}}" checked={{open}} />
           <i class="access-icon icon-public"></i> Open Access
         </label>
 
         <label class="selection {{#if closed}}selected icon-check{{/if}}">
-          <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
+          <input type="radio" value="closed" name="publication-access-{{_id}}" checked={{closed}} />
           <i class="access-icon icon-closed"></i> Closed Access
         </label>
 
         <label class="selection {{#if private}}selected icon-check{{/if}}">
-          <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+          <input type="radio" value="private" name="publication-access-{{_id}}" checked={{private}} />
           <i class="access-icon icon-private"></i> Private
         </label>
 
@@ -445,12 +445,12 @@
     <div class="selections">
 
       <label class="selection {{#if public}}selected icon-check{{/if}}">
-        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" checked={{public}} />
         <i class="access-icon icon-public"></i> Public
       </label>
 
       <label class="selection {{#if private}}selected icon-check{{/if}}">
-        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" checked={{private}} />
         <i class="access-icon icon-private"></i> Private
       </label>
 
@@ -485,13 +485,7 @@
       {{#spaceless}}
         {{#unless locked}}
           <div class="dropdown-trigger">
-        {{/unless}}
-
-        {{#if admin}}administrator{{/if}}
-        {{#if maintainer}}maintainer{{/if}}
-        {{#if readAccess}}view access{{/if}}
-
-        {{#unless locked}}
+            {{> newAnnotationRolesControlRoleEditorRole}}
             <i class="icon-down"></i>
             <div class="dropdown-anchor">
               <ul class="dropdown right-aligned">
@@ -502,10 +496,18 @@
               </ul>
             </div>
           </div>
+        {{else}}
+          {{> newAnnotationRolesControlRoleEditorRole}}
         {{/unless}}
       {{/spaceless}}
     </div>
   </li>
+</template>
+
+<template name="newAnnotationRolesControlRoleEditorRole">
+  {{#if admin}}administrator{{/if}}
+  {{#if maintainer}}maintainer{{/if}}
+  {{#if readAccess}}view access{{/if}}
 </template>
 
 <template name="newAnnotationRolesControlAdd">
@@ -615,7 +617,7 @@
   <p class="references">
     Referencing:
     {{#each referencingAnnotations}}
-      <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+      <span><a href="{{path}}" title={{reference.title}}>
         {{reference.text}}
       </a></span>
     {{/each}}
@@ -647,42 +649,42 @@
       <p class="references">
         Referencing:
         {{#each references.highlights}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.annotations}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.publications}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.persons}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.groups}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.tags}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.collections}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.comments}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
@@ -814,16 +816,21 @@
               You are linking an internal URL.
             {{else}}
               You are referencing {{parsedLink.referenceName}}:
-                {{#if parsedLink.path}}<a href="{{parsedLink.path}}"{{#if parsedLink.title}} title="{{parsedLink.title}}"{{/if}}>{{/if}}{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}{{#if parsedLink.path}}</a>{{/if}}
+              {{#if parsedLink.path}}
+                <a href="{{parsedLink.path}}" title={{parsedLink.title}}>{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}</a>
+              {{else}}
+                {{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}
+              {{/if}}
             {{/if}}
           {{/if}}
         {{/if}}
       {{/unless}}
+    </p>
   </div>
 </template>
 
 <template name="highlightPromptInEditor">
   {{#with highlightReference _id}}
-    <p>In <a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a> …</p>
+    <p>In <a href="{{highlightPathFromId _id}}" title={{title}}>{{text}}</a> …</p>
   {{/with}}
 </template>

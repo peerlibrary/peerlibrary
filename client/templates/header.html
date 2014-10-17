@@ -15,7 +15,7 @@
           <li class="search">
             {{> searchInput}}
           </li>
-          {{> loginButtons}}
+          {{> loginButton}}
           {{> collectionsButton}}
           {{> groupsButton}}
           {{> importButton}}
@@ -64,9 +64,9 @@
   {{/if}}
 </template>
 
-<template name="loginButtons">
+<template name="loginButton">
   <li class="login pull-right">
-    {{loginButtons align="right"}}
+    {{> loginButtons align="right"}}
   </li>
 </template>
 

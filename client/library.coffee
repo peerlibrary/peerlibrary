@@ -7,13 +7,14 @@ Deps.autorun ->
 
     Meteor.subscribe 'my-collections'
 
-Template.libraryPublications.myPublications = ->
-  person = Meteor.person library: 1
-  return unless person
+Template.libraryPublications.helpers
+  myPublications: ->
+    person = Meteor.person library: 1
+    return unless person
 
-  Publication.documents.find
-    _id:
-      $in: _.pluck person.library, '_id'
+    Publication.documents.find
+      _id:
+        $in: _.pluck person.library, '_id'
 
 Template.libraryPublications.rendered = ->
   $(@findAll '.catalog-item').draggable
@@ -32,7 +33,8 @@ Template.libraryPublications.rendered = ->
     stop: (event, ui) ->
       $('.library-collections-wrapper').removeClass('fixed')
 
-Template.libraryMyCollections.myCollections = Template.myCollections.myCollections
+Template.libraryMyCollections.helpers
+  myCollections: Template.myCollections.helpers 'myCollections'
 
 Template.libraryMyCollections.rendered = ->
   $(@findAll '.catalog-item').droppable

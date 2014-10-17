@@ -4,14 +4,17 @@ Template.install.rendered = Template.indexMain.rendered
 
 Template.install.destroyed = Template.indexMain.destroyed
 
-Template.installWizard.installError = ->
-  Session.get 'installError'
+Template.installWizard.helpers
+  installError: ->
+    Session.get 'installError'
 
-Template.installWizard.installInProgress = ->
-  'install-in-progress' if Session.get 'installInProgress'
+Template.installWizard.helpers
+  installInProgress: ->
+    'install-in-progress' if Session.get 'installInProgress'
 
-Template.installWizard.installRestarting = ->
-  Session.get 'installRestarting'
+Template.installWizard.helpers
+  installRestarting: ->
+    Session.get 'installRestarting'
 
 Template.installWizard.rendered = ->
   Deps.afterFlush =>

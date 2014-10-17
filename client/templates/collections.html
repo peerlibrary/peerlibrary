@@ -40,9 +40,9 @@
 </template>
 
 <template name="collectionInlineItem">
-  <a class="inline-item collection"{{#unless noLink}} href="{{path}}"{{/unless}}>
+  <a class="inline-item collection" {{collectionItemLink}}>
     <i class="avatar only-icon icon-collection" title="Collection"></i>
-    <span class="name"{{#if reference.title}} title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
+    <span class="name" title={{reference.title}}>{{reference.text}}</span>
   </a>
 </template>
 

@@ -8,8 +8,12 @@
     showNotification = if onSuccess then onSuccess newPersonId else true
     FlashMessage.success "User #{ email } invited.", "We sent them an invitation email with a link to create an account." if showNotification
 
-Template._loginButtonsLoggedInSingleLogoutButton.displayName = Template._loginButtonsLoggedInDropdown.displayName = ->
-  Meteor.person(displayName: 1)?.getDisplayName()
+Template._loginButtonsLoggedInDropdown.helpers
+  displayName: ->
+    Meteor.person(displayName: 1)?.getDisplayName()
+
+Template._loginButtonsLoggedInSingleLogoutButton.helpers
+  displayName: Template._loginButtonsLoggedInDropdown.helpers 'displayName'
 
 changingPasswordInResetPassword = false
 changingPasswordInEnrollAccount = false

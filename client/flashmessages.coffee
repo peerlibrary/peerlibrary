@@ -24,10 +24,11 @@ Template.flashMessagesOverlay.rendered = ->
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
   positionFlashMessages $(@findAll '.flash-message'), false
 
-Template.flashMessagesOverlay.flashMessages = ->
-  FlashMessage.documents.find {},
-    sort:
-      ['timestamp', 'asc']
+Template.flashMessagesOverlay.helpers
+  flashMessages: ->
+    FlashMessage.documents.find {},
+      sort:
+        ['timestamp', 'asc']
 
 Template.flashMessagesOverlayItem.created = ->
   @_timeout = null
@@ -109,10 +110,11 @@ Template.flashMessagesOverlayItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.flashMessagesOverlayItem.additional = ->
-  if @additional?.template
-    Template[@additional.template] @additional.data
-  else
-    # We allow additional information to be raw HTML content,
-    # but we make sure that it can be plain text as well
-    @additional.replace '\n', '<br/>' if @additional
+Template.flashMessagesOverlayItem.helpers
+  additional: ->
+    if @additional?.template
+      Template[@additional.template] @additional.data
+    else
+      # We allow additional information to be raw HTML content,
+      # but we make sure that it can be plain text as well
+      @additional.replace '\n', '<br/>' if @additional
