@@ -124,7 +124,7 @@ class @Publication extends BasicAccessDocument
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + type + '.' + @mediaType
 
   url: (type=1) =>
-    Storage.url @cachedFilename(type)
+    Storage.url @cachedFilename type
 
   thumbnail: (page) =>
     if page < 1 or page > @numberOfPages
