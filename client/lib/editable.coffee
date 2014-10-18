@@ -5,7 +5,6 @@
     $editableButton = null
     $editView = null
     $element = @
-    editableText = $element.text().trim()
     $elementContents = null
 
     hideView = ->
@@ -21,15 +20,15 @@
       return unless isEditableFunction()
 
       # Prepare the editable button
-      $editableButton = $(Template.editableButton null)
+      $editableButton = $(Blaze.toHTML Template.editableButton)
       $editableButton.click (event) ->
         # Create the edit form
-        $editView = $(Template.editable null)
+        $editView = $(Blaze.toHTML Template.editable)
 
         $editView.css('width', $element.contentsWidth()) if resizeToContent
 
         $editInput = $editView.find('.editable-input')
-        $editInput.attr('value', editableText) unless $element.hasClass('missing-value')
+        $editInput.attr('value', $element.text().trim()) unless $element.hasClass('missing-value')
         $editInput.attr('placeholder', placeholderText) if placeholderText
 
         $editCancel = $editView.find('.editable-cancel')
@@ -75,7 +74,6 @@ class @Editable
       @_editable = null
 
     template.rendered = ->
-      @_editable?.stop()
       @_editable = @$('> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
 
     template.destroyed = ->
