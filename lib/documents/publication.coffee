@@ -116,14 +116,14 @@ class @Publication extends BasicAccessDocument
 
   processedFiles: []
 
-  cachedFilename: (type=1) =>
+  cachedFilename: (type='1') =>
     throw new Error "Cached filename not available" unless @cachedId and @mediaType
 
-    type = 1 if typeof (type) isnt 'number' and typeof (type) isnt 'string'
+    type = 1 unless _.isString type
 
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + type + '.' + @mediaType
 
-  url: (type=1) =>
+  url: (type='1') =>
     Storage.url @cachedFilename type
 
   thumbnail: (page) =>
