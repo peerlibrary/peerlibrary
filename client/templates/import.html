@@ -26,7 +26,7 @@
 
 <template name="importingFilesItem">
   <li class="file {{state}}">
-    {{#spaceless}}
+    {{! begin spaceless }}
       <div class="publication icon-publication">
         {{#if publication}}
           {{#with publication}}
@@ -52,7 +52,7 @@
           {{> importingFilesItemCancel}}
         {{/unless}}
       </div>
-    {{/spaceless}}
+    {{! end spaceless }}
   </li>
 </template>
 

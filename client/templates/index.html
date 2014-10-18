@@ -72,17 +72,9 @@
 
 <template name="backgroundPause">
   <div class="background-pause">
-    {{> backgroundPauseButton}}
+    <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
     <div class="right ui-tooltip">
-      {{> backgroundPauseTooltipContent}}
+      {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
     </div>
   </div>
-</template>
-
-<template name="backgroundPauseButton">
-  <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
-</template>
-
-<template name="backgroundPauseTooltipContent">
-  {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
 </template>

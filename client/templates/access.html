@@ -122,7 +122,7 @@
       {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
     </div>
     <div class="role">
-      {{#spaceless}}
+      {{! begin spaceless }}
         {{#if canModifyAccess}}
           <div class="dropdown-trigger">
             {{> rolesControlRoleEditorRole}}
@@ -139,7 +139,7 @@
         {{else}}
           {{> rolesControlRoleEditorRole}}
         {{/if}}
-      {{/spaceless}}
+      {{! end spaceless }}
     </div>
   </li>
 </template>

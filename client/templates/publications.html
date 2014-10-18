@@ -18,7 +18,7 @@
 </template>
 
 <template name="publicationInlineItem">
-  {{#spaceless}}
+  {{! begin spaceless }}
     <a class="inline-item publication" {{collectionItemLink}}>
       <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
@@ -29,7 +29,7 @@
         {{/if}}
       </span>
     </a>
-  {{/spaceless}}
+  {{! end spaceless }}
 </template>
 
 <template name="publicationCatalogItem">
@@ -48,11 +48,11 @@
     {{/if}}
 
     {{#if currentPersonId}}
-      {{#spaceless}}
+      {{! begin spaceless }}
         <div class="toolbar actionable">
           {{> publicationCatalogItemLibraryMenu}}
         </div>
-      {{/spaceless}}
+      {{! end spaceless }}
     {{/if}}
 
     <div class="details">
@@ -69,13 +69,13 @@
       </ol>
 
       <p>{{createdDay}},
-        {{#spaceless}}
+        {{! begin spaceless }}
           <span class="tooltip" title="{{#if open}}Everyone has access to the publication.{{/if}}{{#if closed}}The publication is public, but only those who import the PDF have access to its content.{{/if}}{{#if private}}Only the users who import the PDF or are listed have access to the publication.{{/if}}">
             {{#if open}}<i class="icon-public"></i>open access{{/if}}
             {{#if closed}}<i class="icon-closed"></i>closed access{{/if}}
             {{#if private}}<i class="icon-private"></i>private{{/if}}
           </span>
-        {{/spaceless}}
+        {{! end spaceless }}
       </p>
 
       {{#if annotationsCount}}
@@ -124,7 +124,7 @@
 
 <template name="publicationCatalogItemTitle">
   <h2 class="{{#unless title}}{{#unless importing.[0].filename}}missing-value{{/unless}}{{/unless}}">
-    {{#spaceless}}
+    {{! begin spaceless }}
       {{#if title}}
         {{title}}
       {{else}}
@@ -135,7 +135,7 @@
           <i>&lt;title metadata missing&gt;</i>
         {{/if}}
       {{/if}}
-    {{/spaceless}}
+    {{! end spaceless }}
   </h2>
 </template>
 

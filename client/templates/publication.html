@@ -472,7 +472,7 @@
       {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
     </div>
     <div class="role">
-      {{#spaceless}}
+      {{! begin spaceless }}
         {{#unless locked}}
           <div class="dropdown-trigger">
             {{> newAnnotationRolesControlRoleEditorRole}}
@@ -489,7 +489,7 @@
         {{else}}
           {{> newAnnotationRolesControlRoleEditorRole}}
         {{/unless}}
-      {{/spaceless}}
+      {{! end spaceless }}
     </div>
   </li>
 </template>
@@ -708,12 +708,12 @@
 </template>
 
 <template name="workInGroupsMenuGroupsCount">
-  {{#spaceless}}
+  {{! begin spaceless }}
     <i class="context-icon icon-group"></i>
     {{#if selectedGroups.length}}
       <span class="context-icon group-count">{{selectedGroups.length}}</span>
     {{/if}}
-  {{/spaceless}}
+  {{! end spaceless }}
 </template>
 
 <template name="workInGroupsMenuGroups">

@@ -21,12 +21,12 @@
 </template>
 
 <template name="personInlineItem">
-  {{#spaceless}}
+  {{! begin spaceless }}
     <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{collectionItemLink}}>
       {{> personAvatar}}
       <span class="name" title="{{getDisplayName}}">{{getDisplayName}}</span>
     </a>
-  {{/spaceless}}
+  {{! end spaceless }}
 </template>
 
 <template name="personAvatar">
