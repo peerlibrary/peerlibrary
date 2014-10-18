@@ -15,11 +15,15 @@
       <div class="message">{{message}}</div>
       {{#if additional}}
         <div class="additional">
-          {{!
-            We allow raw HTML content for additional information.
-            This means it should come only from trusted sources.
-          }}
-          {{{additional}}}
+          {{#if additional.template}}
+            {{> Template.dynamic template=additional.template data=additional.data}}
+          {{else}}
+            {{!
+              We allow raw HTML content for additional information.
+              This means it should come only from trusted sources.
+            }}
+            {{{convertNewlines additional}}}
+          {{/if}}
         </div>
       {{/if}}
     </li>
