@@ -96,11 +96,11 @@ Template.collectionPublications.helpers
   publications: ->
     order = _.pluck @publications, '_id'
 
-    Publication.documents.find
+    Publication.documents.find(
       _id:
         $in: order
     # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
-    .fetch().sort (a, b) =>
+    ).fetch().sort (a, b) =>
       return (order.indexOf a._id) - (order.indexOf b._id)
 
 Template.collectionPublications.rendered = ->
