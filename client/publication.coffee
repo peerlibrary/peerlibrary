@@ -2205,6 +2205,9 @@ Template.editorLinkPrompt.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.registerHelper 'isPublication', ->
+  @ instanceof Publication
+
 Template.registerHelper 'publicationPathFromId', _.bind Publication.pathFromId, Publication
 
 Template.registerHelper 'publicationReference', _.bind Publication.reference, Publication

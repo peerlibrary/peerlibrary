@@ -1,15 +1,4 @@
-Template.member.helpers
-  documentIsPerson: ->
-    @ instanceof Person
-
-  documentIsGroup: ->
-    @ instanceof Group
-
 Template.memberAdd.helpers
-  documentIsPerson: Template.member.helpers 'documentIsPerson'
-
-  documentIsGroup: Template.member.helpers 'documentIsGroup'
-
   noLinkDocument: ->
     # When inline item is used inside a button, disable its hyperlink. We don't want an active link
     # inside a button, because the button itself provides an action that happens when clicking on it.

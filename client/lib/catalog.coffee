@@ -201,25 +201,6 @@ Template.catalogList.helpers
       fields:
         searchResult: 0
 
-Template.catalogItem.helpers
-  documentIsPublication: ->
-    @ instanceof Publication
-
-  documentIsPerson: ->
-    @ instanceof Person
-
-  documentIsHighlight: ->
-    @ instanceof Highlight
-
-  documentIsAnnotation: ->
-    @ instanceof Annotation
-
-  documentIsGroup: ->
-    @ instanceof Group
-
-  documentIsCollection: ->
-    @ instanceof Collection
-
 Template.catalogLoading.helpers
   loading: ->
     Session.get @variables.loading

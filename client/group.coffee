@@ -289,6 +289,9 @@ Template.groupMembersAddControlInviteHint.helpers
 
     !@_query()
 
+Template.registerHelper 'isGroup', ->
+  @ instanceof Group
+
 Template.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
 Template.registerHelper 'groupReference', _.bind Group.reference, Group

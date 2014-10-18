@@ -178,6 +178,9 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
+Template.registerHelper 'isCollection', ->
+  @ instanceof Collection
+
 Template.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
 
 Template.registerHelper 'collectionReference', _.bind Collection.reference, Collection

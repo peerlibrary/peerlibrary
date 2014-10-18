@@ -45,9 +45,6 @@ Template.accessButton.helpers
 
     documentName.toLowerCase()
 
-  documentIsGroup: ->
-    @ instanceof Group
-
 Template.accessIconControl.helpers
   canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
@@ -106,16 +103,12 @@ Template.accessMenuPrivacyForm.helpers
 
   documentName: Template.accessButton.helpers 'documentName'
 
-  documentIsGroup: Template.accessButton.helpers 'documentIsGroup'
-
 Template.accessMenuPrivacyInfo.helpers
   public: Template.accessMenuPrivacyForm.helpers 'public'
 
   private: Template.accessMenuPrivacyForm.helpers 'private'
 
   documentName: Template.accessMenuPrivacyForm.helpers 'documentName'
-
-  documentIsGroup: Template.accessMenuPrivacyForm.helpers 'documentIsGroup'
 
 Template.rolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
