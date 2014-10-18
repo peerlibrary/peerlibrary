@@ -21,25 +21,25 @@ Template.header.events
 
   'click .search-button': (event, template) ->
     Session.set 'searchActive', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .search-input': (event, template) ->
     Session.set 'searchFocused', false
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'change .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup .search-input': (event, template) ->
-    val = $(template.findAll '.search-input').val()
+    val = template.$('.search-input').val()
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
     if val
@@ -53,14 +53,14 @@ Template.header.events
   'paste .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'cut .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -69,7 +69,7 @@ Template.header.events
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 

@@ -17,14 +17,14 @@ Template.memberAdd.helpers
         pageY: event.pageY
 
       # Temporarily hide the link to allow selection
-      $(template.find '.full-item-link').hide()
+      template.$('.full-item-link').hide()
 
       if event.button is 2
         # On right clicks, determine if user was trying to interact with selection or the link.
         # If user didn't right click on an item that holds some part of the selection, show the
         # link again so they can get a context menu for the link instead.
         underMouse = document.elementFromPoint event.clientX, event.clientY
-        $(template.find '.full-item-link').show() unless rangy.getSelection().containsNode underMouse, true
+        template.$('.full-item-link').show() unless rangy.getSelection().containsNode underMouse, true
 
       return # Make sure CoffeeScript does not return anything
 

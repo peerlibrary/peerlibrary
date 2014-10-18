@@ -105,7 +105,7 @@ Template.catalogSort.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -128,7 +128,7 @@ Template.catalogSortOption.events
 
 Template.catalogFilter.events
   'keyup .filter input': (event, template) ->
-    filter = $(template.findAll '.filter input').val()
+    filter = template.$('.filter input').val()
     Session.set @variables.filter, filter
 
     return # Make sure CoffeeScript does not return anything
@@ -157,7 +157,7 @@ Template.catalogList.created = ->
     return # Make sure CoffeeScript does not return anything
 
 onCatalogRendered = (template, variables) ->
-  renderedChildren = $(template.find '.item-list').children().length
+  renderedChildren = template.$('.item-list').children().length
   expectedChildren = Math.min(Session.get(variables.count), Session.get(variables.limit))
 
   # Not all elements are yet in the DOM. Let's return here.

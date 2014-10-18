@@ -22,7 +22,7 @@ Template.groups.events
   'submit .add-group': (event, template) ->
     event.preventDefault()
 
-    name = $(template.findAll '.name').val().trim()
+    name = template.$('.name').val().trim()
     return unless name
 
     Meteor.call 'create-group', name, (error, groupId) =>

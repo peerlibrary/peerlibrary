@@ -13,7 +13,7 @@ accessButtonEventHandlers =
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $button = $(template.findAll '.access-button')
+      $button = template.$('.access-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $button.removeClass('tooltip')
@@ -63,7 +63,7 @@ Template.accessMenu.helpers
 
 Template.accessMenuPrivacyForm.events
   'change .access input:radio': (event, template) ->
-    access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+    access = @constructor.ACCESS[template.$('.access input:radio:checked').val().toUpperCase()]
 
     return if access is @access
 
@@ -82,15 +82,15 @@ Template.accessMenuPrivacyForm.events
 
   'mouseenter .access .selection': (event, template) ->
     accessHover = $(event.currentTarget).find('input').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (event, template) ->
-    accessHover = $(template.findAll '.access input:radio:checked').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    accessHover = template.$('.access input:radio:checked').val()
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
@@ -217,31 +217,31 @@ Template.rolesControlRoleEditor.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .administrator-button': (event, template) ->
     changeRole @, ROLES.ADMIN
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .maintainer-button': (event, template) ->
     changeRole @, ROLES.MAINTAINER
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .read-access-button': (event, template) ->
     changeRole @, ROLES.READ_ACCESS
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-button': (event, template) ->
     changeRole @, null
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -263,7 +263,7 @@ Template.rolesControlAdd.events
     event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.add-access').val()
+    @_query.set template.$('.add-access').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -453,7 +453,7 @@ Template.rolesControlInvite.events
     event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.invite-only').val()
+    @_query.set template.$('.invite-only').val()
 
     return # Make sure CoffeeScript does not return anything
 

@@ -70,7 +70,7 @@ Template.flashMessagesOverlayItem.events
       event.preventDefault()
 
       Tracker.afterFlush =>
-        $(template.findAll '.additional').slideDown
+        template.$('.additional').slideDown
           # Twice as slow as CSS position transition animation time
           duration: 200
           step: (animation) =>
@@ -99,7 +99,7 @@ Template.flashMessagesOverlayItem.events
     return
 
   'click': (event, template) ->
-    return if event.isDefaultPrevented() or $(template.findAll '.button').hasClass('icon-cancel')
+    return if event.isDefaultPrevented() or template.$('.button').hasClass('icon-cancel')
 
     if @sticky
       FlashMessage.documents.update @_id,

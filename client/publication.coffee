@@ -687,11 +687,11 @@ addAccessEvents =
     return # Make sure CoffeeScript does not return anything
 
   'focus .add-access': (event, template) ->
-    $(template.findAll '.meta-menu').addClass('displayed')
+    template.$('.meta-menu').addClass('displayed')
     return # Make sure CoffeeScript does not return anything
 
   'blur .add-access': (event, template) ->
-    $(template.findAll '.meta-menu').removeClass('displayed')
+    template.$('.meta-menu').removeClass('displayed')
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAccessMenu.events addAccessEvents
@@ -715,7 +715,7 @@ accessButtonEventHandlers =
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $button = $(template.findAll '.access-button')
+      $button = template.$('.access-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $button.removeClass('tooltip')
@@ -1043,9 +1043,9 @@ Template.publicationScroller.events
     # We want to move only on clicks outside the viewport to prevent conflicts between dragging and clicking
     return if $(event.target).is('.viewport')
 
-    $scroller = $(template.findAll '.scroller')
+    $scroller = template.$('.scroller')
     clickOffset = event.pageY - $scroller.offset().top
-    scrollToOffset (clickOffset - $(template.findAll '.viewport').height() / 2) / $scroller.height()
+    scrollToOffset (clickOffset - template.$('.viewport').height() / 2) / $scroller.height()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1094,7 +1094,7 @@ Template.annotationFilteredCount.rendered = ->
 
 Template.annotationFilteredCount.events
   'click .clear-filters': (event, template) ->
-    $(template.find '.clear-filters').tooltip('destroy')
+    template.$('.clear-filters').tooltip('destroy')
     Session.set 'currentPublicationLimitAnnotationsToViewport', false
     Session.set 'newAnnotationWorkInsideGroups', ANNOTATION_DEFAULTS.workInsideGroups
 
@@ -1474,7 +1474,7 @@ Template.annotationEditor.events
     return # Make sure CoffeeScript does not return anything
 
   'click button.save': (event, template) ->
-    $editor = $(template.findAll '.annotation-content-editor')
+    $editor = template.$('.annotation-content-editor')
 
     # Prevent empty annotations
     return unless $editor.text().trim()
@@ -1484,7 +1484,7 @@ Template.annotationEditor.events
     ###
     TODO: Temporary disabled, not yet finalized code
 
-    $tags = $(template.findAll '.annotation-tags-editor')
+    $tags = template.$('.annotation-tags-editor')
     tags = _.map $tags.tagit('assignedTags'), (name) ->
       # TODO: Currently we have a race condition, use upsert
       existingTag = Tag.documents.findOne
@@ -1548,7 +1548,7 @@ Template.newAnnotationAccessButton.events
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $tooltip = $(template.findAll '.tooltip')
+      $tooltip = template.$('.tooltip')
       tooltipId = $tooltip.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $tooltip.removeClass('tooltip')
@@ -1564,7 +1564,7 @@ Template.newAnnotationAccessButton.helpers
 
 Template.newAnnotationAccessForm.events
   'change .access input:radio': (event, template) ->
-    access = Annotation.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+    access = Annotation.ACCESS[template.$('.access input:radio:checked').val().toUpperCase()]
 
     Session.set 'newAnnotationAccess', access
 
@@ -1573,16 +1573,16 @@ Template.newAnnotationAccessForm.events
   'mouseenter .access .selection': (event, template) ->
     # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
     accessHover = $(event.currentTarget).find('input').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (event, template) ->
     # Read the access type from the radio button user hovered over (one of lowercase values of Annotation.ACCESS)
-    accessHover = $(template.findAll '.access input:radio:checked').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    accessHover = template.$('.access input:radio:checked').val()
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1732,31 +1732,31 @@ Template.newAnnotationRolesControlRoleEditor.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .administrator-button': (event, template) ->
     changeRole @, ROLES.ADMIN
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .maintainer-button': (event, template) ->
     changeRole @, ROLES.MAINTAINER
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .read-access-button': (event, template) ->
     changeRole @, ROLES.READ_ACCESS
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-button': (event, template) ->
     changeRole @, null
-    $(template.findAll '.dropdown-anchor').hide()
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -1775,7 +1775,7 @@ Template.newAnnotationRolesControlAdd.events
     event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.add-access').val()
+    @_query.set template.$('.add-access').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -2003,14 +2003,14 @@ Template.annotationCommentEditor.destroyed = ->
 
 Template.annotationCommentEditor.events
   'focus .comment-content-editor': (event, template) ->
-    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper = template.$('.comment-editor')
     $wrapper.addClass 'active'
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .comment-content-editor': (event, template) ->
     $editor = $(event.currentTarget)
-    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper = template.$('.comment-editor')
     $wrapper.removeClass 'active' unless $editor.text().trim() or template._destroyDialog
 
     return # Make sure CoffeeScript does not return anything
@@ -2018,18 +2018,18 @@ Template.annotationCommentEditor.events
   # TODO: Should we detect changes with some other event as well?
   'input .comment-content-editor': (event, template) ->
     $editor = $(event.currentTarget)
-    $wrapper = $(template.findAll '.comment-editor')
+    $wrapper = template.$('.comment-editor')
     $wrapper.addClass 'active' if $editor.text().trim()
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup .comment-content-editor': (event, template) ->
-    $(template.findAll 'button.comment').click() if event.keyCode is 13 # Enter key
+    template.$('button.comment').click() if event.keyCode is 13 # Enter key
 
     return # Make sure CoffeeScript does not return anything
 
   'click button.comment': (event, template) ->
-    $editor = $(template.findAll '.comment-content-editor')
+    $editor = template.$('.comment-content-editor')
 
     # Prevent empty comments
     return unless $editor.text().trim()
@@ -2201,7 +2201,7 @@ Template.editorLinkPrompt.events
     event.preventDefault()
 
     # On form submit click on a default button
-    $(template.findAll '.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
+    template.$('.editor-link-prompt').closest('.editor-link-prompt-dialog').find('.default').click()
 
     return # Make sure CoffeeScript does not return anything
 

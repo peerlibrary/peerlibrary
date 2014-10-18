@@ -33,14 +33,14 @@ Template.addNewCollection.events
   'submit .add-collection': (event, template) ->
     event.preventDefault()
 
-    name = $(template.findAll '.name').val().trim()
+    name = template.$('.name').val().trim()
     return unless name
 
     Meteor.call 'create-collection', name, (error, collectionId) =>
       return FlashMessage.fromError error, true if error
 
       # Clear the collection name from the form
-      $(template.findAll '.name').val('')
+      template.$('.name').val('')
 
       FlashMessage.success "Collection created."
 

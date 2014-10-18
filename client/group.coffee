@@ -123,7 +123,7 @@ Template.groupMembersAddControl.events
     event.preventDefault()
 
     # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.add-group-member').val()
+    @_query.set template.$('.add-group-member').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -268,7 +268,7 @@ Template.groupAdminTools.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 

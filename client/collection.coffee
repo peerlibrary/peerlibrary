@@ -138,7 +138,7 @@ Template.collectionAdminTools.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 

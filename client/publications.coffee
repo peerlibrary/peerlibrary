@@ -23,11 +23,11 @@ Template.publicationCatalogItem.events
 
     if template._publicationHandle
       # We ignore the click if handle is not yet ready
-      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
+      template.$('.abstract').slideToggle('fast') if template._publicationHandle.ready()
     else
       template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
         Tracker.afterFlush =>
-          $(template.findAll '.abstract').slideToggle('fast')
+          template.$('.abstract').slideToggle('fast')
 
     return # Make sure CoffeeScript does not return anything
 
@@ -88,7 +88,7 @@ Template.publicationCatalogItemLibraryMenu.rendered = ->
 Template.publicationCatalogItemLibraryMenu.events
   'click .toolbar-button': (event, template) ->
 
-    $anchor = $(template.findAll '.dropdown-anchor')
+    $anchor = template.$('.dropdown-anchor')
     $anchor.toggle()
 
     if $anchor.is(':visible')
@@ -105,7 +105,7 @@ Template.publicationCatalogItemLibraryMenu.events
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $button = $(template.findAll '.toolbar-button')
+      $button = template.$('.toolbar-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $button.removeClass('tooltip')

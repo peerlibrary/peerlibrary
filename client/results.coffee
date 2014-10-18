@@ -173,7 +173,7 @@ Template.sidebarSearch.destroyed = ->
 
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well
-  general: $(template.findAll '#general').val()
+  general: template.$('#general').val()
 
 Template.sidebarSearch.events
   'blur #general': (event, template) ->
