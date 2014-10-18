@@ -1087,7 +1087,7 @@ Template.annotationFilteredCount.helpers
       ).count() - displayedAnnotations(false).count()
 
   filteredAnnotationsDescription: ->
-    Annotation.verboseNameWithCount Template.annotationFilteredCount.filteredAnnotationsCount()
+    Annotation.verboseNameWithCount Template.annotationFilteredCount.helpers('filteredAnnotationsCount')()
 
 Template.annotationFilteredCount.rendered = ->
   $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
