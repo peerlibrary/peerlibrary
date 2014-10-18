@@ -1,12 +1,13 @@
 # TODO: Search for persons as well
 searchResults = new PublishEndpoint 'search-results', (query, limit) ->
+  # console. log "LIMIT " + limit
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 
   if query
     fullQuery = 'title:' + query  + ' OR fullText:' + query  
     ESQuery = { index: 'publication', q: fullQuery, size: 50 }
-    esId = getIdsFromES ESQuery
+    esId = getIdsFromES ESQuery, limit
     findQuery = esId[0]
     order_map = esId[1]
     # console.log findQuery

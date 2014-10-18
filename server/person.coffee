@@ -187,8 +187,8 @@ new PublishEndpoint 'persons', (limit, filter, sortIndex) ->
   if filter
     familyName_query = 'familyName:' + filter
     ESQuery = { index: 'person', q:familyName_query, size: 50 }
-    console.log ESQuery
-    findQuery = getIdsFromES ESQuery
+    esId = getIdsFromES ESQuery
+    findQuery = esId[0]
   else
     findQuery = {}
 

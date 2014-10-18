@@ -401,7 +401,8 @@ publications = new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   if filter 
     query = 'title:' + filter  + ' OR fullText:' + filter 
     ESQuery = { index: 'publication', q: query, size: 50 }
-    findQuery = getIdsFromES ESQuery
+    esId = getIdsFromES ESQuery
+    findQuery = esId[0]
   else
     findQuery = {}
 

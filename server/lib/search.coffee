@@ -252,6 +252,7 @@
       countsHandles[i] = null
 
 @searchPublishES = (publish, name, query, order_mapping, results...) ->
+  console.log results
   queryId = Random.id()
 
   initializedCounts =
@@ -271,12 +272,13 @@
       orderList = []
 
       assertOrder = ->
-        assert.equal orderList.length, _.size orderMap
+        # assert.equal orderList.length, _.size orderMap #order_mapping can be > 10 
         for orderId, orderIndex in orderList
           assert.equal orderMap[orderId], orderIndex
 
       resultsHandles[i] = result.cursor.observeChanges
         addedBefore: (id, fields, before) =>
+          console.log "addedBefore " + id + "seenBefore " + before + " order: " + order_mapping[id]
           if before
             beforeIndex = orderMap[before]
 
@@ -294,12 +296,12 @@
                   order: orderIndex
 
           else # Added at the end
-            orderList.push id
-            orderMap[id] = orderList.length - 1
+            # orderList.push id
+            # orderMap[id] = orderList.length - 1
 
           fields.searchResult =
             _id: queryId
-            order: orderMap[id]
+            order: order_mapping[id]
 
           fields = result.added id, fields if result.added # Optional preprocessing callback
 
@@ -308,11 +310,13 @@
           assertOrder()
 
         changed: (id, fields) =>
+          console.log "changed"
           fields = result.changed id, fields if result.changed # Optional preprocessing callback
 
           publish.changed result.cursor._cursorDescription.collectionName, id, fields unless _.isEmpty fields
 
         movedBefore: (id, before) =>
+          console.log "movedBefore"
           idIndex = orderMap[id]
 
           # TODO: Can be before null?
@@ -398,6 +402,7 @@
           assertOrder()
 
         removed: (id) =>
+          console.log "removed"
           result.removed id if result.removed # Optional preprocessing callback
 
           publish.removed result.cursor._cursorDescription.collectionName, id
@@ -490,23 +495,23 @@
 
   queryCriteria
 
-@getIdsFromES = (ESQuery) ->
+@getIdsFromES = (ESQuery, limit) ->
   findQuery = {}
-  ids = []
   order_map = {}
   if ESQuery
     response = blocking(ES, ES.search) ESQuery
     if response.hits? and response.hits.hits?
       index = 0
       for hit,index in response.hits.hits
-        ids.push hit._id
         order_map[hit._id] = index
         # console.log order_map[hit._id] + ": " + hit._id
-        # console.log Object.keys(order_map)
+      lower_bound = limit - 10 >= 0 ? limit - 10 : 0
+      ids = Object.keys(order_map).slice(lower_bound, limit + 1)
+      # console.log Object.keys(order_map)
+      # console.log ids
       findQuery =
         _id:
-          $in: Object.keys(order_map).slice(0,10) #currently limiting results to 10
-
+          $in: Object.keys(order_map)
     else
       console.log "No Hits"
   else
