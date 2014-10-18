@@ -4,10 +4,8 @@ class @Collection extends Collection
     replaceParent: true
 
   # We allow passing the collection slug if caller knows it
-  @pathFromId: (collectionId, slug, options) ->
+  @pathFromId: (collectionId, slug) ->
     assert _.isString collectionId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     collection = @documents.findOne collectionId
 
@@ -26,10 +24,8 @@ class @Collection extends Collection
       collectionSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (collectionId, collection, options) ->
+  @reference: (collectionId, collection) ->
     assert _.isString collectionId
-    # To allow calling template helper with only one argument (collection will be options then)
-    collection = null unless collection instanceof @
 
     collection = @documents.findOne collectionId unless collection
     assert collectionId, collection._id if collection

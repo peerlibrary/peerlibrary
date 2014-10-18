@@ -173,10 +173,8 @@ class @Publication extends Publication
       else FlashMessage.error "Unsupported media type: #{ @mediaType }.", null, true
 
   # We allow passing the publication slug if caller knows it
-  @pathFromId: (publicationId, slug, options) ->
+  @pathFromId: (publicationId, slug) ->
     assert _.isString publicationId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     publication = @documents.findOne publicationId
 
@@ -195,10 +193,8 @@ class @Publication extends Publication
       publicationSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (publicationId, publication, options) ->
+  @reference: (publicationId, publication) ->
     assert _.isString publicationId
-    # To allow calling template helper with only one argument (publication will be options then)
-    publication = null unless publication instanceof @
 
     publication = @documents.findOne publicationId unless publication
     assert publicationId, publication._id if publication
@@ -1942,16 +1938,8 @@ Template.newAnnotationRolesControlResults.helpers
       result._parent = @
       result
 
-Template.newAnnotationRolesControlResultsItem.helpers
-  ifPerson: (options) ->
-    if @ instanceof Person
-      options.fn @
-    else
-      options.inverse @
-
 Template.newAnnotationRolesControlResultsItem.events
   'click .add-button': (event, template) ->
-
     grantAccess @
 
     # Clear autocomplete field

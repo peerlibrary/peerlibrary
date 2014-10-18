@@ -442,13 +442,6 @@ Template.rolesControlLoading.helpers
       result._parent = @
       result
 
-Template.rolesControlResultsItem.helpers
-  ifPerson: (options) ->
-    if @ instanceof Person
-      options.fn @
-    else
-      options.inverse @
-
 Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
     # TODO: When will be possible to better access parent data context from event handler, we should use that

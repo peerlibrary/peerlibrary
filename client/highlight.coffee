@@ -5,7 +5,7 @@ class @Highlight extends Highlight
 
   # If we have the highlight and the publication available on the client,
   # we can create full path directly, otherwise we have to use highlightIdPath
-  @pathFromId: (highlightId, options) ->
+  @pathFromId: (highlightId) ->
     assert _.isString highlightId
 
     highlight = @documents.findOne highlightId
@@ -33,10 +33,8 @@ class @Highlight extends Highlight
       highlightId: @_id
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (highlightId, highlight, options) ->
+  @reference: (highlightId, highlight) ->
     assert _.isString highlightId
-    # To allow calling template helper with only one argument (highlight will be options then)
-    highlight = null unless highlight instanceof @
 
     highlight = @documents.findOne highlightId unless highlight
     assert highlightId, highlight._id if highlight

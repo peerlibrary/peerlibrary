@@ -103,14 +103,11 @@ Template.settingsUsername.helpers
   usernameExists: ->
     !!Meteor.person?('user.username': 1).user?.username
 
-  messageOnField: (field, options) ->
-    field = null unless options
+  messageOnField: (field) ->
     usernameFormMessages.get field
 
-  validity: (field, options) ->
-    field = null unless options
+  validity: (field) ->
     return 'invalid' unless usernameFormMessages.isValid field
-    ''
 
 validateUsername = (username, messageField) ->
   return unless usernameReadyForValidation
@@ -186,14 +183,11 @@ Template.settingsPassword.events
     return # Make sure CoffeeScript does not return anything
 
 Template.settingsPassword.helpers
-  messageOnField: (field, options) ->
-    field = null unless options
+  messageOnField: (field) ->
     passwordFormMessages.get field
 
-  validity: (field, options) ->
-    field = null unless options
+  validity: (field) ->
     return 'invalid' unless passwordFormMessages.isValid field
-    ''
 
 validatePassword = (newPassword, messageField) ->
   return unless newPasswordReadyForValidation
@@ -230,8 +224,7 @@ Template.settingsBackground.helpers
     backgroundPaused
 
 Template.settingsBackground.helpers
-  messageOnField: (field, options) ->
-    field = null unless options
+  messageOnField: (field) ->
     backgroundFormMessages.get field
 
 Template.settingsBackground.events

@@ -6,10 +6,8 @@ class @Person extends Person
   # We allow passing the person slug if caller knows it.
   # If you do not know if you have an ID or a slug, you can pass
   # it in as an ID and hopefully something useful will come out.
-  @pathFromId = (personId, slug, options) ->
+  @pathFromId = (personId, slug) ->
     assert _.isString personId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     person = @documents.findOne
       $or: [
@@ -38,10 +36,8 @@ class @Person extends Person
   # Helper object with properties useful to refer to this document. Optional person document.
   # If you do not know if you have an ID or a slug, you can pass it in as an ID and hopefully
   # something useful will come out.
-  @reference: (personId, person, options) ->
+  @reference: (personId, person) ->
     assert _.isString personId
-    # To allow calling template helper with only one argument (person will be options then)
-    person = null unless person instanceof @
 
     unless person
       person = @documents.findOne
@@ -108,11 +104,14 @@ Template.person.helpers
       _id:
         $in: _.pluck person?.publications, '_id'
 
-Handlebars.registerHelper 'currentPerson', (options) ->
+Handlebars.registerHelper 'currentPerson', ->
   Meteor.person()
 
-Handlebars.registerHelper 'currentPersonId', (options) ->
+Handlebars.registerHelper 'currentPersonId', ->
   Meteor.personId()
+
+Handlebars.registerHelper 'isPerson', ->
+  @ instanceof Person
 
 Handlebars.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
 

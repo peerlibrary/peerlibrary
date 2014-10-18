@@ -145,7 +145,7 @@ Tracker.autorun ->
   lastEnrollAccountToken = enrollAccountToken
   changingPasswordInEnrollAccount = false
 
-Handlebars.registerHelper 'currentUserId', (options) ->
+Handlebars.registerHelper 'currentUserId', ->
   Meteor.userId()
 
 lastPersonId = Meteor.personId()

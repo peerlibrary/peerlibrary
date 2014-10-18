@@ -4,10 +4,8 @@ class @Group extends Group
     replaceParent: true
 
   # We allow passing the group slug if caller knows it
-  @pathFromId: (groupId, slug, options) ->
+  @pathFromId: (groupId, slug) ->
     assert _.isString groupId
-    # To allow calling template helper with only one argument (group will be options then)
-    group = null unless _.isString group
 
     group = @documents.findOne groupId
 
@@ -26,10 +24,8 @@ class @Group extends Group
       groupSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (groupId, group, options) ->
+  @reference: (groupId, group) ->
     assert _.isString groupId
-    # To allow calling template helper with only one argument (collection will be options then)
-    group = null unless group instanceof @
 
     group = @documents.findOne groupId unless group
     assert groupId, group._id if group
