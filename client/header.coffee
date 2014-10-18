@@ -1,4 +1,4 @@
-Deps.autorun ->
+Tracker.autorun ->
   return unless Meteor.settings?.public?.examples
 
   if Session.get 'indexActive'
@@ -96,12 +96,12 @@ Template.searchInput.rendered = ->
   # We focus search if we are displaying index header. Don't try to focus if reset password or enroll
   # user is in progress.
   if (Session.get('searchFocused') or Template.header.helpers('indexHeader')()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
-    $(@findAll '.search-input').focus()
+    @$('.search-input').focus()
 
   @_searchQueryHandle?.stop()
-  @_searchQueryHandle = Deps.autorun =>
+  @_searchQueryHandle = Tracker.autorun =>
     # Sync input field unless change happened because of this input field itself
-    $(@findAll '.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
+    @$('.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
 
 Template.searchInput.destroyed = ->
   @_searchQueryHandle?.stop()
@@ -138,7 +138,7 @@ Template.progressBar.helpers
     100 * Session.get 'currentPublicationProgress'
 
 progressHide = null
-Deps.autorun ->
+Tracker.autorun ->
   progress = Session.get 'currentPublicationProgress'
 
   if progress != 1.0

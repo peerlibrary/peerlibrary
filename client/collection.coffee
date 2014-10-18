@@ -46,7 +46,7 @@ collectionHandle = null
 # Mostly used just to force reevaluation of collectionHandle
 collectionSubscribing = new Variable false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'currentCollectionId'
     collectionSubscribing.set true
     collectionHandle = Meteor.subscribe 'collection-by-id', Session.get 'currentCollectionId'
@@ -55,11 +55,11 @@ Deps.autorun ->
     collectionSubscribing.set false
     collectionHandle = null
 
-Deps.autorun ->
+Tracker.autorun ->
   if collectionSubscribing() and collectionHandle?.ready()
     collectionSubscribing.set false
 
-Deps.autorun ->
+Tracker.autorun ->
   collection = Collection.documents.findOne Session.get('currentCollectionId'),
     fields:
       _id: 1
@@ -114,10 +114,10 @@ Template.collectionPublications.rendered = ->
   # TODO: Can we make this reactive? So that if permissions change this is enabled or disabled?
   unless collection?.hasMaintainerAccess Meteor.person collection?.constructor.maintainerAccessPersonFields()
     # Remove sortable functionality in case it was previously enabled
-    $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
+    @$('.collection-publications.ui-sortable').sortable "destroy"
     return
 
-  $(@findAll '.collection-publications').sortable
+  @$('.collection-publications').sortable
     opacity: 0.5
     cursor: 'ns-resize'
     axis: 'y'

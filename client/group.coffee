@@ -46,7 +46,7 @@ groupHandle = null
 # Mostly used just to force reevaluation of groupHandle
 groupSubscribing = new Variable false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
     groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
@@ -54,11 +54,11 @@ Deps.autorun ->
     groupSubscribing.set false
     groupHandle = null
 
-Deps.autorun ->
+Tracker.autorun ->
   if groupSubscribing() and groupHandle?.ready()
     groupSubscribing.set false
 
-Deps.autorun ->
+Tracker.autorun ->
   group = Group.documents.findOne Session.get('currentGroupId'),
     fields:
       _id: 1
@@ -157,20 +157,20 @@ Template.groupMembersAddControl.rendered = ->
   delete @data._newDataContext
 
   return if @_searchHandle
-  @_searchHandle = Deps.autorun =>
+  @_searchHandle = Tracker.autorun =>
     if @data._query()
       loading = true
-      @data._loading.set Deps.nonreactive(@data._loading) + 1
+      @data._loading.set Tracker.nonreactive(@data._loading) + 1
       Meteor.subscribe 'search-persons', @data._query(), _.pluck(@data.members, '_id'),
         onReady: =>
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
-      Deps.onInvalidate =>
-        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+      Tracker.onInvalidate =>
+        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->

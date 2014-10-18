@@ -42,7 +42,7 @@ class @Tag extends Tag
   reference: =>
     @constructor.reference @_id, @
 
-Deps.autorun ->
+Tracker.autorun ->
   tagId = Session.get 'currentTagId'
 
   if tagId

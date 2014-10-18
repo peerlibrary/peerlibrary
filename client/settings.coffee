@@ -35,7 +35,7 @@ resetBackgroundForm = ->
   backgroundFormMessages.resetMessages()
 
 # Reset forms when settings page becomes active
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'settingsActive'
     resetUsernameForm()
     resetPasswordForm()

@@ -220,7 +220,7 @@ class @Background
       @pausedTime = time
       if not @autorunHandle # autorunHandle is set if we are calling this from resize while paused
         # And react to the change of backgroundPaused
-        @autorunHandle = Deps.autorun =>
+        @autorunHandle = Tracker.autorun =>
           unless Session.get 'backgroundPaused'
             # Cleanup after resume
             @autorunHandle.stop()

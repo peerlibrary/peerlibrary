@@ -14,7 +14,7 @@ Template.groups.helpers
     signedInNoDocumentsMessage: "Create the first using the form on the right."
     signedOutNoDocumentsMessage: "Sign in and create the first."
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.equals 'groupsActive', true
     Meteor.subscribe 'my-groups'
 

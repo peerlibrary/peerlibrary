@@ -16,7 +16,7 @@
 
       return # Make sure CoffeeScript does not return anything
 
-    return Deps.autorun ->
+    return Tracker.autorun ->
       # Editable class determines if we've already initialized this element
       return unless isEditableFunction()
 
@@ -56,7 +56,7 @@
       $element.append($editableButton).addClass('editable')
 
       # Clean after self
-      Deps.onInvalidate ->
+      Tracker.onInvalidate ->
         hideView() if $editView
         $editableButton.remove()
         $editableButton = null
@@ -76,7 +76,7 @@ class @Editable
 
     template.rendered = ->
       @_editable?.stop()
-      @_editable = $(@findAll '> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
+      @_editable = @$('> *').editable(isEditableFunction.bind(@), updateFunction.bind(@), placeholderText, resizeToContent)
 
     template.destroyed = ->
       @_editable?.stop()

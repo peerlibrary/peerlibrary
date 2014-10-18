@@ -1,4 +1,4 @@
-Deps.autorun ->
+Tracker.autorun ->
   if Session.equals 'libraryActive', true
 
     Meteor.subscribe 'my-person-library'
@@ -17,7 +17,7 @@ Template.libraryPublications.helpers
         $in: _.pluck person.library, '_id'
 
 Template.libraryPublications.rendered = ->
-  $(@findAll '.catalog-item').draggable
+  @$('.catalog-item').draggable
     opacity: 0.5
     revert: true
     revertDuration: 0
@@ -37,7 +37,7 @@ Template.libraryMyCollections.helpers
   myCollections: Template.myCollections.helpers 'myCollections'
 
 Template.libraryMyCollections.rendered = ->
-  $(@findAll '.catalog-item').droppable
+  @$('.catalog-item').droppable
     accept: '.publication.catalog-item'
     activeClass: 'droppable-active'
     hoverClass: 'droppable-hover'

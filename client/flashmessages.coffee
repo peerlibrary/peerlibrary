@@ -13,7 +13,7 @@ positionFlashMessages = ($flashMessages, fast) ->
       $flashMessage.addClass('fast-animate')
     else
       $flashMessage.removeClass('fast-animate')
-    Deps.afterFlush =>
+    Tracker.afterFlush =>
       $flashMessage.addClass('animate')
     top += $flashMessage.outerHeight(true)
 
@@ -22,7 +22,7 @@ Template.flashMessagesOverlay.rendered = ->
   # as part of Meteor rendering, but it does not yet support
   # indexing. See https://github.com/meteor/meteor/pull/912
   # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  positionFlashMessages $(@findAll '.flash-message'), false
+  positionFlashMessages @$('.flash-message'), false
 
 Template.flashMessagesOverlay.helpers
   flashMessages: ->
@@ -37,7 +37,7 @@ Template.flashMessagesOverlayItem.created = ->
 Template.flashMessagesOverlayItem.rendered = ->
   return if @_timeout or @_seen
 
-  $flashMessage = $(@findAll '.flash-message')
+  $flashMessage = @$('.flash-message')
 
   return if @data.sticky
 
@@ -69,7 +69,7 @@ Template.flashMessagesOverlayItem.events
     if $(event.target).hasClass('icon-down')
       event.preventDefault()
 
-      Deps.afterFlush =>
+      Tracker.afterFlush =>
         $(template.findAll '.additional').slideDown
           # Twice as slow as CSS position transition animation time
           duration: 200

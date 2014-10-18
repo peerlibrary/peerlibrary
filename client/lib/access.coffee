@@ -24,7 +24,7 @@ accessButtonEventHandlers =
     return # Make sure CoffeeScript does not return anything
 
 Template.accessControl.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
 Template.accessControl.helpers
   canModifyAccess: ->
@@ -300,10 +300,10 @@ Template.rolesControlAdd.rendered = ->
   delete @data._newDataContext
 
   return if @_searchHandle
-  @_searchHandle = Deps.autorun =>
+  @_searchHandle = Tracker.autorun =>
     if @data._query()
       loading = true
-      @data._loading.set Deps.nonreactive(@data._loading) + 1
+      @data._loading.set Tracker.nonreactive(@data._loading) + 1
 
       existingRoles = _.pluck(@data.adminPersons, '_id').concat(_.pluck(@data.adminGroups, '_id'),
         _.pluck(@data.maintainerPersons, '_id'), _.pluck(@data.maintainerGroups, '_id'))
@@ -313,14 +313,14 @@ Template.rolesControlAdd.rendered = ->
       # it is very improbable that there would be duplicate _ids
       Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
         onReady: =>
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
-      Deps.onInvalidate =>
-        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+      Tracker.onInvalidate =>
+        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
         loading = false
 
 Template.rolesControlAdd.destroyed = ->

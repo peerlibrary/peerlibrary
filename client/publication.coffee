@@ -104,7 +104,7 @@ getNewAnnotationAdminGroups = ->
 # Set this variable if you want the viewer to display a specific page when displaying next publication
 @startViewerOnPage = null
 
-Deps.autorun ->
+Tracker.autorun ->
   person = Meteor.person inGroups: 1
 
   unless person
@@ -129,7 +129,7 @@ Deps.autorun ->
       groups = _.without groups, id
       Session.set 'newAnnotationWorkInsideGroups', groups
 
-Deps.autorun ->
+Tracker.autorun ->
   # Subscribe to people and group data that appear in permissions for new annotations
   for persons in [getNewAnnotationReadPersons(), getNewAnnotationMaintainerPersons(), getNewAnnotationAdminPersons()] when persons.length
     Meteor.subscribe 'persons-by-ids-or-slugs', persons
@@ -543,7 +543,7 @@ class @Publication extends Publication
       cachedId: 1
       mediaType: 1
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'currentPublicationId'
     publicationSubscribing.set true
     publicationHandle = Meteor.subscribe 'publication-by-id', Session.get 'currentPublicationId'
@@ -560,11 +560,11 @@ Deps.autorun ->
     publicationCachedIdHandle = null
     myGroupsHandle = null
 
-Deps.autorun ->
+Tracker.autorun ->
   if publicationSubscribing() and publicationHandle?.ready() and publicationCachedIdHandle?.ready()
     publicationSubscribing.set false
 
-Deps.autorun ->
+Tracker.autorun ->
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
@@ -588,7 +588,7 @@ Deps.autorun ->
   else
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
-Deps.autorun ->
+Tracker.autorun ->
   # The publication needs to loaded before we allow to annotate it.
   return unless Session.get 'currentPublicationId'
   return unless Publication.documents.findOne Session.get 'currentPublicationId'
@@ -611,7 +611,7 @@ Deps.autorun ->
 
   LocalAnnotation.documents.insert annotation
 
-Deps.autorun ->
+Tracker.autorun ->
   # We first register a dependency on the publication, so that we correctly
   # remove the notification when we go away from the publication page
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
@@ -648,7 +648,7 @@ Deps.autorun ->
     FlashMessage.warn "Publication has not yet been processed and is thus unavailable to others regardless of the access settings.", null,
       notProcessedPublicationId: publication._id # Making it a sticky notification
 
-Deps.autorun ->
+Tracker.autorun ->
   publication = Publication.documents.findOne Session.get('currentPublicationId'),
     fields:
       _id: 1
@@ -673,7 +673,7 @@ Template.publication.helpers
     Publication.documents.findOne Session.get 'currentPublicationId'
 
 Template.publicationMetaMenu.rendered = ->
-  $(@findAll '.balance-text').balanceText()
+  @$('.balance-text').balanceText()
 
 Template.publicationMetaMenu.events
   'click .download': (event, template) ->
@@ -730,7 +730,7 @@ accessButtonEventHandlers =
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAccessIconControl.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
 Template.publicationAccessIconControl.helpers
   canModifyAccess: ->
@@ -765,11 +765,9 @@ Template.publicationAccessControlPrivacyInfo.helpers
   private: Template.publicationAccessControlPrivacyForm.helpers 'private'
 
 # We copy over event handlers from accessControl template (which are general enough to work)
-for spec, callbacks of Template.accessMenuPrivacyForm._tmpl_data.events
-  for callback in callbacks
-    eventMap = {}
-    eventMap[spec] = callback
-    Template.publicationAccessControlPrivacyForm.events eventMap
+# TODO: Use something less internal to Meteor
+for eventMap in Template.accessMenuPrivacyForm.__eventMaps
+  Template.publicationAccessControlPrivacyForm.__eventMaps.push eventMap
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -889,7 +887,7 @@ Template.publicationDisplay.rendered = ->
   @_displayWrapper?[0]?._displayWrapperId = Random.id()
 
   @_displayHandle?.stop()
-  @_displayHandle = Deps.autorun =>
+  @_displayHandle = Tracker.autorun =>
     publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
     return unless publication
@@ -902,7 +900,7 @@ Template.publicationDisplay.rendered = ->
       return
 
     publication.show $(@_displayWrapper)
-    Deps.onInvalidate publication.destroy
+    Tracker.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
   @_displayHandle?.stop()
@@ -968,7 +966,7 @@ Template.publicationScroller.created = ->
     # An example of the issue is if you drag fast with mouse below the
     # browser window edge if there are compething event handlers viewport
     # gets stuck and does not necessary go to the end position.
-    setViewportPosition $(@findAll '.viewport') unless draggingViewport
+    setViewportPosition @$('.viewport') unless draggingViewport
 
     return # Make sure CoffeeScript does not return anything
 
@@ -978,7 +976,7 @@ Template.publicationScroller.rendered = ->
   # be called multiple times as publicationDOMReady changes
   return unless publicationDOMReady()
 
-  $viewport = $(@findAll '.viewport')
+  $viewport = @$('.viewport')
 
   draggingViewport = false
   $viewport.draggable
@@ -1015,7 +1013,7 @@ Template.publicationScroller.rendered = ->
   setViewportPosition $viewport
 
   if startViewerOnPage
-    $scroller = $(@findAll '.scroller')
+    $scroller = @$('.scroller')
     $sections = $scroller.find('.section')
 
     # Scroll browser viewport to display the desired publication page
@@ -1302,7 +1300,7 @@ Template.publicationAnnotations.created = ->
         editing: ''
 
 Template.publicationAnnotations.rendered = ->
-  $annotationsList = $(@findAll '.annotations-list')
+  $annotationsList = @$('.annotations-list')
 
   $annotationsList.scrollLock()
 
@@ -1376,7 +1374,7 @@ Template.publicationAnnotationsItem.events
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.rendered = ->
-  $annotation = $(@findAll '.annotation')
+  $annotation = @$('.annotation')
 
   # To make sure rendered can be called multiple times and we bind event handlers only once
   $annotation.off '.publicationAnnotationsItem'
@@ -1418,7 +1416,7 @@ Template.annotationTags.rendered = ->
   ###
   TODO: Temporary disabled, not yet finalized code
 
-  $(@findAll '.annotation-tags-list').tagit
+  @$('.annotation-tags-list').tagit
     readOnly: true
   ###
 
@@ -1426,7 +1424,7 @@ Template.annotationEditor.created = ->
   @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  @_scribe = createEditor @, $(@findAll '.annotation-content-editor'), $(@findAll '.format-toolbar'), false unless @_scribe
+  @_scribe = createEditor @, @$('.annotation-content-editor'), @$('.format-toolbar'), false unless @_scribe
 
   # If editor got collapsed, close any open dialog (we do not
   # really collapse when user is actively editing (like having
@@ -1440,11 +1438,11 @@ Template.annotationEditor.rendered = ->
   TODO: Temporary disabled, not yet finalized code
 
   # Load tag-it
-  $(@findAll '.annotation-tags-editor').tagit()
+  @$('.annotation-tags-editor').tagit()
 
   # Create tags
   _.each @data.tags, (item) =>
-    $(@findAll '.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+    @$('.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
   ###
 
   # Save reference to the template of the local annotation for access in global event handlers
@@ -1542,7 +1540,7 @@ onAnnotationAccessDropdownHidden = (event) ->
   $button.addClass('tooltip')
 
 Template.newAnnotationAccessControl.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAnnotationAccessDropdownHidden)
 
 Template.newAnnotationAccessButton.events
   'click .access-button': (event, template) ->
@@ -1811,10 +1809,10 @@ Template.newAnnotationRolesControlAdd.rendered = ->
   delete @data._newDataContext
 
   return if @_searchHandle
-  @_searchHandle = Deps.autorun =>
+  @_searchHandle = Tracker.autorun =>
     if @data._query()
       loading = true
-      @data._loading.set Deps.nonreactive(@data._loading) + 1
+      @data._loading.set Tracker.nonreactive(@data._loading) + 1
 
       existingRoles = [Meteor.personId()].concat getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups()
       existingRoles = existingRoles.concat getNewAnnotationReadPersons(), getNewAnnotationReadGroups(), getNewAnnotationWorkInsideGroups() if getNewAnnotationAccess() is ACCESS.PRIVATE
@@ -1823,14 +1821,14 @@ Template.newAnnotationRolesControlAdd.rendered = ->
       # it is very improbable that there would be duplicate _ids
       Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
         onReady: =>
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
           loading = false
-      Deps.onInvalidate =>
-        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+      Tracker.onInvalidate =>
+        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
         loading = false
 
 Template.newAnnotationRolesControlAdd.destroyed = ->
@@ -2001,8 +1999,8 @@ Template.annotationCommentEditor.created = ->
   @_scribe = null
 
 Template.annotationCommentEditor.rendered = ->
-  $wrapper = $(@findAll '.comment-editor')
-  $editor = $(@findAll '.comment-content-editor')
+  $wrapper = @$('.comment-editor')
+  $editor = @$('.comment-content-editor')
 
   if $editor.text().trim() or $editor.is(':focus') or @_destroyDialog
     $wrapper.addClass 'active'
@@ -2152,7 +2150,7 @@ Template.viewportFilterContent.events
 
 Template.footer.helpers
   publicationDisplayed: ->
-    'publication-displayed' unless Template.publication.loading() or Template.publication.notFound()
+    'publication-displayed' unless Template.publication.helpers('loading')() or Template.publication.helpers('notFound')()
 
 # TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
 addParsedLinkReactiveVariable = (data) ->

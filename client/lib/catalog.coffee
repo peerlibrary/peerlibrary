@@ -18,7 +18,7 @@ Template.catalog.created = ->
   wasReady = new Variable false
 
   @_resetSignalHandle?.stop()
-  @_resetSignalHandle = Deps.autorun =>
+  @_resetSignalHandle = Tracker.autorun =>
     # Detect when ready is turned to false
     ready = Session.get(variables.ready)
     if wasReady() and not ready
@@ -26,7 +26,7 @@ Template.catalog.created = ->
       wasReady.set false
 
   @_searchParametersHandle?.stop()
-  @_searchParametersHandle = Deps.autorun =>
+  @_searchParametersHandle = Tracker.autorun =>
     # Every time filter or sort is changed, we reset counts
     # (We don't want to reset counts on currentLimit change)
     Session.get variables.filter
@@ -38,7 +38,7 @@ Template.catalog.created = ->
   subscriptionHandle = null
 
   @_subscriptionAutorunHandle?.stop()
-  @_subscriptionAutorunHandle = Deps.autorun =>
+  @_subscriptionAutorunHandle = Tracker.autorun =>
     # Listen for the reset signal, so the search is
     # rerun when ready is set to false from the outside
     reset()
@@ -60,7 +60,7 @@ Template.catalog.created = ->
       Session.set variables.loading, false
 
   @_searchResultHandle?.stop()
-  @_searchResultHandle = Deps.autorun =>
+  @_searchResultHandle = Tracker.autorun =>
     fields = {}
     fields["count#{ @data.documentClass.Meta.collection._name }"] = 1
 
@@ -169,7 +169,7 @@ onCatalogRendered = (template, variables) ->
   $(window).trigger('scroll')
 
 Template.catalogList.rendered = ->
-  Deps.afterFlush =>
+  Tracker.afterFlush =>
     # Make sure onCatalogRendered gets executed after rendered is done and new elements are in the DOM.
     # Otherwise we might increase limit multiple times in a row, before the DOM updates.
     onCatalogRendered @, @data.variables

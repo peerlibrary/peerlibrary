@@ -63,7 +63,7 @@ class @Person extends Person
   reference: =>
     @constructor.reference @_id, @
 
-Deps.autorun ->
+Tracker.autorun ->
   slug = Session.get 'currentPersonSlug'
 
   return unless slug
@@ -72,7 +72,7 @@ Deps.autorun ->
   Meteor.subscribe 'persons-by-ids-or-slugs', slug
   Meteor.subscribe 'publications-by-author-slug', slug
 
-Deps.autorun ->
+Tracker.autorun ->
   slug = Session.get 'currentPersonSlug'
 
   return unless slug

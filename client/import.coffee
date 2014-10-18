@@ -48,7 +48,7 @@ canceledFiles.observe
 publicationHandles = {}
 
 # Subscribe to publications that have been matched on the server
-Deps.autorun ->
+Tracker.autorun ->
   ImportingFile.documents.find({publicationId: $exists: true}, {fields: publicationId: 1}).forEach (file) ->
     Meteor.subscribe 'publication-by-id', file.publicationId
 
@@ -107,7 +107,7 @@ uploadFile = (file, publicationId) ->
           publicationId: publicationId
 
 # Process next element from import queue
-Deps.autorun ->
+Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'preprocessed' to 'importing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
@@ -172,7 +172,7 @@ testPDF = (file, callback) ->
         status: "Invalid PDF file"
 
 # Process next element from preprocessing queue
-Deps.autorun ->
+Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'new' to 'preprocessing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
@@ -444,14 +444,14 @@ Template.importOverlay.helpers
   importingFilesCount: ->
     ImportingFile.documents.find().count()
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get('importOverlayActive') or Session.get('signInOverlayActive')
     # We prevent scrolling of page content while overlay is visible
     $('body').add('html').addClass 'overlay-active'
   else
     $('body').add('html').removeClass 'overlay-active'
 
-Deps.autorun ->
+Tracker.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount

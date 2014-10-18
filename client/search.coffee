@@ -8,7 +8,7 @@
 
   # We increase the counter to signal that general query invoked the change
   generalQueryChangeLock++
-  Deps.afterFlush ->
+  Tracker.afterFlush ->
     Meteor.setTimeout ->
       generalQueryChangeLock--
       assert generalQueryChangeLock >= 0
@@ -25,7 +25,7 @@
 
   # We increase the counter to signal that structured query invoked the change
   structuredQueryChangeLock++
-  Deps.afterFlush ->
+  Tracker.afterFlush ->
     Meteor.setTimeout ->
       structuredQueryChangeLock--
       assert structuredQueryChangeLock >= 0

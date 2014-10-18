@@ -17,8 +17,8 @@ Template.installWizard.helpers
     Session.get 'installRestarting'
 
 Template.installWizard.rendered = ->
-  Deps.afterFlush =>
-    $(@findAll '#install-password-input').focus()
+  Tracker.afterFlush =>
+    @$('#install-password-input').focus()
 
 Template.installWizard.events
   'submit form.password': (event, template) ->

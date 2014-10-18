@@ -26,7 +26,7 @@ Template.publicationCatalogItem.events
       $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
     else
       template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
-        Deps.afterFlush =>
+        Tracker.afterFlush =>
           $(template.findAll '.abstract').slideToggle('fast')
 
     return # Make sure CoffeeScript does not return anything
@@ -37,7 +37,7 @@ Template.publicationCatalogItem.created = ->
   @_publicationHandle = null
 
 Template.publicationCatalogItem.rendered = ->
-  $(@findAll '.scrubber').iscrubber
+  @$('.scrubber').iscrubber
     direction: 'combined'
 
 Template.publicationCatalogItem.destroyed = ->
@@ -83,7 +83,7 @@ onLibraryDropdownHidden = (event) ->
   $button.addClass('tooltip')
 
 Template.publicationCatalogItemLibraryMenu.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
 
 Template.publicationCatalogItemLibraryMenu.events
   'click .toolbar-button': (event, template) ->

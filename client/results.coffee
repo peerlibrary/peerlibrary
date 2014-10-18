@@ -3,7 +3,7 @@ searchLimitIncreasing = false
 currentSearchQueryCount = ->
   (Session.get('currentSearchQueryCountPublications') or 0) + (Session.get('currentSearchQueryCountPersons') or 0)
 
-Deps.autorun ->
+Tracker.autorun ->
   # Every time search query is changed, we reset counts
   # (We don't want to reset counts on currentSearchLimit change)
   Session.get 'currentSearchQuery'
@@ -12,7 +12,7 @@ Deps.autorun ->
 
   searchLimitIncreasing = false
 
-Deps.autorun ->
+Tracker.autorun ->
   Session.set 'currentSearchQueryReady', false
   if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
     Session.set 'currentSearchQueryLoading', true
@@ -26,7 +26,7 @@ Deps.autorun ->
   else
     Session.set 'currentSearchQueryLoading', false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'searchActive'
     Meteor.subscribe 'statistics'
 
@@ -121,19 +121,19 @@ Template.sidebarSearch.created = ->
 
 Template.sidebarSearch.rendered = ->
   @_searchQueryHandle?.stop()
-  @_searchQueryHandle = Deps.autorun =>
+  @_searchQueryHandle = Tracker.autorun =>
     # Sync input field unless change happened because of this input field itself
-    $(@findAll '#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
+    @$('#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
 
   @_dateRangeHandle?.stop()
-  @_dateRangeHandle = Deps.autorun =>
+  @_dateRangeHandle = Tracker.autorun =>
     statistics = Statistics.documents.findOne {},
       fields:
         minPublicationDate: 1
         maxPublicationDate: 1
 
-    $publicationDate = $(@findAll '#publication-date')
-    $slider = $(@findAll '#date-range')
+    $publicationDate = @$('#publication-date')
+    $slider = @$('#date-range')
 
     unless statistics?.minPublicationDate and statistics?.maxPublicationDate
       $publicationDate.val('')
@@ -162,7 +162,7 @@ Template.sidebarSearch.rendered = ->
 
     $publicationDate.val($slider.slider('values', 0) + ' - ' + $slider.slider('values', 1))
 
-  $(@findAll '.chzn').chosen
+  @$('.chzn').chosen
     no_results_text: "No tag match"
 
 Template.sidebarSearch.destroyed = ->
@@ -207,6 +207,6 @@ updateSearchLoction = _.debounce (query) ->
   Meteor.Router.toNew Meteor.Router.searchPath query
 , 500
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'searchActive'
     updateSearchLoction Session.get 'currentSearchQuery'

@@ -1,4 +1,4 @@
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'indexActive'
     Meteor.subscribe 'statistics'
     Meteor.subscribe 'latest-blog-post'
@@ -28,23 +28,17 @@ Template.index.helpers
 
 Template.indexMain.created = ->
   @_background = new Background()
-  @_backgroundRendered = false
 
   $(window).on 'resize.background', @_background.resize
 
 Template.indexMain.rendered = ->
-  return if @_backgroundRendered
-  @_backgroundRendered = true
-
-  Deps.nonreactive =>
-    $(@findAll '.landing').append @_background.render()
+  @$('.landing').append @_background.render()
 
 Template.indexMain.destroyed = ->
   $(window).off '.background'
 
   @_background.destroy()
   @_background = null
-  @_backgroundRendered = false
 
 Template.indexLatestBlogPost.helpers
   latestBlogPost: ->
@@ -53,7 +47,6 @@ Template.indexLatestBlogPost.helpers
   blogPostsCount: ->
     Statistics.documents.findOne()?.countBlogPosts or 0
 
-Template.indexLatestBlogPost.helpers
   blogUrl: ->
     Meteor.settings?.public?.blogUrl
 
@@ -61,6 +54,10 @@ Meteor.autorun ->
   # If user is not logged in, default will be false, which user can then modify locally in Session
   backgroundPaused = !!Meteor.user()?.settings?.backgroundPaused
   Session.set 'backgroundPaused', backgroundPaused
+
+Template.backgroundPause.helpers
+  backgroundPaused: ->
+    Session.get 'backgroundPaused'
 
 Template.backgroundPause.events
   'click button': (event, template) ->
@@ -76,11 +73,3 @@ Template.backgroundPause.events
       Session.set 'backgroundPaused', backgroundPaused
 
     return # Make sure CoffeeScript does not return anything
-
-Template.backgroundPauseButton.helpers
-  backgroundPaused: ->
-    Session.get 'backgroundPaused'
-
-Template.backgroundPauseTooltipContent.helpers
-  backgroundPaused: ->
-    Session.get 'backgroundPaused'

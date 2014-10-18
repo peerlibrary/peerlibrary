@@ -1,4 +1,4 @@
-Deps.autorun ->
+Tracker.autorun ->
   if Session.equals 'adminActive', true
     Meteor.subscribe 'arxiv-pdfs'
     Meteor.subscribe 'logged-errors'

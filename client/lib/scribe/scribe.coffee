@@ -39,5 +39,5 @@
   # We have to clean a dialog after current flush which
   # is just hapennig, otherwise Spark errors occur if
   # we remove DOM elements while Spark is working
-  Deps.afterFlush ->
+  Tracker.afterFlush ->
     destroyDialog()

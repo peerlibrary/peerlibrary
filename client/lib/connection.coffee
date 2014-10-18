@@ -1,5 +1,5 @@
 Meteor.startup ->
-  Deps.autorun ->
+  Tracker.autorun ->
     status = Meteor.status()
 
     if status.connected
