@@ -2175,12 +2175,12 @@ Template.editorLinkPrompt.helpers
     # If we have a helper to help us resolve a path from the ID, let's
     # use that. This will build a canonical URL if possible to help
     # user verify their URL.
-    if Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"]
-      parsedLink.path = Handlebars._default_helpers["#{ parsedLink.referenceName }PathFromId"](parsedLink.referenceId, null)
+    if Blaze._globalHelpers["#{ parsedLink.referenceName }PathFromId"]
+      parsedLink.path = Blaze._globalHelpers["#{ parsedLink.referenceName }PathFromId"] parsedLink.referenceId
 
     # If we have a helper to help us create text and title, let's use that.
-    if Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"]
-      parsedLink = _.extend parsedLink, Handlebars._default_helpers["#{ parsedLink.referenceName }Reference"](parsedLink.referenceId, null, null)
+    if Blaze._globalHelpers["#{ parsedLink.referenceName }Reference"]
+      parsedLink = _.extend parsedLink, Blaze._globalHelpers["#{ parsedLink.referenceName }Reference"] parsedLink.referenceId
 
     parsedLink
 
@@ -2205,6 +2205,6 @@ Template.editorLinkPrompt.events
 
     return # Make sure CoffeeScript does not return anything
 
-Handlebars.registerHelper 'publicationPathFromId', _.bind Publication.pathFromId, Publication
+Template.registerHelper 'publicationPathFromId', _.bind Publication.pathFromId, Publication
 
-Handlebars.registerHelper 'publicationReference', _.bind Publication.reference, Publication
+Template.registerHelper 'publicationReference', _.bind Publication.reference, Publication

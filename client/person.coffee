@@ -104,15 +104,15 @@ Template.person.helpers
       _id:
         $in: _.pluck person?.publications, '_id'
 
-Handlebars.registerHelper 'currentPerson', ->
+Template.registerHelper 'currentPerson', ->
   Meteor.person()
 
-Handlebars.registerHelper 'currentPersonId', ->
+Template.registerHelper 'currentPersonId', ->
   Meteor.personId()
 
-Handlebars.registerHelper 'isPerson', ->
+Template.registerHelper 'isPerson', ->
   @ instanceof Person
 
-Handlebars.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
+Template.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
 
-Handlebars.registerHelper 'personReference', _.bind Person.reference, Person
+Template.registerHelper 'personReference', _.bind Person.reference, Person

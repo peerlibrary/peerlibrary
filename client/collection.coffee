@@ -178,6 +178,6 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
-Handlebars.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
+Template.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
 
-Handlebars.registerHelper 'collectionReference', _.bind Collection.reference, Collection
+Template.registerHelper 'collectionReference', _.bind Collection.reference, Collection

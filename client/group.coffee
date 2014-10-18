@@ -289,6 +289,6 @@ Template.groupMembersAddControlInviteHint.helpers
 
     !@_query()
 
-Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
+Template.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
-Handlebars.registerHelper 'groupReference', _.bind Group.reference, Group
+Template.registerHelper 'groupReference', _.bind Group.reference, Group

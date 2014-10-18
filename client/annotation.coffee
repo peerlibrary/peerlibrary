@@ -110,7 +110,7 @@ Meteor.startup ->
   tags: []
   body: ''
 
-Handlebars.registerHelper 'annotationPathFromId', _.bind LocalAnnotation.pathFromId, LocalAnnotation
+Template.registerHelper 'annotationPathFromId', _.bind LocalAnnotation.pathFromId, LocalAnnotation
 
-Handlebars.registerHelper 'annotationReference', _.bind LocalAnnotation.reference, LocalAnnotation
+Template.registerHelper 'annotationReference', _.bind LocalAnnotation.reference, LocalAnnotation
 

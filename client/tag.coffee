@@ -49,6 +49,6 @@ Template.tag.helpers
     Tag.documents.findOne
       _id: Session.get 'currentTagId'
 
-Handlebars.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
+Template.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
 
-Handlebars.registerHelper 'tagReference', _.bind Tag.reference, Tag
+Template.registerHelper 'tagReference', _.bind Tag.reference, Tag
