@@ -43,5 +43,5 @@ Template.memberAdd.helpers
       return # Make sure CoffeeScript does not return anything
 
 # To make sure catalog item links are always restored we show them on any mouseup
-$(document).mouseup ->
+$(document).on 'mouseup', ->
   $('.full-item-link').show()

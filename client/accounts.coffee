@@ -36,7 +36,10 @@ $(document).on 'click focus keypress', (event) ->
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.loginButtons.events
-  'click, focus, keypress': (event, template) ->
+  # We have to bind directly to login-buttons to intercept click on the parent
+  # element of all and not directly on child elements. For example, when input is
+  # disabled, its click handler is not called, but login-buttons handler is.
+  'click #login-buttons, focus #login-buttons, keypress #login-buttons': (event, template) ->
     event.originalEvent.accountsDialogBoxEvent = true
 
     return # Make sure CoffeeScript does not return anything

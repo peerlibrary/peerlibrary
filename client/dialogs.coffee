@@ -63,10 +63,10 @@ Template.newsletterDialog.helpers
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.newsletterDialog.events
-# We have to bind directly to newsletter-dialog to intercept click on the parent
-# element of all and not directly on child elements. For example, when input is
-# disabled, its click handler is not called, but newsletter-dialog handler is.
-  'click, focus, keypress': (event, template) ->
+  # We have to bind directly to newsletter-dialog to intercept click on the parent
+  # element of all and not directly on child elements. For example, when input is
+  # disabled, its click handler is not called, but newsletter-dialog handler is.
+  'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (event, template) ->
     event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
@@ -134,10 +134,10 @@ Template.inviteDialog.helpers
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.inviteDialog.events
-# We have to bind directly to invite-dialog to intercept click on the parent
-# element of all and not directly on child elements. For example, when input is
-# disabled, its click handler is not called, but invite-dialog handler is.
-  'click, focus, keypress': (event, template) ->
+  # We have to bind directly to invite-dialog to intercept click on the parent
+  # element of all and not directly on child elements. For example, when input is
+  # disabled, its click handler is not called, but invite-dialog handler is.
+  'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (event, template) ->
     event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
