@@ -46,13 +46,15 @@ Template.loginButtons.events
 
 # Autofocus username when login form is rendered
 Template._loginButtonsLoggedOutPasswordService.rendered = ->
-  Meteor.defer =>
+  Meteor.setTimeout =>
     @$('#login-username-or-email').focus()
+  , 10 # ms
 
 # Autofocus e-mail when forgot password form is rendered
 Template._forgotPasswordForm.rendered = ->
-  Meteor.defer =>
+  Meteor.setTimeout =>
     @$('#forgot-password-email').focus()
+  , 10 # ms
 
 $(document).on 'keyup', (event) ->
   if event.keyCode is 27 # Escape key
@@ -92,8 +94,9 @@ Template._resetPasswordDialog.events
     return # Make sure CoffeeScript does not return anything
 
 Template._resetPasswordDialog.rendered = ->
-  Meteor.defer =>
+  Meteor.setTimeout =>
     @$('#reset-password-new-password').focus()
+  , # 10 ms
 
 # When password is reset or reset is canceled, we change the location to the index page
 lastResetPasswordToken = null
@@ -135,8 +138,9 @@ Template._enrollAccountDialog.events
     return # Make sure CoffeeScript does not return anything
 
 Template._enrollAccountDialog.rendered = ->
-  Meteor.defer =>
+  Meteor.setTimeout =>
     @$('#enroll-account-with-username-username').focus()
+  , 10 # ms
 
 # When user enrolls or enrollment is canceled, we change the location to the index page
 lastEnrollAccountToken = null

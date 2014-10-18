@@ -17,8 +17,9 @@ Template.installWizard.helpers
     Session.get 'installRestarting'
 
 Template.installWizard.rendered = ->
-  Tracker.afterFlush =>
+  Meteor.setTimeout =>
     @$('#install-password-input').focus()
+  , 10 # ms
 
 Template.installWizard.events
   'submit form.password': (event, template) ->

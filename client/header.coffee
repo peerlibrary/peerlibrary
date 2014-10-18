@@ -96,7 +96,9 @@ Template.searchInput.rendered = ->
   # We focus search if we are displaying index header. Don't try to focus if reset password or enroll
   # user is in progress.
   if (Session.get('searchFocused') or Template.header.helpers('indexHeader')()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
-    @$('.search-input').focus()
+    Meteor.setTimeout =>
+      @$('.search-input').focus()
+    , 10 # ms
 
   @_searchQueryHandle?.stop()
   @_searchQueryHandle = Tracker.autorun =>
