@@ -251,6 +251,231 @@
       handle?.stop()
       countsHandles[i] = null
 
+@searchPublishES = (publish, name, query, order_mapping, results...) ->
+  queryId = Random.id()
+
+  initializedCounts =
+    name: name
+    query: query
+  for result, i in results
+    # We set all counts initially to null, until counts are ready
+    initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = null
+
+  publish.added 'SearchResults', queryId, initializedCounts
+
+  initializingResults = results.length
+  resultsHandles = []
+  for result, i in results
+    do (result, i) ->
+      orderMap = {}
+      orderList = []
+
+      assertOrder = ->
+        assert.equal orderList.length, _.size orderMap
+        for orderId, orderIndex in orderList
+          assert.equal orderMap[orderId], orderIndex
+
+      resultsHandles[i] = result.cursor.observeChanges
+        addedBefore: (id, fields, before) =>
+          if before
+            beforeIndex = orderMap[before]
+
+            # Insert
+            orderList.splice beforeIndex, 0, id
+            orderMap[id] = beforeIndex
+
+            # Reindex all after the insertion point
+            for orderId, orderIndex in orderList[(beforeIndex + 1)..]
+              orderIndex += beforeIndex + 1
+              orderMap[orderId] = orderIndex
+              publish.changed result.cursor._cursorDescription.collectionName, orderId,
+                searchResult:
+                  _id: queryId
+                  order: orderIndex
+
+          else # Added at the end
+            orderList.push id
+            orderMap[id] = orderList.length - 1
+
+          fields.searchResult =
+            _id: queryId
+            order: orderMap[id]
+
+          fields = result.added id, fields if result.added # Optional preprocessing callback
+
+          publish.added result.cursor._cursorDescription.collectionName, id, fields
+
+          assertOrder()
+
+        changed: (id, fields) =>
+          fields = result.changed id, fields if result.changed # Optional preprocessing callback
+
+          publish.changed result.cursor._cursorDescription.collectionName, id, fields unless _.isEmpty fields
+
+        movedBefore: (id, before) =>
+          idIndex = orderMap[id]
+
+          # TODO: Can be before null?
+          unless before # Moved to the end
+            # Remove from the current position
+            orderList.splice idIndex, 1
+            delete orderMap[id]
+
+            # Reindex all from the deletion point on
+            for orderId, orderIndex in orderList[idIndex..]
+              orderIndex += idIndex
+              orderMap[orderId] = orderIndex
+              publish.changed result.cursor._cursorDescription.collectionName, orderId,
+                searchResult:
+                  _id: queryId
+                  order: orderIndex
+
+            # Add at the end
+            orderList.push id
+            orderMap[id] = orderList.length - 1
+
+            publish.changed result.cursor._cursorDescription.collectionName, id,
+              searchResult:
+                _id: queryId
+                order: orderMap[id]
+
+          else
+            beforeIndex = orderMap[before]
+
+            if idIndex is beforeIndex - 1 # Moved to the same position
+              assert false
+            else if idIndex < beforeIndex # Moved after current position
+              # Remove from the current position
+              orderList.splice idIndex, 1
+              delete orderMap[id]
+
+              # Reindex all from the deletion point to, but excluding the new position (we
+              # will reinsert there and push everything afterwards back to the right position)
+              for orderId, orderIndex in orderList[idIndex...(beforeIndex - 1)]
+                orderIndex += idIndex
+                orderMap[orderId] = orderIndex
+                publish.changed result.cursor._cursorDescription.collectionName, orderId,
+                  searchResult:
+                    _id: queryId
+                    order: orderIndex
+
+              # Add at the new position
+              orderList.splice beforeIndex - 1, 0, id
+              orderMap[id] = beforeIndex - 1
+
+              publish.changed result.cursor._cursorDescription.collectionName, id,
+                searchResult:
+                  _id: queryId
+                  order: orderMap[id]
+
+            else if beforeIndex < idIndex # Move before current position
+              # Remove from the current position
+              orderList.splice idIndex, 1
+              delete orderMap[id]
+
+              # Add at the new position
+              orderList.splice beforeIndex, 0, id
+              orderMap[id] = beforeIndex
+
+              publish.changed result.cursor._cursorDescription.collectionName, id,
+                searchResult:
+                  _id: queryId
+                  order: orderMap[id]
+
+              # Reindex all after the insertion point on, including
+              # the old position (to where everything was pushed to)
+              for orderId, orderIndex in orderList[(beforeIndex + 1)..idIndex]
+                orderIndex += beforeIndex + 1
+                orderMap[orderId] = orderIndex
+                publish.changed result.cursor._cursorDescription.collectionName, orderId,
+                  searchResult:
+                    _id: queryId
+                    order: orderIndex
+
+            else # Moved to the same position
+              assert false
+
+          assertOrder()
+
+        removed: (id) =>
+          result.removed id if result.removed # Optional preprocessing callback
+
+          publish.removed result.cursor._cursorDescription.collectionName, id
+
+          idIndex = orderMap[id]
+
+          # Remove
+          orderList.splice idIndex, 1
+          delete orderMap[id]
+
+          # Reindex all from the deletion point on
+          for orderId, orderIndex in orderList[idIndex..]
+            orderIndex += idIndex
+            orderMap[orderId] = orderIndex
+            publish.changed result.cursor._cursorDescription.collectionName, orderId,
+              searchResult:
+                _id: queryId
+                order: orderIndex
+
+          assertOrder()
+
+      initializingResults--
+
+  assert.equal initializingResults, 0
+
+  # We call ready before counts are available so that client side can start displaying results
+  # even before counts are available. Counting currently takes time (we have to go over whole
+  # query) so it quite delays sending of results and user feedback on the client.
+  publish.ready()
+
+  publish.onStop ->
+    for handle, i in resultsHandles
+      handle?.stop()
+      resultsHandles[i] = null
+
+  initializingCounts = results.length
+  counts = []
+  countsHandles = []
+  for result, i in results
+    do (result, i) ->
+      counts[i] = 0
+
+      # For counting we want only _id field and no skip or limit restrictions
+      result.cursor._cursorDescription.options.fields =
+        _id: 1
+      delete result.cursor._cursorDescription.options.skip
+      delete result.cursor._cursorDescription.options.limit
+
+      # TODO: Counting in this way is very inefficient, better would be to first run .count() in MongoDB and then just tail oplog for adding and removing, without all added calls for all existing documents.
+      countsHandles[i] = result.cursor.observeChanges
+        added: (id, fields) =>
+          counts[i]++
+          if initializingCounts is 0
+            change = {}
+            change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+            publish.changed 'SearchResults', queryId, change
+
+        removed: (id) =>
+          counts[i]--
+          change = {}
+          change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+          publish.changed 'SearchResults', queryId, change
+
+      initializingCounts--
+
+  assert.equal initializingCounts, 0
+
+  for result, i in results
+    initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+
+  publish.changed 'SearchResults', queryId, initializedCounts
+
+
+  publish.onStop ->
+    for handle, i in countsHandles
+      handle?.stop()
+      countsHandles[i] = null     
+
 @createQueryCriteria = (query, field) ->
   queryCriteria =
     $and: []
@@ -268,17 +493,23 @@
 @getIdsFromES = (ESQuery) ->
   findQuery = {}
   ids = []
+  order_map = {}
   if ESQuery
     response = blocking(ES, ES.search) ESQuery
     if response.hits? and response.hits.hits?
-      for hit in response.hits.hits
+      index = 0
+      for hit,index in response.hits.hits
         ids.push hit._id
+        order_map[hit._id] = index
+        # console.log order_map[hit._id] + ": " + hit._id
+        # console.log Object.keys(order_map)
       findQuery =
         _id:
-          $in: ids
+          $in: Object.keys(order_map).slice(0,10) #currently limiting results to 10
+
     else
       console.log "No Hits"
   else
     console.log "Empty Search"
     
-  findQuery
+  return [findQuery, order_map]

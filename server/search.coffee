@@ -6,7 +6,10 @@ searchResults = new PublishEndpoint 'search-results', (query, limit) ->
   if query
     fullQuery = 'title:' + query  + ' OR fullText:' + query  
     ESQuery = { index: 'publication', q: fullQuery, size: 50 }
-    findQuery = getIdsFromES ESQuery
+    esId = getIdsFromES ESQuery
+    findQuery = esId[0]
+    order_map = esId[1]
+    # console.log findQuery
   else
     findQuery = {}
 
@@ -16,7 +19,7 @@ searchResults = new PublishEndpoint 'search-results', (query, limit) ->
 
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'search-results', query,
+    searchPublishES @, 'search-results', query, order_map,
       cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields
