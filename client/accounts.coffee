@@ -31,21 +31,25 @@ $(document).on 'click focus keypress', (event) ->
     Accounts._loginButtonsSession.set 'enrollAccountToken', null
     changingPasswordInResetPassword = false
     changingPasswordInEnrollAccount = false
+
   return # Make sure CoffeeScript does not return anything
 
 # But if clicked inside, we mark the event so that dialog box is not closed
-Template._loginButtons.events
-  'click #login-buttons, focus #login-buttons, keypress #login-buttons': (event, template) ->
-    event.accountsDialogBoxEvent = true
+Template.loginButtons.events
+  'click, focus, keypress': (event, template) ->
+    event.originalEvent.accountsDialogBoxEvent = true
+
     return # Make sure CoffeeScript does not return anything
 
 # Autofocus username when login form is rendered
 Template._loginButtonsLoggedOutPasswordService.rendered = ->
-  $('#login-username-or-email').focus()
+  Meteor.defer =>
+    @$('#login-username-or-email').focus()
 
 # Autofocus e-mail when forgot password form is rendered
 Template._forgotPasswordForm.rendered = ->
-  $('#forgot-password-email').focus()
+  Meteor.defer =>
+    @$('#forgot-password-email').focus()
 
 $(document).on 'keyup', (event) ->
   if event.keyCode is 27 # Escape key
@@ -54,6 +58,7 @@ $(document).on 'keyup', (event) ->
     Accounts._loginButtonsSession.set 'enrollAccountToken', null
     changingPasswordInResetPassword = false
     changingPasswordInEnrollAccount = false
+
   return # Make sure CoffeeScript does not return anything
 
 # Don't allow dropping files while password reset is in progress
@@ -68,7 +73,7 @@ Template._resetPasswordDialog.events
     return # Make sure CoffeeScript does not return anything
 
   'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (event, template) ->
-    event.accountsDialogBoxEvent = true
+    event.originalEvent.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
   'click #login-buttons-reset-password-button': (event, template) ->
@@ -85,11 +90,11 @@ Template._resetPasswordDialog.events
 
 Template._resetPasswordDialog.rendered = ->
   Meteor.defer =>
-    $(@findAll '#reset-password-new-password').focus()
+    @$('#reset-password-new-password').focus()
 
 # When password is reset or reset is canceled, we change the location to the index page
 lastResetPasswordToken = null
-Deps.autorun ->
+Tracker.autorun ->
   resetPasswordToken = Accounts._loginButtonsSession.get 'resetPasswordToken'
   if resetPasswordToken is null and lastResetPasswordToken
     FlashMessage.success "Password reset." if changingPasswordInResetPassword
@@ -109,7 +114,7 @@ Template._enrollAccountDialog.events
     return # Make sure CoffeeScript does not return anything
 
   'click .accounts-centered-dialog, focus .accounts-centered-dialog, keypress .accounts-centered-dialog': (event, template) ->
-    event.accountsDialogBoxEvent = true
+    event.originalEvent.accountsDialogBoxEvent = true
     return # Make sure CoffeeScript does not return anything
 
   'click #login-buttons-enroll-account-with-username-button': (event, template) ->
@@ -128,11 +133,11 @@ Template._enrollAccountDialog.events
 
 Template._enrollAccountDialog.rendered = ->
   Meteor.defer =>
-    $(@findAll '#enroll-account-with-username-username').focus()
+    @$('#enroll-account-with-username-username').focus()
 
 # When user enrolls or enrollment is canceled, we change the location to the index page
 lastEnrollAccountToken = null
-Deps.autorun ->
+Tracker.autorun ->
   enrollAccountToken = Accounts._loginButtonsSession.get 'enrollAccountToken'
   if enrollAccountToken is null and lastEnrollAccountToken
     FlashMessage.success "Account created." if changingPasswordInEnrollAccount
@@ -145,7 +150,7 @@ Handlebars.registerHelper 'currentUserId', (options) ->
 
 lastPersonId = Meteor.personId()
 
-Deps.autorun ->
+Tracker.autorun ->
   return if Meteor.loggingIn()
 
   personId = Meteor.personId()
@@ -169,18 +174,21 @@ enrollAccount = ->
     else
       Accounts._loginButtonsSession.set 'enrollAccountToken', null
 
+hashPassword = (password) ->
+  digest: SHA256 password
+  algorithm: 'sha-256'
+
 # We extend Meteor's Accounts.resetPassword functionality with username so that
-# user must choose username in the enroll form
-Accounts.resetPasswordWithUsername = (token, password, username, callback) ->
+# user must choose username in the enroll form.
+Accounts.resetPasswordWithUsername = (token, newPassword, username, callback) ->
   try
     throw new Meteor.Error 400, "Invalid token." unless token
     User.validateUsername username
-    User.validatePassword password
+    User.validatePassword newPassword
 
-    verifier = SRP.generateVerifier password
     Accounts.callLoginMethod
       methodName: 'reset-password-with-username'
-      methodArguments: [token, verifier, username]
+      methodArguments: [token, hashPassword(newPassword), username]
       userCallback: callback
   catch error
     callback error
