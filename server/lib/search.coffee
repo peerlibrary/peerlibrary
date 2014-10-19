@@ -267,38 +267,11 @@
   initializingResults = results.length
   resultsHandles = []
   for result, i in results
+    #added, changed, removed
     do (result, i) ->
-      orderMap = {}
-      orderList = []
-
-      assertOrder = ->
-        # assert.equal orderList.length, _.size orderMap #order_mapping can be > 10 
-        for orderId, orderIndex in orderList
-          assert.equal orderMap[orderId], orderIndex
-
       resultsHandles[i] = result.cursor.observeChanges
-        addedBefore: (id, fields, before) =>
-          console.log "addedBefore " + id + "seenBefore " + before + " order: " + order_mapping[id]
-          if before
-            beforeIndex = orderMap[before]
-
-            # Insert
-            orderList.splice beforeIndex, 0, id
-            orderMap[id] = beforeIndex
-
-            # Reindex all after the insertion point
-            for orderId, orderIndex in orderList[(beforeIndex + 1)..]
-              orderIndex += beforeIndex + 1
-              orderMap[orderId] = orderIndex
-              publish.changed result.cursor._cursorDescription.collectionName, orderId,
-                searchResult:
-                  _id: queryId
-                  order: orderIndex
-
-          else # Added at the end
-            # orderList.push id
-            # orderMap[id] = orderList.length - 1
-
+        added: (id, fields) =>
+          console.log "added " + id + " order: " + order_mapping[id]
           fields.searchResult =
             _id: queryId
             order: order_mapping[id]
@@ -307,122 +280,17 @@
 
           publish.added result.cursor._cursorDescription.collectionName, id, fields
 
-          assertOrder()
-
         changed: (id, fields) =>
           console.log "changed"
           fields = result.changed id, fields if result.changed # Optional preprocessing callback
 
           publish.changed result.cursor._cursorDescription.collectionName, id, fields unless _.isEmpty fields
 
-        movedBefore: (id, before) =>
-          console.log "movedBefore"
-          idIndex = orderMap[id]
-
-          # TODO: Can be before null?
-          unless before # Moved to the end
-            # Remove from the current position
-            orderList.splice idIndex, 1
-            delete orderMap[id]
-
-            # Reindex all from the deletion point on
-            for orderId, orderIndex in orderList[idIndex..]
-              orderIndex += idIndex
-              orderMap[orderId] = orderIndex
-              publish.changed result.cursor._cursorDescription.collectionName, orderId,
-                searchResult:
-                  _id: queryId
-                  order: orderIndex
-
-            # Add at the end
-            orderList.push id
-            orderMap[id] = orderList.length - 1
-
-            publish.changed result.cursor._cursorDescription.collectionName, id,
-              searchResult:
-                _id: queryId
-                order: orderMap[id]
-
-          else
-            beforeIndex = orderMap[before]
-
-            if idIndex is beforeIndex - 1 # Moved to the same position
-              assert false
-            else if idIndex < beforeIndex # Moved after current position
-              # Remove from the current position
-              orderList.splice idIndex, 1
-              delete orderMap[id]
-
-              # Reindex all from the deletion point to, but excluding the new position (we
-              # will reinsert there and push everything afterwards back to the right position)
-              for orderId, orderIndex in orderList[idIndex...(beforeIndex - 1)]
-                orderIndex += idIndex
-                orderMap[orderId] = orderIndex
-                publish.changed result.cursor._cursorDescription.collectionName, orderId,
-                  searchResult:
-                    _id: queryId
-                    order: orderIndex
-
-              # Add at the new position
-              orderList.splice beforeIndex - 1, 0, id
-              orderMap[id] = beforeIndex - 1
-
-              publish.changed result.cursor._cursorDescription.collectionName, id,
-                searchResult:
-                  _id: queryId
-                  order: orderMap[id]
-
-            else if beforeIndex < idIndex # Move before current position
-              # Remove from the current position
-              orderList.splice idIndex, 1
-              delete orderMap[id]
-
-              # Add at the new position
-              orderList.splice beforeIndex, 0, id
-              orderMap[id] = beforeIndex
-
-              publish.changed result.cursor._cursorDescription.collectionName, id,
-                searchResult:
-                  _id: queryId
-                  order: orderMap[id]
-
-              # Reindex all after the insertion point on, including
-              # the old position (to where everything was pushed to)
-              for orderId, orderIndex in orderList[(beforeIndex + 1)..idIndex]
-                orderIndex += beforeIndex + 1
-                orderMap[orderId] = orderIndex
-                publish.changed result.cursor._cursorDescription.collectionName, orderId,
-                  searchResult:
-                    _id: queryId
-                    order: orderIndex
-
-            else # Moved to the same position
-              assert false
-
-          assertOrder()
-
         removed: (id) =>
           console.log "removed"
           result.removed id if result.removed # Optional preprocessing callback
 
           publish.removed result.cursor._cursorDescription.collectionName, id
-
-          idIndex = orderMap[id]
-
-          # Remove
-          orderList.splice idIndex, 1
-          delete orderMap[id]
-
-          # Reindex all from the deletion point on
-          for orderId, orderIndex in orderList[idIndex..]
-            orderIndex += idIndex
-            orderMap[orderId] = orderIndex
-            publish.changed result.cursor._cursorDescription.collectionName, orderId,
-              searchResult:
-                _id: queryId
-                order: orderIndex
-
-          assertOrder()
 
       initializingResults--
 
@@ -501,17 +369,15 @@
   if ESQuery
     response = blocking(ES, ES.search) ESQuery
     if response.hits? and response.hits.hits?
-      index = 0
-      for hit,index in response.hits.hits
+      for hit, index in response.hits.hits
         order_map[hit._id] = index
         # console.log order_map[hit._id] + ": " + hit._id
-      lower_bound = limit - 10 >= 0 ? limit - 10 : 0
-      ids = Object.keys(order_map).slice(lower_bound, limit + 1)
-      # console.log Object.keys(order_map)
+      ids = (hit._id for hit in response.hits.hits[0...limit])
+      console.log Object.keys(order_map)
       # console.log ids
       findQuery =
         _id:
-          $in: Object.keys(order_map)
+          $in: ids
     else
       console.log "No Hits"
   else
