@@ -124,7 +124,7 @@
       {{/with}}
     </div>
     <div class="role">
-      {{! begin spaceless }}
+      {{#spaceless}}
         {{#if canModifyAccess}}
           <div class="dropdown-trigger">
             {{> rolesControlRoleEditorRole}}
@@ -141,15 +141,17 @@
         {{else}}
           {{> rolesControlRoleEditorRole}}
         {{/if}}
-      {{! end spaceless }}
+      {{/spaceless}}
     </div>
   </li>
 </template>
 
 <template name="rolesControlRoleEditorRole">
-  {{#if admin}}administrator{{/if}}
-  {{#if maintainer}}maintainer{{/if}}
-  {{#if readAccess}}view access{{/if}}
+  {{#spaceless}}
+    {{#if admin}}administrator{{/if}}
+    {{#if maintainer}}maintainer{{/if}}
+    {{#if readAccess}}view access{{/if}}
+  {{/spaceless}}
 </template>
 
 <template name="rolesControlAdd">

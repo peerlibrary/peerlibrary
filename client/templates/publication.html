@@ -75,24 +75,26 @@
 </template>
 
 <template name="publicationLibraryMenuButtons">
-  <i class="icon {{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
-  {{#if inLibrary}}
-    <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
-      Remove from library
-    </button>
-  {{else}}
-    <button class="add-to-library library-menu-button">
-      Add to library
-    </button>
-  {{/if}}
-  {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
-  {{#if inCurrentCollection}}
-    <p>
-      <button class="remove-from-current-collection library-menu-button">
-        Remove from collection
+  {{#spaceless}}
+    <i class="icon {{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
+    {{#if inLibrary}}
+      <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
+        Remove from library
       </button>
-    </p>
-  {{/if}}
+    {{else}}
+      <button class="add-to-library library-menu-button">
+        Add to library
+      </button>
+    {{/if}}
+    {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
+    {{#if inCurrentCollection}}
+      <p>
+        <button class="remove-from-current-collection library-menu-button">
+          Remove from collection
+        </button>
+      </p>
+    {{/if}}
+  {{/spaceless}}
 </template>
 
 <template name="publicationLibraryMenuCollections">
@@ -121,6 +123,7 @@
 </template>
 
 <template name="publicationAccessIconControl">
+  {{! No need for this template to be fully spaceless, because there are divs. We do make the icon button spaceless though. }}
   <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
     {{> publicationAccessIconButton}}
     <div class="dropdown-anchor">
@@ -130,11 +133,13 @@
 </template>
 
 <template name="publicationAccessIconButton">
-  <button class="access-button borderless tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
-    {{#if open}}<i class="icon-public"></i>{{/if}}
-    {{#if closed}}<i class="icon-closed"></i>{{/if}}
-    {{#if private}}<i class="icon-private"></i>{{/if}}
-  </button>
+  {{#spaceless}}
+    <button class="access-button borderless tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
+      {{#if open}}<i class="icon-public"></i>{{/if}}
+      {{#if closed}}<i class="icon-closed"></i>{{/if}}
+      {{#if private}}<i class="icon-private"></i>{{/if}}
+    </button>
+  {{/spaceless}}
 </template>
 
 <template name="publicationAccessMenu">
@@ -472,7 +477,7 @@
       {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
     </div>
     <div class="role">
-      {{! begin spaceless }}
+      {{#spaceless}}
         {{#unless locked}}
           <div class="dropdown-trigger">
             {{> newAnnotationRolesControlRoleEditorRole}}
@@ -489,7 +494,7 @@
         {{else}}
           {{> newAnnotationRolesControlRoleEditorRole}}
         {{/unless}}
-      {{! end spaceless }}
+      {{/spaceless}}
     </div>
   </li>
 </template>
@@ -708,12 +713,12 @@
 </template>
 
 <template name="workInGroupsMenuGroupsCount">
-  {{! begin spaceless }}
+  {{#spaceless}}
     <i class="context-icon icon-group"></i>
     {{#if selectedGroups.length}}
       <span class="context-icon group-count">{{selectedGroups.length}}</span>
     {{/if}}
-  {{! end spaceless }}
+  {{/spaceless}}
 </template>
 
 <template name="workInGroupsMenuGroups">

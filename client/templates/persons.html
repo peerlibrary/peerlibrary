@@ -21,21 +21,23 @@
 </template>
 
 <template name="personInlineItem">
-  {{! begin spaceless }}
+  {{#spaceless}}
     <a class="inline-item person {{#unless user}}no-user{{/unless}}" {{collectionItemLink}}>
       {{> personAvatar}}
       <span class="name" title="{{getDisplayName}}">{{getDisplayName}}</span>
     </a>
-  {{! end spaceless }}
+  {{/spaceless}}
 </template>
 
 <template name="personAvatar">
-  {{! We check if _id exists because if data context is empty avatar method does not exist. }}
-  {{#if _id}}
-    <i class="avatar icon-person" title="{{status}}">
-      <img src="{{avatar avatarSize}}"/>
-    </i>
-  {{/if}}
+  {{#spaceless}}
+    {{! We check if _id exists because if data context is empty avatar method does not exist. }}
+    {{#if _id}}
+      <i class="avatar icon-person" title="{{status}}">
+        <img src="{{avatar avatarSize}}"/>
+      </i>
+    {{/if}}
+  {{/spaceless}}
 </template>
 
 <template name="personCatalogItem">
