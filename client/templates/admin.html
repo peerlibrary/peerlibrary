@@ -78,3 +78,170 @@
     <p class="warning">You are not logged in as an administrator!</p>
   {{/unless}}
 </template>
+
+<template name="adminDevelopment">
+  <h1>Development</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sample-data">Initialize database with sample data</button>
+      </div>
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminPublications">
+  <h1>Publications</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="process-pdfs">Process pending PDFs</button>
+        <button class="reprocess-pdfs">Reprocess all PDFs</button>
+      </div>
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminDatabase">
+  <h1>Database</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="update-all">Update all references in documents</button>
+      </div>
+    </div>
+    {{> adminTabs}}
+  </div>  
+</template>
+
+<template name="adminErrors">
+  <h1>Errors</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="dummy-error">Create a dummy error</button>
+      </div>
+      <h2>Error Log</h2>
+      <ul class="admin-errors">
+        {{#each errors}}
+          {{> adminErrorsItem}}
+        {{/each}}
+      </ul>
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminErrorsItem">
+  <li>
+    {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
+    | window {{windowWidth}}x{{windowHeight}}
+  </li>
+</template>
+
+<template name="adminJobs">
+  <h1>Jobs</h1>
+  <div class="row">
+    <div class = "col12">
+      <div class="admin-buttons">
+        <button class="test-job">Create a test job</button>
+      </div>
+      <h2>Queue</h2>
+      <ul class="admin-job-queue item-list">
+        {{#each jobqueue}}
+          {{> adminJobQueueItem}}
+        {{/each}}
+      </ul>
+    </div>  
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminJobQueueItem">
+  <li class="catalog-item job">
+    <div class="details">
+      <h2>{{type}}, status: {{status}}</h2>
+      <p>ID: {{_id}}</p>
+      <p>last updated: {{updated}}</p>
+      {{#if inFuture}}
+        <p>scheduled after: {{after}}</p>
+      {{/if}}
+      <p>data: {{json data}}</p>
+      <ul class="log">
+        {{#each log}}
+          {{> adminJobLogItem}}
+        {{/each}}
+      </ul>
+      {{#if canManageJob}}
+        <div class="admin-buttons">
+          {{#if isCancellable}}
+            <button class="admin-job-cancel">Cancel</button>
+          {{/if}}
+          {{#if isRestartable}}
+            <button class="admin-job-restart">Restart</button>
+          {{/if}}
+        </div>
+      {{/if}}
+    </div>
+  </li>
+</template>
+
+<template name="adminJobLogItem">
+  <li class="level">
+    <p class="data">{{time}}, runID: {{runId}}</p>
+    <p class="message">{{message}}</p>
+  </li>
+</template>
+
+<template name="adminSources">
+  <h1>External Sources</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+        {{> adminArXiv}}
+        {{> adminFSM}}
+      </div>
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminArXiv">
+  <h2>ArXiv</h2>
+  <div class="admin-buttons">
+    <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
+    <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
+  </div>
+</template>
+
+<template name="adminFSM">
+  <h2>Free Speech Movement</h2>
+  <div class="admin-buttons">
+    <button class="sync-fsm-metadata">Sync FSM metadata</button>
+  </div>
+</template>
+
+<template name="adminBlog">
+  <h1>Blog</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sync-blog">Sync blog</button>
+      </div>
+     </div>
+  {{> adminTabs}}
+  </div>  
+</template>
+
+<template name="adminFacts">
+  <h1>Facts</h1>
+  <div class="row">
+    <div class="col12">
+      {{> serverFacts}}
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
