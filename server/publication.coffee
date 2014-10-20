@@ -81,7 +81,7 @@ class @Publication extends Publication
       hash.update pdf
       sha256 = hash.finalize()
 
-      @processedFiles.push
+      @files.push
         fileID: '2'
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
@@ -188,6 +188,7 @@ class @Publication extends Publication
       abstract: 1
       doi: 1
       foreignId: 1
+      files: 1
       source: 1
       mediaType: 1
       importing: 1 # This field has to be limited with LimitImportingMiddleware before publishing
