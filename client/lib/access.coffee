@@ -141,6 +141,7 @@ Template.rolesControlList.helpers
       rolesList.push
         personOrGroup: admin
         admin: true
+        role: ROLES.ADMIN
 
     maintainers = []
     maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
@@ -152,6 +153,7 @@ Template.rolesControlList.helpers
       rolesList.push
         personOrGroup: maintainer
         maintainer: true
+        role: ROLES.MAINTAINER
 
     if @access is ACCESS.PRIVATE
       readers = []
@@ -164,21 +166,16 @@ Template.rolesControlList.helpers
         rolesList.push
           personOrGroup: reader
           readAccess: true
+          role: ROLES.READ_ACCESS
 
-    # Because it is not possible to access parent data context from event handler, we map it
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    _.map rolesList, (role) =>
-      role._parent = @
-      role
+    rolesList
 
   canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
-changeRole = (data, newRole) ->
-  oldRole = null
-  oldRole = ROLES.ADMIN if data.admin
-  oldRole = ROLES.MAINTAINER if data.maintainer
-  oldRole = ROLES.READ_ACCESS if data.readAccess
+changeRoleFromRolesListElement = (document, rolesListElement, newRole) ->
+  changeRole document, rolesListElement.personOrGroup, rolesListElement.role, newRole
 
+changeRole = (document, personOrGroup, oldRole, newRole) ->
   return if oldRole is newRole
 
   notification = ->
@@ -186,27 +183,26 @@ changeRole = (data, newRole) ->
 
   unless oldRole
     notification = ->
-      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } added."
+      FlashMessage.success "#{ _.capitalize personOrGroup.constructor.verboseName() } added."
 
   else unless newRole
     notification = ->
-      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } removed."
+      FlashMessage.success "#{ _.capitalize personOrGroup.constructor.verboseName() } removed."
 
-  if data.personOrGroup instanceof Person
+  if personOrGroup instanceof Person
     methodName = 'set-role-for-person'
-  else if data.personOrGroup instanceof Group
+  else if personOrGroup instanceof Group
     methodName = 'set-role-for-group'
   else
     assert false
 
   # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-  if data._parent.constructor.Meta.collection._name is null
-    documentName = data._parent.constructor.Meta.parent._name
+  if document.constructor.Meta.collection._name is null
+    documentName = document.constructor.Meta.parent._name
   else
-    documentName = data._parent.constructor.Meta._name
+    documentName = document.constructor.Meta._name
 
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, changed) =>
+  Meteor.call methodName, documentName, document._id, personOrGroup._id, newRole, (error, changed) =>
     return FlashMessage.fromError error, true if error
 
     notification() if changed
@@ -222,114 +218,91 @@ Template.rolesControlRoleEditor.events
     return # Make sure CoffeeScript does not return anything
 
   'click .administrator-button': (event, template) ->
-    changeRole @, ROLES.ADMIN
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.ADMIN
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .maintainer-button': (event, template) ->
-    changeRole @, ROLES.MAINTAINER
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.MAINTAINER
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .read-access-button': (event, template) ->
-    changeRole @, ROLES.READ_ACCESS
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.READ_ACCESS
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-button': (event, template) ->
-    changeRole @, null
+    changeRoleFromRolesListElement Template.parentData(1), @, null
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
 Template.rolesControlRoleEditor.helpers
-  isPerson: ->
-    @personOrGroup instanceof Person
-
-  isGroup: ->
-    @personOrGroup instanceof Group
-
   private: ->
-    @_parent.access is ACCESS.PRIVATE
+    Template.parentData(1).access is ACCESS.PRIVATE
 
   canModifyAccess: ->
-    @_parent.hasAdminAccess Meteor.person @_parent.constructor.adminAccessPersonFields()
-
-Template.rolesControlAdd.events
-  'change .add-access, keyup .add-access': (event, template) ->
-    event.preventDefault()
-
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set template.$('.add-access').val()
-
-    return # Make sure CoffeeScript does not return anything
-
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addAccessControlReactiveVariables = (data) ->
-  if data._query
-    assert data._loading
-    return
-
-  data._query = new Variable ''
-  data._loading = new Variable 0
-
-  data._newDataContext = true
+    Template.parentData(1).hasAdminAccess Meteor.person Template.parentData(1).constructor.adminAccessPersonFields()
 
 Template.rolesControlAdd.created = ->
   @_searchHandle = null
-
-  addAccessControlReactiveVariables @data
+  @_query = new Variable ''
+  @_loading = new Variable 0
 
 Template.rolesControlAdd.rendered = ->
-  addAccessControlReactiveVariables @data
-
-  if @_searchHandle and @data._newDataContext
-    @_searchHandle.stop()
-    @_searchHandle = null
-
-  delete @data._newDataContext
-
-  return if @_searchHandle
   @_searchHandle = Tracker.autorun =>
-    if @data._query()
+    if @_query()
       loading = true
-      @data._loading.set Tracker.nonreactive(@data._loading) + 1
+      @_loading.set Tracker.nonreactive(@_loading) + 1
 
-      existingRoles = _.pluck(@data.adminPersons, '_id').concat(_.pluck(@data.adminGroups, '_id'),
-        _.pluck(@data.maintainerPersons, '_id'), _.pluck(@data.maintainerGroups, '_id'))
-      existingRoles = existingRoles.concat(_.pluck(@data.readPersons, '_id'), _.pluck(@data.readGroups, '_id')) if @data.access is ACCESS.PRIVATE
+      existingRoles = _.pluck(@data.adminPersons, '_id').concat(
+        _.pluck(@data.adminGroups, '_id'),
+        _.pluck(@data.maintainerPersons, '_id'),
+        _.pluck(@data.maintainerGroups, '_id'),
+      )
+      if @data.access is ACCESS.PRIVATE
+        existingRoles = existingRoles.concat(
+          _.pluck(@data.readPersons, '_id'),
+          _.pluck(@data.readGroups, '_id'),
+      )
 
       # We are using all roles, both persons and groups, together, because
       # it is very improbable that there would be duplicate _ids
-      Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
+      Meteor.subscribe 'search-persons-groups', @_query(), existingRoles,
         onReady: =>
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
       Tracker.onInvalidate =>
-        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+        @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
         loading = false
 
 Template.rolesControlAdd.destroyed = ->
   @_searchHandle?.stop()
   @_searchHandle = null
+  @_query = null
+  @_loading = null
 
-  @data._query = null
-  @data._loading = null
+Template.rolesControlAdd.events
+  'change .add-access, keyup .add-access': (event, template) ->
+    event.preventDefault()
 
-  delete @data._newDataContext
+    template.get('_query').set template.$('.add-access').val().trim()
+
+    return # Make sure CoffeeScript does not return anything
 
 Template.rolesControlNoResults.helpers
   noResults: ->
-    addAccessControlReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -339,43 +312,35 @@ Template.rolesControlNoResults.helpers
 
     return unless searchResult
 
-    not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+    not template.get('_loading')() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
   email: ->
-    addAccessControlReactiveVariables @
+    template = Template.instance()
 
-    query = @_query().trim()
+    query = template.get('_query')()
+
     return unless query?.match EMAIL_REGEX
 
-    # Because it is not possible to access parent data context from event handler, we store it into results
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    query = new String(query)
-    query._parent = @
     query
 
 grantAccess = (document, personOrGroup) ->
-  data =
-    _parent: document
-    personOrGroup: personOrGroup
-
-  changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
+  changeRole document, personOrGroup, null, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
 Template.addControlInviteByEmail.events
   'click .invite': (event, template) ->
-    # We get the email in @ (this), but it's a String object that also has
-    # the parent context attached so we first convert it to a normal string.
-    email = "#{ @ }"
+    # We get the email in @ (this).
+    email = @
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, @_parent.route(), (newPersonId) =>
+    inviteUser email, Template.parentData(1).route(), (newPersonId) =>
       # Clear autocomplete field when we are only inviting.
       # Otherwise we leave it in so that user can click again and
       # add user to permissions.
       $inviteOnlyField = $(template.firstNode).closest('.add-control').find('.invite-only')
       if $inviteOnlyField.length
         $inviteOnlyField.val('')
-        @_parent._query.set ''
+        template.get('_query').set ''
 
       return true # Show success notification
 
@@ -383,14 +348,13 @@ Template.addControlInviteByEmail.events
 
 Template.rolesControlLoading.helpers
   loading: ->
-    addAccessControlReactiveVariables @
+    Template.instance().get('_loading')()
 
-    @_loading()
-
+Template.rolesControlResults.helpers
   results: ->
-    addAccessControlReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -427,71 +391,38 @@ Template.rolesControlLoading.helpers
     else
       groups = []
 
-    results = persons.concat groups
-
-    # Because it is not possible to access parent data context from event handler, we store it into results
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    _.map results, (result) =>
-      result._parent = @
-      result
+    persons.concat groups
 
 Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    grantAccess @_parent, @
+    grantAccess Template.parentData(1), @
 
     return # Make sure CoffeeScript does not return anything
 
 Template.rolesControlInviteHint.helpers
   visible: ->
-    addAccessControlReactiveVariables @
-
-    !@_query()
+    !Template.instance().get('_query')()
 
 Template.rolesControlInvite.events
   'change .invite-only, keyup .invite-only': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set template.$('.invite-only').val()
+    template.get('_query').set template.$('.invite-only').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addAccessControlInviteOnlyReactiveVariables = (data) ->
-  return if data._query
-  data._query = new Variable ''
-  data._newDataContext = true
-
 Template.rolesControlInvite.created = ->
-  @_rendered = false
-  addAccessControlInviteOnlyReactiveVariables @data
-
-Template.rolesControlInvite.rendered = ->
-  addAccessControlInviteOnlyReactiveVariables @data
-
-  if @_rendered and @data._newDataContext
-    @_rendered = false
-
-  delete @data._newDataContext
-
-  return if @_rendered
-  @_rendered = true
+  @_query = new Variable ''
 
 Template.rolesControlInvite.destroyed = ->
-  @_rendered = false
-  @data._query = null
-  delete @data._newDataContext
+  @_query = null
 
 Template.rolesControlInviteButton.helpers
   email: ->
-    addAccessControlInviteOnlyReactiveVariables @
+    template = Template.instance()
 
-    query = @_query().trim()
+    query = template.get('_query')()
+
     return unless query?.match EMAIL_REGEX
 
-    # Because it is not possible to access parent data context from event handler, we store it into results
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    query = new String(query)
-    query._parent = @
     query

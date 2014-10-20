@@ -122,67 +122,43 @@ Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set template.$('.add-group-member').val()
+    template._query.set template.$('.add-group-member').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addGroupMembersReactiveVariables = (data) ->
-  if data._query
-    assert data._loading
-    return
-
-  data._query = new Variable ''
-  data._loading = new Variable 0
-
-  data._newDataContext = true
-
 Template.groupMembersAddControl.created = ->
   @_searchHandle = null
-
-  addGroupMembersReactiveVariables @data
+  @_query = new Variable ''
+  @_loading = new Variable 0
 
 Template.groupMembersAddControl.rendered = ->
-  addGroupMembersReactiveVariables @data
-
-  if @_searchHandle and @data._newDataContext
-    @_searchHandle.stop()
-    @_searchHandle = null
-
-  delete @data._newDataContext
-
-  return if @_searchHandle
   @_searchHandle = Tracker.autorun =>
-    if @data._query()
+    if @_query()
       loading = true
-      @data._loading.set Tracker.nonreactive(@data._loading) + 1
-      Meteor.subscribe 'search-persons', @data._query(), _.pluck(@data.members, '_id'),
+      @_loading.set Tracker.nonreactive(@_loading) + 1
+      Meteor.subscribe 'search-persons', @_query(), _.pluck(@data.members, '_id'),
         onReady: =>
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
       Tracker.onInvalidate =>
-        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+        @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->
   @_searchHandle?.stop()
   @_searchHandle = null
-
-  @data._query = null
-  @data._loading = null
-
-  delete @data._newDataContext
+  @_query = null
+  @_loading = null
 
 Template.groupMembersAddControlNoResults.helpers
   noResults: ->
-    addGroupMembersReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -192,7 +168,7 @@ Template.groupMembersAddControlNoResults.helpers
 
     return unless searchResult
 
-    not @_loading() and not (searchResult.countPersons or 0)
+    not template.get('_loading')() and not (searchResult.countPersons or 0)
 
   email: Template.rolesControlNoResults.helpers 'email'
 
@@ -204,28 +180,25 @@ addMemberToGroup = (personId) ->
 
 Template.groupMembersAddControlNoResults.events
   'click .invite': (event, template) ->
-    # We get the email in @ (this), but it's a String object that also has
-    # the parent context attached so we first convert it to a normal string.
-    email = "#{ @ }"
+    # We get the email in @ (this).
+    email = @
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, @_parent.route(), (newPersonId) =>
+    inviteUser email, Template.parentData(1).route(), (newPersonId) =>
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 
 Template.groupMembersAddControlLoading.helpers
   loading: ->
-    addGroupMembersReactiveVariables @
-
-    @_loading()
+    Template.instance().get('_loading')()
 
 Template.groupMembersAddControlResults.helpers
   results: ->
-    addGroupMembersReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -249,7 +222,6 @@ Template.groupMembersAddControlResults.helpers
 
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (event, template) ->
-
     return unless @_id
 
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
@@ -285,9 +257,7 @@ Template.groupAdminTools.events
 
 Template.groupMembersAddControlInviteHint.helpers
   visible: ->
-    addGroupMembersReactiveVariables @
-
-    !@_query()
+    !Template.instance().get('_query')()
 
 Template.registerHelper 'isGroup', ->
   @ instanceof Group

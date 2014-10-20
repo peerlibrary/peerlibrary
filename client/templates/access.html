@@ -118,8 +118,10 @@
 <template name="rolesControlRoleEditor">
   <li>
     <div class="item">
-      {{#if isPerson}}{{> personInlineItem personOrGroup}}{{/if}}
-      {{#if isGroup}}{{> groupInlineItem personOrGroup}}{{/if}}
+      {{#with personOrGroup}}
+        {{#if isPerson}}{{> personInlineItem}}{{/if}}
+        {{#if isGroup}}{{> groupInlineItem}}{{/if}}
+      {{/with}}
     </div>
     <div class="role">
       {{! begin spaceless }}
