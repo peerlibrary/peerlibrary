@@ -367,56 +367,56 @@ else
       as: 'adminDevelopment'
       to: ->
         setSession
-        adminDevelopment: true
+          adminDevelopment: true
         'adminDevelopment'
 
     '/admin/publications':
       as: 'adminPublications'
       to: ->
         setSession
-        adminPublications: true
+          adminPublications: true
         'adminPublications'
 
     '/admin/database':
       as: 'adminDatabase'
       to: ->
         setSession
-        adminDatabase: true
+          adminDatabase: true
         'adminDatabase'
 
     '/admin/errors':
       as: 'adminErrors'
       to: ->
         setSession
-        adminErrors: true
+          adminErrors: true
         'adminErrors'
 
     '/admin/jobs':
       as: 'adminJobs'
       to: ->
         setSession
-        adminJobs: true
+          adminJobs: true
         'adminJobs'
 
     '/admin/sources':
       as: 'adminSources'
       to: ->
         setSession
-        adminSources: true
+          adminSources: true
         'adminSources'
 
     '/admin/blog':
       as: 'adminBlog'
       to: ->
         setSession
-        adminBlog: true
+          adminBlog: true
         'adminBlog'
 
     '/admin/facts':
       as: 'adminFacts'
       to: ->
         setSession
-        adminFacts: true
+          adminFacts: true
         'adminFacts'
 
     '/admin/jobs/p/:publicationId':
