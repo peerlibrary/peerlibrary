@@ -1,15 +1,19 @@
 <template name="adminErrors">
-  <h2>Errors</h2>
-  <div class="admin-buttons">
-    <button class="dummy-error">Create a dummy error</button>
-  </div>
-  <h3>Error Log</h3>
-  <ul class="admin-errors">
-    {{#each errors}}
-      {{> adminErrorsItem}}
-    {{/each}}
-  </ul>
-  {{> adminTabs}}
+  <h1>Errors</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+          <button class="dummy-error">Create a dummy error</button>
+        </div>
+        <h2>Error Log</h2>
+        <ul class="admin-errors">
+          {{#each errors}}
+            {{> adminErrorsItem}}
+          {{/each}}
+        </ul>
+      </div>
+        {{> adminTabs}}
+      </div>
 </template>
 
 <template name="adminErrorsItem">
