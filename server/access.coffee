@@ -1,8 +1,8 @@
 new PublishEndpoint 'search-persons-groups', (query, except) ->
-  except ?= []
-
   validateArgument 'query', query, NonEmptyString
-  validateArgument 'except', except, [DocumentId]
+  validateArgument 'except', except, Match.Optional [DocumentId]
+
+  except ?= []
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 

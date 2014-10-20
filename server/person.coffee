@@ -135,10 +135,10 @@ new PublishEndpoint 'my-person-library', ->
       library: 1
 
 new PublishEndpoint 'search-persons', (query, except) ->
-  except ?= []
-
   validateArgument 'query', query, NonEmptyString
-  validateArgument 'except', except, [DocumentId]
+  validateArgument 'except', except, Match.Optional [DocumentId]
+
+  except ?= []
 
   keywords = (keyword.replace /[-\\^$*+?.()|[\]{}]/g, '\\$&' for keyword in query.split /\s+/)
 
