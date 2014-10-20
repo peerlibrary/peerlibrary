@@ -57,7 +57,8 @@ class @Publication extends Publication
     Future = Npm.require 'fibers/future'
     child_process = Npm.require 'child_process'
 
-    if Meteor.settings.ghostScript
+    #if Meteor.settings.ghostScript
+    if true
       path = Storage._fullPath(@cachedFilename()).split "/"
       path.pop()
       path = path.join "/"
@@ -82,7 +83,7 @@ class @Publication extends Publication
       sha256 = hash.finalize()
 
       @files.push
-        fileID: '2'
+        fileID: Random.id()
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
         SHA256: sha256
@@ -293,6 +294,14 @@ Meteor.methods
         cachedId: Random.id()
         mediaType: 'pdf'
         sha256: sha256
+        files: [
+          fileID: Random.id()
+          createdAt: createdAt
+          updatedAt: createdAt
+          SHA256: sha256
+          mediaType: 'pdf'
+          type: 'original'
+        ]
       verify = false
 
     samples = if verify then existingPublication._verificationSamples person._id else null
