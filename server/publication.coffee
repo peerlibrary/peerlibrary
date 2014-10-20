@@ -58,9 +58,9 @@ class @Publication extends Publication
     child_process = Npm.require 'child_process'
 
     if Meteor.settings.ghostScript
-      path = Storage._fullPath(@cachedFilename()).split "/"
+      path = Storage._fullPath(@cachedFilename()).split Storage._path.sep
       path.pop()
-      path = path.join "/"
+      path = path.join Storage._path.sep
 
       execCmd = (cmd, opts) ->
         future = new Future()
@@ -85,7 +85,7 @@ class @Publication extends Publication
         fileID: Random.id()
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
-        SHA256: sha256
+        sha256: sha256
         mediaType: 'pdf'
         type: 'normalized-gs'
 
@@ -188,7 +188,6 @@ class @Publication extends Publication
       abstract: 1
       doi: 1
       foreignId: 1
-      files: 1
       source: 1
       mediaType: 1
       importing: 1 # This field has to be limited with LimitImportingMiddleware before publishing
@@ -201,6 +200,7 @@ class @Publication extends Publication
       adminPersons: 1
       adminGroups: 1
       cached: 1
+      files: 1
       processed: 1
       jobs:
         $slice: -1 # To have the latest job status available on the client
@@ -294,10 +294,10 @@ Meteor.methods
         mediaType: 'pdf'
         sha256: sha256
         files: [
-          fileID: Random.id()
+          fileID: '1'
           createdAt: createdAt
           updatedAt: createdAt
-          SHA256: sha256
+          sha256: sha256
           mediaType: 'pdf'
           type: 'original'
         ]
@@ -360,7 +360,7 @@ Meteor.methods
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._importingFilename(), publication.cachedFilename()
+        Storage.rename publication._importingFilename(), publication.cachedFilename('1')
         Publication.documents.update
           _id: publication._id
         ,
