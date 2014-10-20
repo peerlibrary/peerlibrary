@@ -28,15 +28,19 @@ Template.accessControl.rendered = ->
 
 Template.accessControl.helpers
   canModifyAccess: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessButton.events accessButtonEventHandlers
 
 Template.accessButton.helpers
   public: ->
+    return unless @_id
     @access is @constructor.ACCESS.PUBLIC
 
   documentName: ->
+    return unless @_id
+
     # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
     if @constructor.Meta.collection._name is null
       documentName = @constructor.Meta.parent._name
@@ -59,6 +63,7 @@ Template.accessIconButton.helpers
 
 Template.accessMenu.helpers
   canModifyAccess: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessMenuPrivacyForm.events
@@ -96,9 +101,11 @@ Template.accessMenuPrivacyForm.events
 
 Template.accessMenuPrivacyForm.helpers
   public: ->
+    return unless @_id
     @access is @constructor.ACCESS.PUBLIC
 
   private: ->
+    return unless @_id
     @access is @constructor.ACCESS.PRIVATE
 
   documentName: Template.accessButton.helpers 'documentName'
@@ -121,6 +128,8 @@ Template.rolesControl.destroyed = ->
 
 Template.rolesControl.helpers
   showControl: ->
+    return unless @_id
+
     return true if Template.accessControl.helpers('canModifyAccess').call @
 
     rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
@@ -132,6 +141,8 @@ Template.rolesControl.helpers
 
 Template.rolesControlList.helpers
   rolesList: ->
+    return unless @_id
+
     rolesList = []
 
     admins = []

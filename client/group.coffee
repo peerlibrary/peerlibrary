@@ -93,6 +93,7 @@ Editable.template Template.groupName, ->
 
 Template.groupMembers.helpers
   canModifyMembership: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.created = ->
@@ -232,6 +233,7 @@ Template.groupMembersAddControlResultsItem.events
 
 Template.groupSettings.helpers
   canRemove: ->
+    return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupAdminTools.events
