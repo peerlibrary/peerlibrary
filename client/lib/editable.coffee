@@ -49,7 +49,9 @@
         $element.append($editView).addClass('editing')
 
         # Focus on the input
-        $editInput.focus()
+        Meteor.setTimeout =>
+          $editInput.focus()
+        , 10 # ms
 
       # Add the editable button
       $element.append($editableButton).addClass('editable')

@@ -175,7 +175,9 @@ Template.catalogList.rendered = ->
     onCatalogRendered @, @data.variables
 
   # Focus on the filter
-  $(@find '.filter input').focus()
+  Meteor.setTimeout =>
+    $(@find '.filter input').focus()
+  , 10 # ms
 
 Template.catalogList.destroyed = ->
   $(window).off '.catalog'
