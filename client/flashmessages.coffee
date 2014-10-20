@@ -35,11 +35,9 @@ Template.flashMessagesOverlayItem.created = ->
   @_seen = false
 
 Template.flashMessagesOverlayItem.rendered = ->
-  return if @_timeout or @_seen
+  return if @data.sticky
 
   $flashMessage = @$('.flash-message')
-
-  return if @data.sticky
 
   @_timeout = new VisibleTimeout =>
     @_seen = true
@@ -54,14 +52,14 @@ Template.flashMessagesOverlayItem.rendered = ->
   $flashMessage.on 'mouseenter.flash-message', (event) =>
     @_timeout.pause() if @_timeout
     return # Make sure CoffeeScript does not return anything
+
   $flashMessage.on 'mouseleave.flash-message', (event) =>
     @_timeout.resume() if @_timeout
     return # Make sure CoffeeScript does not return anything
 
 Template.flashMessagesOverlayItem.destroyed = ->
-  if @_timeout
-    Meteor.clearTimeout @_timeout
-    @_timeout = null
+  Meteor.clearTimeout @_timeout if @_timeout
+  @_timeout = null
   @_seen = false
 
 Template.flashMessagesOverlayItem.events
