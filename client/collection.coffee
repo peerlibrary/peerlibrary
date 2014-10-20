@@ -94,6 +94,8 @@ Editable.template Template.collectionName, ->
 
 Template.collectionPublications.helpers
   publications: ->
+    return unless @_id
+
     order = _.pluck @publications, '_id'
 
     Publication.documents.find(
@@ -127,9 +129,11 @@ Template.collectionPublications.rendered = ->
 
 Template.collectionSettings.helpers
   canModify: ->
+    return unless @_id
     @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
   canRemove: ->
+    return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionAdminTools.events
@@ -157,6 +161,8 @@ Template.collectionAdminTools.events
 # This provides functionality of the library menu (from publication.html) that is specific to the collection view
 Template.publicationLibraryMenuButtons.helpers
   inCurrentCollection: ->
+    return unless @_id
+
     Collection.documents.findOne
       _id: Session.get 'currentCollectionId'
       'publications._id': @_id

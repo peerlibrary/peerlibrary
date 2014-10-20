@@ -15,6 +15,7 @@ Template.persons.helpers
 
 Template.personAvatar.helpers
   status: ->
+    return unless @_id
     if @user then "Registered User" else "Unregistered Person"
 
 EnableCatalogItemLink Template.personCatalogItem
@@ -36,4 +37,5 @@ Template.personCatalogItem.helpers
 # and received as invitedEmail field).
 Template.personInlineItem.helpers
   getDisplayName: ->
+    return unless @_id
     @refresh().getDisplayName true

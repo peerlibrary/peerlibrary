@@ -66,6 +66,8 @@ Template.adminJobs.helpers
 
 Template.adminJobQueueItem.helpers
   canManageJob: ->
+    return unless @_id
+
     person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
       isAdmin: 1
 
@@ -86,12 +88,15 @@ Template.adminJobQueueItem.helpers
       return publication?.hasMaintainerAccess person
 
   isRestartable: ->
+    return unless @_id
     @status in JobQueue.Meta.collection.jobStatusRestartable
 
   isCancellable: ->
+    return unless @_id
     @status in JobQueue.Meta.collection.jobStatusCancellable
 
   inFuture: ->
+    return unless @_id
     @after and @after > moment.utc().toDate()
 
 Template.adminJobQueueItem.events

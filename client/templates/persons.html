@@ -30,9 +30,12 @@
 </template>
 
 <template name="personAvatar">
-  <i class="avatar icon-person" title="{{status}}">
-    <img src="{{avatar avatarSize}}"/>
-  </i>
+  {{! We check if _id exists because if data context is empty avatar method does not exist. }}
+  {{#if _id}}
+    <i class="avatar icon-person" title="{{status}}">
+      <img src="{{avatar avatarSize}}"/>
+    </i>
+  {{/if}}
 </template>
 
 <template name="personCatalogItem">

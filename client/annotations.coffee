@@ -18,4 +18,5 @@ EnableCatalogItemLink Template.annotationCatalogItem
 
 Template.annotationCatalogItem.helpers
   commentsCountDescription: ->
+    return unless @_id
     Comment.verboseNameWithCount @commentsCount
