@@ -268,7 +268,7 @@ Template.rolesControlAdd.rendered = ->
         existingRoles = existingRoles.concat(
           _.pluck(@data.readPersons, '_id'),
           _.pluck(@data.readGroups, '_id'),
-      )
+        )
 
       # We are using all roles, both persons and groups, together, because
       # it is very improbable that there would be duplicate _ids
