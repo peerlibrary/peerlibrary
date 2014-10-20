@@ -89,8 +89,6 @@ class @Publication extends Publication
         mediaType: 'pdf'
         type: 'normalized-gs'
 
-      console.log @files
-
   process: (args...) =>
     throw new Error "Publication not cached" unless @cached
 
