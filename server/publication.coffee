@@ -51,51 +51,11 @@ class @Publication extends Publication
   storageForeignUrl: =>
     Storage.url @foreignFilename()
 
-  normalizePDF: (job) =>
-    throw new Error "normalizePDF can be called only from a job" unless job
-
-    Future = Npm.require 'fibers/future'
-    child_process = Npm.require 'child_process'
-
-    if Meteor.settings.ghostScript
-      path = Storage._fullPath(@cachedFilename()).split Storage._path.sep
-      path.pop()
-      path = path.join Storage._path.sep
-
-      execCmd = (cmd, opts) ->
-        future = new Future()
-
-        child_process.exec cmd, opts, (error, stdout, stderr) ->
-          future.return
-            success: not error
-            stdout: stdout
-            stderr: stderr
-
-        future.wait()
-
-      result = execCmd "gs -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -dFastWebView=true -sOutputFile=" + path + "/2.pdf " + Storage._fullPath @cachedFilename()
-
-      pdf = Storage.open @cachedFilename(2)
-
-      hash = new Crypto.SHA256()
-      hash.update pdf
-      sha256 = hash.finalize()
-
-      @files.push
-        fileID: Random.id()
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
-        sha256: sha256
-        mediaType: 'pdf'
-        type: 'normalized-gs'
-
   process: (args...) =>
     throw new Error "Publication not cached" unless @cached
 
     switch @mediaType
-      when 'pdf'
-        @normalizePDF args...
-        @processPDF args...
+      when 'pdf' then @processPDF args...
       when 'tei' then @processTEI args...
       else throw new Error "Unsupported media type: #{ @mediaType }"
 
