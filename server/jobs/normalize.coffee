@@ -16,6 +16,8 @@ class @NormalizePublicationJob extends Job
       path.pop()
       path = path.join Storage._path.sep
 
+      fileID = Random.id();
+
       execCmd = (cmd, opts) ->
         future = new Future()
 
@@ -27,16 +29,16 @@ class @NormalizePublicationJob extends Job
 
         future.wait()
 
-      result = execCmd "gs -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -dFastWebView=true -sOutputFile=" + path + "/2.pdf " + Storage._fullPath publication.cachedFilename()
+      result = execCmd 'gs -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -dFastWebView=true -sOutputFile=' + path + '/' + fileID + '.pdf ' + Storage._fullPath publication.cachedFilename()
 
-      pdf = Storage.open publication.cachedFilename(2)
+      pdf = Storage.open publication.cachedFilename(fileID)
 
       hash = new Crypto.SHA256()
       hash.update pdf
       sha256 = hash.finalize()
 
       publication.files.push
-        fileID: Random.id()
+        fileID: fileID
         createdAt: moment.utc().toDate()
         updatedAt: moment.utc().toDate()
         sha256: sha256
