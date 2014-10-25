@@ -16,7 +16,7 @@ class @NormalizePublicationJob extends Job
       path.pop()
       path = path.join Storage._path.sep
 
-      fileID = Random.id();
+      fileID = Random.id()
 
       execCmd = (cmd, opts) ->
         future = new Future()
