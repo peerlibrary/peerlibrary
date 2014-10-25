@@ -3,13 +3,14 @@ PeerLibrary
 
 Facilitating the global conversation on academic literature.
 
-[https://peerlibrary.org/](https://peerlibrary.org/) | [http://blog.peerlibrary.org/](http://blog.peerlibrary.org/) | [@PeerLibrary](https://twitter.com/PeerLibrary)
+[https://peerlibrary.org/](https://peerlibrary.org/) | [http://blog.peerlibrary.org/](http://blog.peerlibrary.org/) | [@PeerLibrary](https://twitter.com/PeerLibrary) | [Facebook](https://www.facebook.com/PeerLibrary)
 
 * [GitHub](https://github.com/peerlibrary/peerlibrary)
 * [Development wiki](https://github.com/peerlibrary/peerlibrary/wiki)
 * [Development tickets](https://github.com/peerlibrary/peerlibrary/issues)
 * [Development mailing list](http://lists.peerlibrary.org/lists/info/dev)
 * IRC at #peerlibrary @ [Freenode](http://freenode.net/)
+* Email hello @ peerlibrary.org
 
 _PeerLibrary outreach is [done in another repository](https://github.com/peerlibrary/outreach)._
 

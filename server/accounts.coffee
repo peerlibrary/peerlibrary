@@ -49,6 +49,11 @@ new PublishEndpoint null, ->
   ,
     User.PUBLISH_AUTO_FIELDS()
 
+# Forbid users from making any modifications to their user document.
+User.Meta.collection.deny
+  update: ->
+    true
+
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
