@@ -160,6 +160,7 @@ class @Publication extends Publication
       adminPersons: 1
       adminGroups: 1
       cached: 1
+      originalID: 1
       files: 1
       processed: 1
       jobs:
@@ -254,7 +255,7 @@ Meteor.methods
         mediaType: 'pdf'
         sha256: sha256
         files: [
-          fileID: '1'
+          fileID: Random.id() 
           createdAt: createdAt
           updatedAt: createdAt
           sha256: sha256
@@ -290,6 +291,7 @@ Meteor.methods
         sha256: 1
         cachedId: 1
         mediaType: 1
+        files: 1
 
     # File maybe finished by somebody else, or wrong publicationId, or something else.
     # If the file was maybe finished by somebody else, we do not want really to continue writing
@@ -320,7 +322,9 @@ Meteor.methods
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        Storage.rename publication._importingFilename(), publication.cachedFilename('1')
+        console.log publication
+        console.log publication.cachedFilename()
+        Storage.rename publication._importingFilename(), publication.cachedFilename()
         Publication.documents.update
           _id: publication._id
         ,
