@@ -6,12 +6,12 @@ class @NormalizePublicationJob extends Job
       priority: 'mdeium'
 
   run: =>
-    publication = @data.publication
-
-    Future = Npm.require 'fibers/future'
-    child_process = Npm.require 'child_process'
-
     if Meteor.settings.ghostScript
+      publication = @data.publication
+
+      Future = Npm.require 'fibers/future'
+      child_process = Npm.require 'child_process'
+
       path = Storage._fullPath(publication.cachedFilename()).split Storage._path.sep
       path.pop()
       path = path.join Storage._path.sep
