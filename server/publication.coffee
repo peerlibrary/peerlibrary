@@ -160,7 +160,6 @@ class @Publication extends Publication
       adminPersons: 1
       adminGroups: 1
       cached: 1
-      originalID: 1
       files: 1
       processed: 1
       jobs:
