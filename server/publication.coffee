@@ -254,7 +254,7 @@ Meteor.methods
         mediaType: 'pdf'
         sha256: sha256
         files: [
-          fileID: Random.id() 
+          fileID: Random.id()
           createdAt: createdAt
           updatedAt: createdAt
           sha256: sha256
