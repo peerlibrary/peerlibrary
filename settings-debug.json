@@ -3,6 +3,5 @@
     "debug": {
       "rendering": true
     }
-  },
-  "ghostScript": true
+  }
 }
