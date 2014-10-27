@@ -4,8 +4,8 @@ class Migration extends Document.MajorMigration
   forward: (document, collection, currentSchema, newSchema) =>
     count = 0
 
-    collection.findEach {_schema: currentSchema, files: {$exists: false}}, {importing: 1}, (document) =>
-      count += collection.update {_schema: currentSchema, _id: document._id, files: {$exists: false}}, {$set: {files: [{fileID: Random.id(), createdAt: document.createdAt, updatedAt: document.createdAt, SHA256: document.sha256, mediaType: document.mediaType, type: 'original'}],  _schema: newSchema}}
+    collection.findEach {_schema: currentSchema, files: {$exists: false}}, (document) =>
+      count += collection.update {_schema: currentSchema, _id: document._id}, {$set: {files: [{fileID: Random.id(), createdAt: document.createdAt, updatedAt: document.createdAt, SHA256: document.sha256, mediaType: document.mediaType, type: 'original'}],  _schema: newSchema}}
 
       oldPath = document.cachedFilename().split Storage._path.sep
       oldPath.pop()
@@ -19,7 +19,7 @@ class Migration extends Document.MajorMigration
     counts
 
   backward: (document, collection, currentSchema, oldSchema) =>
-    collection.findEach {_schema: currentSchema, files: {$exists: true}}, {importing: 1}, (document) =>
+    collection.findEach {_schema: currentSchema, files: {$exists: true}}, (document) =>
       oldPath = document.cachedFilename().split '.'
       oldPath.pop()
       oldPath = oldPath.join('.') + Storage._path.sep + document.files[0].filesID + '.' + document.files[0].mediaType
