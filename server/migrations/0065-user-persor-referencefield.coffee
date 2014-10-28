@@ -1,4 +1,4 @@
 class Migration extends Document.AddReferenceFieldsMigration
-  name: "adding displayname to person in user class"
+  name: "Adding displayName to person"
 
 User.addMigration new Migration()
