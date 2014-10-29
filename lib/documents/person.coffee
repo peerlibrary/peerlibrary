@@ -145,7 +145,7 @@ class @Person extends AccessDocument
 
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
-    @user?.emails?[0]?.address or @invitedEmail
+    @user?.email() or @invitedEmail
 
   @emailFields: ->
     EMAIL_FIELDS
