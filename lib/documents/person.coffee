@@ -142,7 +142,6 @@ class @Person extends AccessDocument
     else
       return @slug
 
-
   email: =>
     # TODO: Return e-mail address only if verified, when we will support e-mail verification
     @user?.email() or @invitedEmail
