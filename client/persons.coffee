@@ -21,11 +21,6 @@ Template.personAvatar.helpers
 EnableCatalogItemLink Template.personCatalogItem
 
 Template.personCatalogItem.helpers
-  person: ->
-    return unless @_id
-    _.extend @,
-      avatarSize: 100
-
   publicationsCountDescription: ->
     Publication.verboseNameWithCount @publications.length
 

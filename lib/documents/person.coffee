@@ -150,8 +150,7 @@ class @Person extends AccessDocument
     EMAIL_FIELDS
 
   avatar: (size) =>
-    # When used in the template without providing the size, a Handlebars argument is passed in that place (it is always the last argument)
-    size = 24 unless _.isNumber size
+    size ?= 24
 
     defaultAvatar = if @gravatarHash then 'identicon' else Meteor.absoluteUrl 'images/spacer.gif',
       if Meteor.settings?.public?.production then {} else rootUrl: 'https://peerlibrary.org'

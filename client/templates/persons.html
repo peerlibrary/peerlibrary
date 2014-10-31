@@ -31,11 +31,21 @@
 
 <template name="personAvatar">
   {{#spaceless}}
-    {{! We check if _id exists because if data context is empty avatar method does not exist. }}
-    {{#if _id}}
-      <i class="avatar icon-person" title="{{status}}">
-        <img src="{{avatar avatarSize}}"/>
-      </i>
+    {{#if isPerson}}
+      {{! We check if _id exists because if data context is empty avatar method does not exist. }}
+      {{#if _id}}
+        <i class="avatar icon-person" title="{{status}}">
+          <img src="{{avatar}}"/>
+        </i>
+      {{/if}}
+    {{! Data context is not a person, so we assume it is options object with avatarSize and person is in the parent data context. }}
+    {{else}}
+      {{! We check if _id exists because if data context is empty avatar method does not exist. }}
+      {{#if ../_id}}
+        <i class="avatar icon-person" title="{{../status}}">
+          <img src="{{../avatar avatarSize}}"/>
+        </i>
+      {{/if}}
     {{/if}}
   {{/spaceless}}
 </template>
@@ -43,7 +53,7 @@
 <template name="personCatalogItem">
   <li class="catalog-item person">
     {{#if gravatarHash}}
-      {{> personAvatar person}}
+      {{> personAvatar avatarSize=100}}
     {{/if}}
 
     <div class="details">

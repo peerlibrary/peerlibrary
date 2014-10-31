@@ -260,7 +260,9 @@
   <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
       <a class="author" href="{{currentPerson.path}}">
-        {{> personAvatar author}}
+        {{#with author}}
+          {{> personAvatar avatarSize=30}}
+        {{/with}}
       </a>
     {{else}}
       {{> annotationMetaMenu}}
@@ -366,7 +368,9 @@
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
     <a href="{{author.path}}">
-      {{> personAvatar author}}
+      {{#with author}}
+        {{> personAvatar avatarSize=30}}
+      {{/with}}
     </a>
     <div class="comment-content">
       {{#if canRemove}}
@@ -380,7 +384,9 @@
 <template name="annotationCommentEditor">
   <li class="comment-editor">
     <a href="{{currentPerson.path}}">
-      {{> personAvatar currentPerson}}
+      {{#with currentPerson}}
+        {{> personAvatar avatarSize=30}}
+      {{/with}}
     </a>
     <div class="comment-content">
       <div class="content-editor comment-content-editor" contenteditable="contenteditable"></div>

@@ -1397,14 +1397,6 @@ Template.publicationAnnotationsItem.helpers
     return unless @_id
     moment(@updatedAt).fromNow()
 
-  author: ->
-    return unless @_id
-
-    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-    # TODO: Change when Meteor allows sending parameters to templates
-    @author.avatarSize = 30
-    @author
-
 Template.annotationTags.rendered = ->
   # TODO: Make links work
   ###
@@ -1925,14 +1917,6 @@ Template.annotationCommentsListItem.helpers
     return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
-  author: ->
-    return unless @_id
-
-    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-    # TODO: Change when Meteor allows sending parameters to templates
-    @author.avatarSize = 30
-    @author
-
 Template.annotationCommentsListItem.events
   'click .remove-button': (event, template) ->
     annotationId = @annotation._id
@@ -2006,13 +1990,6 @@ Template.annotationCommentEditor.events
       $editor.empty()
 
     return # Make sure CoffeeScript does not return anything
-
-Template.annotationCommentEditor.helpers
-  currentPerson: ->
-    # Because we cannot send parameters to templates we're modifying the data with an extra parameter
-    # TODO: Change when Meteor allows sending parameters to templates
-    _.extend Meteor.person(),
-      avatarSize: 30
 
 Template.annotationMetaMenu.events
   'click .remove-button': (event, template) ->
