@@ -1085,9 +1085,6 @@ Template.annotationFilteredCount.helpers
   filteredAnnotationsDescription: ->
     Annotation.verboseNameWithCount Template.annotationFilteredCount.helpers('filteredAnnotationsCount')()
 
-Template.annotationFilteredCount.rendered = ->
-  $(@find '.clear-filters').tooltip TOOLTIP_DEFAULTS
-
 Template.annotationFilteredCount.events
   'click .clear-filters': (event, template) ->
     template.$('.clear-filters').tooltip('destroy')

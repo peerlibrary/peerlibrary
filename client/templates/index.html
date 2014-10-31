@@ -74,6 +74,7 @@
   <div class="background-pause">
     <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
     <div class="right ui-tooltip">
+      {{! We are showing a tooltip ourselves because we want to reactively change its content. }}
       {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
     </div>
   </div>
