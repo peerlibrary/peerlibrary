@@ -605,24 +605,27 @@
 </template>
 
 <template name="highlightsControl">
-  {{#if canRemove}}
-    <button class="remove-button">Delete</button>
+  {{! Could be that "this" is undefined at some moment in a template instance's life cycle. }}
+  {{#if this}}
+    {{#if canRemove}}
+      <button class="remove-button">Delete</button>
+    {{/if}}
+    <p class="authors">
+      {{#with author}}
+        <span><a href="{{path}}">{{getDisplayName}}</a></span>
+      {{/with}}
+    </p>
+    <p class="time">Created: {{createdAt}}</p>
+    <p class="time">Updated: {{updatedAt}}</p>
+    <p class="references">
+      Referencing:
+      {{#each referencingAnnotations}}
+        <span><a href="{{path}}" title={{reference.title}}>
+          {{reference.text}}
+        </a></span>
+      {{/each}}
+    </p>
   {{/if}}
-  <p class="authors">
-    {{#with author}}
-      <span><a href="{{path}}">{{getDisplayName}}</a></span>
-    {{/with}}
-  </p>
-  <p class="time">Created: {{createdAt}}</p>
-  <p class="time">Updated: {{updatedAt}}</p>
-  <p class="references">
-    Referencing:
-    {{#each referencingAnnotations}}
-      <span><a href="{{path}}" title={{reference.title}}>
-        {{reference.text}}
-      </a></span>
-    {{/each}}
-  </p>
 </template>
 
 <template name="annotationMetaMenu">

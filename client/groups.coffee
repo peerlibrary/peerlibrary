@@ -58,10 +58,14 @@ Template.groupCatalogItem.helpers
     @access is ACCESS.PRIVATE
 
 Editable.template Template.groupCatalogItemName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
-    Meteor.call 'group-set-name', @data._id, name, (error, count) ->
+    name = name.trim()
+    return unless name
+    Meteor.call 'group-set-name', Template.currentData()._id, name, (error, count) ->
       return FlashMessage.fromError error, true if error
 ,
   "Enter group name"

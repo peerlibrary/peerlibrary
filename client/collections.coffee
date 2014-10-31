@@ -47,10 +47,14 @@ Template.addNewCollection.events
     return # Make sure CoffeeScript does not return anything
 
 Editable.template Template.collectionCatalogItemName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
-    Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+    name = name.trim()
+    return unless name
+    Meteor.call 'collection-set-name', Template.currentData()._id, name, (error, count) ->
       return FlashMessage.fromError error, true if error
 ,
   "Enter collection name"

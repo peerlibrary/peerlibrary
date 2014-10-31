@@ -862,7 +862,6 @@ Template.publicationDisplay.helpers
     publicationHandle?.ready() and publicationCachedIdHandle?.ready() and Publication.documents.findOne(Session.get('currentPublicationId'), fields: cachedId: 1)?.cachedId
 
 Template.publicationDisplay.created = ->
-  @_displayHandle = null
   @_displayWrapper = null
 
 Template.publicationDisplay.rendered = ->
@@ -874,8 +873,7 @@ Template.publicationDisplay.rendered = ->
   @_displayWrapper = @findAll '.display-wrapper'
   @_displayWrapper?[0]?._displayWrapperId = Random.id()
 
-  @_displayHandle?.stop()
-  @_displayHandle = Tracker.autorun =>
+  @autorun =>
     publication = Publication.documents.findOne Session.get('currentPublicationId'), Publication.DISPLAY_FIELDS()
 
     return unless publication
@@ -891,8 +889,6 @@ Template.publicationDisplay.rendered = ->
     Tracker.onInvalidate publication.destroy
 
 Template.publicationDisplay.destroyed = ->
-  @_displayHandle?.stop()
-  @_displayHandle = null
   @_displayWrapper = null
 
 makePercentage = (x) ->
@@ -1271,8 +1267,9 @@ Template.publicationAnnotations.created = ->
       local:
         $exists: true
 
-    # We do nothing if editor is already collapsed
-    return unless localAnnotation.editing
+    # We do nothing if editor is already collapsed, or local annotation does not exist
+    # (this happens when user if not logged in).
+    return unless localAnnotation?.editing
 
     # Do nothing if content was changed, and content is not empty
     $editor = $('.local.annotation.editing .annotation-content-editor')
@@ -1362,26 +1359,21 @@ Template.publicationAnnotationsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationAnnotationsItem.rendered = ->
-  $annotation = @$('.annotation')
-
-  # To make sure rendered can be called multiple times and we bind event handlers only once
-  $annotation.off '.publicationAnnotationsItem'
-
-  $annotation.on 'highlightMouseenter.publicationAnnotationsItem', (event, highlightId) =>
-    $annotation.addClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
+Template.publicationAnnotationsItem.events
+  'highlightMouseenter .annotation': (event, template, highlightId) ->
+    template.$('.annotation').addClass('hovered') if highlightId in _.pluck @references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'highlightMouseleave.publicationAnnotationsItem', (event, highlightId) =>
-    $annotation.removeClass('hovered') if highlightId in _.pluck @data.references?.highlights, '_id'
+  'highlightMouseleave .annotation': (event, template, highlightId) ->
+    template.$('.annotation').removeClass('hovered') if highlightId in _.pluck @references?.highlights, '_id'
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseenter.publicationAnnotationsItem', (event) =>
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@data._id]
+  'mouseenter .annotation': (event, template) ->
+    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseenter', [@_id]
     return # Make sure CoffeeScript does not return anything
 
-  $annotation.on 'mouseleave.publicationAnnotationsItem', (event) =>
-    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@data._id]
+  'mouseleave .annotation': (event, template) ->
+    $('.viewer .display-wrapper .highlights-layer .highlights-layer-highlight').trigger 'annotationMouseleave', [@_id]
     return # Make sure CoffeeScript does not return anything
 
 Template.publicationAnnotationsItem.helpers
@@ -1410,30 +1402,34 @@ Template.annotationEditor.created = ->
   @_scribe = null
 
 Template.annotationEditor.rendered = ->
-  @_scribe = createEditor @, @$('.annotation-content-editor'), @$('.format-toolbar'), false unless @_scribe
+  @_scribe = createEditor @, @$('.annotation-content-editor'), @$('.format-toolbar'), false
 
-  # If editor got collapsed, close any open dialog (we do not
-  # really collapse when user is actively editing (like having
-  # a dialog open), but for every case, if it happens, we want
-  # to cleanup)
-  unless @data.editing
-    @_destroyDialog?()
-    @_destroyDialog = null
+  @autorun =>
+    # Reactive data.
+    data = Template.currentData()
 
-  ###
-  TODO: Temporary disabled, not yet finalized code
+    # If editor got collapsed, close any open dialog (we do not
+    # really collapse when user is actively editing (like having
+    # a dialog open), but for every case, if it happens, we want
+    # to cleanup)
+    unless data?.editing
+      @_destroyDialog?()
+      @_destroyDialog = null
 
-  # Load tag-it
-  @$('.annotation-tags-editor').tagit()
+    ###
+    TODO: Temporary disabled, not yet finalized code
 
-  # Create tags
-  _.each @data.tags, (item) =>
-    @$('.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
-  ###
+    # Load tag-it
+    @$('.annotation-tags-editor').tagit()
 
-  # Save reference to the template of the local annotation for access in global event handlers
-  if @data.local and @data.editing
-    localAnnotationEditorTemplate = @
+    # Create tags
+    _.each data.tags, (item) =>
+      @$('.annotation-tags-editor').tagit 'createTag', item.tag?.name?.en
+    ###
+
+    # Save reference to the template of the local annotation for access in global event handlers
+    if data?.local and data?.editing
+      localAnnotationEditorTemplate = @
 
 Template.annotationEditor.destroyed = ->
   destroyEditor @
@@ -1767,12 +1763,11 @@ Template.newAnnotationRolesControlAdd.events
     return # Make sure CoffeeScript does not return anything
 
 Template.newAnnotationRolesControlAdd.created = ->
-  @_searchHandle = null
   @_query = new Variable ''
   @_loading = new Variable 0
 
 Template.newAnnotationRolesControlAdd.rendered = ->
-  @_searchHandle = Tracker.autorun =>
+  @autorun =>
     if @_query()
       loading = true
       @_loading.set Tracker.nonreactive(@_loading) + 1
@@ -1795,8 +1790,6 @@ Template.newAnnotationRolesControlAdd.rendered = ->
         loading = false
 
 Template.newAnnotationRolesControlAdd.destroyed = ->
-  @_searchHandle?.stop()
-  @_searchHandle = null
   @_query = null
   @_loading = null
 
@@ -1892,8 +1885,6 @@ Template.newAnnotationRolesControlResults.helpers
 Template.newAnnotationRolesControlResultsItem.events
   'click .add-button': (event, template) ->
     grantAccess @
-
-    # TODO: We should rerun the search with new list of existing IDs to remove added entry from results
 
     return # Make sure CoffeeScript does not return anything
 
@@ -2084,6 +2075,7 @@ Template.footer.helpers
     'publication-displayed' unless Template.publication.helpers('loading')() or Template.publication.helpers('notFound')()
 
 Template.editorLinkPrompt.created = ->
+  # Initial value.
   @_parsedLink = new Variable parseURL @data.link
 
 Template.editorLinkPrompt.destroyed = ->

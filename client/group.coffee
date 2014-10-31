@@ -81,11 +81,15 @@ Template.group.helpers
     Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
 
 Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
-(name) ->
-  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return FlashMessage.fromError error, true if error
+  (name) ->
+    name = name.trim()
+    return unless name
+    Meteor.call 'group-set-name', Template.currentData()._id, name, (error, count) ->
+      return FlashMessage.fromError error, true if error
 ,
   "Enter group name"
 ,
@@ -133,11 +137,11 @@ Template.groupMembersAddControl.created = ->
   @_loading = new Variable 0
 
 Template.groupMembersAddControl.rendered = ->
-  @_searchHandle = Tracker.autorun =>
+  @_searchHandle = @autorun =>
     if @_query()
       loading = true
       @_loading.set Tracker.nonreactive(@_loading) + 1
-      Meteor.subscribe 'search-persons', @_query(), _.pluck(@data.members, '_id'),
+      Meteor.subscribe 'search-persons', @_query(), _.pluck(Template.currentData()?.members, '_id'),
         onReady: =>
           @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
@@ -228,8 +232,6 @@ Template.groupMembersAddControlResultsItem.events
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
 
     addMemberToGroup @_id
-
-    # TODO: We should rerun the search with new list of existing IDs to remove added entry from results
 
     return # Make sure CoffeeScript does not return anything
 

@@ -17,16 +17,14 @@ Template.catalog.created = ->
   reset = new Variable false
   wasReady = new Variable false
 
-  @_resetSignalHandle?.stop()
-  @_resetSignalHandle = Tracker.autorun =>
+  @autorun =>
     # Detect when ready is turned to false
     ready = Session.get(variables.ready)
     if wasReady() and not ready
       reset.set true
       wasReady.set false
 
-  @_searchParametersHandle?.stop()
-  @_searchParametersHandle = Tracker.autorun =>
+  @autorun =>
     # Every time filter or sort is changed, we reset counts
     # (We don't want to reset counts on currentLimit change)
     Session.get variables.filter
@@ -37,8 +35,7 @@ Template.catalog.created = ->
 
   subscriptionHandle = null
 
-  @_subscriptionAutorunHandle?.stop()
-  @_subscriptionAutorunHandle = Tracker.autorun =>
+  @autorun =>
     # Listen for the reset signal, so the search is
     # rerun when ready is set to false from the outside
     reset()
@@ -59,8 +56,7 @@ Template.catalog.created = ->
     else
       Session.set variables.loading, false
 
-  @_searchResultHandle?.stop()
-  @_searchResultHandle = Tracker.autorun =>
+  @autorun =>
     fields = {}
     fields["count#{ @data.documentClass.Meta.collection._name }"] = 1
 
@@ -76,16 +72,6 @@ Template.catalog.created = ->
         Session.set variables.count, document["count#{ @data.documentClass.Meta.collection._name }"]
       changed: (newDocument, oldDocument) =>
         Session.set variables.count, newDocument["count#{ @data.documentClass.Meta.collection._name }"]
-
-Template.catalog.destroyed = ->
-  @_resetSignalHandle?.stop()
-  @_resetSignalHandle = null
-  @_searchParametersHandle?.stop()
-  @_searchParametersHandle = null
-  @_subscriptionAutorunHandle?.stop()
-  @_subscriptionAutorunHandle = null
-  @_searchResultHandle?.stop()
-  @_searchResultHandle = null
 
 Template.catalogFilter.helpers
   documentsName: ->

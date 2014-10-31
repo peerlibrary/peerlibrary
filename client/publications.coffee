@@ -138,10 +138,14 @@ Template.publicationCatalogItemLibraryMenu.destroyed = ->
     libraryMenuSubscriptionCollectionsHandle = null
 
 Editable.template Template.publicationCatalogItemTitle, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (title) ->
-    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+    title = title.trim()
+    return unless title
+    Meteor.call 'publication-set-title', Template.currentData()._id, title, (error, count) ->
       return FlashMessage.fromError error, true if error
 ,
   "Enter publication title"

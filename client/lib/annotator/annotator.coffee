@@ -137,7 +137,7 @@ class @Annotator extends Annotator
     highlight.deselect() for highlight in @getHighlights()
 
   _addHighlightToEditor: (highlightId) =>
-    body = Template.highlightPromptInEditor(_id: highlightId).trim()
+    body = Blaze.toHTMLWithData(Template.highlightPromptInEditor, _id: highlightId).trim()
 
     count = LocalAnnotation.documents.update
       local: LocalAnnotation.LOCAL.AUTOMATIC

@@ -75,6 +75,9 @@ Template.adminJobQueueItem.helpers
 
     return true if person.isAdmin
 
+    # We are accessing here @data of a job queue item, which contains
+    # arguments of a job, where one of them could be a related publication.
+    # This is *not* a template instance and @data of the template instance.
     if @data.publication
       # We have to refresh manually the publication because data.publication is
       # not an instance of Publication because we disable transform in the

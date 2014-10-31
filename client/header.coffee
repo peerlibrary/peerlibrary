@@ -87,9 +87,6 @@ Template.searchInput.helpers
   searchFocused: ->
     'search-focused' if Session.get 'searchFocused'
 
-Template.searchInput.created = ->
-  @_searchQueryHandle = null
-
 Template.searchInput.rendered = ->
   # We make sure search input is focused if we know it should be focused (to make sure focus is
   # retained between redraws). We don't use HTML5 autofocus because it takes focus away from dialogs.
@@ -100,13 +97,9 @@ Template.searchInput.rendered = ->
       @$('.search-input').focus()
     , 10 # ms
 
-  @_searchQueryHandle = Tracker.autorun =>
+  @autorun =>
     # Sync input field unless change happened because of this input field itself
     @$('.search-input').val Session.get('currentSearchQuery') unless generalQueryChangeLock > 0
-
-Template.searchInput.destroyed = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = null
 
 Template.searchInput.helpers
   indexHeader: Template.header.helpers 'indexHeader'

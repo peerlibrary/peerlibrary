@@ -260,25 +260,27 @@ Template.rolesControlRoleEditor.helpers
     Template.parentData(1).hasAdminAccess Meteor.person Template.parentData(1).constructor.adminAccessPersonFields()
 
 Template.rolesControlAdd.created = ->
-  @_searchHandle = null
   @_query = new Variable ''
   @_loading = new Variable 0
 
 Template.rolesControlAdd.rendered = ->
-  @_searchHandle = Tracker.autorun =>
+  @autorun =>
     if @_query()
       loading = true
       @_loading.set Tracker.nonreactive(@_loading) + 1
 
-      existingRoles = _.pluck(@data.adminPersons, '_id').concat(
-        _.pluck(@data.adminGroups, '_id'),
-        _.pluck(@data.maintainerPersons, '_id'),
-        _.pluck(@data.maintainerGroups, '_id'),
+      # Reactive data.
+      data = Template.currentData()
+
+      existingRoles = _.pluck(data?.adminPersons, '_id').concat(
+        _.pluck(data?.adminGroups, '_id'),
+        _.pluck(data?.maintainerPersons, '_id'),
+        _.pluck(data?.maintainerGroups, '_id'),
       )
-      if @data.access is ACCESS.PRIVATE
+      if data?.access is ACCESS.PRIVATE
         existingRoles = existingRoles.concat(
-          _.pluck(@data.readPersons, '_id'),
-          _.pluck(@data.readGroups, '_id'),
+          _.pluck(data?.readPersons, '_id'),
+          _.pluck(data?.readGroups, '_id'),
         )
 
       # We are using all roles, both persons and groups, together, because
@@ -296,8 +298,6 @@ Template.rolesControlAdd.rendered = ->
         loading = false
 
 Template.rolesControlAdd.destroyed = ->
-  @_searchHandle?.stop()
-  @_searchHandle = null
   @_query = null
   @_loading = null
 
@@ -407,8 +407,6 @@ Template.rolesControlResults.helpers
 Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
     grantAccess Template.parentData(1), @
-
-    # TODO: We should rerun the search with new list of existing IDs to remove added entry from results
 
     return # Make sure CoffeeScript does not return anything
 

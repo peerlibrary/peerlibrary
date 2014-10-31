@@ -13,6 +13,7 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_box = null
     @_hover = null
     @_$highlight = null
+    @_renderedHighlightsControl = null
 
     # We are displaying hovering effect also when mouse is not really over the highlighting, but we
     # have to know if mouse is over the highlight to know if we should remove or not the hovering effect
@@ -118,17 +119,21 @@ class CanvasTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
 
+    # Workaround for https://github.com/peerlibrary/peerlibrary/issues/390
+    # TODO: Is still necessary with Blaze?
+    $control.wrap('<div/>').unwrap()
+
+    # Just to make sure everything is cleaned up.
+    Blaze.remove @_renderedHighlightsControl if @_renderedHighlightsControl
+
     # Create a reactive fragment. We fetch a reactive document
     # based on _id (which is immutable) to rerender the fragment
     # as document changes.
-    highlightsControl = Meteor.render =>
-      highlight = Highlight.documents.findOne @annotation?._id
-      Template.highlightsControl highlight if highlight
+    @_renderedHighlightsControl = Blaze.renderWithData Template.highlightsControl, =>
+      Highlight.documents.findOne @annotation?._id
+    ,
+      $control.find('.meta-content').empty().get(0)
 
-    # Workaround for https://github.com/peerlibrary/peerlibrary/issues/390
-    $control.wrap('<div/>').unwrap()
-
-    $control.find('.meta-content').empty().append(highlightsControl)
     $control.show()
 
   _hideControl: =>
@@ -142,6 +147,9 @@ class CanvasTextHighlight extends Annotator.Highlight
       'mouseleave-highlight': @_mouseleaveHandler
     )
     @_$highlightsControl.find('.meta-menu .meta-content .delete').off '.highlight'
+
+    Blaze.remove @_renderedHighlightsControl if @_renderedHighlightsControl
+    @_renderedHighlightsControl = null
 
   _clickHandler: (event) =>
     @anchor.annotator._selectHighlight @annotation._id

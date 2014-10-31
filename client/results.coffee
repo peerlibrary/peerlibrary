@@ -115,18 +115,12 @@ Template.resultsSearchInvitation.helpers
   searchInvitation: ->
     not Session.get('currentSearchQuery')
 
-Template.sidebarSearch.created = ->
-  @_searchQueryHandle = null
-  @_dateRangeHandle = null
-
 Template.sidebarSearch.rendered = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = Tracker.autorun =>
+  @autorun =>
     # Sync input field unless change happened because of this input field itself
     @$('#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
 
-  @_dateRangeHandle?.stop()
-  @_dateRangeHandle = Tracker.autorun =>
+  @autorun =>
     statistics = Statistics.documents.findOne {},
       fields:
         minPublicationDate: 1
@@ -164,12 +158,6 @@ Template.sidebarSearch.rendered = ->
 
   @$('.chzn').chosen
     no_results_text: "No tag match"
-
-Template.sidebarSearch.destroyed = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = null
-  @_dateRangeHandle?.stop()
-  @_dateRangeHandle = null
 
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well

@@ -35,6 +35,11 @@ Template.flashMessagesOverlayItem.created = ->
   @_seen = false
 
 Template.flashMessagesOverlayItem.rendered = ->
+  # To simplify, we don't depend on data reactively, flash messages
+  # do not really change once they are created. If we start changing
+  # them (toggling stickiness, for example), then we have to make this
+  # code reactive as well.
+
   return if @data.sticky
 
   $flashMessage = @$('.flash-message')
