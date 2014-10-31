@@ -274,6 +274,30 @@ h1
     .admin-tools
       display inline-block
 
+  .toggle-list
+    margin 0 0 10px 0
+    list-style none
+    padding 0
+
+    .toggle-list-item
+      button
+        position relative
+        border 1px solid transparent
+        margin 0
+        padding 3px 3px 3px 35px
+        cursor pointer
+        background none
+        text-align left
+
+        &::before
+          position absolute
+          left 7px
+          top 8px
+
+        &:hover
+          border 1px solid box-shadow-border
+          background box-shadow-background
+
 /* Meta menus and jQuery UI widgets
 =================================== */
 .meta-menu, .ui-widget

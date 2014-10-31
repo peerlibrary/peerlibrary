@@ -99,7 +99,7 @@
 
 <template name="publicationLibraryMenuCollections">
   <h3>Add to collections</h3>
-  {{#if myCollections.length}}
+  {{#if myCollections.count}}
     <ol class="library-menu-collections toggle-list">
       {{#each myCollections}}
         {{> publicationLibraryMenuCollectionListing}}
@@ -642,7 +642,7 @@
       </p>
       <p class="time">Created: {{createdAt}}</p>
       <p class="time">Updated: {{updatedAt}}</p>
-      {{#if inside.length}}
+      {{#if inside.count}}
         <p class="inside">
           Inside groups:
           {{#each inside}}
