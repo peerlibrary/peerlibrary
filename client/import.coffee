@@ -23,8 +23,8 @@ class @ImportingFile extends BaseDocument
     collection: null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
-DRAGGING_OVER_DOM = false
 
+draggingOverDom = false
 importingFiles = {}
 
 # Observes files that are processed and removes them from dictionary
@@ -262,9 +262,9 @@ $(document).on 'dragenter', (event) ->
   return if  Accounts._loginButtonsSession.get 'resetPasswordToken'
 
   # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
-  DRAGGING_OVER_DOM = true
+  draggingOverDom = true
   Meteor.setTimeout ->
-    DRAGGING_OVER_DOM = false
+    draggingOverDom = false
   , 5 # ms
 
   if Meteor.personId()
@@ -300,12 +300,12 @@ Template.importButton.events
     Session.set 'importOverlayActive', true
     _.each event.target.files, importFile
 
-    # Replaces file input with a new version which does not have any file
-    # selected. This assures that change event is triggered even if the user
-    # selects the same file. It is not really reasonable to do that, but
-    # it is still better that we do something than simply nothing because
-    # no event is triggered.
-    $(event.target, template).replaceWith($(event.target).clone())
+    # Resets file so that it does not have any file selected. This assures
+    # that change event is triggered even if the user selects the same file.
+    # It is not really reasonable to do that, but it is still better that
+    # we do something than simply nothing because no event is triggered.
+    $(event.target).wrap('<form/>').closest('form').get(0).reset()
+    $(event.target).unwrap()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -351,15 +351,15 @@ Template.signInOverlay.helpers
 Template.signInOverlay.events
   'dragover': (event, template) ->
     event.preventDefault()
-    event.dataTransfer.effectAllowed = 'none'
-    event.dataTransfer.dropEffect = 'none'
+    event.originalEvent.dataTransfer.effectAllowed = 'none'
+    event.originalEvent.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
   'dragleave': (event, template) ->
     event.preventDefault()
 
-    unless DRAGGING_OVER_DOM
+    unless draggingOverDom
       Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
@@ -383,15 +383,15 @@ Template.importOverlay.events
 
   'dragover': (event, template) ->
     event.preventDefault()
-    event.dataTransfer.effectAllowed = 'copy'
-    event.dataTransfer.dropEffect = 'copy'
+    event.originalEvent.dataTransfer.effectAllowed = 'copy'
+    event.originalEvent.dataTransfer.dropEffect = 'copy'
 
     return # Make sure CoffeeScript does not return anything
 
   'dragleave': (event, template) ->
     event.preventDefault()
 
-    if ImportingFile.documents.find().count() == 0 and not DRAGGING_OVER_DOM
+    if ImportingFile.documents.find().count() == 0 and not draggingOverDom
       Session.set 'importOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
@@ -404,7 +404,7 @@ Template.importOverlay.events
       Session.set 'importOverlayActive', false
       return
 
-    _.each event.dataTransfer.files, importFile
+    _.each event.originalEvent.dataTransfer.files, importFile
 
     return # Make sure CoffeeScript does not return anything
 
