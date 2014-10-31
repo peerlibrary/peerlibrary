@@ -22,6 +22,7 @@ EnableCatalogItemLink Template.personCatalogItem
 
 Template.personCatalogItem.helpers
   person: ->
+    return unless @_id
     _.extend @,
       avatarSize: 100
 

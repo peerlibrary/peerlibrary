@@ -408,6 +408,8 @@ Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
     grantAccess Template.parentData(1), @
 
+    # TODO: We should rerun the search with new list of existing IDs to remove added entry from results
+
     return # Make sure CoffeeScript does not return anything
 
 Template.rolesControlInviteHint.helpers

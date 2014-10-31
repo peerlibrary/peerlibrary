@@ -698,6 +698,7 @@ Template.publicationAccessMenu.events addAccessEvents
 
 Template.publicationAccessMenu.helpers
   canModifyAccess: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 onAccessDropdownHidden = (event) ->
@@ -730,27 +731,22 @@ Template.publicationAccessIconControl.rendered = ->
 
 Template.publicationAccessIconControl.helpers
   canModifyAccess: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.publicationAccessIconButton.events accessButtonEventHandlers
 
 Template.publicationAccessIconButton.helpers
   open: ->
+    return unless @_id
     @access is Publication.ACCESS.OPEN
 
   closed: ->
+    return unless @_id
     @access is Publication.ACCESS.CLOSED
 
   private: ->
-    @access is Publication.ACCESS.PRIVATE
-
-  open: ->
-    @access is Publication.ACCESS.OPEN
-
-  closed: ->
-    @access is Publication.ACCESS.CLOSED
-
-  private: ->
+    return unless @_id
     @access is Publication.ACCESS.PRIVATE
 
 Template.publicationAccessControlPrivacyInfo.helpers
@@ -811,6 +807,8 @@ Template.publicationLibraryMenuButtons.events
 
 Template.publicationLibraryMenuButtons.helpers
   inLibrary: ->
+    return unless @_id
+
     person = Meteor.person library: 1
     return false unless person and @_id
 
@@ -822,23 +820,17 @@ Template.publicationLibraryMenuCollections.helpers
   myCollections: ->
     return unless Meteor.personId()
 
-    collections = Collection.documents.find
+    Collection.documents.find
       'authorPerson._id': Meteor.personId()
     ,
       sort: [
         ['slug', 'asc']
       ]
-    .fetch()
-
-    # Because it is not possible to access parent data context from event handler, we map it
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    _.map collections, (collection) =>
-      collection._parent = @
-      collection
 
 Template.publicationLibraryMenuCollectionListing.helpers
   inCollection: ->
-    _.contains _.pluck(@publications, '_id'), @_parent._id
+    return unless @_id
+    _.contains _.pluck(@publications, '_id'), Template.parentData(1)._id
 
   countDescription: Template.collectionCatalogItem.helpers 'countDescription'
 
@@ -846,7 +838,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .add-to-collection': (event, template) ->
     return unless Meteor.personId()
 
-    Meteor.call 'add-to-library', @_parent._id, @_id, (error, count) =>
+    Meteor.call 'add-to-library', Template.parentData(1)._id, @_id, (error, count) =>
       # TODO: Same operation is handled in client/library.coffee on drop. Sync both?
       return FlashMessage.fromError error, true if error
 
@@ -857,7 +849,7 @@ Template.publicationLibraryMenuCollectionListing.events
   'click .remove-from-collection': (event, template) ->
     return unless Meteor.personId()
 
-    Meteor.call 'remove-from-library', @_parent._id, @_id, (error, count) =>
+    Meteor.call 'remove-from-library', Template.parentData(1)._id, @_id, (error, count) =>
       return FlashMessage.fromError error, true if error
 
       FlashMessage.success "Publication removed from the collection." if count
@@ -1051,6 +1043,7 @@ Template.publicationScroller.events
 
 Template.highlightsControl.helpers
   canRemove: ->
+    return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.highlightsControl.events
@@ -1393,15 +1386,20 @@ Template.publicationAnnotationsItem.rendered = ->
 
 Template.publicationAnnotationsItem.helpers
   canModify: ->
+    return unless @_id
     @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
   selected: ->
+    return unless @_id
     'selected' if @_id is Session.get('currentAnnotationId') or @_id is Comment.documents.findOne(Session.get 'currentCommentId')?.annotation?._id
 
   updatedFromNow: ->
+    return unless @_id
     moment(@updatedAt).fromNow()
 
   author: ->
+    return unless @_id
+
     # Because we cannot send parameters to templates we're modifying the data with an extra parameter
     # TODO: Change when Meteor allows sending parameters to templates
     @author.avatarSize = 30
@@ -1676,22 +1674,18 @@ Template.newAnnotationRolesControlList.helpers
 
     rolesList
 
-changeRole = (data, role) ->
-  oldRole = null
-  oldRole = ROLES.ADMIN if data.admin
-  oldRole = ROLES.MAINTAINER if data.maintainer
-  oldRole = ROLES.READ_ACCESS if data.readAccess
+changeRoleFromRolesListElement = (rolesListElement, newRole) ->
+  changeRole rolesListElement.personOrGroup, rolesListElement.role, newRole
 
-  return if oldRole is role
+changeRole = (personOrGroup, oldRole, newRole) ->
+  return if oldRole is newRole
 
-  if data.personOrGroup instanceof Person
+  if personOrGroup instanceof Person
     personOrGroupName = 'Person'
-  else if data.personOrGroup instanceof Group
+  else if personOrGroup instanceof Group
     personOrGroupName = 'Group'
   else
     assert false
-
-  personOrGroupId = data.personOrGroup._id
 
   access = getNewAnnotationAccess()
   roles =
@@ -1702,29 +1696,29 @@ changeRole = (data, role) ->
     readPersons: getNewAnnotationReadPersons()
     readGroups: getNewAnnotationReadGroups()
 
-  wasAdmin = _.contains roles["admin#{ personOrGroupName }s"], personOrGroupId
-  wasMaintainer = _.contains roles["maintainer#{ personOrGroupName }s"], personOrGroupId
-  hadReadAccess = _.contains roles["read#{ personOrGroupName }s"], personOrGroupId
+  wasAdmin = _.contains roles["admin#{ personOrGroupName }s"], personOrGroup._id
+  wasMaintainer = _.contains roles["maintainer#{ personOrGroupName }s"], personOrGroup._id
+  hadReadAccess = _.contains roles["read#{ personOrGroupName }s"], personOrGroup._id
 
   # For private documents, grant read access together with admin/maintainer privileges.
-  if access is ACCESS.PRIVATE and role >= ROLES.READ_ACCESS
-    Session.set "newAnnotationRead#{ personOrGroupName }s", _.union roles["read#{ personOrGroupName }s"], [personOrGroupId]
+  if access is ACCESS.PRIVATE and newRole >= ROLES.READ_ACCESS
+    Session.set "newAnnotationRead#{ personOrGroupName }s", _.union roles["read#{ personOrGroupName }s"], [personOrGroup._id]
 
-  if role is ROLES.MAINTAINER
-    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.union roles["maintainer#{ personOrGroupName }s"], [personOrGroupId]
+  if newRole is ROLES.MAINTAINER
+    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.union roles["maintainer#{ personOrGroupName }s"], [personOrGroup._id]
 
-  if role is ROLES.ADMIN
-    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.union roles["admin#{ personOrGroupName }s"], [personOrGroupId]
+  if newRole is ROLES.ADMIN
+    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.union roles["admin#{ personOrGroupName }s"], [personOrGroup._id]
 
   # Only clear read access for private documents when specifically clearing all permissions
-  if access is ACCESS.PRIVATE and hadReadAccess and role < ROLES.READ_ACCESS
-    Session.set "newAnnotationRead#{ personOrGroupName }s", _.without roles["read#{ personOrGroupName }s"], personOrGroupId
+  if access is ACCESS.PRIVATE and hadReadAccess and newRole < ROLES.READ_ACCESS
+    Session.set "newAnnotationRead#{ personOrGroupName }s", _.without roles["read#{ personOrGroupName }s"], personOrGroup._id
 
-  if wasMaintainer and role isnt ROLES.MAINTAINER
-    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.without roles["maintainer#{ personOrGroupName }s"], personOrGroupId
+  if wasMaintainer and newRole isnt ROLES.MAINTAINER
+    Session.set "newAnnotationMaintainer#{ personOrGroupName }s", _.without roles["maintainer#{ personOrGroupName }s"], personOrGroup._id
 
-  if wasAdmin and role isnt ROLES.ADMIN
-    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.without roles["admin#{ personOrGroupName }s"], personOrGroupId
+  if wasAdmin and newRole isnt ROLES.ADMIN
+    Session.set "newAnnotationAdmin#{ personOrGroupName }s", _.without roles["admin#{ personOrGroupName }s"], personOrGroup._id
 
 Template.newAnnotationRolesControlRoleEditor.events
   'click .dropdown-trigger': (event, template) ->
@@ -1737,34 +1731,36 @@ Template.newAnnotationRolesControlRoleEditor.events
     return # Make sure CoffeeScript does not return anything
 
   'click .administrator-button': (event, template) ->
-    changeRole @, ROLES.ADMIN
+    changeRoleFromRolesListElement @, ROLES.ADMIN
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .maintainer-button': (event, template) ->
-    changeRole @, ROLES.MAINTAINER
+    changeRoleFromRolesListElement @, ROLES.MAINTAINER
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .read-access-button': (event, template) ->
-    changeRole @, ROLES.READ_ACCESS
+    changeRoleFromRolesListElement @, ROLES.READ_ACCESS
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-button': (event, template) ->
-    changeRole @, null
+    changeRoleFromRolesListElement @, null
     template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
 Template.newAnnotationRolesControlRoleEditor.helpers
   isPerson: ->
+    return unless @_id
     @personOrGroup instanceof Person
 
   isGroup: ->
+    return unless @_id
     @personOrGroup instanceof Group
 
   private: ->
@@ -1774,73 +1770,49 @@ Template.newAnnotationRolesControlAdd.events
   'change .add-access, keyup .add-access': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set template.$('.add-access').val()
+    template.get('_query').set template.$('.add-access').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addAccessControlReactiveVariables = (data) ->
-  if data._query
-    assert data._loading
-    return
-
-  data._query = new Variable ''
-  data._loading = new Variable 0
-
-  data._newDataContext = true
-
 Template.newAnnotationRolesControlAdd.created = ->
   @_searchHandle = null
-
-  addAccessControlReactiveVariables @data
+  @_query = new Variable ''
+  @_loading = new Variable 0
 
 Template.newAnnotationRolesControlAdd.rendered = ->
-  addAccessControlReactiveVariables @data
-
-  if @_searchHandle and @data._newDataContext
-    @_searchHandle.stop()
-    @_searchHandle = null
-
-  delete @data._newDataContext
-
-  return if @_searchHandle
   @_searchHandle = Tracker.autorun =>
-    if @data._query()
+    if @_query()
       loading = true
-      @data._loading.set Tracker.nonreactive(@data._loading) + 1
+      @_loading.set Tracker.nonreactive(@_loading) + 1
 
       existingRoles = [Meteor.personId()].concat getNewAnnotationAdminPersons(), getNewAnnotationAdminGroups(), getNewAnnotationMaintainerPersons(), getNewAnnotationMaintainerGroups()
       existingRoles = existingRoles.concat getNewAnnotationReadPersons(), getNewAnnotationReadGroups(), getNewAnnotationWorkInsideGroups() if getNewAnnotationAccess() is ACCESS.PRIVATE
 
       # We are using all roles, both persons and groups, together, because
       # it is very improbable that there would be duplicate _ids
-      Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
+      Meteor.subscribe 'search-persons-groups', @_query(), existingRoles,
         onReady: =>
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
       Tracker.onInvalidate =>
-        @data._loading.set Tracker.nonreactive(@data._loading) - 1 if loading
+        @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
         loading = false
 
 Template.newAnnotationRolesControlAdd.destroyed = ->
   @_searchHandle?.stop()
   @_searchHandle = null
-
-  @data._query = null
-  @data._loading = null
-
-  delete @data._newDataContext
+  @_query = null
+  @_loading = null
 
 Template.newAnnotationRolesControlNoResults.helpers
   noResults: ->
-    addAccessControlReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -1850,50 +1822,43 @@ Template.newAnnotationRolesControlNoResults.helpers
 
     return unless searchResult
 
-    not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
+    not template.get('_loading')() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
   email: ->
-    query = @_query().trim()
+    template = Template.instance()
+
+    query = template.get('_query')()
+
     return unless query?.match EMAIL_REGEX
 
-    # Because it is not possible to access parent data context from event handler, we store it into results
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    query = new String(query)
-    query._parent = @
     query
 
 grantAccess = (personOrGroup) ->
-  data =
-    personOrGroup: personOrGroup
-
   switch getNewAnnotationAccess()
-    when ACCESS.PRIVATE then changeRole data, ROLES.READ_ACCESS
-    else changeRole data, ROLES.MAINTAINER
+    when ACCESS.PRIVATE then changeRole personOrGroup, null, ROLES.READ_ACCESS
+    else changeRole personOrGroup, null, ROLES.MAINTAINER
 
 Template.newAnnotationRolesControlNoResults.events
   'click .invite': (event, template) ->
-    # We get the email in @ (this), but it's a String object that also has
-    # the parent context attached so we first convert it to a normal string.
-    email = "#{ @ }"
+    # We get the email in @ (this).
+    email = @
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, @_parent.publication.refresh().route(), (newPersonId) =>
+    inviteUser email, Template.parentData(1).refresh().route(), (newPersonId) =>
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 
 Template.newAnnotationRolesControlLoading.helpers
   loading: ->
-    addAccessControlReactiveVariables @
-
-    @_loading()
+    Template.instance().get('_loading')()
 
 Template.newAnnotationRolesControlResults.helpers
   results: ->
-    addAccessControlReactiveVariables @
+    template = Template.instance()
 
-    query = @_query()
+    query = template.get('_query')()
 
     return unless query
 
@@ -1930,26 +1895,20 @@ Template.newAnnotationRolesControlResults.helpers
     else
       groups = []
 
-    results = persons.concat groups
-
-    # Because it is not possible to access parent data context from event handler, we store it into results
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    _.map results, (result) =>
-      result._parent = @
-      result
+    persons.concat groups
 
 Template.newAnnotationRolesControlResultsItem.events
   'click .add-button': (event, template) ->
     grantAccess @
 
-    # Clear autocomplete field
-    $(template.firstNode).closest('.add-control').find('.add-access').val('')
-    @_parent._query.set ''
+    # TODO: We should rerun the search with new list of existing IDs to remove added entry from results
 
     return # Make sure CoffeeScript does not return anything
 
 Template.annotationCommentsList.helpers
   comments: ->
+    return unless @_id
+
     Comment.documents.find
       'annotation._id': @_id
     ,
@@ -1959,12 +1918,16 @@ Template.annotationCommentsList.helpers
 
 Template.annotationCommentsListItem.helpers
   selected: ->
+    return unless @_id
     'selected' if @_id is Session.get 'currentCommentId'
 
   canRemove: ->
+    return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
   author: ->
+    return unless @_id
+
     # Because we cannot send parameters to templates we're modifying the data with an extra parameter
     # TODO: Change when Meteor allows sending parameters to templates
     @author.avatarSize = 30
@@ -2067,9 +2030,11 @@ Template.annotationMetaMenu.events addAccessEvents
 
 Template.annotationMetaMenu.helpers
   canRemove: ->
+    return unless @_id
     @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
   canModifyAccess: ->
+    return unless @_id
     @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.workInGroupsMenuGroupsCount.helpers
@@ -2119,6 +2084,7 @@ Template.workInGroupsMenuGroups.events
 
 Template.workInGroupsMenuGroupListing.helpers
   workingInside: ->
+    return unless @_id
     _.contains getNewAnnotationWorkInsideGroups(), @_id
 
 Template.viewportFilterContent.helpers
@@ -2140,24 +2106,17 @@ Template.footer.helpers
   publicationDisplayed: ->
     'publication-displayed' unless Template.publication.helpers('loading')() or Template.publication.helpers('notFound')()
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addParsedLinkReactiveVariable = (data) ->
-  data._parsedLink = new Variable parseURL data.link unless data._parsedLink
-
 Template.editorLinkPrompt.created = ->
-  addParsedLinkReactiveVariable @data
-
-Template.editorLinkPrompt.rendered = ->
-  addParsedLinkReactiveVariable @data
+  @_parsedLink = new Variable parseURL @data.link
 
 Template.editorLinkPrompt.destroyed = ->
-  @data._parsedLink = null if @data._parsedLink
+  @_parsedLink = null
 
 Template.editorLinkPrompt.helpers
   parsedLink: ->
-    addParsedLinkReactiveVariable @
+    template = Template.instance()
 
-    parsedLink = @_parsedLink()
+    parsedLink = template.get('_parsedLink')()
 
     return parsedLink if parsedLink?.error
 
@@ -2193,7 +2152,7 @@ Template.editorLinkPrompt.events
       parsedLink =
         error: true
 
-    @_parsedLink.set parsedLink
+    template.get('_parsedLink').set parsedLink
 
     return # Make sure CoffeeScript does not return anything
 

@@ -1,10 +1,7 @@
 Tracker.autorun ->
   if Session.equals 'libraryActive', true
-
     Meteor.subscribe 'my-person-library'
-
     Meteor.subscribe 'my-publications'
-
     Meteor.subscribe 'my-collections'
 
 Template.libraryPublications.helpers

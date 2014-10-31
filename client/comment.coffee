@@ -45,6 +45,9 @@ class @Comment extends Comment
   reference: =>
     @constructor.reference @_id, @
 
+Template.registerHelper 'isComment', ->
+  @ instanceof Comment
+
 Template.registerHelper 'commentPathFromId', _.bind Comment.pathFromId, Comment
 
 Template.registerHelper 'commentReference', _.bind Comment.reference, Comment

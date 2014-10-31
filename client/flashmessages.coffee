@@ -50,15 +50,15 @@ Template.flashMessagesOverlayItem.rendered = ->
 
   # Pause the timeout while user is hovering over the flashMessage
   $flashMessage.on 'mouseenter.flash-message', (event) =>
-    @_timeout.pause() if @_timeout
+    @_timeout?.pause()
     return # Make sure CoffeeScript does not return anything
 
   $flashMessage.on 'mouseleave.flash-message', (event) =>
-    @_timeout.resume() if @_timeout
+    @_timeout?.resume()
     return # Make sure CoffeeScript does not return anything
 
 Template.flashMessagesOverlayItem.destroyed = ->
-  Meteor.clearTimeout @_timeout if @_timeout
+  @_timeout?.pause() if @_timeout
   @_timeout = null
   @_seen = false
 

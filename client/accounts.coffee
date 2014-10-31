@@ -207,3 +207,6 @@ unless originalAccountsCreateUser
     originalAccountsCreateUser options, (error) ->
       callback error
       FlashMessage.success "Account created." unless error
+
+Accounts.ui.config
+  passwordSignupFields: 'USERNAME_AND_EMAIL'

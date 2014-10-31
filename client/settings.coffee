@@ -2,7 +2,6 @@ usernameFormMessages = new FormMessages()
 usernameLastValue = null
 usernameReadyForValidation = false
 usernameFieldModified = false
-usernameSubmitted = false
 
 passwordFormMessages = new FormMessages()
 currentPasswordLastValue = null
@@ -57,7 +56,6 @@ Template.settingsUsername.events
       usernameFormMessages.setError error
 
     if usernameFormMessages.isValid()
-      usernameSubmitted = true
       Meteor.call 'set-username', username, (error) ->
         return usernameFormMessages.setError error if error
         resetUsernameForm()
@@ -66,17 +64,9 @@ Template.settingsUsername.events
     return # Make sure CoffeeScript does not return anything
 
   'blur input.username': (event, template) ->
-    # We postpone blur event handling as a workaround for a bug in Meteor.
-    # See https://github.com/peerlibrary/peerlibrary/pull/520#issuecomment-52514483
-    # TODO: Move function below out of setTimeout when we move to Blaze
-    # TODO: Remove flag usernameSubmitted and everything related to it
-    Meteor.setTimeout ->
-      usernameReadyForValidation = usernameFieldModified
-      return if usernameSubmitted
-      username = template.$('input.username').val()
-      validateUsername username, 'username'
-    ,
-      100 # ms
+    usernameReadyForValidation = usernameFieldModified
+    username = template.$('input.username').val()
+    validateUsername username, 'username'
 
     return # Make sure CoffeeScript does not return anything
 
@@ -91,11 +81,6 @@ Template.settingsUsername.events
     usernameFieldModified = true
     username = template.$('input.username').val()
     validateUsername username, 'username'
-
-    return # Make sure CoffeeScript does not return anything
-
-  'focus input': (event, template) ->
-    usernameSubmitted = false
 
     return # Make sure CoffeeScript does not return anything
 

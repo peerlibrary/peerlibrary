@@ -46,12 +46,15 @@ Template.myGroups.helpers
 
 Template.groupCatalogItem.helpers
   countDescription: ->
+    return unless @_id
     if @membersCount is 1 then "1 member" else "#{ @membersCount } members"
 
   public: ->
+    return unless @_id
     @access is ACCESS.OPEN
 
   private: ->
+    return unless @_id
     @access is ACCESS.PRIVATE
 
 Editable.template Template.groupCatalogItemName, ->

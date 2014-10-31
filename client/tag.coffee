@@ -49,6 +49,9 @@ Template.tag.helpers
     Tag.documents.findOne
       _id: Session.get 'currentTagId'
 
+Template.registerHelper 'isTag', ->
+  @ instanceof Tag
+
 Template.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
 
 Template.registerHelper 'tagReference', _.bind Tag.reference, Tag

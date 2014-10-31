@@ -57,7 +57,7 @@ verifyFile = (file, publicationId, samples) ->
     $set:
       status: "Verifying file"
 
-  samplesData = _.map samples, (sample) ->
+  samplesData = for sample in samples
     new Uint8Array file.content.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
@@ -321,11 +321,15 @@ Template.importingFilesItemCancel.events
 
 Template.importingFilesItem.helpers
   hideCancel: ->
+    return unless @_id
+
     # We keep cancel shown even when canceled is set, until we get back
     # in the file upload method callback and set finished as well
     @state in ['finished', 'errored', 'imported']
 
   state: ->
+    return unless @_id
+
     # Canceled could still be set, but state could be errored
     # or imported if canceled was set to late in the process,
     # in which case we want not to display it as canceled
@@ -336,11 +340,9 @@ Template.importingFilesItem.helpers
     return @state
 
   publication: ->
-    publication = Publication.documents.findOne @publicationId
-    return unless publication
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication.filename = @name
-    publication
+    return unless @_id
+
+    Publication.documents.findOne @publicationId
 
 Template.signInOverlay.helpers
   signInOverlayActive: ->

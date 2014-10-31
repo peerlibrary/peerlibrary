@@ -111,17 +111,15 @@ Template.catalogSort.events
 
 Template.catalogSortSelection.helpers
   options: ->
-    # Modify the data with parent variables
-    # TODO: Change when meteor allows to access parent context
+    # TODO: Reimplement using Meteor indexing of rendered elements (@index), see https://github.com/meteor/meteor/pull/912
     index = 0
-    _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
-      sorting._parent = @
+    for sorting in @documentClass.PUBLISH_CATALOG_SORT
       sorting._index = index++
       sorting
 
 Template.catalogSortOption.events
   'click button': (event, template) ->
-    Session.set @_parent.variables.sort, @_index
+    Session.set Template.parentData(1).variables.sort, @_index
     $(template.firstNode).closest('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything

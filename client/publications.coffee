@@ -46,6 +46,8 @@ Template.publicationCatalogItem.destroyed = ->
 
 Template.publicationCatalogItem.helpers
   documentLengthClass: ->
+    return unless @_id
+
     switch
       when @numberOfPages < 10 then 'short'
       when @numberOfPages < 25 then 'medium'
@@ -155,8 +157,8 @@ Template.publicationCatalogItemThumbnail.events
 
   'click li': (event, template) ->
     globals.startViewerOnPage = @page
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication = @publication
+
+    publication = Template.parentData 1
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
     return # Make sure CoffeeScript does not return anything

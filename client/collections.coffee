@@ -61,7 +61,9 @@ EnableCatalogItemLink Template.collectionCatalogItem
 
 Template.collectionCatalogItem.helpers
   private: ->
+    return unless @_id
     @access is ACCESS.PRIVATE
 
   countDescription: ->
+    return unless @_id
     Publication.verboseNameWithCount @publications?.length

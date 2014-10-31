@@ -100,10 +100,9 @@ Template.searchInput.rendered = ->
       @$('.search-input').focus()
     , 10 # ms
 
-  @_searchQueryHandle?.stop()
   @_searchQueryHandle = Tracker.autorun =>
     # Sync input field unless change happened because of this input field itself
-    @$('.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
+    @$('.search-input').val Session.get('currentSearchQuery') unless generalQueryChangeLock > 0
 
 Template.searchInput.destroyed = ->
   @_searchQueryHandle?.stop()
@@ -117,10 +116,7 @@ Template.searchInput.helpers
 
 Template.searchInput.helpers
   searchInvitation: ->
-    if Session.get 'currentSearchQuery'
-      Session.get 'currentSearchQuery'
-    else
-      "Search academic publications and people"
+    Session.get('currentSearchQuery') or "Search academic publications and people"
 
   development: Template.header.helpers 'development'
 
@@ -154,6 +150,3 @@ Tracker.autorun ->
     Session.set 'currentPublicationProgress', null
     progressHide = null
   , 250 # ms
-
-Accounts.ui.config
-  passwordSignupFields: 'USERNAME_AND_EMAIL'

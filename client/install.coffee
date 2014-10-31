@@ -1,8 +1,9 @@
-Template.install.created = Template.indexMain.created
+Template.install.helpers
+  created: Template.indexMain.helpers 'created'
 
-Template.install.rendered = Template.indexMain.rendered
+  rendered: Template.indexMain.helpers 'rendered'
 
-Template.install.destroyed = Template.indexMain.destroyed
+  destroyed: Template.indexMain.helpers 'destroyed'
 
 Template.installWizard.helpers
   installError: ->
