@@ -49,6 +49,7 @@ Template.addNewCollection.events
 Editable.template Template.collectionCatalogItemName, ->
   data = Template.currentData()
   return unless data
+  # TODO: Not all necessary fields for correct access check are present in search results/catalog, we should preprocess permissions this in a middleware and send computed permission as a boolean flag
   data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
