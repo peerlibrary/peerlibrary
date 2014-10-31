@@ -749,17 +749,24 @@ Template.publicationAccessIconButton.helpers
     return unless @_id
     @access is Publication.ACCESS.PRIVATE
 
-Template.publicationAccessControlPrivacyInfo.helpers
-  open: Template.publicationAccessControlPrivacyForm.helpers 'open'
+Template.publicationAccessControlPrivacyForm.helpers
+  open: Template.publicationAccessIconButton.helpers 'open'
 
-  closed: Template.publicationAccessControlPrivacyForm.helpers 'closed'
+  closed: Template.publicationAccessIconButton.helpers 'closed'
 
-  private: Template.publicationAccessControlPrivacyForm.helpers 'private'
+  private: Template.publicationAccessIconButton.helpers 'private'
 
 # We copy over event handlers from accessControl template (which are general enough to work)
 # TODO: Use something less internal to Meteor
 for eventMap in Template.accessMenuPrivacyForm.__eventMaps
   Template.publicationAccessControlPrivacyForm.__eventMaps.push eventMap
+
+Template.publicationAccessControlPrivacyInfo.helpers
+  open: Template.publicationAccessIconButton.helpers 'open'
+
+  closed: Template.publicationAccessIconButton.helpers 'closed'
+
+  private: Template.publicationAccessIconButton.helpers 'private'
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
