@@ -59,7 +59,7 @@ peerlibrary:async@0.9.0_3
 peerlibrary:aws-sdk@2.0.17_2
 peerlibrary:blocking@0.4.2
 peerlibrary:connect@2.22.0_3
-peerlibrary:crypto@0.1.3
+peerlibrary:crypto@0.2.0
 peerlibrary:dimsum@0.1.8_6
 peerlibrary:directcollection@0.3.0
 peerlibrary:middleware@0.1.1

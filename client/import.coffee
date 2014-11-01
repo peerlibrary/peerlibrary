@@ -38,9 +38,14 @@ canceledFiles = ImportingFile.documents.find
   canceled: true
   state:
     $in: ['new', 'preprocessed']
-canceledFiles.observe
+canceledFiles.observeChanges
   added: (id) ->
-    ImportingFile.documents.update id,
+    ImportingFile.documents.update
+      _id: id
+      canceled: true
+      state:
+        $in: ['new', 'preprocessed']
+    ,
       $set:
         state: 'finished'
         status: "Import canceled"
@@ -111,6 +116,8 @@ Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'preprocessed' to 'importing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
+    canceled:
+      $ne: true
     state:
       $in: ['importing', 'preprocessed']
   ,
@@ -120,10 +127,17 @@ Tracker.autorun ->
       sha256: 1
   return unless document
 
-  updatedCount = ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update
+    _id: document._id,
+    canceled:
+      $ne: true
+    state:
+      # But we want to continue only for files in 'preprocessed' state
+      $in: ['preprocessed']
+  ,
     $set:
       state: 'importing'
-  assert.equal updatedCount, 1
+  return unless updatedCount
 
   Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
     if error
@@ -149,9 +163,15 @@ Tracker.autorun ->
 computeChecksum = (file, callback) ->
   hash = new Crypto.SHA256
     onProgress: (progress) ->
+      # We return false to prematurely stop computing checksum if file was canceled
+      return false if ImportingFile.documents.findOne(file._id)?.canceled
+
       ImportingFile.documents.update file._id,
-      $set:
-        preprocessingProgress: progress * 100 # %
+        $set:
+          preprocessingProgress: progress * 100 # %
+
+      # We return true to continue computing checksum
+      return true
 
   hash.update file.content, (error) ->
     if error
@@ -161,6 +181,8 @@ computeChecksum = (file, callback) ->
           state: 'errored'
           status: "#{ error }"
       return
+
+    return callback null, null if ImportingFile.documents.findOne(file._id)?.canceled
 
     hash.finalize callback
 
@@ -176,6 +198,8 @@ Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'new' to 'preprocessing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
+    canceled:
+      $ne: true
     state:
       $in: ['preprocessing', 'new']
   ,
@@ -183,11 +207,18 @@ Tracker.autorun ->
       _id: 1
   return unless document
 
-  updatedCount = ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update
+    _id: document._id
+    canceled:
+      $ne: true
+    state:
+      # But we want to continue only for files in 'new' state
+      $in: ['new']
+  ,
     $set:
       status: "Preprocessing"
       state: 'preprocessing'
-  assert.equal updatedCount, 1
+  return unless updatedCount
 
   reader = new FileReader()
   reader.onload = ->
@@ -201,11 +232,17 @@ Tracker.autorun ->
               status: "#{ error }"
           return
 
-        ImportingFile.documents.update document._id,
-          $set:
-            sha256: sha256
-            status: "In import queue"
-            state: 'preprocessed'
+        if ImportingFile.documents.findOne(document._id)?.canceled
+          ImportingFile.documents.update document._id,
+            $set:
+              state: 'finished'
+              status: "Import canceled"
+        else
+          ImportingFile.documents.update document._id,
+            $set:
+              sha256: sha256
+              status: "In import queue"
+              state: 'preprocessed'
 
   reader.onerror = (error) ->
     FlashMessage.error "FileReader error: #{ error }", null, true, error.stack
@@ -330,13 +367,16 @@ Template.importingFilesItem.helpers
   state: ->
     return unless @_id
 
-    # Canceled could still be set, but state could be errored
-    # or imported if canceled was set to late in the process,
-    # in which case we want not to display it as canceled
+    # Canceled could still be set, but state could be errored or imported if canceled was
+    # set to late in the process, in which case we want not to display it as canceled.
     return @state if @state in ['errored', 'imported']
-    # But otherwise if state is finished and canceled,
-    # we want to display it as canceled
-    return 'canceled' if @canceled and @state is 'finished'
+    # But otherwise if state is finished and canceled, we want to display it as canceled.
+    # We also check for status text so that we make sure now some other status message is
+    # displayed together with canceled state. We want progress bar background to be in canceled
+    # color only when status is "Import canceled". But import could for example already finish
+    # with "File already imported", but canceled could still be triggered, which would set the
+    # flag, but not the status text.
+    return 'canceled' if @canceled and @state is 'finished' and @status is "Import canceled"
     return @state
 
   publication: ->
