@@ -5,6 +5,10 @@ LIMIT_INCREASE_STEP = 10
 globals = @
 globals.catalogActiveVariables = new Variable []
 
+# We can use @data directly here because it never really changes
+# during the life cycle of a template instance. So we do not have
+# to care about reactivity.
+
 # Subscribe the client to catalog's documents
 Template.catalog.created = ->
   variables = @data.variables
