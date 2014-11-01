@@ -68,29 +68,30 @@ Template.flashMessagesOverlayItem.destroyed = ->
   @_seen = false
 
 Template.flashMessagesOverlayItem.events
-  'click .button': (event, template) ->
-    if $(event.target).hasClass('icon-down')
-      event.preventDefault()
+  'click .button.icon-down': (event, template) ->
+    event.preventDefault()
 
-      Tracker.afterFlush =>
-        template.$('.additional').slideDown
-          # Twice as slow as CSS position transition animation time
-          duration: 200
-          step: (animation) =>
-            positionFlashMessages $('.flash-messages .flash-message'), true
-          complete: =>
-            positionFlashMessages $('.flash-messages .flash-message'), false
-            $(event.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
+    Tracker.afterFlush =>
+      template.$('.additional').slideDown
+        # Twice as slow as CSS position transition animation time
+        duration: 200
+        step: (animation) =>
+          positionFlashMessages $('.flash-messages .flash-message'), true
+        complete: =>
+          positionFlashMessages $('.flash-messages .flash-message'), false
+          $(event.target).addClass('icon-cancel').removeClass('icon-down').attr('title', 'Cancel')
 
-    else if $(event.target).hasClass('icon-cancel')
-      return if event.isDefaultPrevented()
+    return # Make sure CoffeeScript does not return anything
 
-      if @sticky
-        FlashMessage.documents.update @_id,
-          $set:
-            stickyHidden: true
-      else
-        FlashMessage.documents.remove @_id
+  'click .button.icon-cancel': (event, template) ->
+    return if event.isDefaultPrevented()
+
+    if @sticky
+      FlashMessage.documents.update @_id,
+        $set:
+          stickyHidden: true
+    else
+      FlashMessage.documents.remove @_id
 
     return # Make sure CoffeeScript does not return anything
 
