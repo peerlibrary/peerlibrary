@@ -34,6 +34,10 @@ Template.groups.events
 
 Template.myGroups.helpers
   myGroups: ->
+    # We assume that list of groups will not get too long and is not changing too
+    # often so that it does not cost too much if we rerun the whole query completely
+    # every time inGroups changes. At the same time we want the list to be ordered by
+    # name, so it is the easiest to simply use the query.
     Group.documents.find
       _id:
         $in: _.pluck Meteor.person(inGroups: 1)?.inGroups, '_id'

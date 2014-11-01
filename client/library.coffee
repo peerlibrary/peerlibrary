@@ -5,13 +5,8 @@ Tracker.autorun ->
     Meteor.subscribe 'my-collections'
 
 Template.libraryPublications.helpers
-  myPublications: ->
-    person = Meteor.person library: 1
-    return unless person
-
-    Publication.documents.find
-      _id:
-        $in: _.pluck person.library, '_id'
+  myLibrary: ->
+    Meteor.person(library: 1)?.library or []
 
 Template.libraryPublications.rendered = ->
   @$('.catalog-item').draggable

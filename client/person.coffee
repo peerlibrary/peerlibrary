@@ -100,6 +100,11 @@ Template.person.helpers
       # We can search by only slug because we assured that the URL is canonical in autorun
       slug: Session.get 'currentPersonSlug'
 
+    # We assume that list of publications will not get too long and is not changing too
+    # often so that it does not cost too much if we rerun the whole query completely
+    # every time publications changes. At the same time we want the list to be ordered by
+    # something, so it is the easiest to simply use the query.
+    # TODO: What is the order we want them to be in? Publication time? Or should we make a catalog out of them?
     Publication.documents.find
       _id:
         $in: _.pluck person?.publications, '_id'

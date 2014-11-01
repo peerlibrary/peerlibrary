@@ -13,10 +13,14 @@
 <template name="libraryPublications">
   <div class="col12">
     <h1>Library</h1>
-    {{#if myPublications.count}}
+    {{#if myLibrary.length}}
       <ol class="library-publications item-list">
-        {{#each myPublications}}
-          {{> publicationCatalogItem}}
+        {{! We iterate over library and then use refresh to make sure publications are in the
+            exactly the same order as they are listed in user's library. }}
+        {{#each myLibrary}}
+          {{#with this.refresh}}
+            {{> publicationCatalogItem}}
+          {{/with}}
         {{/each}}
       </ol>
     {{else}}

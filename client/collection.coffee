@@ -96,19 +96,6 @@ Editable.template Template.collectionName, ->
 ,
   true
 
-Template.collectionPublications.helpers
-  publications: ->
-    return unless @_id
-
-    order = _.pluck @publications, '_id'
-
-    Publication.documents.find(
-      _id:
-        $in: order
-    # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
-    ).fetch().sort (a, b) =>
-      return (order.indexOf a._id) - (order.indexOf b._id)
-
 Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
 
