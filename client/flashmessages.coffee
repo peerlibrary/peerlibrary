@@ -18,11 +18,19 @@ positionFlashMessages = ($flashMessages, fast) ->
     top += $flashMessage.outerHeight(true)
 
 Template.flashMessagesOverlay.rendered = ->
-  # This currently is a hack because this should be rendered
-  # as part of Meteor rendering, but it does not yet support
-  # indexing. See https://github.com/meteor/meteor/pull/912
-  # TODO: Reimplement using Meteor indexing of rendered elements (@index)
-  positionFlashMessages @$('.flash-message'), false
+  @autorun =>
+    # A hacky way to get called every time flash messages rerender. This works
+    # because there is a clear dependency (flashMessages) we have to use. It
+    # would be much harder if we would have more complicated situation with
+    # multiple dependencies.
+    # TODO: Find a better way to get called every time flash messages rerender
+    Template.flashMessagesOverlay.helpers('flashMessages')().fetch()
+
+    # This currently is a hack because this should be rendered
+    # as part of Meteor rendering, but it does not yet support
+    # indexing. See https://github.com/meteor/meteor/pull/912
+    # TODO: Reimplement using Meteor indexing of rendered elements (@index)
+    positionFlashMessages @$('.flash-message'), false
 
 Template.flashMessagesOverlay.helpers
   flashMessages: ->

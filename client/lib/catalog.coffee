@@ -102,9 +102,8 @@ Template.catalogSort.events
 Template.catalogSortSelection.helpers
   options: ->
     # TODO: Reimplement using Meteor indexing of rendered elements (@index), see https://github.com/meteor/meteor/pull/912
-    index = 0
-    for sorting in @documentClass.PUBLISH_CATALOG_SORT
-      sorting._index = index++
+    for sorting, i in @documentClass.PUBLISH_CATALOG_SORT
+      sorting._index = i
       sorting
 
 Template.catalogSortOption.events
