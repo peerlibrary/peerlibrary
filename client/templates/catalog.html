@@ -81,12 +81,12 @@
 </template>
 
 <template name="catalogItem">
-  {{#if documentIsPublication}}{{> publicationCatalogItem}}{{/if}}
-  {{#if documentIsPerson}}{{> personCatalogItem}}{{/if}}
-  {{#if documentIsHighlight}}{{> highlightCatalogItem}}{{/if}}
-  {{#if documentIsAnnotation}}{{> annotationCatalogItem}}{{/if}}
-  {{#if documentIsGroup}}{{> groupCatalogItem}}{{/if}}
-  {{#if documentIsCollection}}{{> collectionCatalogItem}}{{/if}}
+  {{#if isPublication}}{{> publicationCatalogItem}}{{/if}}
+  {{#if isPerson}}{{> personCatalogItem}}{{/if}}
+  {{#if isHighlight}}{{> highlightCatalogItem}}{{/if}}
+  {{#if isAnnotation}}{{> annotationCatalogItem}}{{/if}}
+  {{#if isGroup}}{{> groupCatalogItem}}{{/if}}
+  {{#if isCollection}}{{> collectionCatalogItem}}{{/if}}
 </template>
 
 <template name="catalogLoading">

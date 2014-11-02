@@ -1,27 +1,31 @@
 <template name="flashMessagesOverlay">
   <ul class="flash-messages">
-    {{#each flashMessages}}
-      {{> flashMessagesOverlayItem}}
-    {{/each}}
+    {{#momentum plugin='animatedVerticalList'}}
+      {{#each flashMessages}}
+        {{> flashMessagesOverlayItem}}
+      {{/each}}
+    {{/momentum}}
   </ul>
 </template>
 
 <template name="flashMessagesOverlayItem">
-  {{#unless stickyHidden}}
-    <li class="flash-message {{type}}">
-      {{#if additional}}
-        <i class="icon-down button" title="Additional information"></i>
-      {{/if}}
-      <div class="message">{{message}}</div>
-      {{#if additional}}
-        <div class="additional">
+  <li class="flash-message {{type}}">
+    {{#if additional}}
+      <i class="icon-down button" title="Additional information"></i>
+    {{/if}}
+    <div class="message">{{message}}</div>
+    {{#if additional}}
+      <div class="additional">
+        {{#if additional.template}}
+          {{> Template.dynamic template=additional.template data=additional.data}}
+        {{else}}
           {{!
             We allow raw HTML content for additional information.
             This means it should come only from trusted sources.
           }}
-          {{{additional}}}
-        </div>
-      {{/if}}
-    </li>
-  {{/unless}}
+          {{{convertNewlines additional}}}
+        {{/if}}
+      </div>
+    {{/if}}
+  </li>
 </template>

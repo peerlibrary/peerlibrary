@@ -2,12 +2,12 @@ Package.describe({
   summary: "A rich text editor framework for the web platform"
 });
 
-Package.on_use(function (api) {
-  api.use('define');
+Package.onUse(function (api) {
+  api.use('mrt:define@0.11.0');
 
   api.export('Scribe');
 
-  api.add_files([
+  api.addFiles([
     'scribe/scribe.js',
     'scribe-plugin-blockquote-command/scribe-plugin-blockquote-command.js',
     'scribe-plugin-heading-command/scribe-plugin-heading-command.js',
@@ -18,7 +18,7 @@ Package.on_use(function (api) {
   ], 'client');
 });
 
-Package.on_test(function (api) {
+Package.onTest(function (api) {
   api.use(['scribe', 'tinytest', 'test-helpers'], 'client');
-  api.add_files('tests.js', 'client');
+  api.addFiles('tests.js', 'client');
 });

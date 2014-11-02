@@ -4,10 +4,8 @@ class @Collection extends Collection
     replaceParent: true
 
   # We allow passing the collection slug if caller knows it
-  @pathFromId: (collectionId, slug, options) ->
+  @pathFromId: (collectionId, slug) ->
     assert _.isString collectionId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     collection = @documents.findOne collectionId
 
@@ -26,10 +24,8 @@ class @Collection extends Collection
       collectionSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (collectionId, collection, options) ->
+  @reference: (collectionId, collection) ->
     assert _.isString collectionId
-    # To allow calling template helper with only one argument (collection will be options then)
-    collection = null unless collection instanceof @
 
     collection = @documents.findOne collectionId unless collection
     assert collectionId, collection._id if collection
@@ -46,7 +42,7 @@ collectionHandle = null
 # Mostly used just to force reevaluation of collectionHandle
 collectionSubscribing = new Variable false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'currentCollectionId'
     collectionSubscribing.set true
     collectionHandle = Meteor.subscribe 'collection-by-id', Session.get 'currentCollectionId'
@@ -55,11 +51,11 @@ Deps.autorun ->
     collectionSubscribing.set false
     collectionHandle = null
 
-Deps.autorun ->
+Tracker.autorun ->
   if collectionSubscribing() and collectionHandle?.ready()
     collectionSubscribing.set false
 
-Deps.autorun ->
+Tracker.autorun ->
   collection = Collection.documents.findOne Session.get('currentCollectionId'),
     fields:
       _id: 1
@@ -73,37 +69,32 @@ Deps.autorun ->
 
   Meteor.Router.toNew Meteor.Router.collectionPath collection._id, collection.slug
 
-Template.collection.loading = ->
-  collectionSubscribing() # To register dependency
-  not collectionHandle?.ready()
+Template.collection.helpers
+  loading: ->
+    collectionSubscribing() # To register dependency
+    not collectionHandle?.ready()
 
-Template.collection.notFound = ->
-  collectionSubscribing() # To register dependency
-  collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
+  notFound: ->
+    collectionSubscribing() # To register dependency
+    collectionHandle?.ready() and not Collection.documents.findOne Session.get('currentCollectionId'), fields: _id: 1
 
-Template.collection.collection = ->
-  Collection.documents.findOne Session.get('currentCollectionId')
+  collection: ->
+    Collection.documents.findOne Session.get('currentCollectionId')
 
 Editable.template Template.collectionName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (name) ->
-    Meteor.call 'collection-set-name', @data._id, name, (error, count) ->
+    name = name.trim()
+    return unless name
+    Meteor.call 'collection-set-name', Template.currentData()._id, name, (error, count) ->
       return FlashMessage.fromError error, true if error
 ,
   "Enter collection name"
 ,
   true
-
-Template.collectionPublications.publications = ->
-  order = _.pluck @publications, '_id'
-
-  Publication.documents.find
-    _id:
-      $in: order
-  # TODO: Change to MongoDB sort once/if they implement sort by array, https://jira.mongodb.org/browse/SERVER-7528
-  .fetch().sort (a, b) =>
-    return (order.indexOf a._id) - (order.indexOf b._id)
 
 Template.collectionPublications.rendered = ->
   collection = Collection.documents.findOne Session.get('currentCollectionId')
@@ -112,10 +103,10 @@ Template.collectionPublications.rendered = ->
   # TODO: Can we make this reactive? So that if permissions change this is enabled or disabled?
   unless collection?.hasMaintainerAccess Meteor.person collection?.constructor.maintainerAccessPersonFields()
     # Remove sortable functionality in case it was previously enabled
-    $(@findAll '.collection-publications.ui-sortable').sortable "destroy"
+    @$('.collection-publications.ui-sortable').sortable "destroy"
     return
 
-  $(@findAll '.collection-publications').sortable
+  @$('.collection-publications').sortable
     opacity: 0.5
     cursor: 'ns-resize'
     axis: 'y'
@@ -127,11 +118,14 @@ Template.collectionPublications.rendered = ->
       Meteor.call 'reorder-collection', Session.get('currentCollectionId'), newOrder, (error) ->
         return FlashMessage.fromError error, true if error
 
-Template.collectionSettings.canModify = ->
-  @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
+Template.collectionSettings.helpers
+  canModify: ->
+    return unless @_id
+    @hasMaintainerAccess Meteor.person @constructor.maintainerAccessPersonFields()
 
-Template.collectionSettings.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+  canRemove: ->
+    return unless @_id
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.collectionAdminTools.events
   'click .dropdown-trigger': (event, template) ->
@@ -139,7 +133,7 @@ Template.collectionAdminTools.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -156,10 +150,13 @@ Template.collectionAdminTools.events
     return # Make sure CoffeeScript does not return anything
 
 # This provides functionality of the library menu (from publication.html) that is specific to the collection view
-Template.publicationLibraryMenuButtons.inCurrentCollection = ->
-  Collection.documents.findOne
-    _id: Session.get 'currentCollectionId'
-    'publications._id': @_id
+Template.publicationLibraryMenuButtons.helpers
+  inCurrentCollection: ->
+    return unless @_id
+
+    Collection.documents.findOne
+      _id: Session.get 'currentCollectionId'
+      'publications._id': @_id
 
 Template.publicationLibraryMenuButtons.events
   'click .remove-from-current-collection': (event, template) ->
@@ -178,6 +175,9 @@ Template.publicationLibraryMenuButtons.events
 
     return # Make sure CoffeeScript does not return anything
 
-Handlebars.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
+Template.registerHelper 'isCollection', ->
+  @ instanceof Collection
 
-Handlebars.registerHelper 'collectionReference', _.bind Collection.reference, Collection
+Template.registerHelper 'collectionPathFromId', _.bind Collection.pathFromId, Collection
+
+Template.registerHelper 'collectionReference', _.bind Collection.reference, Collection

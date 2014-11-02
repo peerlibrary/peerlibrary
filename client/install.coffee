@@ -1,21 +1,26 @@
-Template.install.created = Template.indexMain.created
+Template.install.helpers
+  created: Template.indexMain.helpers 'created'
 
-Template.install.rendered = Template.indexMain.rendered
+  rendered: Template.indexMain.helpers 'rendered'
 
-Template.install.destroyed = Template.indexMain.destroyed
+  destroyed: Template.indexMain.helpers 'destroyed'
 
-Template.installWizard.installError = ->
-  Session.get 'installError'
+Template.installWizard.helpers
+  installError: ->
+    Session.get 'installError'
 
-Template.installWizard.installInProgress = ->
-  'install-in-progress' if Session.get 'installInProgress'
+Template.installWizard.helpers
+  installInProgress: ->
+    'install-in-progress' if Session.get 'installInProgress'
 
-Template.installWizard.installRestarting = ->
-  Session.get 'installRestarting'
+Template.installWizard.helpers
+  installRestarting: ->
+    Session.get 'installRestarting'
 
 Template.installWizard.rendered = ->
-  Deps.afterFlush =>
-    $(@findAll '#install-password-input').focus()
+  Meteor.setTimeout =>
+    @$('#install-password-input').focus()
+  , 10 # ms
 
 Template.installWizard.events
   'submit form.password': (event, template) ->
@@ -24,14 +29,14 @@ Template.installWizard.events
     return if Session.get 'installInProgress'
     Session.set 'installInProgress', true
 
-    Meteor.call 'create-admin-account', $(template.findAll '#install-password-input').val(), (error) ->
+    Meteor.call 'create-admin-account', template.$('#install-password-input').val(), (error) ->
       if error
         Session.set 'installInProgress', false
         Session.set 'installError', (error.reason or "Unknown error.")
 
         # Refocus for user to correct an error
         Meteor.setTimeout =>
-          $(template.findAll '#install-password-input').focus()
+          template.$('#install-password-input').focus()
         , 10 # ms
       else
         # We keep installInProgress set to true to prevent any race-condition duplicate form submission

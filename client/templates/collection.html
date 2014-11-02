@@ -26,8 +26,12 @@
 <template name="collectionPublications">
   <div class="col12">
     <ol class="collection-publications item-list">
+      {{! We iterate over publications and then use refresh to make sure publications are in the
+          exactly the same order as they are listed in the collection. }}
       {{#each publications}}
-        {{> publicationCatalogItem}}
+        {{#with this.refresh}}
+          {{> publicationCatalogItem}}
+        {{/with}}
       {{/each}}
     </ol>
   </div>

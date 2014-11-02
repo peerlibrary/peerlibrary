@@ -54,6 +54,10 @@ User.Meta.collection.deny
   update: ->
     true
 
+passwordValidator = Match.OneOf String,
+  digest: String
+  algorithm: String
+
 Meteor.methods
   'invite-user': methodWrap (email, message) ->
     validateArgument 'email', email, EMail
@@ -94,14 +98,14 @@ Meteor.methods
 
     invited._id
 
-  'reset-password-with-username': methodWrap (token, verifier, username) ->
+  'reset-password-with-username': methodWrap (token, newPassword, username) ->
     validateArgument 'token', token, String
-    validateArgument 'verifier', verifier, Object
-    validateArgument 'username', username, String,
+    validateArgument 'newPassword', newPassword, passwordValidator
+    validateArgument 'username', username, String
     User.validateUsername username, 'username'
 
     # We call Meteor's internal resetPassword method
-    newUser = Meteor.call 'resetPassword', token, verifier
+    newUser = Meteor.call 'resetPassword', token, newPassword
     Meteor.call 'set-username', username
 
     newUser

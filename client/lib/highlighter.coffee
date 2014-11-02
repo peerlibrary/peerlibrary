@@ -391,7 +391,7 @@ class @Highlighter
   destroy: =>
     $(window).off '.highlighter'
 
-    # We stop handles here and not just leave it to Deps.autorun to do it to cleanup in the right order
+    # We stop handles here and not just leave it to Tracker.autorun to do it to cleanup in the right order
     @_highlightsHandle?.stop()
     @_highlightsHandle = null
     @_highlightLocationHandle?.stop()
@@ -482,7 +482,7 @@ class @Highlighter
       removed: (id) =>
         @highlightRemoved id
 
-    @_highlightLocationHandle = Deps.autorun =>
+    @_highlightLocationHandle = Tracker.autorun =>
       @_annotator._selectHighlight Session.get 'currentHighlightId'
 
   pageRendered: (page) =>

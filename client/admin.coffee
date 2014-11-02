@@ -1,11 +1,12 @@
-Deps.autorun ->
+Tracker.autorun ->
   if Session.equals 'adminActive', true
     Meteor.subscribe 'arxiv-pdfs'
     Meteor.subscribe 'logged-errors'
     Meteor.subscribe 'job-queue'
 
-Template.adminCheck.isAdmin = ->
-  Meteor.person(isAdmin: 1)?.isAdmin
+Template.adminCheck.helpers
+  isAdmin: ->
+    Meteor.person(isAdmin: 1)?.isAdmin
 
 Template.adminDevelopment.events
   'click button.sample-data': (event, template) ->
@@ -41,11 +42,12 @@ Template.adminErrors.events
     # and stored in the database by our errors logging code
     throw new Error "Dummy error"
 
-Template.adminErrors.errors = ->
-  LoggedError.documents.find {},
-    sort: [
-      ['serverTime', 'desc']
-    ]
+Template.adminErrors.helpers
+  errors: ->
+    LoggedError.documents.find {},
+      sort: [
+        ['serverTime', 'desc']
+      ]
 
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
@@ -54,41 +56,51 @@ Template.adminJobs.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.adminJobs.jobqueue = ->
-  JobQueue.documents.find {},
-    sort: [
-      ['updated', 'desc']
-    ]
-    transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
+Template.adminJobs.helpers
+  jobqueue: ->
+    JobQueue.documents.find {},
+      sort: [
+        ['updated', 'desc']
+      ]
+      transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
-Template.adminJobQueueItem.canManageJob = ->
-  person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
-    isAdmin: 1
+Template.adminJobQueueItem.helpers
+  canManageJob: ->
+    return unless @_id
 
-  return false unless person
+    person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
+      isAdmin: 1
 
-  return true if person.isAdmin
+    return false unless person
 
-  if @data.publication
-    # We have to refresh manually the publication because data.publication is
-    # not an instance of Publication because we disable transform in the
-    # publicationJobs template to display data payload without client-only
-    # attributes like _pages and _highlighter.
-    publication = Publication.documents.findOne @data.publication._id, fields: Publication.maintainerAccessSelfFields()
-    # When used on the generic job queue page where we are not subscribed
-    # to all publications, publication will probably not be found, but this
-    # is probably OK because we are currently not showing anything on the
-    # generic job queue page to non-admins anyway.
-    return publication?.hasMaintainerAccess person
+    return true if person.isAdmin
 
-Template.adminJobQueueItem.isRestartable = ->
-  @status in JobQueue.Meta.collection.jobStatusRestartable
+    # We are accessing here @data of a job queue item, which contains
+    # arguments of a job, where one of them could be a related publication.
+    # This is *not* a template instance and @data of the template instance.
+    if @data.publication
+      # We have to refresh manually the publication because data.publication is
+      # not an instance of Publication because we disable transform in the
+      # publicationJobs template to display data payload without client-only
+      # attributes like _pages and _highlighter.
+      publication = Publication.documents.findOne @data.publication._id, fields: Publication.maintainerAccessSelfFields()
+      # When used on the generic job queue page where we are not subscribed
+      # to all publications, publication will probably not be found, but this
+      # is probably OK because we are currently not showing anything on the
+      # generic job queue page to non-admins anyway.
+      return publication?.hasMaintainerAccess person
 
-Template.adminJobQueueItem.isCancellable = ->
-  @status in JobQueue.Meta.collection.jobStatusCancellable
+  isRestartable: ->
+    return unless @_id
+    @status in JobQueue.Meta.collection.jobStatusRestartable
 
-Template.adminJobQueueItem.inFuture = ->
-  @after and @after > moment.utc().toDate()
+  isCancellable: ->
+    return unless @_id
+    @status in JobQueue.Meta.collection.jobStatusCancellable
+
+  inFuture: ->
+    return unless @_id
+    @after and @after > moment.utc().toDate()
 
 Template.adminJobQueueItem.events
   'click .admin-job-cancel': (event, template) ->

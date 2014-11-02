@@ -1,57 +1,28 @@
 {
   "meteor": {
-    "branch": "peerlibrary",
+    "branch": "peerlibrary-new",
     "git": "https://github.com/peerlibrary/meteor.git"
   },
   "packages": {
     "router": {
-      "branch": "peerlibrary",
+      "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-router.git"
     },
-    "pdf.js": {},
-    "assert": {},
-    "aws-sdk": {},
-    "tar": {},
-    "blocking": {},
-    "moment": {},
-    "xml2js": {},
-    "util": {},
-    "dimsum": {},
-    "connect": {},
-    "urlify2": {},
-    "fs": {},
     "meteor-file": {
-      "branch": "peerlibrary",
+      "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-file.git"
     },
-    "digest": {},
-    "peerdb": {},
-    "useragent": {},
-    "define": {
-      "branch": "peerlibrary",
-      "git": "https://github.com/peerlibrary/require.git"
-    },
     "variable": {
-      "branch": "peerlibrary",
+      "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-variable.git"
     },
     "cheerio": {
-      "branch": "peerlibrary",
+      "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-cheerio.git"
     },
-    "isolate-value": {},
-    "stacktrace": {},
-    "related": {},
-    "kadira": {},
-    "directcollection": {},
-    "url-utils": {},
-    "segfault-handler": {},
-    "crypto": {},
-    "jobCollection": {
-      "branch": "peerlibrary",
+    "vsivsi:job-collection": {
+      "branch": "peerlibrary-new",
       "git": "https://github.com/peerlibrary/meteor-job-collection.git"
-    },
-    "async": {},
-    "middleware": {}
+    }
   }
 }

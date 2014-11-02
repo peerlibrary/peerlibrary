@@ -15,7 +15,7 @@
           <li class="search">
             {{> searchInput}}
           </li>
-          {{> loginButtons}}
+          {{> loginButton}}
           {{> collectionsButton}}
           {{> groupsButton}}
           {{> importButton}}
@@ -64,9 +64,9 @@
   {{/if}}
 </template>
 
-<template name="loginButtons">
+<template name="loginButton">
   <li class="login pull-right">
-    {{loginButtons align="right"}}
+    {{> loginButtons align="right"}}
   </li>
 </template>
 
@@ -74,9 +74,7 @@
   <li class="import pull-right">
     <a href="" class="import-link-text">Import</a>
   </li>
-  {{#constant}}
-    <input class="import-file-input" type="file" multiple="multiple" />
-  {{/constant}}
+  <input class="import-file-input" type="file" multiple="multiple" />
 </template>
 
 <template name="groupsButton">

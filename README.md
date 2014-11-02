@@ -18,66 +18,37 @@ Weekly meeting
 --------------
 
 Regular general weekly meeting is every Monday 8 PM PST. Meeting is open to really
-everyone. Remote participation is possible using Google Hangout [through permanently opened video session](https://plus.google.com/hangouts/_/calendar/YmVya2VsZXkuZWR1X2UyYTVhcWc4cXJnaWM2bnQ2ZDk0OG0yNXJnQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20.kijreb7bhpl8qfkr7n9d549so4). Additionally, join us on our IRC
-channel at that time for more information. We are also using our IRC channel for a backchannel
-to the meeting. Notes are taken and sent to the mailing lists, and their address follow the
-following format `http://pad.peerlibrary.org/p/meeting-YYYY-MM-DD`.
+everyone. Remote participation is possible using Google Hangout
+[through permanently opened video session](https://plus.google.com/hangouts/_/calendar/YmVya2VsZXkuZWR1X2UyYTVhcWc4cXJnaWM2bnQ2ZDk0OG0yNXJnQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20.kijreb7bhpl8qfkr7n9d549so4).
+Additionally, join us on our IRC channel at that time for more information. We are also using our
+IRC channel for a backchannel to the meeting. Notes are taken and sent to the mailing lists, and their
+address follow the following format `http://pad.peerlibrary.org/p/meeting-YYYY-MM-DD`.
 
 Development installation
 ------------------------
 
+### Prerequisites ###
+
 PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can install it with:
 
-    curl http://meteor.peerlibrary.org/ | sh
+    curl https://install.meteor.com/ | sh
 
-If you do not have [node.js](http://nodejs.org) installed on your system, you can use one
-provided by Meteor. To add it into your environment, add `~/.meteor/tools/latest/bin` to
-your environment `PATH` variable. For example, by running:
+You need [node.js](http://nodejs.org) installed on your system. On Mac OS X you can use
+[Homebrew](http://brew.sh/) to install it:
 
-    export PATH=~/.meteor/tools/latest/bin:$PATH
+    brew install node
 
-To add tools to you shell permanently, run:
+On Debian, run:
 
-    echo 'export PATH=~/.meteor/tools/latest/bin:$PATH' >> ~/.bash_profile
+    sudo apt-get install nodejs nodejs-legacy npm
 
-Maybe on your system you have to add the line to `~/.profile` file instead.
-
-PeerLibrary requires additional Meteor packages which are provided through
-[Meteorite](http://oortcloud.github.com/meteorite/), a Meteor package manager.
-Install it as well:
+PeerLibrary uses [Meteorite](http://oortcloud.github.com/meteorite/). Install it:
 
     npm install -g meteorite
-    
-### Other requirements to run PeerLibrary ###
 
-On first run, PeerLibrary compiles and locally installs additional Meteor packages,
-some of them have non-Meteor dependencies. The following libraries have
-to be available on your system for PeerLibrary to successfully run:
+Maybe you will have to run it with `sudo`:
 
- * [Cairo](http://cairographics.org/) graphic library
- * [FreeType](http://www.freetype.org/)
- * [Pango](http://www.pango.org/)
- * [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)
- * [giflib](http://giflib.sourceforge.net/)
- * [libjpeg](http://www.ijg.org)
-
-On Mac OS X you can get Cairo by installing [X11](http://xquartz.macosforge.org/) (Pango
-and FreeType are already available on the system) and run the following before you
-run `mrt` to configure the environment:
-
-    export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
-
-To be able to compile Meteor packages, you need [Xcode](https://developer.apple.com/xcode/)
-with command line tools installed (from _Preferences_ > _Downloads_ > _Components_).
-
-You can install `pkg-config`, `giflib`, and `libjpeg` using [Homebrew](http://brew.sh/)
-([MacPorts](https://www.macports.org/) also works, if you prefer it):
-
-    brew install pkg-config giflib libjpeg
-
-On Debian you can install all dependencies by:
-
-    sudo aptitude install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++
+    sudo npm install -g meteorite
 
 ### Run it! ###
 
@@ -88,11 +59,11 @@ Recursively clone a PeerLibrary repository:
 This will give you the latest development version of PeerLibrary (`development` branch). The latest
 stable version is in the `master` branch.
 
-And then run a development instance of PeerLibrary:
+Run a development instance of PeerLibrary from the **PeerLibrary top-level directory**:
 
     mrt
 
-And open [http://localhost:3000/](http://localhost:3000/), which is an address of
+Open [http://localhost:3000/](http://localhost:3000/), which is an address of
 your local development instance, to start an installation wizard process in which you
 create an admin user (which has username `admin`). After you create an admin
 user, PeerLibrary will reload.
@@ -132,52 +103,24 @@ have to put into your `settings.json` file.
 
 ### Troubleshooting ###
 
-Sometimes when installing dependencies, Meteor will throw the following error:
-
-    npm ERR! cb() never called!
-    npm ERR! not ok code 0
-
-This just means that there was a timeout while downloading a dependency, probably because of
-a networking issue. Just retry.
-
 If you have not cloned recursively (if you forgot `--recursive` in `git clone --recursive https://github.com/peerlibrary/peerlibrary.git`), you will at some point get a such or similar error:
 
-    While building package `blob`:
-    error: File not found: Blob/Blob.js
+    While Building package `dom-text-mapper`:
+    error: File not found: dom-text-matcher/lib/diff_match_patch/diff_match_patch_uncompressed.js
+    error: File not found: dom-text-matcher/src/text_match_engines.coffee
+    error: File not found: dom-text-mapper/src/dom_text_mapper.coffee
+    error: File not found: dom-text-matcher/src/dom_text_matcher.coffee
+    error: File not found: dom-text-mapper/src/page_text_mapper_core.coffee
 
 Or similar errors for other packages, you just have to manually initialize git submodules we are using:
 
     git submodule update --init --recursive
 
-If you are getting an error like:
+If you are getting an errors like:
 
-    Error: Cannot find module '../build/Release/canvas'
+    TypeError: Object #<Object> has no method 'addExtraBodyHook
 
-Then there is an issue compiling the [node-canvas](https://github.com/LearnBoost/node-canvas) dependency. Check
-if you have all required non-Meteor dependencies installed and retry by removing the whole `meteor-pdf.js` package
-and running `mrt` again:
-
-    rm -rf ~/.meteorite/packages/pdf.js/
-
-If you are getting an error like:
-
-    Error: Could not locate the bindings file.
-
-Then you upgraded your system and the package which was previously compiled now does not work anymore. You have to
-force recompilation by, for example, removing the package. Example for `segfault-handler` package:
-
-    rm -rf ~/.meteorite/packages/segfault-handler/
-
-If you are getting Stylus errors like:
-
-    error: Stylus compiler error: client/css/_viewer.styl:2
-
-    failed to locate @import file variables.styl
-
-You are not running `mrt` in the top-level directory of PeerLibrary. This is a [bug in Meteor](https://github.com/meteor/meteor/issues/1655).
-
-If you notice that `mrt` command disappeared is this because you probably updated Meteor.
-You have to reinstall Meteorite (`npm install -g meteorite`).
+You are not running `mrt` from the top-level directory of PeerLibrary.
 
 Contributing
 ------------
@@ -188,7 +131,7 @@ Nevertheless, you are invited to join the development, but please understand
 that things might be changing under your feet so it is probably useful to
 discuss planned contributions in advance.
 
-See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/development/CONTRIBUTING.md) file for more
-details and ideas.
+See the [CONTRIBUTING](https://github.com/peerlibrary/peerlibrary/blob/development/CONTRIBUTING.md)
+file for more details and ideas.
 
 You can also help with [PeerLibrary outreach, promotion, teaching, and community organizing](https://github.com/peerlibrary/outreach).

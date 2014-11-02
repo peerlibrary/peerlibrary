@@ -1,45 +1,45 @@
-Deps.autorun ->
+Tracker.autorun ->
   return unless Meteor.settings?.public?.examples
 
   if Session.get 'indexActive'
     Meteor.subscribe 'publication-by-id', Random.choice Meteor.settings.public.examples
 
-Template.header.events =
+Template.header.events
   'click .top-menu .search': (event, template) ->
     # Only if focused on no-index header
-    if Template.header.noIndexHeader()
+    if Template.header.helpers('noIndexHeader')()
       Session.set 'searchFocused', true
 
     return # Make sure CoffeeScript does not return anything
 
   'click .search-input': (event, template) ->
     # Only if focused on no-index header
-    if Template.header.noIndexHeader()
+    if Template.header.helpers('noIndexHeader')()
       Session.set 'searchFocused', true
 
     return # Make sure CoffeeScript does not return anything
 
   'click .search-button': (event, template) ->
     Session.set 'searchActive', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'blur .search-input': (event, template) ->
     Session.set 'searchFocused', false
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'change .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'keyup .search-input': (event, template) ->
-    val = $(template.findAll '.search-input').val()
+    val = template.$('.search-input').val()
 
     # If user focused with tab or pressed some other non-content key we don't want to activate the search
     if val
@@ -53,14 +53,14 @@ Template.header.events =
   'paste .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
   'cut .search-input': (event, template) ->
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -69,70 +69,67 @@ Template.header.events =
     # If search is empty and user presses enter (submits the form), we should activate - maybe user wants structured query form
     Session.set 'searchActive', true
     Session.set 'searchFocused', true
-    generalQueryChange $(template.findAll '.search-input').val()
+    generalQueryChange template.$('.search-input').val()
 
     return # Make sure CoffeeScript does not return anything
 
-Template.header.development = ->
-  'development' unless Meteor.settings?.public?.production
+Template.header.helpers
+  development: ->
+    'development' unless Meteor.settings?.public?.production
 
-Template.header.indexHeader = ->
-  'index-header' if Template.footer.indexFooter()
+  indexHeader: ->
+    'index-header' if Template.footer.helpers('indexFooter')()
 
-Template.header.noIndexHeader = ->
-  'no-index-header' if not Template.header.indexHeader()
+  noIndexHeader: ->
+    'no-index-header' if not Template.header.helpers('indexHeader')()
 
-Template.searchInput.searchFocused = ->
-  'search-focused' if Session.get 'searchFocused'
-
-Template.searchInput.created = ->
-  @_searchQueryHandle = null
+Template.searchInput.helpers
+  searchFocused: ->
+    'search-focused' if Session.get 'searchFocused'
 
 Template.searchInput.rendered = ->
   # We make sure search input is focused if we know it should be focused (to make sure focus is
   # retained between redraws). We don't use HTML5 autofocus because it takes focus away from dialogs.
   # We focus search if we are displaying index header. Don't try to focus if reset password or enroll
   # user is in progress.
-  if (Session.get('searchFocused') or Template.header.indexHeader()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
-    $(@findAll '.search-input').focus()
+  if (Session.get('searchFocused') or Template.header.helpers('indexHeader')()) and not Accounts._loginButtonsSession.get('resetPasswordToken') and not Accounts._loginButtonsSession.get 'enrollAccountToken'
+    Meteor.setTimeout =>
+      @$('.search-input').focus()
+    , 10 # ms
 
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = Deps.autorun =>
+  @autorun =>
     # Sync input field unless change happened because of this input field itself
-    $(@findAll '.search-input').val(Session.get 'currentSearchQuery') unless generalQueryChangeLock > 0
+    @$('.search-input').val Session.get('currentSearchQuery') unless generalQueryChangeLock > 0
 
-Template.searchInput.destroyed = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = null
+Template.searchInput.helpers
+  indexHeader: Template.header.helpers 'indexHeader'
 
-Template.searchInput.indexHeader = Template.header.indexHeader
+Template.searchInput.helpers
+  noIndexHeader: Template.header.helpers 'noIndexHeader'
 
-Template.searchInput.noIndexHeader = Template.header.noIndexHeader
+Template.searchInput.helpers
+  searchInvitation: ->
+    Session.get('currentSearchQuery') or "Search academic publications and people"
 
-Template.searchInput.searchInvitation = ->
-  if Session.get 'currentSearchQuery'
-    Session.get 'currentSearchQuery'
-  else
-    "Search academic publications and people"
+  development: Template.header.helpers 'development'
 
-Template.searchInput.development = Template.header.development
+  examplePublication: ->
+    return unless Meteor.settings?.public?.examples
 
-Template.searchInput.examplePublication = ->
-  return unless Meteor.settings?.public?.examples
+    Publication.documents.findOne
+      _id:
+        $in: Meteor.settings.public.examples
+    ,
+      fields:
+        _id: 1
+        slug: 1
 
-  Publication.documents.findOne
-    _id:
-      $in: Meteor.settings.public.examples
-  ,
-    fields:
-      _id: 1
-      slug: 1
-
-Template.progressBar.progress = ->
-  100 * Session.get 'currentPublicationProgress'
+Template.progressBar.helpers
+  progress: ->
+    100 * Session.get 'currentPublicationProgress'
 
 progressHide = null
-Deps.autorun ->
+Tracker.autorun ->
   progress = Session.get 'currentPublicationProgress'
 
   if progress != 1.0
@@ -146,6 +143,3 @@ Deps.autorun ->
     Session.set 'currentPublicationProgress', null
     progressHide = null
   , 250 # ms
-
-Accounts.ui.config
-  passwordSignupFields: 'USERNAME_AND_EMAIL'

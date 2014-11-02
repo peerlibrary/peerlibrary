@@ -2,12 +2,12 @@ Package.describe({
   summary: "Annotator plugin"
 });
 
-Package.on_use(function (api) {
+Package.onUse(function (api) {
   api.use(['coffeescript', 'jquery'], 'client');
 
   api.export('Annotator');
 
-  api.add_files([
+  api.addFiles([
     'annotator/src/extensions.coffee',
     'annotator/src/console.coffee',
     'annotator/src/class.coffee',
@@ -24,7 +24,7 @@ Package.on_use(function (api) {
   ], 'client', {bare: true});
 });
 
-Package.on_test(function (api) {
+Package.onTest(function (api) {
   api.use(['annotator', 'tinytest', 'test-helpers', 'coffeescript'], 'client');
-  api.add_files('tests.coffee', 'client');
+  api.addFiles('tests.coffee', 'client');
 });

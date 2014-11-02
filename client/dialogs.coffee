@@ -10,9 +10,9 @@ $(document).on 'click focus keypress', (event) ->
   # Do not act when interacting with notifications
   return if $(event.target).closest('.flash-messages').length
 
-  # originalEvent is defined only for native events, but we are triggering
-  # click manually as well, so originalEvent is not always defined
   for key, variable of DIALOG_VARIABLES
+    # originalEvent is defined only for native events, but we are triggering
+    # click manually as well, so originalEvent is not always defined
     Session.set variable, false unless variable is event.originalEvent?.preserveDialogVariable
 
   return # Make sure CoffeeScript does not return anything
@@ -38,42 +38,43 @@ Template.footer.events
     Session.set 'newsletterDialogError', null
 
     # Prefill subscribe form with user's email
-    $email = $(template.findAll '#newsletter-dialog-email')
+    $email = template.$('#newsletter-dialog-email')
     $email.val Meteor.person(Person.emailFields())?.email() unless $email.val()
 
     Meteor.setTimeout =>
-      $(template.findAll '#newsletter-dialog-email').focus()
+      template.$('#newsletter-dialog-email').focus()
     , 10 # ms
 
     return # Make sure CoffeeScript does not return anything
 
   'click .newsletter, focus .newsletter, keypress .newsletter': (event, template) ->
-    event.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
+    event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
-Template.newsletterDialog.displayed = ->
-  Session.get 'newsletterDialogActive'
+Template.newsletterDialog.helpers
+  displayed: ->
+    Session.get 'newsletterDialogActive'
 
-Template.newsletterDialog.waiting = ->
-  Session.get 'newsletterDialogSubscribing'
+  waiting: ->
+    Session.get 'newsletterDialogSubscribing'
 
-Template.newsletterDialog.error = ->
-  Session.get 'newsletterDialogError'
+  error: ->
+    Session.get 'newsletterDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.newsletterDialog.events
-# We have to bind directly to newsletter-dialog to intercept click on the parent
-# element of all and not directly on child elements. For example, when input is
-# disabled, its click handler is not called, but newsletter-dialog handler is.
+  # We have to bind directly to newsletter-dialog to intercept click on the parent
+  # element of all and not directly on child elements. For example, when input is
+  # disabled, its click handler is not called, but newsletter-dialog handler is.
   'click .newsletter-dialog, focus .newsletter-dialog, keypress .newsletter-dialog': (event, template) ->
-    event.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
+    event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.NEWSLETTER
     return # Make sure CoffeeScript does not return anything
 
   'submit .newsletter-subscribe': (event, template) ->
     event.preventDefault()
     return if Session.get 'newsletterDialogSubscribing'
 
-    email = $(template.findAll '#newsletter-dialog-email').val()
+    email = template.$('#newsletter-dialog-email').val()
 
     unless email.match EMAIL_REGEX
       Session.set 'newsletterDialogError', "Please enter a valid email address."
@@ -89,13 +90,13 @@ Template.newsletterDialog.events
 
         # Refocus for user to correct an error
         Meteor.setTimeout =>
-          $(template.findAll '#newsletter-dialog-email').focus()
+          template.$('#newsletter-dialog-email').focus()
         , 10 # ms
 
       else
         Session.set 'newsletterDialogError', null
         Session.set 'newsletterDialogActive', false
-        $(template.findAll '#newsletter-dialog-email').val('')
+        template.$('#newsletter-dialog-email').val('')
 
         FlashMessage.success "Subscribed to the newsletter.", "To confirm your email address a validation link was sent to you."
 
@@ -118,38 +119,39 @@ Template._loginButtonsLoggedInDropdownActions.events
     return # Make sure CoffeeScript does not return anything
 
   'click .invite-button, focus .invite-button, keypress .invite-button': (event, template) ->
-    event.preserveDialogVariable = DIALOG_VARIABLES.INVITE
+    event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
-Template.inviteDialog.displayed = ->
-  Session.get 'inviteDialogActive'
+Template.inviteDialog.helpers
+  displayed: ->
+    Session.get 'inviteDialogActive'
 
-Template.inviteDialog.waiting = ->
-  Session.get 'inviteDialogSending'
+  waiting: ->
+    Session.get 'inviteDialogSending'
 
-Template.inviteDialog.error = ->
-  Session.get 'inviteDialogError'
+  error: ->
+    Session.get 'inviteDialogError'
 
 # But if clicked inside, we mark the event so that dialog box is not closed
 Template.inviteDialog.events
-# We have to bind directly to invite-dialog to intercept click on the parent
-# element of all and not directly on child elements. For example, when input is
-# disabled, its click handler is not called, but invite-dialog handler is.
+  # We have to bind directly to invite-dialog to intercept click on the parent
+  # element of all and not directly on child elements. For example, when input is
+  # disabled, its click handler is not called, but invite-dialog handler is.
   'click .invite-dialog, focus .invite-dialog, keypress .invite-dialog': (event, template) ->
-    event.preserveDialogVariable = DIALOG_VARIABLES.INVITE
+    event.originalEvent.preserveDialogVariable = DIALOG_VARIABLES.INVITE
     return # Make sure CoffeeScript does not return anything
 
   'submit .invite-send': (event, template) ->
     event.preventDefault()
     return if Session.get 'inviteDialogSending'
 
-    email = $(template.findAll '#invite-dialog-email').val().trim()
+    email = template.$('#invite-dialog-email').val().trim()
 
     unless email.match EMAIL_REGEX
       Session.set 'inviteDialogError', "Please enter a valid email address."
       return
 
-    message = $(template.findAll '#invite-dialog-message').val().trim()
+    message = template.$('#invite-dialog-message').val().trim()
 
     Session.set 'inviteDialogSending', true
 
@@ -171,7 +173,7 @@ Template.inviteDialog.events
 
         # Refocus for user to correct an error
         Meteor.setTimeout =>
-          $(template.findAll '#invite-dialog-email').focus()
+          template.$('#invite-dialog-email').focus()
         , 10 # ms
 
         return false # We've handled the error ourselves, so don't show the notification

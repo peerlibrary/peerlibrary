@@ -14,7 +14,7 @@
   {{/unless}}
   <section class="{{currentPage}} {{#if currentPersonId}}logged-in{{else}}logged-out{{/if}}">
     <div class="container">
-      {{renderPage}}
+      {{> Template.dynamic template=currentPage}}
     </div>
   </section>
   {{> baseFooter}}

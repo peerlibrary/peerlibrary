@@ -4,10 +4,8 @@ class @Tag extends Tag
     replaceParent: true
 
   # We allow passing the tag slug if caller knows it
-  @pathFromId: (tagId, slug, options) ->
+  @pathFromId: (tagId, slug) ->
     assert _.isString tagId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     tag = @documents.findOne tagId
 
@@ -26,10 +24,8 @@ class @Tag extends Tag
       tagSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (tagId, tag, options) ->
+  @reference: (tagId, tag) ->
     assert _.isString tagId
-    # To allow calling template helper with only one argument (tag will be options then)
-    tag = null unless tag instanceof @
 
     tag = @documents.findOne tagId unless tag
     assert tagId, tag._id if tag
@@ -42,16 +38,20 @@ class @Tag extends Tag
   reference: =>
     @constructor.reference @_id, @
 
-Deps.autorun ->
+Tracker.autorun ->
   tagId = Session.get 'currentTagId'
 
   if tagId
     Meteor.subscribe 'tag-by-id', tagId
 
-Template.tag.tag = ->
-  Tag.documents.findOne
-    _id: Session.get 'currentTagId'
+Template.tag.helpers
+  tag: ->
+    Tag.documents.findOne
+      _id: Session.get 'currentTagId'
 
-Handlebars.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
+Template.registerHelper 'isTag', ->
+  @ instanceof Tag
 
-Handlebars.registerHelper 'tagReference', _.bind Tag.reference, Tag
+Template.registerHelper 'tagPathFromId', _.bind Tag.pathFromId, Tag
+
+Template.registerHelper 'tagReference', _.bind Tag.reference, Tag

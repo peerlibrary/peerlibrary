@@ -1,20 +1,26 @@
 # Used for global variable assignments in local scopes
 globals = @
 
-Template.publications.catalogSettings = ->
-  subscription: 'publications'
-  documentClass: Publication
-  variables:
-    active: 'publicationsActive'
-    ready: 'currentPublicationsReady'
-    loading: 'currentPublicationsLoading'
-    count: 'currentPublicationsCount'
-    filter: 'currentPublicationsFilter'
-    limit: 'currentPublicationsLimit'
-    limitIncreasing: 'currentPublicationsLimitIncreasing'
-    sort: 'currentPublicationsSort'
-  signedInNoDocumentsMessage: "Import the first from the menu on top."
-  signedOutNoDocumentsMessage: "Sign in and import the first."
+Template.publications.helpers
+  catalogSettings: ->
+    subscription: 'publications'
+    documentClass: Publication
+    variables:
+      active: 'publicationsActive'
+      ready: 'currentPublicationsReady'
+      loading: 'currentPublicationsLoading'
+      count: 'currentPublicationsCount'
+      filter: 'currentPublicationsFilter'
+      limit: 'currentPublicationsLimit'
+      limitIncreasing: 'currentPublicationsLimitIncreasing'
+      sort: 'currentPublicationsSort'
+    signedInNoDocumentsMessage: "Import the first from the menu on top."
+    signedOutNoDocumentsMessage: "Sign in and import the first."
+
+slideToggle = (template) ->
+  slide = if template._abstractOpen then 'slideUp' else 'slideDown'
+  template.$('.abstract').velocity slide, 'fast'
+  template._abstractOpen = not template._abstractOpen
 
 Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->
@@ -22,11 +28,11 @@ Template.publicationCatalogItem.events
 
     if template._publicationHandle
       # We ignore the click if handle is not yet ready
-      $(template.findAll '.abstract').slideToggle('fast') if template._publicationHandle.ready()
+      slideToggle template if template._publicationHandle.ready()
     else
       template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
-        Deps.afterFlush =>
-          $(template.findAll '.abstract').slideToggle('fast')
+        Tracker.afterFlush =>
+          slideToggle template
 
     return # Make sure CoffeeScript does not return anything
 
@@ -34,38 +40,43 @@ EnableCatalogItemLink Template.publicationCatalogItem
 
 Template.publicationCatalogItem.created = ->
   @_publicationHandle = null
+  @_abstractOpen = false
 
 Template.publicationCatalogItem.rendered = ->
-  $(@findAll '.scrubber').iscrubber
+  @$('.scrubber').iscrubber
     direction: 'combined'
 
 Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
   @_publicationHandle = null
+  @_abstractOpen = null
 
-Template.publicationCatalogItem.documentLengthClass = ->
-  switch
-    when @numberOfPages < 10 then 'short'
-    when @numberOfPages < 25 then 'medium'
-    else 'long'
+Template.publicationCatalogItem.helpers
+  documentLengthClass: ->
+    return unless @_id
 
-Template.publicationCatalogItem.annotationsCountDescription = ->
-  Annotation.verboseNameWithCount @annotationsCount
+    switch
+      when @numberOfPages < 10 then 'short'
+      when @numberOfPages < 25 then 'medium'
+      else 'long'
 
-Template.publicationCatalogItem.hasAbstract = ->
-  @abstract ? @hasAbstract
+  annotationsCountDescription: ->
+    Annotation.verboseNameWithCount @annotationsCount
 
-Template.publicationCatalogItem.hasCachedId = ->
-  @cachedId ? @hasCachedId
+  hasAbstract: ->
+    @abstract ? @hasAbstract
 
-Template.publicationCatalogItem.open = ->
-  @access is Publication.ACCESS.OPEN
+  hasCachedId: ->
+    @cachedId ? @hasCachedId
 
-Template.publicationCatalogItem.closed = ->
-  @access is Publication.ACCESS.CLOSED
+  open: ->
+    @access is Publication.ACCESS.OPEN
 
-Template.publicationCatalogItem.private = ->
-  @access is Publication.ACCESS.PRIVATE
+  closed: ->
+    @access is Publication.ACCESS.CLOSED
+
+  private: ->
+    @access is Publication.ACCESS.PRIVATE
 
 libraryMenuSubscriptionCounter = 0
 libraryMenuSubscriptionPersonHandle = null
@@ -81,12 +92,12 @@ onLibraryDropdownHidden = (event) ->
   $button.addClass('tooltip')
 
 Template.publicationCatalogItemLibraryMenu.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onLibraryDropdownHidden)
 
 Template.publicationCatalogItemLibraryMenu.events
   'click .toolbar-button': (event, template) ->
 
-    $anchor = $(template.findAll '.dropdown-anchor')
+    $anchor = template.$('.dropdown-anchor')
     $anchor.toggle()
 
     if $anchor.is(':visible')
@@ -103,7 +114,7 @@ Template.publicationCatalogItemLibraryMenu.events
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $button = $(template.findAll '.toolbar-button')
+      $button = template.$('.toolbar-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $button.removeClass('tooltip')
@@ -116,7 +127,8 @@ Template.publicationCatalogItemLibraryMenu.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.publicationCatalogItemLibraryMenu.inLibrary = Template.publicationLibraryMenuButtons.inLibrary
+Template.publicationCatalogItemLibraryMenu.helpers
+  inLibrary: Template.publicationLibraryMenuButtons.helpers 'inLibrary'
 
 Template.publicationCatalogItemLibraryMenu.created = ->
   libraryMenuSubscriptionCounter++
@@ -133,10 +145,15 @@ Template.publicationCatalogItemLibraryMenu.destroyed = ->
     libraryMenuSubscriptionCollectionsHandle = null
 
 Editable.template Template.publicationCatalogItemTitle, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  # TODO: Not all necessary fields for correct access check are present in search results/catalog, we should preprocess permissions this in a middleware and send computed permission as a boolean flag
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
   (title) ->
-    Meteor.call 'publication-set-title', @data._id, title, (error, count) ->
+    title = title.trim()
+    return unless title
+    Meteor.call 'publication-set-title', Template.currentData()._id, title, (error, count) ->
       return FlashMessage.fromError error, true if error
 ,
   "Enter publication title"
@@ -152,8 +169,8 @@ Template.publicationCatalogItemThumbnail.events
 
   'click li': (event, template) ->
     globals.startViewerOnPage = @page
-    # TODO: Change when you are able to access parent context directly with Meteor
-    publication = @publication
+
+    publication = Template.parentData 1
     Meteor.Router.toNew Meteor.Router.publicationPath publication._id, publication.slug
 
     return # Make sure CoffeeScript does not return anything

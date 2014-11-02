@@ -3,30 +3,32 @@ LIMIT_INCREASE_STEP = 10
 
 # List of all session variables that activate views with catalogs (used to determine infinite scrolling)
 globals = @
-globals.catalogActiveVariables = []
+globals.catalogActiveVariables = new Variable []
+
+# We can use @data directly here because it never really changes
+# during the life cycle of a template instance. So we do not have
+# to care about reactivity.
 
 # Subscribe the client to catalog's documents
 Template.catalog.created = ->
   variables = @data.variables
 
   # Make sure to access the global catalogActiveVariables variable
-  globals.catalogActiveVariables = _.union globals.catalogActiveVariables, [variables.active]
+  globals.catalogActiveVariables.set _.union globals.catalogActiveVariables(), [variables.active]
 
   # We need a reset signal that will rerun the search
   # when the ready variable is set to false from the router
   reset = new Variable false
   wasReady = new Variable false
 
-  @_resetSignalHandle?.stop()
-  @_resetSignalHandle = Deps.autorun =>
+  @autorun =>
     # Detect when ready is turned to false
     ready = Session.get(variables.ready)
     if wasReady() and not ready
       reset.set true
       wasReady.set false
 
-  @_searchParametersHandle?.stop()
-  @_searchParametersHandle = Deps.autorun =>
+  @autorun =>
     # Every time filter or sort is changed, we reset counts
     # (We don't want to reset counts on currentLimit change)
     Session.get variables.filter
@@ -37,8 +39,7 @@ Template.catalog.created = ->
 
   subscriptionHandle = null
 
-  @_subscriptionAutorunHandle?.stop()
-  @_subscriptionAutorunHandle = Deps.autorun =>
+  @autorun =>
     # Listen for the reset signal, so the search is
     # rerun when ready is set to false from the outside
     reset()
@@ -59,8 +60,7 @@ Template.catalog.created = ->
     else
       Session.set variables.loading, false
 
-  @_searchResultHandle?.stop()
-  @_searchResultHandle = Deps.autorun =>
+  @autorun =>
     fields = {}
     fields["count#{ @data.documentClass.Meta.collection._name }"] = 1
 
@@ -77,25 +77,17 @@ Template.catalog.created = ->
       changed: (newDocument, oldDocument) =>
         Session.set variables.count, newDocument["count#{ @data.documentClass.Meta.collection._name }"]
 
-Template.catalog.destroyed = ->
-  @_resetSignalHandle?.stop()
-  @_resetSignalHandle = null
-  @_searchParametersHandle?.stop()
-  @_searchParametersHandle = null
-  @_subscriptionAutorunHandle?.stop()
-  @_subscriptionAutorunHandle = null
-  @_searchResultHandle?.stop()
-  @_searchResultHandle = null
+Template.catalogFilter.helpers
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
-Template.catalogFilter.documentsName = ->
-  @documentClass.verboseNamePlural()
+  filter: ->
+    Session.get(@variables.filter) or ''
 
-Template.catalogFilter.filter = ->
-  Session.get(@variables.filter) or ''
-
-Template.catalogSort.field = ->
-  index = Session.get @variables.sort
-  @documentClass.PUBLISH_CATALOG_SORT[index].name
+Template.catalogSort.helpers
+  field: ->
+    index = Session.get @variables.sort
+    @documentClass.PUBLISH_CATALOG_SORT[index].name
 
 Template.catalogSort.events
   'click .dropdown-trigger': (event, template) ->
@@ -103,47 +95,46 @@ Template.catalogSort.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
-Template.catalogSortSelection.options = ->
-  # Modify the data with parent variables
-  # TODO: Change when meteor allows to access parent context
-  index = 0
-  _.map @documentClass.PUBLISH_CATALOG_SORT, (sorting) =>
-    sorting._parent = @
-    sorting._index = index++
-    sorting
+Template.catalogSortSelection.helpers
+  options: ->
+    # TODO: Reimplement using Meteor indexing of rendered elements (@index), see https://github.com/meteor/meteor/pull/912
+    for sorting, i in @documentClass.PUBLISH_CATALOG_SORT
+      sorting._index = i
+      sorting
 
 Template.catalogSortOption.events
   'click button': (event, template) ->
-    Session.set @_parent.variables.sort, @_index
+    Session.set Template.parentData(1).variables.sort, @_index
     $(template.firstNode).closest('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
 Template.catalogFilter.events
   'keyup .filter input': (event, template) ->
-    filter = $(template.findAll '.filter input').val()
+    filter = template.$('.filter input').val()
     Session.set @variables.filter, filter
 
     return # Make sure CoffeeScript does not return anything
 
-Template.catalogCount.ready = ->
-  Session.get @variables.ready
+Template.catalogCount.helpers
+  ready: ->
+    Session.get @variables.ready
 
-Template.catalogCount.count = ->
-  Session.get @variables.count
+  count: ->
+    Session.get @variables.count
 
-Template.catalogCount.countDescription = ->
-  @documentClass.verboseNameWithCount Session.get(@variables.count)
+  countDescription: ->
+    @documentClass.verboseNameWithCount Session.get(@variables.count)
 
-Template.catalogCount.filter = ->
-  Session.get @variables.filter
+  filter: ->
+    Session.get @variables.filter
 
-Template.catalogCount.documentsName = ->
-  @documentClass.verboseNamePlural()
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
 Template.catalogList.created = ->
   $(window).on 'scroll.catalog', =>
@@ -153,7 +144,7 @@ Template.catalogList.created = ->
     return # Make sure CoffeeScript does not return anything
 
 onCatalogRendered = (template, variables) ->
-  renderedChildren = $(template.find '.item-list').children().length
+  renderedChildren = template.$('.item-list').children().length
   expectedChildren = Math.min(Session.get(variables.count), Session.get(variables.limit))
 
   # Not all elements are yet in the DOM. Let's return here.
@@ -165,66 +156,52 @@ onCatalogRendered = (template, variables) ->
   $(window).trigger('scroll')
 
 Template.catalogList.rendered = ->
-  Deps.afterFlush =>
+  Tracker.afterFlush =>
     # Make sure onCatalogRendered gets executed after rendered is done and new elements are in the DOM.
     # Otherwise we might increase limit multiple times in a row, before the DOM updates.
     onCatalogRendered @, @data.variables
 
   # Focus on the filter
-  $(@find '.filter input').focus()
+  Meteor.setTimeout =>
+    $(@find '.filter input').focus()
+  , 10 # ms
 
 Template.catalogList.destroyed = ->
   $(window).off '.catalog'
 
-Template.catalogList.documents = ->
-  # Make sure we don't show documents if ready gets set to false
-  return unless Session.get @variables.ready
+Template.catalogList.helpers
+  documents: ->
+    # Make sure we don't show documents if ready gets set to false
+    return unless Session.get @variables.ready
 
-  searchResult = SearchResult.documents.findOne
-    name: @subscription
-    query: [Session.get(@variables.filter), Session.get(@variables.sort)]
+    searchResult = SearchResult.documents.findOne
+      name: @subscription
+      query: [Session.get(@variables.filter), Session.get(@variables.sort)]
 
-  return unless searchResult
+    return unless searchResult
 
-  @documentClass.documents.find
-    'searchResult._id': searchResult._id
-  ,
-    sort: [
-      ['searchResult.order', 'asc']
-    ]
-    limit: Session.get @variables.limit
-    fields:
-      searchResult: 0
+    @documentClass.documents.find
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: Session.get @variables.limit
+      fields:
+        searchResult: 0
 
-Template.catalogItem.documentIsPublication = ->
-  @ instanceof Publication
+Template.catalogLoading.helpers
+  loading: ->
+    Session.get @variables.loading
 
-Template.catalogItem.documentIsPerson = ->
-  @ instanceof Person
+  more: ->
+    Session.get(@variables.ready) and Session.get(@variables.limit) < Session.get(@variables.count)
 
-Template.catalogItem.documentIsHighlight = ->
-  @ instanceof Highlight
+  count: ->
+    Session.get @variables.count
 
-Template.catalogItem.documentIsAnnotation = ->
-  @ instanceof Annotation
-
-Template.catalogItem.documentIsGroup = ->
-  @ instanceof Group
-
-Template.catalogItem.documentIsCollection = ->
-  @ instanceof Collection
-
-Template.catalogLoading.loading = ->
-  Session.get @variables.loading
-
-Template.catalogLoading.more = ->
-  Session.get(@variables.ready) and Session.get(@variables.limit) < Session.get(@variables.count)
-
-Template.catalogLoading.count = ->
-  Session.get @variables.count
-
-Template.catalogLoading.documentsName = ->
-  @documentClass.verboseNamePlural()
+  documentsName: ->
+    @documentClass.verboseNamePlural()
 
 Template.catalogLoading.events
   'click .load-more': (event, template) ->

@@ -9,7 +9,7 @@
       Subscribe to PeerLibrary announcements, news, and important things. Low traffic.
     </p>
     <form class="newsletter-subscribe">
-      <input id="newsletter-dialog-email" type="text" placeholder="Email" class="waiting-icon" {{#if waiting}}disabled="disabled"{{/if}} />
+      <input id="newsletter-dialog-email" type="text" placeholder="Email" class="waiting-icon" disabled={{waiting}} />
       {{#if error}}
         <p class="message error-message">{{error}}</p>
       {{/if}}
@@ -21,8 +21,8 @@
 <template name="inviteDialog">
   <div class="invite-dialog popup-dialog {{#if displayed}}displayed{{/if}} {{#if waiting}}waiting{{/if}}">
     <form class="invite-send">
-      <input id="invite-dialog-email" type="text" placeholder="Email" class="waiting-icon" {{#if waiting}}disabled="disabled"{{/if}} />
-      <textarea id="invite-dialog-message" placeholder="Optional message" class="waiting-icon" {{#if waiting}}disabled="disabled"{{/if}}></textarea>
+      <input id="invite-dialog-email" type="text" placeholder="Email" class="waiting-icon" disabled={{waiting}} />
+      <textarea id="invite-dialog-message" placeholder="Optional message" class="waiting-icon" disabled={{waiting}}></textarea>
       {{#if error}}
         <p class="message error-message">{{error}}</p>
       {{/if}}

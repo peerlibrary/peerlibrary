@@ -3,7 +3,7 @@ searchLimitIncreasing = false
 currentSearchQueryCount = ->
   (Session.get('currentSearchQueryCountPublications') or 0) + (Session.get('currentSearchQueryCountPersons') or 0)
 
-Deps.autorun ->
+Tracker.autorun ->
   # Every time search query is changed, we reset counts
   # (We don't want to reset counts on currentSearchLimit change)
   Session.get 'currentSearchQuery'
@@ -12,7 +12,7 @@ Deps.autorun ->
 
   searchLimitIncreasing = false
 
-Deps.autorun ->
+Tracker.autorun ->
   Session.set 'currentSearchQueryReady', false
   if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
     Session.set 'currentSearchQueryLoading', true
@@ -26,7 +26,7 @@ Deps.autorun ->
   else
     Session.set 'currentSearchQueryLoading', false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'searchActive'
     Meteor.subscribe 'statistics'
 
@@ -53,54 +53,57 @@ increaseSearchLimit = (pageSize) ->
     searchLimitIncreasing = true
     Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
 
-Template.results.publications = ->
-  if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
-    return
+Template.results.helpers
+  publications: ->
+    if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
+      return
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-results'
-    query: Session.get 'currentSearchQuery'
+    searchResult = SearchResult.documents.findOne
+      name: 'search-results'
+      query: Session.get 'currentSearchQuery'
 
-  return if not searchResult
+    return if not searchResult
 
-  Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
-  Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
+    Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
+    Session.set 'currentSearchQueryCountPersons', searchResult.countPersons
 
-  Publication.documents.find
-    'searchResult._id': searchResult._id
-  ,
-    sort: [
-      ['searchResult.order', 'asc']
-    ]
-    limit: Session.get 'currentSearchLimit'
-    fields:
-      searchResult: 0
+    Publication.documents.find
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: Session.get 'currentSearchLimit'
+      fields:
+        searchResult: 0
 
-Template.resultsCount.publications = ->
-  Session.get 'currentSearchQueryCountPublications'
+Template.resultsCount.helpers
+  publications: ->
+    Session.get 'currentSearchQueryCountPublications'
 
-Template.resultsCount.persons = ->
-  Session.get 'currentSearchQueryCountPersons'
+  persons: ->
+    Session.get 'currentSearchQueryCountPersons'
 
-Template.resultsCount.noResults = ->
-  Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
+  noResults: ->
+    Session.get('currentSearchQueryReady') and not currentSearchQueryCount()
 
-Template.resultsCount.publicationsCountDescription = ->
-  Publication.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
+  publicationsCountDescription: ->
+    Publication.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
 
-Template.resultsCount.personsCountDescription = ->
-  Person.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
+  personsCountDescription: ->
+    Person.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
 
-Template.resultsLoad.loading = ->
-  Session.get('currentSearchQueryLoading')
+Template.resultsLoad.helpers
+  loading: ->
+    Session.get('currentSearchQueryLoading')
 
-Template.resultsLoad.more = ->
-  Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
+  more: ->
+    Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
 
-Template.resultsLoad.publications = ->
-  Session.get 'currentSearchQueryCountPublications'
+  publications: ->
+    Session.get 'currentSearchQueryCountPublications'
 
-Template.resultsLoad.events =
+Template.resultsLoad.events
   'click .load-more': (event, template) ->
     event.preventDefault()
     searchLimitIncreasing = false # We want to force loading more in every case
@@ -108,28 +111,23 @@ Template.resultsLoad.events =
 
     return # Make sure CoffeeScript does not return anything
 
-Template.resultsSearchInvitation.searchInvitation = ->
-  not Session.get('currentSearchQuery')
-
-Template.sidebarSearch.created = ->
-  @_searchQueryHandle = null
-  @_dateRangeHandle = null
+Template.resultsSearchInvitation.helpers
+  searchInvitation: ->
+    not Session.get('currentSearchQuery')
 
 Template.sidebarSearch.rendered = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = Deps.autorun =>
+  @autorun =>
     # Sync input field unless change happened because of this input field itself
-    $(@findAll '#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
+    @$('#general').val(Session.get 'currentSearchQuery') unless structuredQueryChangeLock > 0
 
-  @_dateRangeHandle?.stop()
-  @_dateRangeHandle = Deps.autorun =>
+  @autorun =>
     statistics = Statistics.documents.findOne {},
       fields:
         minPublicationDate: 1
         maxPublicationDate: 1
 
-    $publicationDate = $(@findAll '#publication-date')
-    $slider = $(@findAll '#date-range')
+    $publicationDate = @$('#publication-date')
+    $slider = @$('#date-range')
 
     unless statistics?.minPublicationDate and statistics?.maxPublicationDate
       $publicationDate.val('')
@@ -158,20 +156,14 @@ Template.sidebarSearch.rendered = ->
 
     $publicationDate.val($slider.slider('values', 0) + ' - ' + $slider.slider('values', 1))
 
-  $(@findAll '.chzn').chosen
+  @$('.chzn').chosen
     no_results_text: "No tag match"
-
-Template.sidebarSearch.destroyed = ->
-  @_searchQueryHandle?.stop()
-  @_searchQueryHandle = null
-  @_dateRangeHandle?.stop()
-  @_dateRangeHandle = null
 
 sidebarIntoQuery = (template) ->
   # TODO: Add other fields as well
-  general: $(template.findAll '#general').val()
+  general: template.$('#general').val()
 
-Template.sidebarSearch.events =
+Template.sidebarSearch.events
   'blur #general': (event, template) ->
     structuredQueryChange(sidebarIntoQuery template)
     return # Make sure CoffeeScript does not return anything
@@ -203,6 +195,6 @@ updateSearchLoction = _.debounce (query) ->
   Meteor.Router.toNew Meteor.Router.searchPath query
 , 500
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'searchActive'
     updateSearchLoction Session.get 'currentSearchQuery'

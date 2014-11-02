@@ -13,7 +13,7 @@ accessButtonEventHandlers =
       # information as in the tooltip is displayed in the dropdown content. We need
       # to remove the element manually, since we can't selectively disable/destroy
       # it just on this element through jQeury UI.
-      $button = $(template.findAll '.access-button')
+      $button = template.$('.access-button')
       tooltipId = $button.attr('aria-describedby')
       $('#' + tooltipId).remove()
       $button.removeClass('tooltip')
@@ -24,44 +24,51 @@ accessButtonEventHandlers =
     return # Make sure CoffeeScript does not return anything
 
 Template.accessControl.rendered = ->
-  $(@findAll '.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
+  @$('.dropdown-anchor').off('dropdown-hidden').on('dropdown-hidden', onAccessDropdownHidden)
 
-Template.accessControl.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.accessControl.helpers
+  canModifyAccess: ->
+    return unless @_id
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessButton.events accessButtonEventHandlers
 
-Template.accessButton.public = ->
-  @access is @constructor.ACCESS.PUBLIC
+Template.accessButton.helpers
+  public: ->
+    return unless @_id
+    @access is @constructor.ACCESS.PUBLIC
 
-Template.accessButton.documentName = ->
-  # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-  if @constructor.Meta.collection._name is null
-    documentName = @constructor.Meta.parent._name
-  else
-    documentName = @constructor.Meta._name
+  documentName: ->
+    return unless @_id
 
-  documentName.toLowerCase()
+    # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
+    if @constructor.Meta.collection._name is null
+      documentName = @constructor.Meta.parent._name
+    else
+      documentName = @constructor.Meta._name
 
-Template.accessButton.documentIsGroup = ->
-  @ instanceof Group
+    documentName.toLowerCase()
 
-Template.accessIconControl.canModifyAccess = Template.accessControl.canModifyAccess
+Template.accessIconControl.helpers
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
 Template.accessIconButton.rendered = Template.accessButton.rendered
 
 Template.accessIconButton.events accessButtonEventHandlers
 
-Template.accessIconButton.public = Template.accessButton.public
+Template.accessIconButton.helpers
+  public: Template.accessButton.helpers 'public'
 
-Template.accessIconButton.documentName = Template.accessButton.documentName
+  documentName: Template.accessButton.helpers 'documentName'
 
-Template.accessMenu.canModifyAccess = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.accessMenu.helpers
+  canModifyAccess: ->
+    return unless @_id
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.accessMenuPrivacyForm.events
   'change .access input:radio': (event, template) ->
-    access = @constructor.ACCESS[$(template.findAll '.access input:radio:checked').val().toUpperCase()]
+    access = @constructor.ACCESS[template.$('.access input:radio:checked').val().toUpperCase()]
 
     return if access is @access
 
@@ -80,35 +87,35 @@ Template.accessMenuPrivacyForm.events
 
   'mouseenter .access .selection': (event, template) ->
     accessHover = $(event.currentTarget).find('input').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
   'mouseleave .access .selections': (event, template) ->
-    accessHover = $(template.findAll '.access input:radio:checked').val()
-    $(template.findAll '.access .displayed.description').removeClass('displayed')
-    $(template.findAll ".access .description.#{ accessHover }").addClass('displayed')
+    accessHover = template.$('.access input:radio:checked').val()
+    template.$('.access .displayed.description').removeClass('displayed')
+    template.$(".access .description.#{ accessHover }").addClass('displayed')
 
     return # Make sure CoffeeScript does not return anything
 
-Template.accessMenuPrivacyForm.public = ->
-  @access is @constructor.ACCESS.PUBLIC
+Template.accessMenuPrivacyForm.helpers
+  public: ->
+    return unless @_id
+    @access is @constructor.ACCESS.PUBLIC
 
-Template.accessMenuPrivacyForm.private = ->
-  @access is @constructor.ACCESS.PRIVATE
+  private: ->
+    return unless @_id
+    @access is @constructor.ACCESS.PRIVATE
 
-Template.accessMenuPrivacyForm.documentName = Template.accessButton.documentName
+  documentName: Template.accessButton.helpers 'documentName'
 
-Template.accessMenuPrivacyForm.documentIsGroup = Template.accessButton.documentIsGroup
+Template.accessMenuPrivacyInfo.helpers
+  public: Template.accessMenuPrivacyForm.helpers 'public'
 
-Template.accessMenuPrivacyInfo.public = Template.accessMenuPrivacyForm.public
+  private: Template.accessMenuPrivacyForm.helpers 'private'
 
-Template.accessMenuPrivacyInfo.private = Template.accessMenuPrivacyForm.private
-
-Template.accessMenuPrivacyInfo.documentName = Template.accessMenuPrivacyForm.documentName
-
-Template.accessMenuPrivacyInfo.documentIsGroup = Template.accessMenuPrivacyForm.documentIsGroup
+  documentName: Template.accessMenuPrivacyForm.helpers 'documentName'
 
 Template.rolesControl.created = ->
   # Private access control displays a list of people, some of which might have been invited by email. We subscribe to
@@ -119,64 +126,67 @@ Template.rolesControl.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.rolesControl.showControl = ->
-  return true if Template.accessControl.canModifyAccess.call @
+Template.rolesControl.helpers
+  showControl: ->
+    return unless @_id
 
-  rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
-  rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
+    return true if Template.accessControl.helpers('canModifyAccess').call @
 
-  return rolesCount > 0
+    rolesCount = @adminGroups?.length or 0 + @adminPersons?.length or 0 + @maintainerGroups?.length or 0 + @maintainerPersons?.length or 0
+    rolesCount += @readGroups?.length or 0 + @readPersons?.length or 0 if @access is ACCESS.PRIVATE
 
-Template.rolesControl.canModifyAccess = Template.accessControl.canModifyAccess
+    return rolesCount > 0
 
-Template.rolesControlList.rolesList = ->
-  rolesList = []
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
 
-  admins = []
-  admins = admins.concat @adminGroups if @adminGroups
-  admins = admins.concat @adminPersons if @adminPersons
-  for admin in admins
-    rolesList.push
-      personOrGroup: admin
-      admin: true
+Template.rolesControlList.helpers
+  rolesList: ->
+    return unless @_id
 
-  maintainers = []
-  maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
-  maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
-  for maintainer in maintainers
-    continue if _.find rolesList, (item) ->
-      item.personOrGroup._id is maintainer._id
+    rolesList = []
 
-    rolesList.push
-      personOrGroup: maintainer
-      maintainer: true
+    admins = []
+    admins = admins.concat @adminGroups if @adminGroups
+    admins = admins.concat @adminPersons if @adminPersons
+    for admin in admins
+      rolesList.push
+        personOrGroup: admin
+        admin: true
+        role: ROLES.ADMIN
 
-  if @access is ACCESS.PRIVATE
-    readers = []
-    readers = readers.concat @readGroups if @readGroups
-    readers = readers.concat @readPersons if @readPersons
-    for reader in readers
+    maintainers = []
+    maintainers = maintainers.concat @maintainerGroups if @maintainerGroups
+    maintainers = maintainers.concat @maintainerPersons if @maintainerPersons
+    for maintainer in maintainers
       continue if _.find rolesList, (item) ->
-        item.personOrGroup._id is reader._id
+        item.personOrGroup._id is maintainer._id
 
       rolesList.push
-        personOrGroup: reader
-        readAccess: true
+        personOrGroup: maintainer
+        maintainer: true
+        role: ROLES.MAINTAINER
 
-  # Because it is not possible to access parent data context from event handler, we map it
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map rolesList, (role) =>
-    role._parent = @
-    role
+    if @access is ACCESS.PRIVATE
+      readers = []
+      readers = readers.concat @readGroups if @readGroups
+      readers = readers.concat @readPersons if @readPersons
+      for reader in readers
+        continue if _.find rolesList, (item) ->
+          item.personOrGroup._id is reader._id
 
-Template.rolesControlList.canModifyAccess = Template.accessControl.canModifyAccess
+        rolesList.push
+          personOrGroup: reader
+          readAccess: true
+          role: ROLES.READ_ACCESS
 
-changeRole = (data, newRole) ->
-  oldRole = null
-  oldRole = ROLES.ADMIN if data.admin
-  oldRole = ROLES.MAINTAINER if data.maintainer
-  oldRole = ROLES.READ_ACCESS if data.readAccess
+    rolesList
 
+  canModifyAccess: Template.accessControl.helpers 'canModifyAccess'
+
+changeRoleFromRolesListElement = (document, rolesListElement, newRole) ->
+  changeRole document, rolesListElement.personOrGroup, rolesListElement.role, newRole
+
+changeRole = (document, personOrGroup, oldRole, newRole) ->
   return if oldRole is newRole
 
   notification = ->
@@ -184,27 +194,26 @@ changeRole = (data, newRole) ->
 
   unless oldRole
     notification = ->
-      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } added."
+      FlashMessage.success "#{ _.capitalize personOrGroup.constructor.verboseName() } added."
 
   else unless newRole
     notification = ->
-      FlashMessage.success "#{ _.capitalize data.personOrGroup.constructor.verboseName() } removed."
+      FlashMessage.success "#{ _.capitalize personOrGroup.constructor.verboseName() } removed."
 
-  if data.personOrGroup instanceof Person
+  if personOrGroup instanceof Person
     methodName = 'set-role-for-person'
-  else if data.personOrGroup instanceof Group
+  else if personOrGroup instanceof Group
     methodName = 'set-role-for-group'
   else
     assert false
 
   # Special case when having a local collection around a real collection (as in case of LocalAnnotation)
-  if data._parent.constructor.Meta.collection._name is null
-    documentName = data._parent.constructor.Meta.parent._name
+  if document.constructor.Meta.collection._name is null
+    documentName = document.constructor.Meta.parent._name
   else
-    documentName = data._parent.constructor.Meta._name
+    documentName = document.constructor.Meta._name
 
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  Meteor.call methodName, documentName, data._parent._id, data.personOrGroup._id, newRole, (error, changed) =>
+  Meteor.call methodName, documentName, document._id, personOrGroup._id, newRole, (error, changed) =>
     return FlashMessage.fromError error, true if error
 
     notification() if changed
@@ -215,282 +224,216 @@ Template.rolesControlRoleEditor.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .administrator-button': (event, template) ->
-    changeRole @, ROLES.ADMIN
-    $(template.findAll '.dropdown-anchor').hide()
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.ADMIN
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .maintainer-button': (event, template) ->
-    changeRole @, ROLES.MAINTAINER
-    $(template.findAll '.dropdown-anchor').hide()
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.MAINTAINER
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .read-access-button': (event, template) ->
-    changeRole @, ROLES.READ_ACCESS
-    $(template.findAll '.dropdown-anchor').hide()
+    changeRoleFromRolesListElement Template.parentData(1), @, ROLES.READ_ACCESS
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
   'click .remove-button': (event, template) ->
-    changeRole @, null
-    $(template.findAll '.dropdown-anchor').hide()
+    changeRoleFromRolesListElement Template.parentData(1), @, null
+    template.$('.dropdown-anchor').hide()
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlRoleEditor.isPerson = ->
-  @personOrGroup instanceof Person
+Template.rolesControlRoleEditor.helpers
+  private: ->
+    Template.parentData(1).access is ACCESS.PRIVATE
 
-Template.rolesControlRoleEditor.isGroup = ->
-  @personOrGroup instanceof Group
+  canModifyAccess: ->
+    Template.parentData(1).hasAdminAccess Meteor.person Template.parentData(1).constructor.adminAccessPersonFields()
 
-Template.rolesControlRoleEditor.private = ->
-  @_parent.access is ACCESS.PRIVATE
+Template.rolesControlAdd.created = ->
+  @_query = new Variable ''
+  @_loading = new Variable 0
 
-Template.rolesControlRoleEditor.canModifyAccess = ->
-  @_parent.hasAdminAccess Meteor.person @_parent.constructor.adminAccessPersonFields()
+Template.rolesControlAdd.rendered = ->
+  @autorun =>
+    if @_query()
+      loading = true
+      @_loading.set Tracker.nonreactive(@_loading) + 1
+
+      # Reactive data.
+      data = Template.currentData()
+
+      existingRoles = _.pluck(data?.adminPersons, '_id').concat(
+        _.pluck(data?.adminGroups, '_id'),
+        _.pluck(data?.maintainerPersons, '_id'),
+        _.pluck(data?.maintainerGroups, '_id'),
+      )
+      if data?.access is ACCESS.PRIVATE
+        existingRoles = existingRoles.concat(
+          _.pluck(data?.readPersons, '_id'),
+          _.pluck(data?.readGroups, '_id'),
+        )
+
+      # We are using all roles, both persons and groups, together, because
+      # it is very improbable that there would be duplicate _ids
+      Meteor.subscribe 'search-persons-groups', @_query(), existingRoles,
+        onReady: =>
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
+          loading = false
+        onError: =>
+          # TODO: Should we display some error?
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
+          loading = false
+      Tracker.onInvalidate =>
+        @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
+        loading = false
+
+Template.rolesControlAdd.destroyed = ->
+  @_query = null
+  @_loading = null
 
 Template.rolesControlAdd.events
   'change .add-access, keyup .add-access': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.add-access').val()
+    template.get('_query').set template.$('.add-access').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addAccessControlReactiveVariables = (data) ->
-  if data._query
-    assert data._loading
-    return
+Template.rolesControlNoResults.helpers
+  noResults: ->
+    template = Template.instance()
 
-  data._query = new Variable ''
-  data._loading = new Variable 0
+    query = template.get('_query')()
 
-  data._newDataContext = true
+    return unless query
 
-Template.rolesControlAdd.created = ->
-  @_searchHandle = null
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  addAccessControlReactiveVariables @data
+    return unless searchResult
 
-Template.rolesControlAdd.rendered = ->
-  addAccessControlReactiveVariables @data
+    not template.get('_loading')() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
 
-  if @_searchHandle and @data._newDataContext
-    @_searchHandle.stop()
-    @_searchHandle = null
+  email: ->
+    template = Template.instance()
 
-  delete @data._newDataContext
+    query = template.get('_query')()
 
-  return if @_searchHandle
-  @_searchHandle = Deps.autorun =>
-    if @data._query()
-      loading = true
-      @data._loading.set Deps.nonreactive(@data._loading) + 1
+    return unless query?.match EMAIL_REGEX
 
-      existingRoles = _.pluck(@data.adminPersons, '_id').concat(_.pluck(@data.adminGroups, '_id'),
-        _.pluck(@data.maintainerPersons, '_id'), _.pluck(@data.maintainerGroups, '_id'))
-      existingRoles = existingRoles.concat(_.pluck(@data.readPersons, '_id'), _.pluck(@data.readGroups, '_id')) if @data.access is ACCESS.PRIVATE
-
-      # We are using all roles, both persons and groups, together, because
-      # it is very improbable that there would be duplicate _ids
-      Meteor.subscribe 'search-persons-groups', @data._query(), existingRoles,
-        onReady: =>
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
-          loading = false
-        onError: =>
-          # TODO: Should we display some error?
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
-          loading = false
-      Deps.onInvalidate =>
-        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
-        loading = false
-
-Template.rolesControlAdd.destroyed = ->
-  @_searchHandle?.stop()
-  @_searchHandle = null
-
-  @data._query = null
-  @data._loading = null
-
-  delete @data._newDataContext
-
-Template.rolesControlNoResults.noResults = ->
-  addAccessControlReactiveVariables @
-
-  query = @_query()
-
-  return unless query
-
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
-
-  return unless searchResult
-
-  not @_loading() and not ((searchResult.countPersons or 0) + (searchResult.countGroups or 0))
-
-Template.rolesControlNoResults.email = ->
-  addAccessControlReactiveVariables @
-
-  query = @_query().trim()
-  return unless query?.match EMAIL_REGEX
-
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  query = new String(query)
-  query._parent = @
-  query
+    query
 
 grantAccess = (document, personOrGroup) ->
-  data =
-    _parent: document
-    personOrGroup: personOrGroup
-
-  changeRole data, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
+  changeRole document, personOrGroup, null, if document.access is ACCESS.PRIVATE then ROLES.READ_ACCESS else ROLES.MAINTAINER
 
 Template.addControlInviteByEmail.events
   'click .invite': (event, template) ->
-    # We get the email in @ (this), but it's a String object that also has
-    # the parent context attached so we first convert it to a normal string.
-    email = "#{ @ }"
+    # We get the email in @ (this).
+    email = @
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, @_parent.route(), (newPersonId) =>
+    inviteUser email, Template.parentData(1).route(), (newPersonId) =>
       # Clear autocomplete field when we are only inviting.
       # Otherwise we leave it in so that user can click again and
       # add user to permissions.
       $inviteOnlyField = $(template.firstNode).closest('.add-control').find('.invite-only')
       if $inviteOnlyField.length
         $inviteOnlyField.val('')
-        @_parent._query.set ''
+        template.get('_query').set ''
 
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlLoading.loading = ->
-  addAccessControlReactiveVariables @
+Template.rolesControlLoading.helpers
+  loading: ->
+    Template.instance().get('_loading')()
 
-  @_loading()
+Template.rolesControlResults.helpers
+  results: ->
+    template = Template.instance()
 
-Template.rolesControlResults.results = ->
-  addAccessControlReactiveVariables @
+    query = template.get('_query')()
 
-  query = @_query()
+    return unless query
 
-  return unless query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons-groups'
+      query: query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons-groups'
-    query: query
+    return unless searchResult
 
-  return unless searchResult
+    personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
+    groupsLimit = 5 - personsLimit
 
-  personsLimit = Math.round(5 * searchResult.countPersons / (searchResult.countPersons + searchResult.countGroups))
-  groupsLimit = 5 - personsLimit
+    if personsLimit
+      persons = Person.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: personsLimit
+      ).fetch()
+    else
+      persons = []
 
-  if personsLimit
-    persons = Person.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: personsLimit
-    ).fetch()
-  else
-    persons = []
+    if groupsLimit
+      groups = Group.documents.find(
+        'searchResult._id': searchResult._id
+      ,
+        sort: [
+          ['searchResult.order', 'asc']
+        ]
+        limit: groupsLimit
+      ).fetch()
+    else
+      groups = []
 
-  if groupsLimit
-    groups = Group.documents.find(
-      'searchResult._id': searchResult._id
-    ,
-      sort: [
-        ['searchResult.order', 'asc']
-      ]
-      limit: groupsLimit
-    ).fetch()
-  else
-    groups = []
-
-  results = persons.concat groups
-
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  _.map results, (result) =>
-    result._parent = @
-    result
-
-Template.rolesControlResultsItem.ifPerson = (options) ->
-  if @ instanceof Person
-    options.fn @
-  else
-    options.inverse @
+    persons.concat groups
 
 Template.rolesControlResultsItem.events
   'click .add-button': (event, template) ->
-    # TODO: When will be possible to better access parent data context from event handler, we should use that
-    grantAccess @_parent, @
+    grantAccess Template.parentData(1), @
 
     return # Make sure CoffeeScript does not return anything
 
-Template.rolesControlInviteHint.visible = ->
-  addAccessControlReactiveVariables @
-
-  !@_query()
+Template.rolesControlInviteHint.helpers
+  visible: ->
+    !Template.instance().get('_query')()
 
 Template.rolesControlInvite.events
   'change .invite-only, keyup .invite-only': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.invite-only').val()
+    template.get('_query').set template.$('.invite-only').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addAccessControlInviteOnlyReactiveVariables = (data) ->
-  return if data._query
-  data._query = new Variable ''
-  data._newDataContext = true
-
 Template.rolesControlInvite.created = ->
-  @_rendered = false
-  addAccessControlInviteOnlyReactiveVariables @data
-
-Template.rolesControlInvite.rendered = ->
-  addAccessControlInviteOnlyReactiveVariables @data
-
-  if @_rendered and @data._newDataContext
-    @_rendered = false
-
-  delete @data._newDataContext
-
-  return if @_rendered
-  @_rendered = true
+  @_query = new Variable ''
 
 Template.rolesControlInvite.destroyed = ->
-  @_rendered = false
-  @data._query = null
-  delete @data._newDataContext
+  @_query = null
 
-Template.rolesControlInviteButton.email = ->
-  addAccessControlInviteOnlyReactiveVariables @
+Template.rolesControlInviteButton.helpers
+  email: ->
+    template = Template.instance()
 
-  query = @_query().trim()
-  return unless query?.match EMAIL_REGEX
+    query = template.get('_query')()
 
-  # Because it is not possible to access parent data context from event handler, we store it into results
-  # TODO: When will be possible to better access parent data context from event handler, we should use that
-  query = new String(query)
-  query._parent = @
-  query
+    return unless query?.match EMAIL_REGEX
+
+    query

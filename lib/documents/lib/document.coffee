@@ -30,9 +30,14 @@ class @BaseDocument extends Document
     throw new Error "Missing _id field" unless @_id
 
     fields ?= {}
-    _.extend @, @constructor.documents.findOne @_id,
-      fields: fields
-      transform: null
+    fullDocument = {}
+    # We want to objectify the document so that subdocuments are proper objects,
+    # but we do not want to override methods on the existing document so that
+    # methods' binding works correctly. This is why we skip all top-level functions.
+    for key, value of @constructor.documents.findOne(@_id, fields: fields) when not _.isFunction value
+      fullDocument[key] = value
+
+    _.extend @, fullDocument
 
 class @AccessDocument extends BaseDocument
   @Meta

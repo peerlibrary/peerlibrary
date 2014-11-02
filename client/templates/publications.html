@@ -19,7 +19,7 @@
 
 <template name="publicationInlineItem">
   {{#spaceless}}
-    <a class="inline-item publication" {{#unless noLink}}href="{{path}}"{{/unless}}>
+    <a class="inline-item publication" {{collectionItemLink}}>
       <i class="icon-publication" title="Publication"></i>
       <span class="name" title="{{name}}">
         {{#if title}}
@@ -42,6 +42,7 @@
           {{/each}}
         </ul>
         <div class="page-tooltip">
+          {{! We are showing a tooltip ourselves because we want to change its content based on the current page number user hovers over. }}
           <div class="ui-tooltip"></div>
         </div>
       </div>
@@ -108,29 +109,32 @@
 </template>
 
 <template name="publicationCatalogItemLibraryMenu">
-  <div class="dropdown-trigger">
-    <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections{{/if}}">
-      <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
-    </button>
-    <div class="dropdown-anchor">
-      <div class="dropdown library-menu">
-        {{> publicationLibraryMenuButtons}}
-        {{> publicationLibraryMenuCollections}}
-        {{> addNewCollection}}
+  {{#spaceless}}
+    <div class="dropdown-trigger">
+      <button class="toolbar-button tooltip" title="{{#if inLibrary}}Publication is in your library{{else}}Add publication to library and collections{{/if}}">
+        <i class="{{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
+      </button>
+      <div class="dropdown-anchor">
+        <div class="dropdown library-menu">
+          {{! Only the first include we might want spaceless as well, others are OK as they are. }}
+          {{> publicationLibraryMenuButtons}}
+          {{> publicationLibraryMenuCollections}}
+          {{> addNewCollection}}
+        </div>
       </div>
     </div>
-  </div>
+  {{/spaceless}}
 </template>
 
 <template name="publicationCatalogItemTitle">
-  <h2 class="{{#unless title}}{{#unless importing.0.filename}}missing-value{{/unless}}{{/unless}}">
+  <h2 class="{{#unless title}}{{#unless importing.[0].filename}}missing-value{{/unless}}{{/unless}}">
     {{#spaceless}}
       {{#if title}}
         {{title}}
       {{else}}
-        {{#if importing.0.filename}}
-          {{! Used only in personal library list, elsewhere we display "title metadata missing" to invite users to provide metadata }}
-          {{importing.0.filename}}
+        {{#if importing.[0].filename}}
+          {{! Used when available, elsewhere we display "title metadata missing" to invite users to provide metadata }}
+          {{importing.[0].filename}}
         {{else}}
           <i>&lt;title metadata missing&gt;</i>
         {{/if}}

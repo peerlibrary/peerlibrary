@@ -4,10 +4,8 @@ class @Group extends Group
     replaceParent: true
 
   # We allow passing the group slug if caller knows it
-  @pathFromId: (groupId, slug, options) ->
+  @pathFromId: (groupId, slug) ->
     assert _.isString groupId
-    # To allow calling template helper with only one argument (group will be options then)
-    group = null unless _.isString group
 
     group = @documents.findOne groupId
 
@@ -26,10 +24,8 @@ class @Group extends Group
       groupSlug: @slug
 
   # Helper object with properties useful to refer to this document. Optional group document.
-  @reference: (groupId, group, options) ->
+  @reference: (groupId, group) ->
     assert _.isString groupId
-    # To allow calling template helper with only one argument (collection will be options then)
-    group = null unless group instanceof @
 
     group = @documents.findOne groupId unless group
     assert groupId, group._id if group
@@ -46,7 +42,7 @@ groupHandle = null
 # Mostly used just to force reevaluation of groupHandle
 groupSubscribing = new Variable false
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get 'currentGroupId'
     groupSubscribing.set true
     groupHandle = Meteor.subscribe 'groups-by-ids', Session.get 'currentGroupId'
@@ -54,11 +50,11 @@ Deps.autorun ->
     groupSubscribing.set false
     groupHandle = null
 
-Deps.autorun ->
+Tracker.autorun ->
   if groupSubscribing() and groupHandle?.ready()
     groupSubscribing.set false
 
-Deps.autorun ->
+Tracker.autorun ->
   group = Group.documents.findOne Session.get('currentGroupId'),
     fields:
       _id: 1
@@ -72,30 +68,37 @@ Deps.autorun ->
 
   Meteor.Router.toNew Meteor.Router.groupPath group._id, group.slug
 
-Template.group.loading = ->
-  groupSubscribing() # To register dependency
-  not groupHandle?.ready()
+Template.group.helpers
+  loading: ->
+    groupSubscribing() # To register dependency
+    not groupHandle?.ready()
 
-Template.group.notFound = ->
-  groupSubscribing() # To register dependency
-  groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
+  notFound: ->
+    groupSubscribing() # To register dependency
+    groupHandle?.ready() and not Group.documents.findOne Session.get('currentGroupId'), fields: _id: 1
 
-Template.group.group = ->
-  Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
+  group: ->
+    Group.documents.findOne Session.get('currentGroupId'), fields: searchResult: 0
 
 Editable.template Template.groupName, ->
-  @data.hasMaintainerAccess Meteor.person @data.constructor.maintainerAccessPersonFields()
+  data = Template.currentData()
+  return unless data
+  data.hasMaintainerAccess Meteor.person data.constructor.maintainerAccessPersonFields()
 ,
-(name) ->
-  Meteor.call 'group-set-name', @data._id, name, (error, count) ->
-    return FlashMessage.fromError error, true if error
+  (name) ->
+    name = name.trim()
+    return unless name
+    Meteor.call 'group-set-name', Template.currentData()._id, name, (error, count) ->
+      return FlashMessage.fromError error, true if error
 ,
   "Enter group name"
 ,
   true
 
-Template.groupMembers.canModifyMembership = ->
-  @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
+Template.groupMembers.helpers
+  canModifyMembership: ->
+    return unless @_id
+    @hasAdminAccess Meteor.person @constructor.adminAccessPersonFields()
 
 Template.groupMembersList.created = ->
   @_personsInvitedHandle = Meteor.subscribe 'persons-invited'
@@ -104,7 +107,8 @@ Template.groupMembersList.destroyed = ->
   @_personsInvitedHandle?.stop()
   @_personsInvitedHandle = null
 
-Template.groupMembersList.canModifyMembership = Template.groupMembers.canModifyMembership
+Template.groupMembersList.helpers
+  canModifyMembership: Template.groupMembers.helpers 'canModifyMembership'
 
 Template.groupMembersList.events
   'click .remove-button': (event, template) ->
@@ -116,84 +120,62 @@ Template.groupMembersList.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersAddControl.canModifyMembership = Template.groupMembersList.canModifyMembership
+Template.groupMembersAddControl.helpers
+  canModifyMembership: Template.groupMembersList.helpers 'canModifyMembership'
 
 Template.groupMembersAddControl.events
   'change .add-group-member, keyup .add-group-member': (event, template) ->
     event.preventDefault()
 
-    # TODO: Misusing data context for a variable, add to the template instance instead: https://github.com/meteor/meteor/issues/1529
-    @_query.set $(template.findAll '.add-group-member').val()
+    template._query.set template.$('.add-group-member').val().trim()
 
     return # Make sure CoffeeScript does not return anything
 
-# TODO: Misusing data context for a variable, use template instance instead: https://github.com/meteor/meteor/issues/1529
-addGroupMembersReactiveVariables = (data) ->
-  if data._query
-    assert data._loading
-    return
-
-  data._query = new Variable ''
-  data._loading = new Variable 0
-
-  data._newDataContext = true
-
 Template.groupMembersAddControl.created = ->
   @_searchHandle = null
-
-  addGroupMembersReactiveVariables @data
+  @_query = new Variable ''
+  @_loading = new Variable 0
 
 Template.groupMembersAddControl.rendered = ->
-  addGroupMembersReactiveVariables @data
-
-  if @_searchHandle and @data._newDataContext
-    @_searchHandle.stop()
-    @_searchHandle = null
-
-  delete @data._newDataContext
-
-  return if @_searchHandle
-  @_searchHandle = Deps.autorun =>
-    if @data._query()
+  @_searchHandle = @autorun =>
+    if @_query()
       loading = true
-      @data._loading.set Deps.nonreactive(@data._loading) + 1
-      Meteor.subscribe 'search-persons', @data._query(), _.pluck(@data.members, '_id'),
+      @_loading.set Tracker.nonreactive(@_loading) + 1
+      Meteor.subscribe 'search-persons', @_query(), _.pluck(Template.currentData()?.members, '_id'),
         onReady: =>
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
         onError: =>
           # TODO: Should we display some error?
-          @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+          @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
           loading = false
-      Deps.onInvalidate =>
-        @data._loading.set Deps.nonreactive(@data._loading) - 1 if loading
+      Tracker.onInvalidate =>
+        @_loading.set Tracker.nonreactive(@_loading) - 1 if loading
         loading = false
 
 Template.groupMembersAddControl.destroyed = ->
   @_searchHandle?.stop()
   @_searchHandle = null
+  @_query = null
+  @_loading = null
 
-  @data._query = null
-  @data._loading = null
+Template.groupMembersAddControlNoResults.helpers
+  noResults: ->
+    template = Template.instance()
 
-  delete @data._newDataContext
+    query = template.get('_query')()
 
-Template.groupMembersAddControlNoResults.noResults = ->
-  addGroupMembersReactiveVariables @
+    return unless query
 
-  query = @_query()
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons'
+      query: query
 
-  return unless query
+    return unless searchResult
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons'
-    query: query
+    not template.get('_loading')() and not (searchResult.countPersons or 0)
 
-  return unless searchResult
-
-  not @_loading() and not (searchResult.countPersons or 0)
-
-Template.groupMembersAddControlNoResults.email = Template.rolesControlNoResults.email
+  email: Template.rolesControlNoResults.helpers 'email'
 
 addMemberToGroup = (personId) ->
   Meteor.call 'add-to-group', Session.get('currentGroupId'), personId, (error, count) =>
@@ -203,50 +185,48 @@ addMemberToGroup = (personId) ->
 
 Template.groupMembersAddControlNoResults.events
   'click .invite': (event, template) ->
-    # We get the email in @ (this), but it's a String object that also has
-    # the parent context attached so we first convert it to a normal string.
-    email = "#{ @ }"
+    # We get the email in @ (this).
+    email = @
 
     return unless email?.match EMAIL_REGEX
 
-    inviteUser email, @_parent.route(), (newPersonId) =>
+    inviteUser email, Template.parentData(1).route(), (newPersonId) =>
       return true # Show success notification
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersAddControlLoading.loading = ->
-  addGroupMembersReactiveVariables @
+Template.groupMembersAddControlLoading.helpers
+  loading: ->
+    Template.instance().get('_loading')()
 
-  @_loading()
+Template.groupMembersAddControlResults.helpers
+  results: ->
+    template = Template.instance()
 
-Template.groupMembersAddControlResults.results = ->
-  addGroupMembersReactiveVariables @
+    query = template.get('_query')()
 
-  query = @_query()
+    return unless query
 
-  return unless query
+    searchResult = SearchResult.documents.findOne
+      name: 'search-persons'
+      query: query
 
-  searchResult = SearchResult.documents.findOne
-    name: 'search-persons'
-    query: query
+    return unless searchResult
 
-  return unless searchResult
+    personsLimit = Math.min searchResult.countPersons, 5
 
-  personsLimit = Math.min searchResult.countPersons, 5
+    return unless personsLimit
 
-  return unless personsLimit
-
-  Person.documents.find
-    'searchResult._id': searchResult._id
-  ,
-    sort: [
-      ['searchResult.order', 'asc']
-    ]
-    limit: personsLimit
+    Person.documents.find
+      'searchResult._id': searchResult._id
+    ,
+      sort: [
+        ['searchResult.order', 'asc']
+      ]
+      limit: personsLimit
 
 Template.groupMembersAddControlResultsItem.events
   'click .add-button': (event, template) ->
-
     return unless @_id
 
     return if @_id in _.pluck Group.documents.findOne(Session.get('currentGroupId')).members, '_id'
@@ -255,8 +235,10 @@ Template.groupMembersAddControlResultsItem.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupSettings.canRemove = ->
-  @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
+Template.groupSettings.helpers
+  canRemove: ->
+    return unless @_id
+    @hasRemoveAccess Meteor.person @constructor.removeAccessPersonFields()
 
 Template.groupAdminTools.events
   'click .dropdown-trigger': (event, template) ->
@@ -264,7 +246,7 @@ Template.groupAdminTools.events
     # excluding clicks inside the content of this dropdown
     return if $.contains template.find('.dropdown-anchor'), event.target
 
-    $(template.findAll '.dropdown-anchor').toggle()
+    template.$('.dropdown-anchor').toggle()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -279,11 +261,13 @@ Template.groupAdminTools.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.groupMembersAddControlInviteHint.visible = ->
-  addGroupMembersReactiveVariables @
+Template.groupMembersAddControlInviteHint.helpers
+  visible: ->
+    !Template.instance().get('_query')()
 
-  !@_query()
+Template.registerHelper 'isGroup', ->
+  @ instanceof Group
 
-Handlebars.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
+Template.registerHelper 'groupPathFromId', _.bind Group.pathFromId, Group
 
-Handlebars.registerHelper 'groupReference', _.bind Group.reference, Group
+Template.registerHelper 'groupReference', _.bind Group.reference, Group

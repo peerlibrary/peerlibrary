@@ -24,13 +24,11 @@ $(document).on 'keyup', (event) ->
 
   return # Make sure CoffeeScript does not return anything
 
-@TOOLTIP_DEFAULTS =
-  position:
-    my: 'center bottom'
-    at: 'center top-10'
-  show: 200
-  hide: 200
-
 Meteor.startup ->
-  $(document).tooltip _.extend {}, TOOLTIP_DEFAULTS,
+  $(document).tooltip
+    position:
+      my: 'center bottom'
+      at: 'center top-10'
+    show: 200
+    hide: 200
     items: '.tooltip'

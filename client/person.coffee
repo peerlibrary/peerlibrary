@@ -6,10 +6,8 @@ class @Person extends Person
   # We allow passing the person slug if caller knows it.
   # If you do not know if you have an ID or a slug, you can pass
   # it in as an ID and hopefully something useful will come out.
-  @pathFromId = (personId, slug, options) ->
+  @pathFromId = (personId, slug) ->
     assert _.isString personId
-    # To allow calling template helper with only one argument (slug will be options then)
-    slug = null unless _.isString slug
 
     person = @documents.findOne
       $or: [
@@ -38,10 +36,8 @@ class @Person extends Person
   # Helper object with properties useful to refer to this document. Optional person document.
   # If you do not know if you have an ID or a slug, you can pass it in as an ID and hopefully
   # something useful will come out.
-  @reference: (personId, person, options) ->
+  @reference: (personId, person) ->
     assert _.isString personId
-    # To allow calling template helper with only one argument (person will be options then)
-    person = null unless person instanceof @
 
     unless person
       person = @documents.findOne
@@ -63,7 +59,7 @@ class @Person extends Person
   reference: =>
     @constructor.reference @_id, @
 
-Deps.autorun ->
+Tracker.autorun ->
   slug = Session.get 'currentPersonSlug'
 
   return unless slug
@@ -72,7 +68,7 @@ Deps.autorun ->
   Meteor.subscribe 'persons-by-ids-or-slugs', slug
   Meteor.subscribe 'publications-by-author-slug', slug
 
-Deps.autorun ->
+Tracker.autorun ->
   slug = Session.get 'currentPersonSlug'
 
   return unless slug
@@ -92,27 +88,36 @@ Deps.autorun ->
   # Assure URL is canonical
   Meteor.Router.toNew Meteor.Router.personPath person.slug unless slug is person.slug
 
-Template.person.person = ->
-  Person.documents.findOne
-    # We can search by only slug because we assured that the URL is canonical in autorun
-    slug: Session.get 'currentPersonSlug'
+Template.person.helpers
+  person: ->
+    Person.documents.findOne
+      # We can search by only slug because we assured that the URL is canonical in autorun
+      slug: Session.get 'currentPersonSlug'
 
-# Publications authored by this person
-Template.person.authoredPublications = ->
-  person = Person.documents.findOne
-    # We can search by only slug because we assured that the URL is canonical in autorun
-    slug: Session.get 'currentPersonSlug'
+  # Publications authored by this person
+  authoredPublications: ->
+    person = Person.documents.findOne
+      # We can search by only slug because we assured that the URL is canonical in autorun
+      slug: Session.get 'currentPersonSlug'
 
-  Publication.documents.find
-    _id:
-      $in: _.pluck person?.publications, '_id'
+    # We assume that list of publications will not get too long and is not changing too
+    # often so that it does not cost too much if we rerun the whole query completely
+    # every time publications changes. At the same time we want the list to be ordered by
+    # something, so it is the easiest to simply use the query.
+    # TODO: What is the order we want them to be in? Publication time? Or should we make a catalog out of them?
+    Publication.documents.find
+      _id:
+        $in: _.pluck person?.publications, '_id'
 
-Handlebars.registerHelper 'currentPerson', (options) ->
+Template.registerHelper 'currentPerson', ->
   Meteor.person()
 
-Handlebars.registerHelper 'currentPersonId', (options) ->
+Template.registerHelper 'currentPersonId', ->
   Meteor.personId()
 
-Handlebars.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
+Template.registerHelper 'isPerson', ->
+  @ instanceof Person
 
-Handlebars.registerHelper 'personReference', _.bind Person.reference, Person
+Template.registerHelper 'personPathFromId', _.bind Person.pathFromId, Person
+
+Template.registerHelper 'personReference', _.bind Person.reference, Person

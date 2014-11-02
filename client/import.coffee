@@ -23,8 +23,8 @@ class @ImportingFile extends BaseDocument
     collection: null
 
 UPLOAD_CHUNK_SIZE = 128 * 1024 # bytes
-DRAGGING_OVER_DOM = false
 
+draggingOverDom = false
 importingFiles = {}
 
 # Observes files that are processed and removes them from dictionary
@@ -38,9 +38,14 @@ canceledFiles = ImportingFile.documents.find
   canceled: true
   state:
     $in: ['new', 'preprocessed']
-canceledFiles.observe
+canceledFiles.observeChanges
   added: (id) ->
-    ImportingFile.documents.update id,
+    ImportingFile.documents.update
+      _id: id
+      canceled: true
+      state:
+        $in: ['new', 'preprocessed']
+    ,
       $set:
         state: 'finished'
         status: "Import canceled"
@@ -48,7 +53,7 @@ canceledFiles.observe
 publicationHandles = {}
 
 # Subscribe to publications that have been matched on the server
-Deps.autorun ->
+Tracker.autorun ->
   ImportingFile.documents.find({publicationId: $exists: true}, {fields: publicationId: 1}).forEach (file) ->
     Meteor.subscribe 'publication-by-id', file.publicationId
 
@@ -57,7 +62,7 @@ verifyFile = (file, publicationId, samples) ->
     $set:
       status: "Verifying file"
 
-  samplesData = _.map samples, (sample) ->
+  samplesData = for sample in samples
     new Uint8Array file.content.slice sample.offset, sample.offset + sample.size
   Meteor.call 'verify-publication', publicationId, samplesData, (error) ->
     if error
@@ -107,10 +112,12 @@ uploadFile = (file, publicationId) ->
           publicationId: publicationId
 
 # Process next element from import queue
-Deps.autorun ->
+Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'preprocessed' to 'importing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
+    canceled:
+      $ne: true
     state:
       $in: ['importing', 'preprocessed']
   ,
@@ -120,10 +127,17 @@ Deps.autorun ->
       sha256: 1
   return unless document
 
-  updatedCount = ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update
+    _id: document._id,
+    canceled:
+      $ne: true
+    state:
+      # But we want to continue only for files in 'preprocessed' state
+      $in: ['preprocessed']
+  ,
     $set:
       state: 'importing'
-  assert.equal updatedCount, 1
+  return unless updatedCount
 
   Meteor.call 'create-publication', document.name, document.sha256, (error, result) ->
     if error
@@ -149,9 +163,15 @@ Deps.autorun ->
 computeChecksum = (file, callback) ->
   hash = new Crypto.SHA256
     onProgress: (progress) ->
+      # We return false to prematurely stop computing checksum if file was canceled
+      return false if ImportingFile.documents.findOne(file._id)?.canceled
+
       ImportingFile.documents.update file._id,
-      $set:
-        preprocessingProgress: progress * 100 # %
+        $set:
+          preprocessingProgress: progress * 100 # %
+
+      # We return true to continue computing checksum
+      return true
 
   hash.update file.content, (error) ->
     if error
@@ -161,6 +181,8 @@ computeChecksum = (file, callback) ->
           state: 'errored'
           status: "#{ error }"
       return
+
+    return callback null, null if ImportingFile.documents.findOne(file._id)?.canceled
 
     hash.finalize callback
 
@@ -172,10 +194,12 @@ testPDF = (file, callback) ->
         status: "Invalid PDF file"
 
 # Process next element from preprocessing queue
-Deps.autorun ->
+Tracker.autorun ->
   # Autorun will not re-run when document changes status from 'new' to 'preprocessing',
   # but after it changes to any other status, next file will be returned
   document = ImportingFile.documents.findOne
+    canceled:
+      $ne: true
     state:
       $in: ['preprocessing', 'new']
   ,
@@ -183,11 +207,18 @@ Deps.autorun ->
       _id: 1
   return unless document
 
-  updatedCount = ImportingFile.documents.update document._id,
+  updatedCount = ImportingFile.documents.update
+    _id: document._id
+    canceled:
+      $ne: true
+    state:
+      # But we want to continue only for files in 'new' state
+      $in: ['new']
+  ,
     $set:
       status: "Preprocessing"
       state: 'preprocessing'
-  assert.equal updatedCount, 1
+  return unless updatedCount
 
   reader = new FileReader()
   reader.onload = ->
@@ -201,11 +232,17 @@ Deps.autorun ->
               status: "#{ error }"
           return
 
-        ImportingFile.documents.update document._id,
-          $set:
-            sha256: sha256
-            status: "In import queue"
-            state: 'preprocessed'
+        if ImportingFile.documents.findOne(document._id)?.canceled
+          ImportingFile.documents.update document._id,
+            $set:
+              state: 'finished'
+              status: "Import canceled"
+        else
+          ImportingFile.documents.update document._id,
+            $set:
+              sha256: sha256
+              status: "In import queue"
+              state: 'preprocessed'
 
   reader.onerror = (error) ->
     FlashMessage.error "FileReader error: #{ error }", null, true, error.stack
@@ -262,9 +299,9 @@ $(document).on 'dragenter', (event) ->
   return if  Accounts._loginButtonsSession.get 'resetPasswordToken'
 
   # For flickering issue: https://github.com/peerlibrary/peerlibrary/issues/203
-  DRAGGING_OVER_DOM = true
+  draggingOverDom = true
   Meteor.setTimeout ->
-    DRAGGING_OVER_DOM = false
+    draggingOverDom = false
   , 5 # ms
 
   if Meteor.personId()
@@ -300,12 +337,12 @@ Template.importButton.events
     Session.set 'importOverlayActive', true
     _.each event.target.files, importFile
 
-    # Replaces file input with a new version which does not have any file
-    # selected. This assures that change event is triggered even if the user
-    # selects the same file. It is not really reasonable to do that, but
-    # it is still better that we do something than simply nothing because
-    # no event is triggered.
-    $(event.target, template).replaceWith($(event.target).clone())
+    # Resets file so that it does not have any file selected. This assures
+    # that change event is triggered even if the user selects the same file.
+    # It is not really reasonable to do that, but it is still better that
+    # we do something than simply nothing because no event is triggered.
+    $(event.target).wrap('<form/>').closest('form').get(0).reset()
+    $(event.target).unwrap()
 
     return # Make sure CoffeeScript does not return anything
 
@@ -319,43 +356,50 @@ Template.importingFilesItemCancel.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.importingFilesItem.hideCancel = ->
-  # We keep cancel shown even when canceled is set, until we get back
-  # in the file upload method callback and set finished as well
-  @state in ['finished', 'errored', 'imported']
+Template.importingFilesItem.helpers
+  hideCancel: ->
+    return unless @_id
 
-Template.importingFilesItem.state = ->
-  # Canceled could still be set, but state could be errored
-  # or imported if canceled was set to late in the process,
-  # in which case we want not to display it as canceled
-  return @state if @state in ['errored', 'imported']
-  # But otherwise if state is finished and canceled,
-  # we want to display it as canceled
-  return 'canceled' if @canceled and @state is 'finished'
-  return @state
+    # We keep cancel shown even when canceled is set, until we get back
+    # in the file upload method callback and set finished as well
+    @state in ['finished', 'errored', 'imported']
 
-Template.importingFilesItem.publication = ->
-  publication = Publication.documents.findOne @publicationId
-  return unless publication
-  # TODO: Change when you are able to access parent context directly with Meteor
-  publication.filename = @name
-  publication
+  state: ->
+    return unless @_id
 
-Template.signInOverlay.signInOverlayActive = ->
-  Session.get 'signInOverlayActive'
+    # Canceled could still be set, but state could be errored or imported if canceled was
+    # set to late in the process, in which case we want not to display it as canceled.
+    return @state if @state in ['errored', 'imported']
+    # But otherwise if state is finished and canceled, we want to display it as canceled.
+    # We also check for status text so that we make sure now some other status message is
+    # displayed together with canceled state. We want progress bar background to be in canceled
+    # color only when status is "Import canceled". But import could for example already finish
+    # with "File already imported", but canceled could still be triggered, which would set the
+    # flag, but not the status text.
+    return 'canceled' if @canceled and @state is 'finished' and @status is "Import canceled"
+    return @state
 
-Template.signInOverlay.events =
+  publication: ->
+    return unless @_id
+
+    Publication.documents.findOne @publicationId
+
+Template.signInOverlay.helpers
+  signInOverlayActive: ->
+    Session.get 'signInOverlayActive'
+
+Template.signInOverlay.events
   'dragover': (event, template) ->
     event.preventDefault()
-    event.dataTransfer.effectAllowed = 'none'
-    event.dataTransfer.dropEffect = 'none'
+    event.originalEvent.dataTransfer.effectAllowed = 'none'
+    event.originalEvent.dataTransfer.dropEffect = 'none'
 
     return # Make sure CoffeeScript does not return anything
 
   'dragleave': (event, template) ->
     event.preventDefault()
 
-    unless DRAGGING_OVER_DOM
+    unless draggingOverDom
       Session.set 'signInOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
@@ -379,15 +423,15 @@ Template.importOverlay.events
 
   'dragover': (event, template) ->
     event.preventDefault()
-    event.dataTransfer.effectAllowed = 'copy'
-    event.dataTransfer.dropEffect = 'copy'
+    event.originalEvent.dataTransfer.effectAllowed = 'copy'
+    event.originalEvent.dataTransfer.dropEffect = 'copy'
 
     return # Make sure CoffeeScript does not return anything
 
   'dragleave': (event, template) ->
     event.preventDefault()
 
-    if ImportingFile.documents.find().count() == 0 and not DRAGGING_OVER_DOM
+    if ImportingFile.documents.find().count() == 0 and not draggingOverDom
       Session.set 'importOverlayActive', false
 
     return # Make sure CoffeeScript does not return anything
@@ -400,7 +444,7 @@ Template.importOverlay.events
       Session.set 'importOverlayActive', false
       return
 
-    _.each event.dataTransfer.files, importFile
+    _.each event.originalEvent.dataTransfer.files, importFile
 
     return # Make sure CoffeeScript does not return anything
 
@@ -432,23 +476,24 @@ Template.signInOverlay.rendered = Template.importOverlay.rendered
 
 Template.signInOverlay.destroyed = Template.importOverlay.destroyed
 
-Template.importOverlay.importOverlayActive = ->
-  Session.get 'importOverlayActive'
+Template.importOverlay.helpers
+  importOverlayActive: ->
+    Session.get 'importOverlayActive'
 
-Template.importOverlay.importingFiles = ->
-  ImportingFile.documents.find()
+  importingFiles: ->
+    ImportingFile.documents.find()
 
-Template.importOverlay.importingFilesCount = ->
-  ImportingFile.documents.find().count()
+  importingFilesCount: ->
+    ImportingFile.documents.find().count()
 
-Deps.autorun ->
+Tracker.autorun ->
   if Session.get('importOverlayActive') or Session.get('signInOverlayActive')
     # We prevent scrolling of page content while overlay is visible
     $('body').add('html').addClass 'overlay-active'
   else
     $('body').add('html').removeClass 'overlay-active'
 
-Deps.autorun ->
+Tracker.autorun ->
   importingFilesCount = ImportingFile.documents.find().count()
 
   return unless importingFilesCount

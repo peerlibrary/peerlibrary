@@ -10,14 +10,12 @@
 </template>
 
 <template name="indexMain">
-  {{#constant}}
-    <div class="landing">
-      <div class="big-logo">
-        <img src="/img/logo.svg"/>
-        <h1><span class="peer">Peer</span>Library</h1>
-      </div>
+  <div class="landing">
+    <div class="big-logo">
+      <img src="/img/logo.svg"/>
+      <h1><span class="peer">Peer</span>Library</h1>
     </div>
-  {{/constant}}
+  </div>
 </template>
 
 <template name="indexStatistics">
@@ -74,17 +72,10 @@
 
 <template name="backgroundPause">
   <div class="background-pause">
-    {{> backgroundPauseButton}}
+    <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
     <div class="right ui-tooltip">
-      {{> backgroundPauseTooltipContent}}
+      {{! We are showing a tooltip ourselves because we want to reactively change its content. }}
+      {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
     </div>
   </div>
-</template>
-
-<template name="backgroundPauseButton">
-  <button class="{{#if backgroundPaused}}icon-play{{else}}icon-pause{{/if}}"></button>
-</template>
-
-<template name="backgroundPauseTooltipContent">
-  {{#if backgroundPaused}}Resume background{{else}}Pause background{{/if}}
 </template>

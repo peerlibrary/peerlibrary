@@ -50,7 +50,7 @@
         {{! The content of this message is used also in the code, so keep it in sync }}
         <p class="warning balance-text">Publication has not yet been processed and is thus unavailable to others regardless of the access settings below.</p>
       {{/if}}
-      <p>Last job status: {{jobs.0.status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
+      <p>Last job status: {{jobs.[0].status}} (<a href="{{publicationJobsPath _id}}">see all jobs</a>)</p>
       {{> publicationAccessMenu}}
     </div>
   </div>
@@ -75,29 +75,31 @@
 </template>
 
 <template name="publicationLibraryMenuButtons">
-  <i class="icon {{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
-  {{#if inLibrary}}
-    <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
-      Remove from library
-    </button>
-  {{else}}
-    <button class="add-to-library library-menu-button">
-      Add to library
-    </button>
-  {{/if}}
-  {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
-  {{#if inCurrentCollection}}
-    <p>
-      <button class="remove-from-current-collection library-menu-button">
-        Remove from collection
+  {{#spaceless}}
+    <i class="icon {{#if inLibrary}}icon-bookmark{{else}}icon-bookmark-empty{{/if}}"></i>
+    {{#if inLibrary}}
+      <button class="remove-from-library library-menu-button" title="This will also remove the publication from your collections.">
+        Remove from library
       </button>
-    </p>
-  {{/if}}
+    {{else}}
+      <button class="add-to-library library-menu-button">
+        Add to library
+      </button>
+    {{/if}}
+    {{! The next part appears only for publications on the collection page and is handled in client/collection.coffee }}
+    {{#if inCurrentCollection}}
+      <p>
+        <button class="remove-from-current-collection library-menu-button">
+          Remove from collection
+        </button>
+      </p>
+    {{/if}}
+  {{/spaceless}}
 </template>
 
 <template name="publicationLibraryMenuCollections">
   <h3>Add to collections</h3>
-  {{#if myCollections.length}}
+  {{#if myCollections.count}}
     <ol class="library-menu-collections toggle-list">
       {{#each myCollections}}
         {{> publicationLibraryMenuCollectionListing}}
@@ -121,6 +123,7 @@
 </template>
 
 <template name="publicationAccessIconControl">
+  {{! No need for this template to be fully spaceless, because there are divs. We do make the icon button spaceless though. }}
   <div class="access-control dropdown-trigger {{#unless canModifyAccess}}read-only{{/unless}}">
     {{> publicationAccessIconButton}}
     <div class="dropdown-anchor">
@@ -130,11 +133,13 @@
 </template>
 
 <template name="publicationAccessIconButton">
-  <button class="access-button borderless tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
-    {{#if open}}<i class="icon-public"></i>{{/if}}
-    {{#if closed}}<i class="icon-closed"></i>{{/if}}
-    {{#if private}}<i class="icon-private"></i>{{/if}}
-  </button>
+  {{#spaceless}}
+    <button class="access-button borderless tooltip" title="{{#if open}}Open access{{/if}}{{#if closed}}Closed access{{/if}}{{#if private}}Private{{/if}}">
+      {{#if open}}<i class="icon-public"></i>{{/if}}
+      {{#if closed}}<i class="icon-closed"></i>{{/if}}
+      {{#if private}}<i class="icon-private"></i>{{/if}}
+    </button>
+  {{/spaceless}}
 </template>
 
 <template name="publicationAccessMenu">
@@ -150,29 +155,29 @@
 </template>
 
 <template name="publicationAccessControlPrivacyForm">
-    <form class="access publication-access">
-      <div class="selections">
+  <form class="access publication-access">
+    <div class="selections">
 
-        <label class="selection {{#if open}}selected icon-check{{/if}}">
-          <input type="radio" value="open" name="publication-access-{{_id}}" {{#if open}}checked="checked"{{/if}} />
-          <i class="access-icon icon-public"></i> Open Access
-        </label>
+      <label class="selection {{#if open}}selected icon-check{{/if}}">
+        <input type="radio" value="open" name="publication-access-{{_id}}" checked={{open}} />
+        <i class="access-icon icon-public"></i> Open Access
+      </label>
 
-        <label class="selection {{#if closed}}selected icon-check{{/if}}">
-          <input type="radio" value="closed" name="publication-access-{{_id}}" {{#if closed}}checked="checked"{{/if}} />
-          <i class="access-icon icon-closed"></i> Closed Access
-        </label>
+      <label class="selection {{#if closed}}selected icon-check{{/if}}">
+        <input type="radio" value="closed" name="publication-access-{{_id}}" checked={{closed}} />
+        <i class="access-icon icon-closed"></i> Closed Access
+      </label>
 
-        <label class="selection {{#if private}}selected icon-check{{/if}}">
-          <input type="radio" value="private" name="publication-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
-          <i class="access-icon icon-private"></i> Private
-        </label>
+      <label class="selection {{#if private}}selected icon-check{{/if}}">
+        <input type="radio" value="private" name="publication-access-{{_id}}" checked={{private}} />
+        <i class="access-icon icon-private"></i> Private
+      </label>
 
-      </div>
-      <div class="description open {{#if open}}displayed{{/if}}">Everyone has access to the publication.</div>
-      <div class="description closed {{#if closed}}displayed{{/if}}">The publication is public, but only those who import the PDF have access to its content.</div>
-      <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
-    </form>
+    </div>
+    <div class="description open {{#if open}}displayed{{/if}}">Everyone has access to the publication.</div>
+    <div class="description closed {{#if closed}}displayed{{/if}}">The publication is public, but only those who import the PDF have access to its content.</div>
+    <div class="description private {{#if private}}displayed{{/if}}">Only the users who import the PDF or are listed have access to the publication.</div>
+  </form>
 </template>
 
 <template name="publicationAccessControlPrivacyInfo">
@@ -206,13 +211,11 @@
 
 <template name="publicationDisplay">
   {{#if cachedAvailable}}
-    {{#constant}}
-      <div class="display-wrapper">
-        <div class="loading">
-          <h2>Loading</h2>
-        </div>
+    <div class="display-wrapper">
+      <div class="loading">
+        <h2>Loading</h2>
       </div>
-    {{/constant}}
+    </div>
   {{else}}
     <div class="display-wrapper closed-access">
       <h2>Publication is closed access</h2>
@@ -257,7 +260,9 @@
   <li class="annotation {{#if local}}local{{/if}} {{#if editing}}editing{{/if}} {{selected}}">
     {{#if local}}
       <a class="author" href="{{currentPerson.path}}">
-        {{> personAvatar author}}
+        {{#with author}}
+          {{> personAvatar avatarSize=30}}
+        {{/with}}
       </a>
     {{else}}
       {{> annotationMetaMenu}}
@@ -303,32 +308,26 @@
       <div class="annotations-form">
         <div class="form-content">
           <div class="format-toolbar">
-            {{#constant}}
-              <div class="format-buttons">
-                <button data-command-name="bold" type="button" title="{{keyboardShortcut}}B"><i class="icon-bold"></i></button>
-                <button data-command-name="italic" type="button" title="{{keyboardShortcut}}I"><i class="icon-italic"></i></button>
-                <button data-command-name="insertOrderedList" type="button"><i class="icon-list-numbered"></i></button>
-                <button data-command-name="insertUnorderedList" type="button"><i class="icon-list-bullet"></i></button>
-                <button data-command-name="linkPrompt" type="button" title="{{keyboardShortcut}}L"><i class="icon-link"></i></button>
-                <button data-command-name="blockquote" type="button"><i class="icon-quote-left"></i></button>
-                <button class="disabled" type="button"><i class="icon-math"></i></button>
-                <button class="disabled" type="button"><i class="icon-code"></i></button>
-              </div>
-            {{/constant}}
+            <div class="format-buttons">
+              <button data-command-name="bold" type="button" title="{{keyboardShortcut}}B"><i class="icon-bold"></i></button>
+              <button data-command-name="italic" type="button" title="{{keyboardShortcut}}I"><i class="icon-italic"></i></button>
+              <button data-command-name="insertOrderedList" type="button"><i class="icon-list-numbered"></i></button>
+              <button data-command-name="insertUnorderedList" type="button"><i class="icon-list-bullet"></i></button>
+              <button data-command-name="linkPrompt" type="button" title="{{keyboardShortcut}}L"><i class="icon-link"></i></button>
+              <button data-command-name="blockquote" type="button"><i class="icon-quote-left"></i></button>
+              <button class="disabled" type="button"><i class="icon-math"></i></button>
+              <button class="disabled" type="button"><i class="icon-code"></i></button>
+            </div>
           </div>
           <div class="form-body">
-            {{#constant}}
-              <div class="content-editor annotation-content-editor" contenteditable="contenteditable">
-                {{{body}}}
-              </div>
-            {{/constant}}
+            <div class="content-editor annotation-content-editor" contenteditable="contenteditable">
+              {{{body}}}
+            </div>
           </div>
           {{! TODO: Temporary disabled, not yet finalized code
             <div class="form-tags">
               <i class="icon-tags"></i>
-              {#constant}
-                <ul class="annotation-tags-editor"></ul>
-              {/constant}
+              <ul class="annotation-tags-editor"></ul>
             </div>
           }}
         </div>
@@ -369,7 +368,9 @@
 <template name="annotationCommentsListItem">
   <li class="comment {{selected}}">
     <a href="{{author.path}}">
-      {{> personAvatar author}}
+      {{#with author}}
+        {{> personAvatar avatarSize=30}}
+      {{/with}}
     </a>
     <div class="comment-content">
       {{#if canRemove}}
@@ -383,12 +384,12 @@
 <template name="annotationCommentEditor">
   <li class="comment-editor">
     <a href="{{currentPerson.path}}">
-      {{> personAvatar currentPerson}}
+      {{#with currentPerson}}
+        {{> personAvatar avatarSize=30}}
+      {{/with}}
     </a>
     <div class="comment-content">
-      {{#constant}}
-        <div class="content-editor comment-content-editor" contenteditable="contenteditable"></div>
-      {{/constant}}
+      <div class="content-editor comment-content-editor" contenteditable="contenteditable"></div>
       <button type="button" class="btn blue comment">Comment</button>
     </div>
   </li>
@@ -445,12 +446,12 @@
     <div class="selections">
 
       <label class="selection {{#if public}}selected icon-check{{/if}}">
-        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" {{#if public}}checked="checked"{{/if}} />
+        <input type="radio" value="public" name="{{documentName}}-access-{{_id}}" checked={{public}} />
         <i class="access-icon icon-public"></i> Public
       </label>
 
       <label class="selection {{#if private}}selected icon-check{{/if}}">
-        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" {{#if private}}checked="checked"{{/if}} />
+        <input type="radio" value="private" name="{{documentName}}-access-{{_id}}" checked={{private}} />
         <i class="access-icon icon-private"></i> Private
       </label>
 
@@ -485,13 +486,7 @@
       {{#spaceless}}
         {{#unless locked}}
           <div class="dropdown-trigger">
-        {{/unless}}
-
-        {{#if admin}}administrator{{/if}}
-        {{#if maintainer}}maintainer{{/if}}
-        {{#if readAccess}}view access{{/if}}
-
-        {{#unless locked}}
+            {{> newAnnotationRolesControlRoleEditorRole}}
             <i class="icon-down"></i>
             <div class="dropdown-anchor">
               <ul class="dropdown right-aligned">
@@ -502,10 +497,18 @@
               </ul>
             </div>
           </div>
+        {{else}}
+          {{> newAnnotationRolesControlRoleEditorRole}}
         {{/unless}}
       {{/spaceless}}
     </div>
   </li>
+</template>
+
+<template name="newAnnotationRolesControlRoleEditorRole">
+  {{#if admin}}administrator{{/if}}
+  {{#if maintainer}}maintainer{{/if}}
+  {{#if readAccess}}view access{{/if}}
 </template>
 
 <template name="newAnnotationRolesControlAdd">
@@ -596,30 +599,33 @@
 <template name="annotationFilteredCount">
   {{#if filteredAnnotationsCount}}
     <li class="filtered-count hint">
-      {{filteredAnnotationsDescription}} filtered out. <button class="clear-filters borderless icon-cancel" title="Clear filters"></button>
+      {{filteredAnnotationsDescription}} filtered out. <button class="clear-filters borderless icon-cancel tooltip" title="Clear filters"></button>
     </li>
   {{/if}}
 </template>
 
 <template name="highlightsControl">
-  {{#if canRemove}}
-    <button class="remove-button">Delete</button>
+  {{! Could be that "this" is undefined at some moment in a template instance's life cycle. }}
+  {{#if this}}
+    {{#if canRemove}}
+      <button class="remove-button">Delete</button>
+    {{/if}}
+    <p class="authors">
+      {{#with author}}
+        <span><a href="{{path}}">{{getDisplayName}}</a></span>
+      {{/with}}
+    </p>
+    <p class="time">Created: {{createdAt}}</p>
+    <p class="time">Updated: {{updatedAt}}</p>
+    <p class="references">
+      Referencing:
+      {{#each referencingAnnotations}}
+        <span><a href="{{path}}" title={{reference.title}}>
+          {{reference.text}}
+        </a></span>
+      {{/each}}
+    </p>
   {{/if}}
-  <p class="authors">
-    {{#with author}}
-      <span><a href="{{path}}">{{getDisplayName}}</a></span>
-    {{/with}}
-  </p>
-  <p class="time">Created: {{createdAt}}</p>
-  <p class="time">Updated: {{updatedAt}}</p>
-  <p class="references">
-    Referencing:
-    {{#each referencingAnnotations}}
-      <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
-        {{reference.text}}
-      </a></span>
-    {{/each}}
-  </p>
 </template>
 
 <template name="annotationMetaMenu">
@@ -636,7 +642,7 @@
       </p>
       <p class="time">Created: {{createdAt}}</p>
       <p class="time">Updated: {{updatedAt}}</p>
-      {{#if inside.length}}
+      {{#if inside.count}}
         <p class="inside">
           Inside groups:
           {{#each inside}}
@@ -647,42 +653,42 @@
       <p class="references">
         Referencing:
         {{#each references.highlights}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.annotations}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.publications}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.persons}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.groups}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.tags}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.collections}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
         {{#each references.comments}}
-          <span><a href="{{path}}"{{#if reference.title}} title="{{reference.title}}"{{/if}}>
+          <span><a href="{{path}}" title={{reference.title}}>
             {{reference.text}}
           </a></span>
         {{/each}}
@@ -796,9 +802,7 @@
 <template name="editorLinkPrompt">
   <div class="editor-link-prompt">
     <form class="editor-link-form">
-      {{#constant}}
-        <input type="text" placeholder="Enter URL" value="{{link}}" class="editor-link-input" autofocus="autofocus" />
-      {{/constant}}
+      <input type="text" placeholder="Enter URL" value="{{link}}" class="editor-link-input" autofocus="autofocus" />
     </form>
     <p class="hint">
       {{#unless parsedLink}}
@@ -814,16 +818,21 @@
               You are linking an internal URL.
             {{else}}
               You are referencing {{parsedLink.referenceName}}:
-                {{#if parsedLink.path}}<a href="{{parsedLink.path}}"{{#if parsedLink.title}} title="{{parsedLink.title}}"{{/if}}>{{/if}}{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}{{#if parsedLink.path}}</a>{{/if}}
+              {{#if parsedLink.path}}
+                <a href="{{parsedLink.path}}" title={{parsedLink.title}}>{{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}</a>
+              {{else}}
+                {{#if parsedLink.text}}{{parsedLink.text}}{{else}}{{parsedLink.referenceId}}{{/if}}
+              {{/if}}
             {{/if}}
           {{/if}}
         {{/if}}
       {{/unless}}
+    </p>
   </div>
 </template>
 
 <template name="highlightPromptInEditor">
   {{#with highlightReference _id}}
-    <p>In <a href="{{highlightPathFromId _id}}"{{#if title}} title="{{title}}"{{/if}}>{{text}}</a> …</p>
+    <p>In <a href="{{highlightPathFromId _id}}" title={{title}}>{{text}}</a> …</p>
   {{/with}}
 </template>

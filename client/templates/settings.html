@@ -68,7 +68,7 @@
     <div class="section">
       <label>
         {{! TODO: Remove ID when we migrate to Blaze, currently it is needed for input field to keep state (which otherwise misbehave in combination with "checked" template helper) }}
-        <input type="checkbox" id="set-background-paused" class="paused" {{#if checked}}checked="checked"{{/if}}/>
+        <input type="checkbox" id="set-background-paused" class="paused" checked={{checked}}/>
         Background paused
       </label>
       {{#with messageOnField "paused"}}

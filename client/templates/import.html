@@ -8,7 +8,7 @@
             {{> importingFilesItem}}
           {{/each}}
         </ol>
-        <p class="hint">Drop or <button class="import">select</button> files to add more files to import.</p>
+        <p class="hint import-hint">Drop or <button class="import">select</button> files to add more files to import.</p>
       </div>
     </div>
   {{/if}}
@@ -34,7 +34,7 @@
               {{#if title}}
                 <span class="name">{{title}}</span>
               {{else}}
-                <span class="name">{{filename}}</span>
+                <span class="name">{{../name}}</span>
               {{/if}}
               <span class="access">{{> publicationAccessIconControl}}</span>
             </span>
@@ -57,16 +57,19 @@
 </template>
 
 <template name="importingFilesItemProgress">
-  <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
-  <div class="upload bar" style="width: {{uploadProgress}}%"></div>
-  <div class="status">{{status}}</div>
+  {{#spaceless}}
+    <div class="preprocessing bar" style="width: {{preprocessingProgress}}%"></div>
+    <div class="upload bar" style="width: {{uploadProgress}}%"></div>
+    <div class="status">{{status}}</div>
+  {{/spaceless}}
 </template>
 
 <template name="importingFilesItemCancel">
-  <button class="cancel-button">
-    <i class="icon-cancel"></i>
-    <div class="ui-tooltip">Cancel import</div>
-  </button>
+  {{#spaceless}}
+    <button class="cancel-button tooltip" title="Cancel import">
+      <i class="icon-cancel"></i>
+    </button>
+  {{/spaceless}}
 </template>
 
 <template name="importLink">
