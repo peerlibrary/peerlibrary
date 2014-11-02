@@ -17,11 +17,20 @@ setSession = (session) ->
     adminDevelopment: false
     adminPublications: false
     adminDatabase: false
-    adminErrors: false
     adminJobs: false
     adminSources: false
     adminBlog: false
     adminFacts: false
+      
+    adminErrors: false
+    currentadminErrorsReady: false
+    currentadminErrorsLoading: false
+    currentadminErrorsCount: 0
+    currentadminErrorsFilter: null
+    currentadminErrorsLimit: INITIAL_CATALOG_LIMIT
+    currentadminErrorsLimitIncreating: false
+    currentadminErrorsSort: 0
+
     publicationJobsId: null
     libraryActive: false
     settingsActive: false
