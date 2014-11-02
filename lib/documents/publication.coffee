@@ -120,7 +120,7 @@ class @Publication extends BasicAccessDocument
     throw new Error "Cached filename not available" unless @cachedId and @mediaType and @files.length
 
     # To allow calling with no arguments
-    fileId = @files[0].fileId unless _.isString id
+    fileId = @files[0].fileId unless _.isString fileId
 
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + fileId + '.' + @mediaType
 
