@@ -5,14 +5,19 @@ class Migration extends Document.MajorMigration
     count = 0
 
     collection.findEach {_schema: currentSchema, files: {$exists: false}}, {}, (document) =>
-      count += collection.update {_schema: currentSchema, _id: document._id}, {$set: {files: [{fileId: Random.id(), createdAt: document.createdAt, updatedAt: document.createdAt, SHA256: document.sha256, mediaType: document.mediaType, type: 'original'}],  _schema: newSchema}}
+      update = [
+        fileId: Random.id()
+        createdAt: document.createdAt
+        updatedAt: document.createdAt
+        SHA256: document.sha256
+        mediaType: document.mediaType
+        type: "original"
+      ]
+      count += collection.update update {_schema: currentSchema, _id: focument._id, files: {$exists: false}}, {$set: {files: update, _schema: newSchema}}
 
       oldPath = document.cachedFilename().split Storage._path.sep
       oldPath.pop()
       oldPath = oldPath.join(Storage._path.sep) + document.mediaType
-
-      console.log oldPath
-      console.log document.cachedFilename()
 
       Storage.rename oldPath, document.cachedFilename()
 
