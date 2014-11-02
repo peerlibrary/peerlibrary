@@ -73,6 +73,7 @@ peerlibrary:url-utils@0.4.0_2
 peerlibrary:urlify2@0.2.3
 peerlibrary:util@0.2.3
 peerlibrary:xml2js@0.4.4_3
+percolate:momentum@0.5.0
 random@1.0.1
 reactive-dict@1.0.4
 reactive-var@1.0.3

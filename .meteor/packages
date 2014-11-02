@@ -44,3 +44,5 @@ peerlibrary:async
 peerlibrary:middleware
 mrt:moment
 peerlibrary:segfault-handler
+percolate:momentum
+

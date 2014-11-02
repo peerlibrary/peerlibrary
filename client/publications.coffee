@@ -17,17 +17,22 @@ Template.publications.helpers
     signedInNoDocumentsMessage: "Import the first from the menu on top."
     signedOutNoDocumentsMessage: "Sign in and import the first."
 
+slideToggle = (template) ->
+  slide = if template._abstractOpen then 'slideUp' else 'slideDown'
+  template.$('.abstract').velocity slide, 'fast'
+  template._abstractOpen = not template._abstractOpen
+
 Template.publicationCatalogItem.events
   'click .preview-link': (event, template) ->
     event.preventDefault()
 
     if template._publicationHandle
       # We ignore the click if handle is not yet ready
-      template.$('.abstract').slideToggle('fast') if template._publicationHandle.ready()
+      slideToggle template if template._publicationHandle.ready()
     else
       template._publicationHandle = Meteor.subscribe 'publication-by-id', @_id, =>
         Tracker.afterFlush =>
-          template.$('.abstract').slideToggle('fast')
+          slideToggle template
 
     return # Make sure CoffeeScript does not return anything
 
@@ -35,6 +40,7 @@ EnableCatalogItemLink Template.publicationCatalogItem
 
 Template.publicationCatalogItem.created = ->
   @_publicationHandle = null
+  @_abstractOpen = false
 
 Template.publicationCatalogItem.rendered = ->
   @$('.scrubber').iscrubber
@@ -43,6 +49,7 @@ Template.publicationCatalogItem.rendered = ->
 Template.publicationCatalogItem.destroyed = ->
   @_publicationHandle?.stop()
   @_publicationHandle = null
+  @_abstractOpen = null
 
 Template.publicationCatalogItem.helpers
   documentLengthClass: ->
