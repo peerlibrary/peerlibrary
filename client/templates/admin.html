@@ -121,15 +121,17 @@
   <h1>Errors</h1>
   <div class="row">
     <div class="col12">
+      <h2>Client-Side Error Log</h2>
       <div class="admin-buttons">
         <button class="dummy-error">Create a dummy error</button>
       </div>
-      <h2>Error Log</h2>
+      <h3>Error Log</h3>
       <ul class="admin-errors">
         {{#each errors}}
           {{> adminErrorsItem}}
         {{/each}}
       </ul>
+      <h2>Server-Side Error Log</h2>
     </div>
     {{> adminTabs}}
   </div>
