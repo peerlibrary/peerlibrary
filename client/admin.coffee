@@ -56,13 +56,13 @@ Template.adminErrors.catalogSettings = ->
   documentClass: Error
   variables: 
     active: 'adminErrors'
-    ready: 'currentadminErrorsReady'
-    loading: 'currentadminErrorsLoading'
-    count: 'currentadminErrorsCount'
-    filter: 'currentadminErrorsFilter'
-    limit: 'currentadminErrorsLimit'
-    limitIncreasing: 'currentadminErrorslimitIncreasing' 
-    sort: 'currentadminErrorsSort'
+    ready: 'currentAdminErrorsReady'
+    loading: 'currentAdminErrorsLoading'
+    count: 'currentAdminErrorsCount'
+    filter: 'currentAdminErrorsFilter'
+    limit: 'currentAdminErrorsLimit'
+    limitIncreasing: 'currentAdminErrorslimitIncreasing' 
+    sort: 'currentAdminErrorsSort'
 
 EnableCatalogItemLink Template.adminErrorsCatalogItem
 

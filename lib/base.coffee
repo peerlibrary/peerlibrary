@@ -23,13 +23,13 @@ setSession = (session) ->
     adminFacts: false
       
     adminErrors: false
-    currentadminErrorsReady: false
-    currentadminErrorsLoading: false
-    currentadminErrorsCount: 0
-    currentadminErrorsFilter: null
-    currentadminErrorsLimit: INITIAL_CATALOG_LIMIT
-    currentadminErrorsLimitIncreating: false
-    currentadminErrorsSort: 0
+    currentAdminErrorsReady: false
+    currentAdminErrorsLoading: false
+    currentAdminErrorsCount: 0
+    currentAdminErrorsFilter: null
+    currentAdminErrorsLimit: INITIAL_CATALOG_LIMIT
+    currentAdminErrorsLimitIncreating: false
+    currentAdminErrorsSort: 0
 
     publicationJobsId: null
     libraryActive: false
