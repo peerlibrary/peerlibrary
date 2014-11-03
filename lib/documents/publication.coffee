@@ -130,7 +130,7 @@ class @Publication extends BasicAccessDocument
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + fileId + '.' + mediaType
 
   url: (fileId) =>
-    # To allow calling from template with no arguments
+    # To allow calling from template with no arguments (fileId would be options then)
     fileId = null unless _.isString fileId
 
     Storage.url @cachedFilename fileId
