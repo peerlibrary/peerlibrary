@@ -1,3 +1,6 @@
+Future = Npm.require 'fibers/future'
+child_process = Npm.require 'child_process'
+
 class @NormalizePublicationJob extends Job
   enqueueOptions: (options) =>
     options = super
@@ -9,19 +12,16 @@ class @NormalizePublicationJob extends Job
     if Meteor.settings.ghostScript
       publication = @data.publication
 
-      Future = Npm.require 'fibers/future'
-      child_process = Npm.require 'child_process'
-
       path = Storage._fullPath(publication.cachedFilename()).split Storage._path.sep
       path.pop()
       path = path.join Storage._path.sep
 
-      fileID = Random.id()
+      fileId = Random.id()
 
-      execCmd = (cmd, opts) ->
+      execFileSync = (file, args, opts) ->
         future = new Future()
 
-        child_process.exec cmd, opts, (error, stdout, stderr) ->
+        child_process.execFile file, args, opts, (error, stdout, stderr) ->
           future.return
             success: not error
             stdout: stdout
@@ -29,21 +29,23 @@ class @NormalizePublicationJob extends Job
 
         future.wait()
 
-      result = execCmd 'gs -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -dFastWebView=true -sOutputFile=' + path + '/' + fileID + '.pdf ' + Storage._fullPath publication.cachedFilename()
+      result = execFileSync 'gs', ['-sDEVICE=pdfwrite', '-dNOPAUSE', '-dQUIET', '-dBATCH', '-dFastWebView=true' , "-sOutputFile=#{path}/#{fileId}.pdf", Storage._fullPath publication.cachedFilename()]
 
-      pdf = Storage.open publication.cachedFilename(fileID)
+      if result.success # What should happen on failure?
+        pdf = Storage.open publication.cachedFilename fileId
 
-      hash = new Crypto.SHA256()
-      hash.update pdf
-      sha256 = hash.finalize()
+        hash = new Crypto.SHA256()
+        hash.update pdf
+        sha256 = hash.finalize()
 
-      publication.files.push
-        fileID: fileID
-        createdAt: moment.utc().toDate()
-        updatedAt: moment.utc().toDate()
-        sha256: sha256
-        mediaType: 'pdf'
-        type: 'normalized-gs'
+        publication.files.push
+          fileId: fileId
+          createdAt: moment.utc().toDate()
+          updatedAt: moment.utc().toDate()
+          sha256: sha256
+          mediaType: 'pdf'
+          type: 'normalized-gs'
+          logs: result
 
     return # Return nothing
 

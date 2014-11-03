@@ -254,7 +254,7 @@ Meteor.methods
         mediaType: 'pdf'
         sha256: sha256
         files: [
-          fileID: Random.id()
+          fileId: Random.id()
           createdAt: createdAt
           updatedAt: createdAt
           sha256: sha256
@@ -321,8 +321,6 @@ Meteor.methods
 
       unless publication.cached
         # Upload is being finished for the first time, so move it to permanent location
-        console.log publication
-        console.log publication.cachedFilename()
         Storage.rename publication._importingFilename(), publication.cachedFilename()
         Publication.documents.update
           _id: publication._id
