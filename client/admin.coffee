@@ -64,7 +64,7 @@ Template.adminErrors.catalogSettings = ->
     limitIncreasing: 'currentadminErrorslimitIncreasing' 
     sort: 'currentadminErrorsSort'
 
-EnableCatalogItemLink Template.adminErrorcCatalog
+EnableCatalogItemLink Template.adminErrorsCatalogItem
 
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
