@@ -51,6 +51,21 @@ Template.adminErrors.errors = ->
       ['serverTime', 'desc']
     ]
 
+Template.adminErrors.catalogSettings = ->
+  subscription: 'adminErrors'
+  documentClass: Error
+  variables: 
+    active: 'adminErrors'
+    ready: 'currentadminErrorsReady'
+    loading: 'currentadminErrorsLoading'
+    count: 'currentadminErrorsCount'
+    filter: 'currentadminErrorsFilter'
+    limit: 'currentadminErrorsLimit'
+    limitIncreasing: 'currentadminErrorslimitIncreasing' 
+    sort: 'currentadminErrorsSort'
+
+EnableCatalogItemLink Template.adminErrorcCatalog
+
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
     Meteor.call 'test-job', (error, result) ->
