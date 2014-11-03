@@ -5,8 +5,9 @@ class Migration extends Document.MajorMigration
     count = 0
 
     collection.findEach {_schema: currentSchema, files: {$exists: false}}, {}, (document) =>
+      fileId = Random.id()
       update = [
-        fileId: Random.id()
+        fileId: fileId
         createdAt: document.createdAt
         updatedAt: document.createdAt
         SHA256: document.sha256
@@ -15,11 +16,12 @@ class Migration extends Document.MajorMigration
       ]
       count += collection.update update {_schema: currentSchema, _id: focument._id, files: {$exists: false}}, {$set: {files: update, _schema: newSchema}}
 
-      oldPath = document.cachedFilename().split Storage._path.sep
+      cachedFilename = Publication._filenamePrefix() + 'cache' + Storage._path.sep + document.cachedId + Storage._path.sep + fileId + '.' + document.mediaType
+      oldPath = cachedFilename.split Storage._path.sep
       oldPath.pop()
       oldPath = oldPath.join(Storage._path.sep) + document.mediaType
 
-      Storage.rename oldPath, document.cachedFilename()
+      Storage.rename oldPath, cachedFilename
 
     counts = super
     counts.migrated += count
@@ -28,16 +30,16 @@ class Migration extends Document.MajorMigration
 
   backward: (document, collection, currentSchema, oldSchema) =>
     collection.findEach {_schema: currentSchema, files: {$exists: true}}, (document) =>
-      oldPath = document.cachedFilename().split '.'
+      cachedFilename = Publication._filenamePrefix() + 'cache' + Storage._path.sep + document.cachedId + '.' + document.mediaType
+      oldPath = cachedFilename.split '.'
       oldPath.pop()
       oldPath = oldPath.join('.') + Storage._path.sep + document.files[0].filesID + '.' + document.files[0].mediaType
 
-      storage.rename oldPath, document.cachedFilename()
+      storage.rename oldPath, cachedFilename
 
       oldPath.split Storage._path.sep
       oldPath.pop()
       oldPath.join(Storage._path.sep) + Storage._path.sep
-      # Deletes directory?
       storage.remove oldPath
 
 
