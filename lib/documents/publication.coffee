@@ -119,13 +119,9 @@ class @Publication extends BasicAccessDocument
   cachedFilename: (fileId) =>
     throw new Error "Cached filename not available" unless @cachedId and @mediaType and @files.length
 
-    fileId = @files[0].fileId unless fileId?
-    mediaType = ''
-
-    for file in @files
-      if file.fileId is fileId
-        mediaType = file.mediaType
-        break
+    fileId ?= @files[0].fileId
+    mediaType = _.find @files, (file) -> file.fileId is fileId
+    mediaType ?= ''
 
     Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + fileId + '.' + mediaType
 

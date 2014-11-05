@@ -29,7 +29,7 @@ class @NormalizePublicationJob extends Job
 
         future.wait()
 
-      result = execFileSync 'gs', ['-sDEVICE=pdfwrite', '-dNOPAUSE', '-dQUIET', '-dBATCH', '-dFastWebView=true' , "-sOutputFile=#{path}/#{fileId}.pdf", Storage._fullPath publication.cachedFilename()]
+      result = execFileSync 'gs', ['-sDEVICE=pdfwrite', '-dNOPAUSE', '-dQUIET', '-dBATCH', '-dFastWebView=true', '-dUseCIEColor', '-sProcessColorModel=DeviceCMYK', "-sOutputFile=#{path}/#{fileId}.pdf", Storage._fullPath publication.cachedFilename()]
 
       if result.success # What should happen on failure?
         pdf = Storage.open publication.cachedFilename fileId
