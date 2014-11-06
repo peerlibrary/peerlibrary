@@ -1,6 +1,3 @@
-Future = Npm.require 'fibers/future'
-child_process = Npm.require 'child_process'
-
 class @NormalizePublicationJob extends Job
   enqueueOptions: (options) =>
     options = super
@@ -17,17 +14,6 @@ class @NormalizePublicationJob extends Job
       path = path.join Storage._path.sep
 
       fileId = Random.id()
-
-      execFileSync = (file, args, opts) ->
-        future = new Future()
-
-        child_process.execFile file, args, opts, (error, stdout, stderr) ->
-          future.return
-            success: not error
-            stdout: stdout
-            stderr: stderr
-
-        future.wait()
 
       result = execFileSync 'gs', ['-sDEVICE=pdfwrite', '-dNOPAUSE', '-dQUIET', '-dBATCH', '-dFastWebView=true', '-dUseCIEColor', '-sProcessColorModel=DeviceCMYK', "-sOutputFile=#{path}/#{fileId}.pdf", Storage._fullPath publication.cachedFilename()]
 
