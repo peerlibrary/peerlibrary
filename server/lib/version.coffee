@@ -11,7 +11,7 @@ catch error
   gitversion = null
 
 unless gitversion
-  result = execFileSync 'git', ['describe', '--always', '--dirty=+']
+  result = Meteor.execFileSync 'git', ['describe', '--always', '--dirty=+']
 
   gitversion = result.stdout.split('\n')[0] if result.success
 

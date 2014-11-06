@@ -1,4 +1,4 @@
-execFileSync = (file, args, opts) ->
+Meteor.execFileSync = (file, args, opts) ->
   Future = Npm.require 'fibers/future'
   child_process = Npm.require 'child_process'
   future = new Future()
