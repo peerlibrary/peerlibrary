@@ -3,7 +3,7 @@ class @NormalizePublicationJob extends Job
     options = super
 
     _.defaults options,
-      priority: 'mdeium'
+      priority: 'medium'
 
   run: =>
     if Meteor.settings.ghostScript
@@ -36,3 +36,28 @@ class @NormalizePublicationJob extends Job
     return # Return nothing
 
 Job.addJobClass NormalizePublicationJob
+
+class @NormalizePublicationsJob extends Job
+  enqueueOptions: (options) =>
+    options = super
+
+    _.defaults options,
+      priority: 'high'
+
+  run: =>
+    count = 0
+
+    query =
+      files:
+        $elemMatch:
+          type:
+            $ne: 'normalized-gs'
+
+    Publication.documents.find(query).forEach (publication, i) =>
+      count++ if new NormalizePublicationJob(publication: publication).enqueue(
+        skipIfExisting: true
+      )
+
+    count: count
+
+Job.addJobClass NormalizePublicationsJob
