@@ -54,9 +54,7 @@ class @NormalizePublicationsJob extends Job
             $ne: 'normalized-gs'
 
     Publication.documents.find(query).forEach (publication, i) =>
-      count++ if new NormalizePublicationJob(publication: publication).enqueue(
-        skipIfExisting: true
-      )
+      count++ if new NormalizePublicationJob(publication: publication).enqueue(skipIfExisting: true)
 
     count: count
 
