@@ -5,7 +5,7 @@
 # Results are objects with the following fields:
 #   cursor: a queryset cursor with result documents (including any limit)
 #   added/changed/removed: callbacks to be called by corresponding observeChanges call on
-#                          the cursor a before document is published, to allow preprocessing
+#                          the cursor before a document is published, to allow preprocessing
 
 # More or less the whole logic is how to publish documents from provided cursors and attach
 # information which documents are connected to which search results, including the order of
@@ -251,23 +251,46 @@
       handle?.stop()
       countsHandles[i] = null
 
+# openQueries = {}
+
+# openQueries[query] = {
+#   elasticSearchId
+#   idsUntilNowMapping
+# }
+
+# openQueries = new Meteor.Collection null
+
+# openQueries.insert(
+# {
+#  elasticSearchId
+#  idsUntilNowMapping
+#   timestamp 
+# }
+# )
+
+# openQueries.remove(timestamp more than day old)
+
 @searchPublishES = (publish, name, query, order_mapping, results...) ->
+  console.log "results: "
   console.log results
   queryId = Random.id()
 
   initializedCounts =
     name: name
     query: query
+
   for result, i in results
     # We set all counts initially to null, until counts are ready
+    console.log "result: "
+    console.log result
     initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = null
 
-  publish.added 'SearchResults', queryId, initializedCounts
+  # # use es stuff?
+  publish.added 'SearchResults', queryId, initializedCounts,
 
   initializingResults = results.length
   resultsHandles = []
   for result, i in results
-    #added, changed, removed
     do (result, i) ->
       resultsHandles[i] = result.cursor.observeChanges
         added: (id, fields) =>
@@ -294,11 +317,11 @@
 
       initializingResults--
 
-  assert.equal initializingResults, 0
+  # assert.equal initializingResults, 0
 
-  # We call ready before counts are available so that client side can start displaying results
-  # even before counts are available. Counting currently takes time (we have to go over whole
-  # query) so it quite delays sending of results and user feedback on the client.
+  # # We call ready before counts are available so that client side can start displaying results
+  # # even before counts are available. Counting currently takes time (we have to go over whole
+  # # query) so it quite delays sending of results and user feedback on the client.
   publish.ready()
 
   publish.onStop ->
@@ -306,37 +329,38 @@
       handle?.stop()
       resultsHandles[i] = null
 
-  initializingCounts = results.length
+  # initializingCounts = results.length
   counts = []
   countsHandles = []
+  # We only have on result right now, and that's publication.
   for result, i in results
     do (result, i) ->
-      counts[i] = 0
+      counts[i] = Object.keys(order_mapping).length
 
-      # For counting we want only _id field and no skip or limit restrictions
-      result.cursor._cursorDescription.options.fields =
-        _id: 1
-      delete result.cursor._cursorDescription.options.skip
-      delete result.cursor._cursorDescription.options.limit
+  #     # For counting we want only _id field and no skip or limit restrictions
+  #     result.cursor._cursorDescription.options.fields =
+  #       _id: 1
+  #     delete result.cursor._cursorDescription.options.skip
+  #     delete result.cursor._cursorDescription.options.limit
 
-      # TODO: Counting in this way is very inefficient, better would be to first run .count() in MongoDB and then just tail oplog for adding and removing, without all added calls for all existing documents.
-      countsHandles[i] = result.cursor.observeChanges
-        added: (id, fields) =>
-          counts[i]++
-          if initializingCounts is 0
-            change = {}
-            change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
-            publish.changed 'SearchResults', queryId, change
+  #     # TODO: Counting in this way is very inefficient, better would be to first run .count() in MongoDB and then just tail oplog for adding and removing, without all added calls for all existing documents.
+  #     countsHandles[i] = result.cursor.observeChanges
+  #       added: (id, fields) =>
+  #         counts[i]++
+  #         if initializingCounts is 0
+  #           change = {}
+  #           change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+  #           publish.changed 'SearchResults', queryId, change
 
-        removed: (id) =>
-          counts[i]--
-          change = {}
-          change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
-          publish.changed 'SearchResults', queryId, change
+  #       removed: (id) =>
+  #         counts[i]--
+  #         change = {}
+  #         change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+  #         publish.changed 'SearchResults', queryId, change
 
-      initializingCounts--
+  #     initializingCounts--
 
-  assert.equal initializingCounts, 0
+  # assert.equal initializingCounts, 0
 
   for result, i in results
     initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
