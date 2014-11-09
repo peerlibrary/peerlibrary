@@ -15,11 +15,9 @@ Deps.autorun ->
 Deps.autorun ->
   Session.set 'currentSearchQueryReady', false
   if Session.get('currentSearchLimit') and Session.get('currentSearchQuery')
-    console.log "in autorun"
     Session.set 'currentSearchQueryLoading', true
     Meteor.subscribe 'search-results', Session.get('currentSearchQuery'), Session.get('currentSearchLimit'),
       onReady: ->
-        console.log "Ready!"
         Session.set 'currentSearchQueryReady', true
         Session.set 'currentSearchQueryLoading', false
       onError: ->
@@ -34,7 +32,6 @@ Deps.autorun ->
 
 Template.results.created = ->
   $(window).on 'scroll.results', ->
-    console.log "In results.created"
     if $(document).height() - $(window).scrollTop() <= 2 * $(window).height()
       increaseSearchLimit 10
 
@@ -50,14 +47,11 @@ Template.results.destroyed = ->
   $(window).off '.results'
 
 increaseSearchLimit = (pageSize) ->
-  console.log("increasingSearchLimit!")
   if searchLimitIncreasing
-    console.log "Still trying to increase"
     return
   if Session.get('currentSearchLimit') < currentSearchQueryCount()
     searchLimitIncreasing = true
     Session.set 'currentSearchLimit', (Session.get('currentSearchLimit') or 0) + pageSize
-    console.log "SearchLimit: " + Session.get 'currentSearchLimit'
 
 Template.results.publications = ->
   if not Session.get('currentSearchLimit') or not Session.get('currentSearchQuery')
@@ -67,7 +61,6 @@ Template.results.publications = ->
     name: 'search-results'
     query: Session.get 'currentSearchQuery'
 
-  console.log(searchResult)
   return if not searchResult
 
   Session.set 'currentSearchQueryCountPublications', searchResult.countPublications
@@ -99,7 +92,6 @@ Template.resultsCount.personsCountDescription = ->
   Person.verboseNameWithCount Session.get('currentSearchQueryCountPublications')
 
 Template.resultsLoad.loading = ->
-  console.log "loading: " + Session.get('currentSearchQueryLoading')
   Session.get('currentSearchQueryLoading')
 
 Template.resultsLoad.more = ->
@@ -111,7 +103,6 @@ Template.resultsLoad.publications = ->
 
 Template.resultsLoad.events =
   'click .load-more': (event, template) ->
-    console.log "IN resultsLoad"
     event.preventDefault()
     searchLimitIncreasing = false # We want to force loading more in every case
     increaseSearchLimit 10

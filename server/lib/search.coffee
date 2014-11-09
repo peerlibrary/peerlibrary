@@ -251,28 +251,8 @@
       handle?.stop()
       countsHandles[i] = null
 
-# openQueries = {}
-
-# openQueries[query] = {
-#   elasticSearchId
-#   idsUntilNowMapping
-# }
-
-# openQueries = new Meteor.Collection null
-
-# openQueries.insert(
-# {
-#  elasticSearchId
-#  idsUntilNowMapping
-#   timestamp 
-# }
-# )
-
-# openQueries.remove(timestamp more than day old)
 
 @searchPublishES = (publish, name, query, order_mapping, results...) ->
-  console.log "results: "
-  console.log results
   queryId = Random.id()
 
   initializedCounts =
@@ -281,8 +261,6 @@
 
   for result, i in results
     # We set all counts initially to null, until counts are ready
-    console.log "result: "
-    console.log result
     initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = null
 
   # # use es stuff?
@@ -294,7 +272,6 @@
     do (result, i) ->
       resultsHandles[i] = result.cursor.observeChanges
         added: (id, fields) =>
-          console.log "added " + id + " order: " + order_mapping[id]
           fields.searchResult =
             _id: queryId
             order: order_mapping[id]
@@ -395,10 +372,7 @@
     if response.hits? and response.hits.hits?
       for hit, index in response.hits.hits
         order_map[hit._id] = index
-        # console.log order_map[hit._id] + ": " + hit._id
       ids = (hit._id for hit in response.hits.hits[0...limit])
-      console.log Object.keys(order_map)
-      # console.log ids
       findQuery =
         _id:
           $in: ids
