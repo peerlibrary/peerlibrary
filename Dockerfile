@@ -8,8 +8,8 @@ COPY ./etc/apt /etc/apt
 
 RUN apt-get update -q -q && \
  apt-get install adduser curl --yes --force-yes && \
- apt-get install -t wheezy-backports git --yes --force-yes && \
  apt-get install libcairo2-dev libfreetype6-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++ --yes --force-yes && \
+ apt-get install -t wheezy-backports git --yes --force-yes && \
  adduser --system --group peerlibrary --home /home/peerlibrary && \
  export PATH=$HOME/.meteor/tools/latest/bin:$PATH && \
  curl --silent http://meteor.peerlibrary.org/ | sh && \
