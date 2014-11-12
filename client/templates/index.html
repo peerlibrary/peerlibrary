@@ -64,7 +64,7 @@
 <template name="indexLatestBlogPost">
   {{#if latestBlogPost}}
     <div class="latest-blog-post">
-      <h3><a href="{{latestBlogPost.tumblr.postUrl}}">{{#if latestBlogPost.tumblr.title}}{{latestBlogPost.tumblr.title}}{{else}}{{latestBlogPost.tumblr.caption}}{{/if}}</a></h3>
+      <h3><a href="{{latestBlogPost.tumblr.postUrl}}">{{#if latestBlogPost.tumblr.title}}{{firstLine latestBlogPost.tumblr.title}}{{else}}{{firstLine latestBlogPost.tumblr.caption}}{{/if}}</a></h3>
       {{#if blogUrl}}
         <p class="hint"><a href="{{blogUrl}}">View all {{blogPostsCount}} blog posts</a></p>
       {{/if}}

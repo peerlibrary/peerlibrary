@@ -44,6 +44,9 @@ Template.indexMain.destroyed = ->
   @_background = null
   @_backgroundRendered = false
 
+Template.indexLatestBlogPost.firstLine = (text) ->
+  text.split('\n')[0]
+
 Template.indexLatestBlogPost.latestBlogPost = ->
   BlogPost.documents.findOne()
 
