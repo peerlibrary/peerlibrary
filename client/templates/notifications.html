@@ -1,0 +1,85 @@
+<template name="notificationsButton">
+  {{#if currentPersonId}}
+    <li class="dropdown-trigger notifications-button pull-right top-menu-item-wrapper">
+      {{> notificationsButtonContent }}
+      {{> notificationsDropdown }}
+    </li>
+  {{/if}}
+</template>
+
+<template name="notificationsButtonContent">
+  <a class="top-menu-item {{#if unseenCount}}icon-notifications-active{{else}}icon-notifications{{/if}}">{{#if unseenCount}} {{unseenCount}}{{/if}}</a>
+</template>
+
+<template name="notificationsDropdown">
+  <div class="dropdown-anchor">
+    <div class="notifications-menu right-aligned dropdown">
+      <a class="view-all" href="{{notificationsPath}}">View all notifications</a>
+      <button class="mark-all-as-read borderless">Mark all as read <i class="icon-check"></i></button>
+      {{#if notifications}}
+        <ol class="notifications">
+          {{#each notifications}}
+            {{> notification }}
+          {{/each}}
+        </ol>
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<template name="notification">
+  <li class="notification {{#if read}}read{{/if}}">
+    <i class="type-icon icon-{{icon}}"></i>
+    <a class="message-wrapper" href="{{link}}">
+      <span class="message">
+        {{{message}}}
+      </span>
+    </a>
+    {{#unless read}}
+      <button class="mark-as-read borderless icon-check tooltip" title="Mark as read"></button>
+    {{/unless}}
+  </li>
+</template>
+
+<template name="notifications">
+  <div class="row">
+    <h1>Notifications</h1>
+    {{#unless currentPersonId}}
+      <p>Sign in to view your notifications.</p>
+    {{else}}
+      <div class="col12">
+        {{#if notifications}}
+          <ol class="item-list notifications">
+            {{#each notifications}}
+              {{> notificationCatalogItem }}
+            {{/each}}
+          </ol>
+        {{/if}}
+      </div>
+      <div class="col4 push12 sidebar">
+        <button class="mark-all-as-read">Mark all as read</button>
+        {{> footer}}
+      </div>
+    {{/unless}}
+  </div>
+</template>
+
+<template name="notificationCatalogItem">
+  <li class="notification catalog-item {{#if read}}read{{/if}}">
+    <i class="type-icon icon-{{icon}}"></i>
+
+    {{#unless read}}
+      <div class="toolbar actionable">
+        <button class="toolbar-button borderless icon-check tooltip" title="Mark as read"></button>
+      </div>
+    {{/unless}}
+
+    <div class="message-wrapper">
+      <div class="message">
+        {{{message}}}
+      </div>
+    </div>
+
+    <a class="full-item-link" href="{{link}}"></a>
+  </li>
+</template>

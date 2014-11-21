@@ -22,7 +22,7 @@ header
   a
     color white
     text-decoration none
-    line-height 45px
+    line-height header-height
     font-size 22px
     font-family "Fira Sans", sans-serif
     background transparent
@@ -40,15 +40,16 @@ ul.top-menu
   margin 0
   color white
 
-  li
+  .top-menu-item-wrapper
     display block
     float left
-    line-height 48px // Vertically centers header items
+    line-height header-height + 3px // Vertically centers header items
 
-    a
+    .top-menu-item
       color white
       display block
       padding 0 20px
+      height header-height
       user-select none
       cursor pointer
 
@@ -62,7 +63,7 @@ ul.top-menu
   .search-wrapper
     padding 0 30px 0 20px
     width 400px
-    height 45px
+    height header-height
     transition 0.2s
 
     .search-form
@@ -95,18 +96,20 @@ ul.top-menu
     span.cursor
       visibility visible
 
-ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+ul.top-menu .top-menu-item-wrapper .top-menu-item:hover
+ul.top-menu .search-wrapper:hover
   text-decoration none !important
 
 .no-index-header ul.top-menu .search-wrapper
   cursor pointer
 
 .no-index-header
-  ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+  ul.top-menu .top-menu-item-wrapper .top-menu-item:hover
+  ul.top-menu .search-wrapper:hover
     background white
     color blue-accent
 
-ul.top-menu li .accounts-dialog a:hover
+ul.top-menu .top-menu-item-wrapper .accounts-dialog a:hover
   background transparent
   color white
 
@@ -219,27 +222,29 @@ header.logged-in
     font-size 14px
     line-height 20px
 
-  .menu-item
-    padding 5px 0
-    background transparent
-    text-align center
-    font-weight bold
-    color blue-accent
-    cursor pointer
-
-    a
+    .menu-item
+      padding 5px 0
+      background transparent
+      text-align center
+      font-weight bold
       color blue-accent
-      padding 0 5px
+      cursor pointer
 
-  .menu-item:hover
-      background blue-accent
-      color white
-      a
+      &:hover
+        background blue-accent
         color white
 
-  .menu-item a:hover
-    color white
-    background blue-accent
+        a
+          color white
+
+      a
+        color blue-accent
+        padding 0 5px
+
+        &:hover
+          color white
+          background blue-accent
+          text-decoration none
 
 header.index-header.logged-in
   .login-link-and-dropdown-list
@@ -284,6 +289,17 @@ header
 
 input.import-file-input
   display none
+
+/* Notifications
+================ */
+
+header
+  .notifications-button.dropdown-trigger
+    .top-menu-item
+      text-align center
+
+      &::before
+        margin 0
 
 /* Index header
 =============== */
@@ -384,24 +400,33 @@ header.index-header
     a
       cursor pointer
 
-    li > a, li a.login-link-text
+    .top-menu-item-wrapper .top-menu-item
       font-size 14px
       font-weight normal
       line-height 14px
-      padding 8px 20px
+      padding 9px 13px
       margin-top 15px
       margin-right 15px
       color rgb(255,255,255)
       background bg-blue
       border 1px solid border-blue
       border-radius 3px
+      height auto
 
-    li > a:hover, li a.login-link-text:hover
+    .top-menu-item-wrapper .top-menu-item:hover
       background hover-blue
 
-    li a.login-link-text
+    top-menu-item-wrapper .top-menu-item.login-link-text
       margin-right 25px
       color white
+
+    .notifications-button.top-menu-item-wrapper
+      .top-menu-item
+        height 14px
+        padding 9px
+
+      .dropdown-anchor
+        right 15px
 
   .avatar
     margin-top -5px
