@@ -151,7 +151,8 @@ PDFJS.pdfImageSegment = (geom) ->
 
 # This has to be in sync with how browser text selection is converted to a string (it adds
 # a space between divs) and how it is then normalized in DomTextMapper.readSelectionText,
-# DomTextMatcher.readSelectionText, Annotator.normalizeString (they trim and replace white space)
+# DomTextMapper.computeSourcePositions, DomTextMatcher.readSelectionText, Annotator.normalizeString
+# (they trim and replace white space).
 PDFJS.pdfExtractText = (textContents...) ->
   texts = for textContent in textContents
     text = (geom.str for geom in textContent.items).join ' '
@@ -159,7 +160,7 @@ PDFJS.pdfExtractText = (textContents...) ->
     # Trim and remove multiple whitespace characters
     text = text.trim().replace(WHITESPACE_REGEX, ' ')
 
-    # TODO: Clean-up the text: remove hyphenation (be careful, DomTextMapper.readSelectionText should do the same then)
+    # TODO: Clean-up the text: remove hyphenation (be careful, DomTextMapper.readSelectionText and others (see the whole list above) should do the same then)
 
     text
 
