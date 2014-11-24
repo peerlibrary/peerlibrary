@@ -95,14 +95,16 @@ ul.top-menu
     span.cursor
       visibility visible
 
-ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+ul.top-menu li a:hover
+ul.top-menu .search-wrapper:hover
   text-decoration none !important
 
 .no-index-header ul.top-menu .search-wrapper
   cursor pointer
 
 .no-index-header
-  ul.top-menu li a:hover, ul.top-menu .search-wrapper:hover
+  ul.top-menu li a:hover
+  ul.top-menu .search-wrapper:hover
     background white
     color blue-accent
 
@@ -256,7 +258,13 @@ header.index-header.logged-in
   #login-dropdown-list::before
     left 149px
 
-#login-password-label-and-input, #login-username-or-email-label-and-input, #login-username-label-and-input, #login-email-label-and-input, #forgot-password-email-label-and-input, .accounts-dialog .message, .accounts-dialog .login-button
+#login-password-label-and-input
+#login-username-or-email-label-and-input
+#login-username-label-and-input
+#login-email-label-and-input
+#forgot-password-email-label-and-input
+.accounts-dialog .message
+.accounts-dialog .login-button
   padding 0 20px
 
 .login-close-text
@@ -396,7 +404,8 @@ header.index-header
       border 1px solid border-blue
       border-radius 3px
 
-    li > a:hover, li a.login-link-text:hover
+    li > a:hover
+    li a.login-link-text:hover
       background hover-blue
 
     li a.login-link-text
