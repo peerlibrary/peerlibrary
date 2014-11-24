@@ -4,7 +4,8 @@
 /* General form controls
 ======================== */
 
-input, button
+input
+button
   display inline-block
   padding 5px
   font-size 13px
@@ -17,7 +18,8 @@ input
 input.invalid
   border 1px solid red
 
-input:focus, button:focus
+input:focus
+button:focus
   border 1px solid #a1b3c2
   box-shadow 0 0 2px #a1b3c2
 
@@ -125,7 +127,8 @@ button
 /* Edit button
 ============== */
 
-.edit, .meta-menu .edit
+.edit
+.meta-menu .edit
   display none
   vertical-align middle
   background none
@@ -212,7 +215,10 @@ h1
     font-size 0.9em
     font-weight 300
 
-  input, button, select, .control
+  input
+  button
+  select
+  .control
     display block
     width 235px
     box-sizing border-box
@@ -235,7 +241,8 @@ h1
     background white
     color black
 
-    input, input:focus
+    input
+    input:focus
       /* For some reason it should be 231 in Chrome and not 233.
          Otherwise the right border is cropped and not seen. */
       width 231px
@@ -276,8 +283,10 @@ h1
 
 /* Meta menus and jQuery UI widgets
 =================================== */
-.meta-menu, .ui-widget
-  input, button
+.meta-menu
+.ui-widget
+  input
+  button
     display block
     padding 8px 12px
     border none
@@ -311,7 +320,8 @@ h1
   .input-and-buttons
     width 100%
 
-    input, button
+    input
+    button
       border-radius 0
 
     input
@@ -425,7 +435,8 @@ h1
   .ui-state-hover
     background rgba(80,80,80,0.9)
 
-  input, button.ui-widget
+  input
+  button.ui-widget
     font-family "Source Sans Pro", sans-serif
     font-size 13px
 
@@ -500,7 +511,8 @@ h1
   font-size 13px
   min-width 15em
 
-  input, button
+  input
+  button
     box-sizing border-box
 
   button

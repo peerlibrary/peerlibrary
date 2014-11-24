@@ -3,7 +3,9 @@
 /* Authentication menu and popup dialogs (newsletter, invite)
 ============================================================= */
 
-header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
+header.logged-out #login-dropdown-list
+.popup-dialog
+.accounts-centered-dialog
   color black
   background white
   border-color rgb(210,210,210)
@@ -34,7 +36,8 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
     font-weight bold
     margin-bottom 10px
 
-  input, textarea
+  input
+  textarea
     position relative
     min-height 20px
     width 260px
@@ -55,11 +58,13 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
   textarea
     min-height 100px
 
-  input:focus, textarea:focus
+  input:focus
+  textarea:focus
     border-color rgb(81,167,232)
     box-shadow 0 1px 2px rgba(0,0,0,0.075) inset, 0px 0px 5px rgba(81,167,232,0.5)
 
-  .login-button, .subscribe-form-submit
+  .login-button
+  .subscribe-form-submit
     width 260px
     box-sizing border-box
     line-height 40px
@@ -75,10 +80,12 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
     cursor pointer
     transition all 0.15s ease-in 0s
 
-  .login-button:hover, .subscribe-form-submit:hover
+  .login-button:hover
+  .subscribe-form-submit:hover
     background hover-blue
 
-  .additional-link, .accounts-close
+  .additional-link
+  .accounts-close
     background transparent
     color blue-accent
     text-align center
@@ -89,7 +96,8 @@ header.logged-out #login-dropdown-list, .popup-dialog, .accounts-centered-dialog
   .loading
     display none
 
-  form > *:last-child, .login-form > *:last-child
+  form > *:last-child
+  .login-form > *:last-child
     margin-bottom 0
 
 .popup-dialog
