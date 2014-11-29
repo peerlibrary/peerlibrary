@@ -2,7 +2,7 @@
   <h1>Administrator</h1>
   <div class="row">
     <div class="col12">
-      {{>catalog catalogSettings}}
+      {{> catalog catalogSettings}}
     </div>
     {{> adminTabs}}
   </div>
@@ -82,7 +82,7 @@
   <div class="col4 push12 sidebar">
     <h2>My Dashboard</h2>
       <ul class="item-list">
-        
+
         <li class="catalog-item">
           <div class="details">
             <h2>Development</h2>
@@ -192,6 +192,7 @@
   <div class="row">
     <div class="col12">
       <h3>Error Log</h3>
+      {{> catalog catalogSettings}}
       <ul class="item-list">
         {{#each errors}}
           {{> adminErrorsCatalogItem}}
@@ -205,8 +206,11 @@
 <template name="adminErrorsCatalogItem">
   <li class="catalog-item adminErrors">
     <div class="details">
-    {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
-    | window {{windowWidth}}x{{windowHeight}}
+      <h2>Error Message: {{errorMsg}}</h2>
+      <p> <a href="view-source:{{url}}">{{url}}</a> at line {{lineNumber}}</p>
+      <p>User Agent: {{userAgent}}
+      <p>Screen: {{screenWidth}}x{{screenHeight}}</p>
+      <p>Window: {{windowWidth}}x{{windowHeight}}</p>
     </div>
   </li>
 </template>
@@ -215,9 +219,6 @@
   <h1>Jobs</h1>
   <div class="row">
     <div class = "col12">
-      <div class="admin-buttons">
-        <button class="test-job">Create a test job</button>
-      </div>
       <h2>Queue</h2>
       <ul class="admin-job-queue item-list">
         {{#each jobqueue}}
