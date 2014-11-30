@@ -53,7 +53,7 @@ Template.adminErrors.errors = ->
 
 Template.adminErrors.catalogSettings = ->
   subscription: 'adminErrors'
-  documentClass: Error
+  documentClass: LoggedError
   variables: 
     active: 'adminErrors'
     ready: 'currentAdminErrorsReady'
@@ -61,7 +61,7 @@ Template.adminErrors.catalogSettings = ->
     count: 'currentAdminErrorsCount'
     filter: 'currentAdminErrorsFilter'
     limit: 'currentAdminErrorsLimit'
-    limitIncreasing: 'currentAdminErrorslimitIncreasing' 
+    limitIncreasing: 'currentAdminErrorsLimitIncreasing'
     sort: 'currentAdminErrorsSort'
 
 EnableCatalogItemLink Template.adminErrorsCatalogItem

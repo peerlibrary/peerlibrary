@@ -28,7 +28,7 @@ setSession = (session) ->
     currentAdminErrorsCount: 0
     currentAdminErrorsFilter: null
     currentAdminErrorsLimit: INITIAL_CATALOG_LIMIT
-    currentAdminErrorsLimitIncreating: false
+    currentAdminErrorsLimitIncreasing: false
     currentAdminErrorsSort: 0
 
     publicationJobsId: null

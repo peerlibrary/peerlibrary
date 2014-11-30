@@ -38,3 +38,16 @@ class @LoggedError extends BaseDocument
     fields: =>
       # Person reference is not required (user can opt-out)
       person: @ReferenceField Person, [], false
+
+  @PUBLISH_CATALOG_SORT:
+    [
+      name: "last activity"
+      sort: [
+        ['lastActivity', 'desc']
+      ]
+    ,
+      name: "line number"
+      sort: [
+        ['lineNumber', 'asc']
+      ]
+    ]
