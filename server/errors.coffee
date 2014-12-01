@@ -30,19 +30,27 @@ Meteor.methods
     LoggedError.documents.insert errorDocument
 
 new PublishEndpoint 'logged-errors', ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < LoggedError.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'serverTime') if filter
+
+  sort = if _.isNumber sortIndex then LoggedError.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
   @related (person) ->
     return unless person?.isAdmin
-
     # We store related fields so that they are available in middlewares.
     @set 'person', person
 
-    LoggedError.documents.find {},
-      fields: LoggedError.PUBLISH_FIELDS().fields
-      # 30 most recently received errors
-      limit: 30
-      sort: [
-        ['serverTime', 'desc']
-      ]
+    searchPublish @, 'logged-errors', [filter, sortIndex],
+      cursor: LoggedError.documents.find findQuery,
+        limit: limit
+        fields: LoggedError.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
   ,
     Person.documents.find
       _id: @personId
@@ -51,5 +59,4 @@ new PublishEndpoint 'logged-errors', ->
         # _id field is implicitly added
         isAdmin: 1
 
-LoggedError.Meta.collection._ensureIndex
-  serverTime: -1
+ensureCatalogSortIndexes LoggedError

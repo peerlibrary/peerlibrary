@@ -214,8 +214,8 @@ Template.catalogItem.documentIsGroup = ->
 Template.catalogItem.documentIsCollection = ->
   @ instanceof Collection
 
-Template.catalogItem.documentIsadminErrors = ->
-  @ instanceof Error
+Template.catalogItem.documentIsLoggedError = ->
+  @ instanceof LoggedError
 
 Template.catalogLoading.loading = ->
   Session.get @variables.loading

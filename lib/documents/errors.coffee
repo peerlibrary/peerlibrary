@@ -41,13 +41,8 @@ class @LoggedError extends BaseDocument
 
   @PUBLISH_CATALOG_SORT:
     [
-      name: "last activity"
+      name: "server time"
       sort: [
-        ['lastActivity', 'desc']
-      ]
-    ,
-      name: "line number"
-      sort: [
-        ['lineNumber', 'asc']
+        ['serverTime', 'desc']
       ]
     ]

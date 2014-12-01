@@ -51,8 +51,8 @@ Template.adminErrors.errors = ->
       ['serverTime', 'desc']
     ]
 
-Template.adminErrors.catalogSettings = ->
-  subscription: 'adminErrors'
+Template.adminErrors.catalogSettings = -> 
+  subscription: 'logged-errors'
   documentClass: LoggedError
   variables: 
     active: 'adminErrors'
