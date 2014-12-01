@@ -29,7 +29,7 @@ Meteor.methods
 
     LoggedError.documents.insert errorDocument
 
-new PublishEndpoint 'logged-errors', ->
+new PublishEndpoint 'logged-errors', (limit, filter, sortIndex) ->
   validateArgument 'limit', limit, PositiveNumber
   validateArgument 'filter', filter, OptionalOrNull String
   validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
