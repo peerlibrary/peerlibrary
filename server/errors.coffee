@@ -7,6 +7,10 @@ class @LoggedError extends LoggedError
   @PUBLISH_FIELDS: ->
     fields: {} # All, only admins have access
 
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields: {} # All
+   
 Meteor.methods
   'log-error': methodWrap (errorDocument) ->
     validateArgument 'errorDocument', errorDocument, Object
@@ -37,7 +41,7 @@ new PublishEndpoint 'logged-errors', (limit, filter, sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < LoggedError.PUBLISH_CATALOG_SORT.length
 
   findQuery = {}
-  findQuery = createQueryCriteria(filter, 'serverTime') if filter
+  findQuery = createQueryCriteria(filter, 'errorMsg') if filter
 
   sort = if _.isNumber sortIndex then LoggedError.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
