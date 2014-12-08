@@ -17,7 +17,16 @@ setSession = (session) ->
     adminDevelopment: false
     adminPublications: false
     adminDatabase: false
+
     adminJobs: false
+    currentAdminJobsReady: false
+    currentAdminJobsLoading: false
+    currentAdminJobsCount: 0
+    currentAdminJobsFilter: null
+    currentAdminJobsLimit: INITIAL_CATALOG_LIMIT
+    currentAdminJobsLimitIncreasing: false
+    currentAdminJobsSort: 0
+    
     adminSources: false
     adminBlog: false
     adminFacts: false
