@@ -78,6 +78,76 @@
   </div>
 </template>
 
+<template name="adminJobsTabs">
+  <div class="col4 push12 sidebar">
+    <h2>My Dashboard</h2>
+    <h3>Actions:</h3>
+    <div class="admin-buttons">
+        <button class="test-job">Create a test job</button>
+    </div>
+      <ul class="item-list">
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Development</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDevelopmentPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Publications</h2>
+          </div>
+          <a class="full-item-link" href="{{adminPublicationsPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Database</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDatabasePath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Errors</h2>
+          </div>
+          <a class="full-item-link" href="{{adminErrorsPath}}"></a>
+        </li> 
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Jobs</h2>
+          </div>
+          <a class="full-item-link" href="{{adminJobsPath}}"></a>
+        </li>
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>External Sources</h2>
+          </div>
+        <a class="full-item-link" href="{{adminSourcesPath}}"></a>
+        </li>
+       
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Blog</h2>
+          </div>
+          <a class="full-item-link" href="{{adminBlogPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Facts</h2>
+          </div>
+          <a class="full-item-link" href="{{adminFactsPath}}"></a> 
+        </li>
+      
+      </ul>
+      {{> footer}}
+  </div>
+</template>
+
 <template name="adminTabs">
   <div class="col4 push12 sidebar">
     <h2>My Dashboard</h2>
@@ -223,7 +293,7 @@
         {{/each}}
       </ul>
     </div>  
-    {{> adminTabs}}}
+    {{> adminJobsTabs}}}
   </div>
 </template>
 
