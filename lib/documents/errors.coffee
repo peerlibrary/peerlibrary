@@ -39,6 +39,9 @@ class @LoggedError extends BaseDocument
       # Person reference is not required (user can opt-out)
       person: @ReferenceField Person, [], false
 
+  @verboseName: ->
+    'error'
+
   @PUBLISH_CATALOG_SORT:
    [
       name: "server time"
