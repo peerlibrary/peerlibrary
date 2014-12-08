@@ -40,9 +40,14 @@ class @LoggedError extends BaseDocument
       person: @ReferenceField Person, [], false
 
   @PUBLISH_CATALOG_SORT:
-    [
+   [
       name: "server time"
       sort: [
         ['serverTime', 'desc']
+      ]
+    ,
+      name: "line number"
+      sort: [
+        ['lineNumber', 'asc']
       ]
     ]
