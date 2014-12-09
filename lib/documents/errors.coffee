@@ -43,7 +43,7 @@ class @LoggedError extends BaseDocument
     'error'
 
   @PUBLISH_CATALOG_SORT:
-   [
+    [
       name: "server time"
       sort: [
         ['serverTime', 'desc']

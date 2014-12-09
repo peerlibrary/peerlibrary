@@ -1,7 +1,7 @@
 Deps.autorun ->
   if Session.equals 'adminSources', true
     Meteor.subscribe 'arxiv-pdfs'
-  
+
   if Session.equals 'adminJobs', true
     Meteor.subscribe 'job-queues'
 
@@ -51,10 +51,10 @@ Template.adminErrors.errors = ->
       ['serverTime', 'desc']
     ]
 
-Template.adminErrors.catalogSettings = -> 
+Template.adminErrors.catalogSettings = ->
   subscription: 'logged-errors'
   documentClass: LoggedError
-  variables: 
+  variables:
     active: 'adminErrors'
     ready: 'currentAdminErrorsReady'
     loading: 'currentAdminErrorsLoading'

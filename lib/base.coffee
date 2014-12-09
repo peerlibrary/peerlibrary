@@ -17,7 +17,6 @@ setSession = (session) ->
     adminDevelopment: false
     adminPublications: false
     adminDatabase: false
-
     adminJobs: false
     currentAdminJobsReady: false
     currentAdminJobsLoading: false
@@ -26,11 +25,9 @@ setSession = (session) ->
     currentAdminJobsLimit: INITIAL_CATALOG_LIMIT
     currentAdminJobsLimitIncreasing: false
     currentAdminJobsSort: 0
-    
     adminSources: false
     adminBlog: false
     adminFacts: false
-      
     adminErrors: false
     currentAdminErrorsReady: false
     currentAdminErrorsLoading: false
@@ -39,7 +36,6 @@ setSession = (session) ->
     currentAdminErrorsLimit: INITIAL_CATALOG_LIMIT
     currentAdminErrorsLimitIncreasing: false
     currentAdminErrorsSort: 0
-
     publicationJobsId: null
     libraryActive: false
     settingsActive: false

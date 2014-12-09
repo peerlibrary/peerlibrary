@@ -10,7 +10,7 @@ class @LoggedError extends LoggedError
   # A subset of public fields used for catalog results
   @PUBLISH_CATALOG_FIELDS: ->
     fields: {} # All
-   
+
 Meteor.methods
   'log-error': methodWrap (errorDocument) ->
     validateArgument 'errorDocument', errorDocument, Object
