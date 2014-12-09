@@ -95,7 +95,7 @@ Template.adminJobs.jobqueue = ->
     ]
     transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
-Template.adminJobQueueItem.canManageJob = ->
+Template.adminJobsCatalogItem.canManageJob = ->
   person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
     isAdmin: 1
 
@@ -115,16 +115,16 @@ Template.adminJobQueueItem.canManageJob = ->
     # generic job queue page to non-admins anyway.
     return publication?.hasMaintainerAccess person
 
-Template.adminJobQueueItem.isRestartable = ->
+Template.adminJobsCatalogItem.isRestartable = ->
   @status in JobQueue.Meta.collection.jobStatusRestartable
 
-Template.adminJobQueueItem.isCancellable = ->
+Template.adminJobsCatalogItem.isCancellable = ->
   @status in JobQueue.Meta.collection.jobStatusCancellable
 
-Template.adminJobQueueItem.inFuture = ->
+Template.adminJobsCatalogItem.inFuture = ->
   @after and @after > moment.utc().toDate()
 
-Template.adminJobQueueItem.events
+Template.adminJobsCatalogItem.events
   'click .admin-job-cancel': (event, template) ->
     event.preventDefault()
 

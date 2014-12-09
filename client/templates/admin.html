@@ -283,17 +283,13 @@
   <h1>Jobs</h1>
   <div class="row">
     <div class = "col12">
-      <ul class="admin-job-queue item-list">
-        {{#each jobqueue}}
-          {{> adminJobQueueItem}}
-        {{/each}}
-      </ul>
+      {{> catalog catalogSettings}}
     </div>  
-    {{> adminJobsTabs}}}
+    {{> adminJobsTabs}}
   </div>
 </template>
 
-<template name="adminJobQueueItem">
+<template name="adminJobsCatalogItem">
   <li class="catalog-item job">
     <div class="details">
       <h2>{{type}}, status: {{status}}</h2>

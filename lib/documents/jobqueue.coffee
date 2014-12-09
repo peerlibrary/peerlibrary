@@ -57,3 +57,11 @@ class @JobQueue extends Document
       # publications to link back to related jobs.
       data:
         publication: @ReferenceField Publication, [], false, 'jobs', ['status']
+
+  PUBLISH_CATALOG_SORT:
+   [
+      name: "updated"
+      sort: [
+        ['updated', 'desc']
+      ]
+    ]
