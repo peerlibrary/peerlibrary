@@ -57,7 +57,7 @@ class @TumblrJob extends Job
     data = @_tumblrApiPosts
       offset: offset
       limit: TUMBLR_POST_COUNT_LIMIT
-    throw new Error "Tumblr API error: #{ util.inspect data.meta }" unless data.meta.status is 200
+    throw new Error "Tumblr API error: #{ util.inspect data.meta, false, null }" unless data.meta.status is 200
     data.response.posts
 
   run: =>
