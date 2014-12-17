@@ -6,7 +6,7 @@ chown -f peerlibrary:peerlibrary /storage /storage/publication /storage/publicat
 
 export PATH=/.meteor/tools/latest/bin:$PATH
 export NODE_PATH=/.meteor/tools/latest/lib/node_modules
-export NODE_ENV='PRODUCTION'
+export NODE_ENV='production'
 export STORAGE_DIRECTORY='/storage'
 
 cd /bundle
