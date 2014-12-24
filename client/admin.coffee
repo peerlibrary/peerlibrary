@@ -66,6 +66,21 @@ Template.adminErrors.catalogSettings = ->
 
 EnableCatalogItemLink Template.adminErrorsCatalogItem
 
+Template.adminJobs.catalogSettings = -> 
+  subscription: 'job-queue'
+  documentClass: JobQueue
+  variables: 
+    active: 'adminJobs'
+    ready: 'currentAdminJobsReady'
+    loading: 'currentAdminJobsLoading'
+    count: 'currentAdminJobsCount'
+    filter: 'currentAdminJobsFilter'
+    limit: 'currentAdminJobsLimit'
+    limitIncreasing: 'currentAdminJobsLimitIncreasing'
+    sort: 'currentAdminJobsSort'
+
+EnableCatalogItemLink Template.adminJobQueueItem
+
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
     Meteor.call 'test-job', (error, result) ->
