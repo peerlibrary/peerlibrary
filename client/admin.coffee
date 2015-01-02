@@ -7,6 +7,8 @@ Deps.autorun ->
 Template.adminCheck.isAdmin = ->
   Meteor.person(isAdmin: 1)?.isAdmin
 
+Template.adminES
+
 Template.adminDevelopment.events
   'click button.sample-data': (event, template) ->
     Meteor.call 'sample-data', (error, result) ->
@@ -14,11 +16,16 @@ Template.adminDevelopment.events
 
     return # Make sure CoffeeScript does not return anything
 
-Template.adminPublications.events
-  'click button.process-pdfs': (event, template) ->
-    Meteor.call 'process-pdfs', (error, result) ->
+Template.adminES.events
+  'click button.reset-es': (event, template) ->
+    Meteor.call 'reset-es', (error, result) ->
       FlashMessage.fromError error if error
+      FlashMessage.success("Resetting ES Response: " + JSON.stringify(result, undefined, 2))
 
+  'click button.ping-es': (event, template) ->
+    Meteor.call 'ping-es', (error, result) ->
+      FlashMessage.fromError error if error
+      FlashMessage.success("Can Reach Elasticsearch: " + JSON.stringify(result, undefined, 2))
     return # Make sure CoffeeScript does not return anything
 
 Template.adminPublications.events

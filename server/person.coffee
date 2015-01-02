@@ -184,8 +184,13 @@ new PublishEndpoint 'persons', (limit, filter, sortIndex) ->
   validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Person.PUBLISH_CATALOG_SORT.length
 
-  findQuery = {}
-  findQuery = createQueryCriteria(filter, 'displayName') if filter
+  if filter
+    familyName_query = 'familyName:' + filter
+    ESQuery = { index: 'person', q:familyName_query, size: 50 }
+    esId = getIdsFromES ESQuery
+    findQuery = esId[0]
+  else
+    findQuery = {}
 
   sort = if _.isNumber sortIndex then Person.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 

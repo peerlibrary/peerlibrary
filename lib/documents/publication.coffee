@@ -85,7 +85,15 @@ class @Publication extends BasicAccessDocument
         return unless doc.cached and doc.cachedId and doc.mediaType
         new ProcessPublicationJob(publication: _id: doc._id).enqueue
           skipIfExisting: true
-
+          #Decide triggers
+      pushToES: @Trigger ['title', 'fullText'], (doc, oldDoc) ->
+        pubId = (_.pick doc, '_id')._id
+        pubBody = _.pick doc, 'title', 'fullText'
+        pubToES = { index: 'publication', type: 'publication', id: pubId, body: pubBody }
+        ES.index pubToES, (error, response) ->
+          console.log "Response from ES: "
+          console.log response if response
+          console.log error if error
   @ACCESS:
     PRIVATE: ACCESS.PRIVATE
     CLOSED: 1

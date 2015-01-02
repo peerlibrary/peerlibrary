@@ -398,8 +398,13 @@ publications = new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
   validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
     not _.isNumber(sortIndex) or 0 <= sortIndex < Publication.PUBLISH_CATALOG_SORT.length
 
-  findQuery = {}
-  findQuery = createQueryCriteria(filter, 'title') if filter
+  if filter 
+    query = 'title:' + filter  + ' OR fullText:' + filter 
+    ESQuery = { index: 'publication', q: query, size: 50 }
+    esId = getIdsFromES ESQuery
+    findQuery = esId[0]
+  else
+    findQuery = {}
 
   sort = if _.isNumber sortIndex then Publication.PUBLISH_CATALOG_SORT[sortIndex].sort else null
 
@@ -408,7 +413,6 @@ publications = new PublishEndpoint 'publications', (limit, filter, sortIndex) ->
     @set 'person', person
 
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
-
     searchPublish @, 'publications', [filter, sortIndex],
       cursor: Publication.documents.find restrictedFindQuery,
         limit: limit

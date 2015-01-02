@@ -1,10 +1,18 @@
 # TODO: Search for persons as well
 searchResults = new PublishEndpoint 'search-results', (query, limit) ->
+  # console. log "LIMIT " + limit
   validateArgument 'query', query, NonEmptyString
   validateArgument 'limit', limit, PositiveNumber
 
-  findQuery = createQueryCriteria query, 'fullText'
-  return unless findQuery.$and.length
+  if query
+    fullQuery = 'title:' + query  + ' OR fullText:' + query  
+    ESQuery = { index: 'publication', q: fullQuery, size: 50 }
+    esId = getIdsFromES ESQuery, limit
+    findQuery = esId[0]
+    order_map = esId[1]
+    # console.log findQuery
+  else
+    findQuery = {}
 
   @related (person) ->
     # We store related fields so that they are available in middlewares.
@@ -12,7 +20,7 @@ searchResults = new PublishEndpoint 'search-results', (query, limit) ->
 
     restrictedFindQuery = Publication.requireReadAccessSelector person, findQuery
 
-    searchPublish @, 'search-results', query,
+    searchPublishES @, 'search-results', query, order_map,
       cursor: Publication.documents.find restrictedFindQuery,
         limit: limit
         fields: Publication.PUBLISH_SEARCH_RESULTS_FIELDS().fields

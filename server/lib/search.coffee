@@ -5,7 +5,7 @@
 # Results are objects with the following fields:
 #   cursor: a queryset cursor with result documents (including any limit)
 #   added/changed/removed: callbacks to be called by corresponding observeChanges call on
-#                          the cursor a before document is published, to allow preprocessing
+#                          the cursor before a document is published, to allow preprocessing
 
 # More or less the whole logic is how to publish documents from provided cursors and attach
 # information which documents are connected to which search results, including the order of
@@ -251,6 +251,105 @@
       handle?.stop()
       countsHandles[i] = null
 
+
+@searchPublishES = (publish, name, query, order_mapping, results...) ->
+  queryId = Random.id()
+
+  initializedCounts =
+    name: name
+    query: query
+
+  for result, i in results
+    # We set all counts initially to null, until counts are ready
+    initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = null
+
+  # # use es stuff?
+  publish.added 'SearchResults', queryId, initializedCounts,
+
+  initializingResults = results.length
+  resultsHandles = []
+  for result, i in results
+    do (result, i) ->
+      resultsHandles[i] = result.cursor.observeChanges
+        added: (id, fields) =>
+          fields.searchResult =
+            _id: queryId
+            order: order_mapping[id]
+
+          fields = result.added id, fields if result.added # Optional preprocessing callback
+
+          publish.added result.cursor._cursorDescription.collectionName, id, fields
+
+        changed: (id, fields) =>
+          console.log "changed"
+          fields = result.changed id, fields if result.changed # Optional preprocessing callback
+
+          publish.changed result.cursor._cursorDescription.collectionName, id, fields unless _.isEmpty fields
+
+        removed: (id) =>
+          console.log "removed"
+          result.removed id if result.removed # Optional preprocessing callback
+
+          publish.removed result.cursor._cursorDescription.collectionName, id
+
+      initializingResults--
+
+  # assert.equal initializingResults, 0
+
+  # # We call ready before counts are available so that client side can start displaying results
+  # # even before counts are available. Counting currently takes time (we have to go over whole
+  # # query) so it quite delays sending of results and user feedback on the client.
+  publish.ready()
+
+  publish.onStop ->
+    for handle, i in resultsHandles
+      handle?.stop()
+      resultsHandles[i] = null
+
+  # initializingCounts = results.length
+  counts = []
+  countsHandles = []
+  # We only have on result right now, and that's publication.
+  for result, i in results
+    do (result, i) ->
+      counts[i] = Object.keys(order_mapping).length
+
+  #     # For counting we want only _id field and no skip or limit restrictions
+  #     result.cursor._cursorDescription.options.fields =
+  #       _id: 1
+  #     delete result.cursor._cursorDescription.options.skip
+  #     delete result.cursor._cursorDescription.options.limit
+
+  #     # TODO: Counting in this way is very inefficient, better would be to first run .count() in MongoDB and then just tail oplog for adding and removing, without all added calls for all existing documents.
+  #     countsHandles[i] = result.cursor.observeChanges
+  #       added: (id, fields) =>
+  #         counts[i]++
+  #         if initializingCounts is 0
+  #           change = {}
+  #           change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+  #           publish.changed 'SearchResults', queryId, change
+
+  #       removed: (id) =>
+  #         counts[i]--
+  #         change = {}
+  #         change["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+  #         publish.changed 'SearchResults', queryId, change
+
+  #     initializingCounts--
+
+  # assert.equal initializingCounts, 0
+
+  for result, i in results
+    initializedCounts["count#{ result.cursor._cursorDescription.collectionName }"] = counts[i]
+
+  publish.changed 'SearchResults', queryId, initializedCounts
+
+
+  publish.onStop ->
+    for handle, i in countsHandles
+      handle?.stop()
+      countsHandles[i] = null     
+
 @createQueryCriteria = (query, field) ->
   queryCriteria =
     $and: []
@@ -264,3 +363,22 @@
     queryCriteria.$and.push fieldCriteria
 
   queryCriteria
+
+@getIdsFromES = (ESQuery, limit) ->
+  findQuery = {}
+  order_map = {}
+  if ESQuery
+    response = blocking(ES, ES.search) ESQuery
+    if response.hits? and response.hits.hits?
+      for hit, index in response.hits.hits
+        order_map[hit._id] = index
+      ids = (hit._id for hit in response.hits.hits[0...limit])
+      findQuery =
+        _id:
+          $in: ids
+    else
+      console.log "No Hits"
+  else
+    console.log "Empty Search"
+    
+  return [findQuery, order_map]

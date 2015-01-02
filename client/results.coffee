@@ -97,6 +97,7 @@ Template.resultsLoad.loading = ->
 Template.resultsLoad.more = ->
   Session.get('currentSearchQueryReady') and Session.get('currentSearchLimit') < currentSearchQueryCount()
 
+
 Template.resultsLoad.publications = ->
   Session.get 'currentSearchQueryCountPublications'
 

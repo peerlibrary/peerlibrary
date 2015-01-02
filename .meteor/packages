@@ -48,4 +48,5 @@ directcollection
 jobCollection
 async
 srp
+elasticsearch
 middleware
