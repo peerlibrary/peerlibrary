@@ -30,13 +30,11 @@ PeerLibrary is built upon the [Meteor platform](http://www.meteor.com/). You can
 
     curl http://meteor.peerlibrary.org/ | sh
 
-If you do not have [node.js](http://nodejs.org) installed on your system, you can use one
-provided by Meteor. To add it into your environment, add `~/.meteor/tools/latest/bin` to
-your environment `PATH` variable. For example, by running:
+Meteor provides [node.js](http://nodejs.org) (if you have it installed already you can use the one provided on your system). To add it into your environment, add `~/.meteor/tools/latest/bin` to your environment `PATH` variable. For example, by running:
 
     export PATH=~/.meteor/tools/latest/bin:$PATH
 
-To add tools to you shell permanently, run:
+To add tools to your shell permanently, run:
 
     echo 'export PATH=~/.meteor/tools/latest/bin:$PATH' >> ~/.bash_profile
 
@@ -47,7 +45,7 @@ PeerLibrary requires additional Meteor packages which are provided through
 Install it as well:
 
     npm install -g meteorite
-    
+
 ### Other requirements to run PeerLibrary ###
 
 On first run, PeerLibrary compiles and locally installs additional Meteor packages,
@@ -131,6 +129,7 @@ You will need [FSM API](http://digitalhumanities.berkeley.edu/hackfsm/api) `appI
 have to put into your `settings.json` file.
 
 ### Troubleshooting ###
+If you are using a mac and are worried that you may have forgotten some dependencies then run the script checkdependencies.sh located in the peerlibrary folder. It checks for most of the dependencies required to run the application.
 
 Sometimes when installing dependencies, Meteor will throw the following error:
 
