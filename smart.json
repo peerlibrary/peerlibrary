@@ -52,6 +52,9 @@
       "git": "https://github.com/peerlibrary/meteor-job-collection.git"
     },
     "async": {},
-    "middleware": {}
+    "middleware": {
+      "branch": "old-packaging",
+      "git": "https://github.com/peerlibrary/meteor-middleware.git"
+    }
   }
 }

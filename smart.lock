@@ -54,7 +54,10 @@
         "branch": "peerlibrary"
       },
       "async": {},
-      "middleware": {}
+      "middleware": {
+        "git": "https://github.com/peerlibrary/meteor-middleware.git",
+        "branch": "old-packaging"
+      }
     },
     "packages": {
       "router": {
@@ -174,8 +177,8 @@
       },
       "kadira": {
         "git": "https://github.com/meteorhacks/kadira.git",
-        "tag": "v2.9.6",
-        "commit": "b564a0e32498889ca4633843c7a93d642f597ea0"
+        "tag": "v2.18.2",
+        "commit": "d92a8c12022506793261dd93a454b88691754141"
       },
       "directcollection": {
         "git": "https://github.com/peerlibrary/meteor-directcollection.git",
@@ -209,8 +212,8 @@
       },
       "middleware": {
         "git": "https://github.com/peerlibrary/meteor-middleware.git",
-        "tag": "v0.1.0",
-        "commit": "8ccbf03a78267f525ba871de0b01aae1d8a670e7"
+        "branch": "old-packaging",
+        "commit": "af498d161b84e133862216ce58f8302a048ae98f"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
@@ -226,6 +229,11 @@
         "git": "https://github.com/peerlibrary/meteor-blob.git",
         "tag": "v0.1.3",
         "commit": "e16d2f1bb752f5e82b8b037a2702886977b78095"
+      },
+      "meteorx": {
+        "git": "https://github.com/meteorhacks/meteorx.git",
+        "tag": "v1.2.0",
+        "commit": "65d96b9a7a555e766c8d9769a1dc765468817a43"
       }
     }
   }
