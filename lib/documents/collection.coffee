@@ -51,7 +51,7 @@ class @Collection extends BasicAccessDocument
       # TODO: For now we are updating last activity of all publications in a collection, but we might consider removing this and leave it to the "trending" view
       publicationsLastActivity: RelatedLastActivityTrigger Publication, ['publications._id'], (doc, oldDoc) ->
         newPublications = (publication._id for publication in doc.publications or [])
-        oldPublications = (publication._id for publication in oldDoc.publications or [])
+        oldPublications = (publication._id for publication in oldDoc?.publications or [])
         _.difference newPublications, oldPublications
 
   @PUBLISH_CATALOG_SORT:

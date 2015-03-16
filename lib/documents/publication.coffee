@@ -79,10 +79,13 @@ class @Publication extends BasicAccessDocument
       updatedAt: UpdatedAtTrigger ['createdRaw', 'authors._id', 'authorsRaw', 'title', 'comments', 'abstract', 'doi', 'msc2010', 'acm1998', 'foreignId', 'foreignCategories', 'foreignJournalReference', 'source', 'sha256', 'size', 'cached', 'processed', 'license', 'jobs._id']
       personsLastActivity: RelatedLastActivityTrigger Person, ['importing.person._id'], (doc, oldDoc) ->
         newImporters = (importer.person._id for importer in doc.importing or [])
-        oldImporters = (importer.person._id for importer in oldDoc.importing or [])
+        oldImporters = (importer.person._id for importer in oldDoc?.importing or [])
         _.difference newImporters, oldImporters
       processPublication: @Trigger ['cached', 'cachedId', 'mediaType'], (doc, oldDoc) ->
+        return unless doc?._id
+
         return unless doc.cached and doc.cachedId and doc.mediaType
+
         new ProcessPublicationJob(publication: _id: doc._id).enqueue
           skipIfExisting: true
 

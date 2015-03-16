@@ -17,7 +17,7 @@ class LastActivityTriggerClass extends Document._Trigger
   constructor: (fields, trigger) ->
     super fields, trigger or (newDocument, oldDocument) ->
       # Don't do anything when document is removed
-      return unless newDocument._id
+      return unless newDocument?._id
 
       # Don't do anything if there was no change
       return if _.isEqual newDocument, oldDocument
@@ -47,7 +47,7 @@ class RelatedLastActivityTriggerClass extends Document._Trigger
   constructor: (@relatedDocument, fields, @relatedIds) ->
     super fields, (newDocument, oldDocument) ->
       # Don't do anything when document is removed
-      return unless newDocument._id
+      return unless newDocument?._id
 
       # Don't do anything if there was no change
       return if _.isEqual newDocument, oldDocument
@@ -80,7 +80,7 @@ class UpdatedAtTriggerClass extends LastActivityTriggerClass
   constructor: (fields, noLastActivity) ->
     super fields, (newDocument, oldDocument) ->
       # Don't do anything when document is removed
-      return unless newDocument._id
+      return unless newDocument?._id
 
       # Don't do anything if there was no change
       return if _.isEqual newDocument, oldDocument

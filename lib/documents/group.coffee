@@ -34,7 +34,7 @@ class @Group extends BasicAccessDocument
       # TODO: For now we are updating last activity of all persons in a group, but we might consider removing this and leave it to the "trending" view
       personsLastActivity: RelatedLastActivityTrigger Person, ['members._id'], (doc, oldDoc) ->
         newMembers = (member._id for member in doc.members or [])
-        oldMembers = (member._id for member in oldDoc.members or [])
+        oldMembers = (member._id for member in oldDoc?.members or [])
         _.difference newMembers, oldMembers
 
   @PUBLISH_CATALOG_SORT:

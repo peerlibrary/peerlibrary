@@ -108,11 +108,11 @@ class @Annotation extends BasicAccessDocument
       publicationLastActivity: RelatedLastActivityTrigger Publication, ['publication._id'], (doc, oldDoc) -> doc.publication?._id
       tagsLastActivity: RelatedLastActivityTrigger Tag, ['tags.tag._id'], (doc, oldDoc) ->
         newTags = (tag.tag._id for tag in doc.tags or [])
-        oldTags = (tag.tag._id for tag in oldDoc.tags or [])
+        oldTags = (tag.tag._id for tag in oldDoc?.tags or [])
         _.difference newTags, oldTags
       groupsLastActivity: RelatedLastActivityTrigger Group, ['inside._id'], (doc, oldDoc) ->
         newGroups = (group._id for group in doc.inside or [])
-        oldGroups = (group._id for group in oldDoc.inside or [])
+        oldGroups = (group._id for group in oldDoc?.inside or [])
         _.difference newGroups, oldGroups
 
   @PUBLISH_CATALOG_SORT:

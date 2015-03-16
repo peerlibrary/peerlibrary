@@ -62,12 +62,12 @@ class @Person extends AccessDocument
       lastActivity: LastActivityTrigger ['library._id']
       personLastActivity: RelatedLastActivityTrigger Person, ['invited.by._id'], (doc, oldDoc) ->
         newInvited = (invited.by._id for invited in doc.invited or [])
-        oldInvited = (invited.by._id for invited in oldDoc.invited or [])
+        oldInvited = (invited.by._id for invited in oldDoc?.invited or [])
         _.difference newInvited, oldInvited
       # TODO: For now we are updating last activity of all publications in a library, but we might consider removing this and leave it to the "trending" view
       publicationsLastActivity: RelatedLastActivityTrigger Publication, ['library._id'], (doc, oldDoc) ->
         newPublications = (publication._id for publication in doc.library or [])
-        oldPublications = (publication._id for publication in oldDoc.library or [])
+        oldPublications = (publication._id for publication in oldDoc?.library or [])
         _.difference newPublications, oldPublications
 
   @verboseNamePlural: ->
