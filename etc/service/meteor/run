@@ -1,9 +1,10 @@
 #!/bin/bash -e
 
 mkdir -p /storage
+touch /.meteorsession
 
 # We don't do it recursively, because it could be a lot of files.
-chown -f meteor:meteor /storage /storage/publication /storage/publication/* /.meteorsession
+chown -f meteor:meteor /storage /storage/publication /storage/publication/* /.meteorsession || true
 
 export PATH=/.meteor/tools/latest/bin:$PATH
 export NODE_PATH=/.meteor/tools/latest/lib/node_modules
