@@ -65,9 +65,9 @@ done
 for I in $(seq 1 $WORKER_INSTANCES); do
     mkdir -p "${DATA_ROOT}/${NAME}/worker$I/log"
 
-    docker stop "${NAME}/worker$I" || true
+    docker stop "${NAME}_worker$I" || true
     sleep 1
-    docker rm "${NAME}/worker$I" || true
+    docker rm "${NAME}_worker$I" || true
     sleep 1
     docker run --detach=true --restart=always --name "${NAME}_worker$I" --env WORKER_INSTANCES --env PEERDB_MIGRATIONS_DISABLED=1 \
       --env PEERDB_INSTANCES=0 --env ROOT_URL=https://peerlibrary.org --env MAIL_URL=smtp://mail.tnode.com \
@@ -84,4 +84,4 @@ docker run --detach=true --restart=always --name "${NAME}_web" --env WORKER_INST
   --env VIRTUAL_HOST=peerlibrary.org --env VIRTUAL_URL=/ --env ROOT_URL=https://peerlibrary.org \
   --env MAIL_URL=smtp://mail.tnode.com --volume "${CONFIG}:/etc/service/meteor/run.config" \
   --volume "${METEOR_LOG}:/var/log/meteor" --volume "${METEOR_STORAGE}:/storage" --link "${NAME}_mongodb:mongodb" \
-  "peerlibrary/peerlibrary$TAG"
+  "peerlibrary/peerlibrary:$TAG"
