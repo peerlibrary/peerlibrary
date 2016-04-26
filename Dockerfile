@@ -22,7 +22,6 @@ RUN export PATH=$HOME/.meteor/tools/latest/bin:$PATH && \
  rm -rf /source && \
  cd /build && \
  rm -rf etc && \
- grep path .gitmodules | awk '{print $3}' | xargs rm -rf && \
  ./prepare.sh && \
  mrt bundle /bundle.tgz && \
  cd / && \
