@@ -13,7 +13,7 @@ export STORAGE_DIRECTORY='/storage'
 # You can mount a volume (file) into this location to provide a script which sets environment variables.
 [ -f /etc/service/meteor/run.config ] && source /etc/service/meteor/run.config
 
-cd /bundle/programs/server/npm/mongo
+cd /bundle/programs/server/npm/mongo-livedata/main
 cat /etc/service/meteor/wait_db.js | node
 
 # Initialization hook.
