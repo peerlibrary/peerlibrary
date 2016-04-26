@@ -1,45 +1,88 @@
 #!/bin/bash -e
 
-if [[ -n "$PREFIX" ]]; then
-	PREFIX="${PREFIX}_"
-fi
-if [[ -n "$TAG" ]]; then
-	TAG=":$TAG"
+# WARNING: You have to adapt the script for your installation. It contains hard-coded values for another installation.
+
+# An example script to run the app in production. It uses data volumes under the $DATA_ROOT directory.
+# By default /srv. It uses a MongoDB database, tozd/meteor-mongodb image which is automatically run as well.
+
+NAME='peerlibrary'
+TAG='stable'
+DATA_ROOT='/srv'
+MONGODB_DATA="${DATA_ROOT}/${NAME}/mongodb/data"
+MONGODB_LOG="${DATA_ROOT}/${NAME}/mongodb/log"
+
+METEOR_LOG="${DATA_ROOT}/${NAME}/meteor/log"
+METEOR_STORAGE="${DATA_ROOT}/${NAME}/meteor/storage"
+METEOR_SETTINGS="${DATA_ROOT}/${NAME}/settings.json"
+
+PEERDB_INSTANCES=2
+WORKER_INSTANCES=2
+
+# This file is used by both peerlibrary/peerlibrary and tozd/meteor-mongodb images. The latter automatically
+# creates the database and accounts with provided passwords. The file should look like:
+#
+# MONGODB_ADMIN_PWD='<pass>'
+# MONGODB_CREATE_PWD='<pass>'
+# MONGODB_OPLOGGER_PWD='<pass>'
+#
+# export MONGO_URL="mongodb://meteor:${MONGODB_CREATE_PWD}@peerlibrary_mongodb/meteor"
+# export MONGO_OPLOG_URL="mongodb://oplogger:${MONGODB_OPLOGGER_PWD}@peerlibrary_mongodb/local?authSource=admin"
+CONFIG="${DATA_ROOT}/${NAME}/run.config"
+
+mkdir -p "$MONGODB_DATA"
+mkdir -p "$MONGODB_LOG"
+mkdir -p "$METEOR_LOG"
+mkdir -p "$METEOR_STORAGE"
+
+touch "$CONFIG"
+
+if [ ! -s "$CONFIG" ]; then
+  echo "Set MONGODB_CREATE_PWD, MONGODB_ADMIN_PWD, MONGODB_OPLOGGER_PWD and export MONGO_URL, MONGO_OPLOG_URL environment variables in '$CONFIG'."
+  exit 1
 fi
 
-if [[ -n "$METEOR_SETTINGS" && -e "$METEOR_SETTINGS" ]]; then
-	# sed replaces newlines with spaces
-	METEOR_SETTINGS="$(cat $METEOR_SETTINGS | sed ':a;N;$!ba;s/\n/ /g')"
-fi
-
-if [[ -z "$VIRTUAL_HOST" ]]; then
-	export VIRTUAL_HOST="${PREFIX}web.peerlibrary.server1.docker"
-fi
-if [[ -z "$PEERDB_INSTANCES" ]]; then
-	export PEERDB_INSTANCES="1"
-fi
-if [[ -z "$WORKER_INSTANCES" ]]; then
-	export WORKER_INSTANCES="1"
-fi
-
-echo "Running with prefix '$PREFIX', tag '$TAG', PeerDB instances $PEERDB_INSTANCES, worker instances $WORKER_INSTANCES."
-
-mkdir -p "/srv/${PREFIX}storage"
+docker stop "${NAME}_mongodb" || true
+sleep 1
+docker rm "${NAME}_mongodb" || true
+sleep 1
+docker run --detach=true --restart=always --name "${NAME}_mongodb" --volume "${CONFIG}:/etc/service/mongod/run.config" \
+  --volume "${MONGODB_LOG}:/var/log/mongod" --volume "${MONGODB_DATA}:/var/lib/mongodb" \
+  tozd/meteor-mongodb:2.4
 
 for I in $(seq 1 $PEERDB_INSTANCES); do
-	mkdir -p "/srv/log/${PREFIX}peerlibrary/peerdb$I"
-	docker run -d --name "${PREFIX}peerdb$I" -h "${PREFIX}peerdb$I.peerlibrary.server1.docker" --link "${PREFIX}mongodb:mongodb" -e WORKER_INSTANCES=0 -e PEERDB_MIGRATIONS_DISABLED=1 -e PEERDB_INSTANCES -e PEERDB_INSTANCE="$((I-1))" -e ROOT_URL -e MAIL_URL -e METEOR_SETTINGS -v "/srv/log/${PREFIX}peerlibrary/peerdb$I:/var/log/peerlibrary" -v "/srv/${PREFIX}storage:/storage" "peerlibrary/peerlibrary$TAG"
+    mkdir -p "${DATA_ROOT}/${NAME}/peerdb$I/log"
+
+    docker stop "${NAME}_peerdb$I" || true
+    sleep 1
+    docker rm "${NAME}_peerdb$I" || true
+    sleep 1
+    docker run --detach=true --restart=always --name "${NAME}_peerdb$I" --env WORKER_INSTANCES=0 --env PEERDB_MIGRATIONS_DISABLED=1 \
+      --env PEERDB_INSTANCES --env PEERDB_INSTANCE="$((I-1))" --env ROOT_URL=https://peerlibrary.org --env MAIL_URL=smtp://mail.tnode.com \
+      --volume "${CONFIG}:/etc/service/meteor/run.config" --volume "${DATA_ROOT}/${NAME}/peerdb$I/log:/var/log/meteor" \
+      --volume "${METEOR_STORAGE}:/storage" --link "${NAME}_mongodb:mongodb" \
+      "peerlibrary/peerlibrary:$TAG"
 done
 
 for I in $(seq 1 $WORKER_INSTANCES); do
-	mkdir -p "/srv/log/${PREFIX}peerlibrary/worker$I"
-	docker run -d --name "${PREFIX}worker$I" -h "${PREFIX}worker$I.peerlibrary.server1.docker" --link "${PREFIX}mongodb:mongodb" -e WORKER_INSTANCES -e PEERDB_MIGRATIONS_DISABLED=1 -e PEERDB_INSTANCES=0 -e ROOT_URL -e MAIL_URL -e METEOR_SETTINGS -v "/srv/log/${PREFIX}peerlibrary/worker$I:/var/log/peerlibrary" -v "/srv/${PREFIX}storage:/storage" "peerlibrary/peerlibrary$TAG"
+    mkdir -p "${DATA_ROOT}/${NAME}/worker$I/log"
+
+    docker stop "${NAME}/worker$I" || true
+    sleep 1
+    docker rm "${NAME}/worker$I" || true
+    sleep 1
+    docker run --detach=true --restart=always --name "${NAME}_worker$I" --env WORKER_INSTANCES --env PEERDB_MIGRATIONS_DISABLED=1 \
+      --env PEERDB_INSTANCES=0 --env ROOT_URL=https://peerlibrary.org --env MAIL_URL=smtp://mail.tnode.com \
+      --volume "${CONFIG}:/etc/service/meteor/run.config" --volume "${DATA_ROOT}/${NAME}/worker$I/log:/var/log/meteor" \
+      --volume "${METEOR_STORAGE}:/storage" --link "${NAME}_mongodb:mongodb" \
+      "peerlibrary/peerlibrary:$TAG"
 done
 
-mkdir -p "/srv/${PREFIX}public"
-mkdir -p "/srv/log/${PREFIX}peerlibrary/web1"
-
-# We copy public files out and then map them back in, so that they are available both to nginx and Meteor
-docker run --rm=true --entrypoint=/bin/bash "peerlibrary/peerlibrary$TAG" -c 'tar -C /bundle/programs/client/app -c .' | tar -C "/srv/${PREFIX}public" -x
-
-docker run -d --name "${PREFIX}web1" -h "${PREFIX}web1.peerlibrary.server1.docker" --link "${PREFIX}mongodb:mongodb" -e VIRTUAL_HOST -e WORKER_INSTANCES=0 -e PEERDB_INSTANCES=0 -e ROOT_URL -e MAIL_URL -e METEOR_SETTINGS -v "/srv/log/${PREFIX}peerlibrary/web1:/var/log/peerlibrary" -v "/srv/${PREFIX}storage:/storage" -v "/srv/${PREFIX}public:/bundle/programs/client/app" "peerlibrary/peerlibrary$TAG"
+docker stop "${NAME}_web" || true
+sleep 1
+docker rm "${NAME}_web" || true
+sleep 1
+docker run --detach=true --restart=always --name "${NAME}_web" --env WORKER_INSTANCES=0 --env PEERDB_INSTANCES=0 \
+  --env VIRTUAL_HOST=peerlibrary.org --env VIRTUAL_URL=/ --env ROOT_URL=https://peerlibrary.org \
+  --env MAIL_URL=smtp://mail.tnode.com --volume "${CONFIG}:/etc/service/meteor/run.config" \
+  --volume "${METEOR_LOG}:/var/log/meteor" --volume "${METEOR_STORAGE}:/storage" --link "${NAME}_mongodb:mongodb" \
+  "peerlibrary/peerlibrary$TAG"
