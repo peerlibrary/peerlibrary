@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+if [ "${LOG_TO_STDOUT}" != "1" ]; then
+  mkdir -p /var/log/meteor
+  chown nobody:nogroup /var/log/meteor
+
+  exec chpst -u nobody:nogroup svlogd -tt /var/log/meteor
+else
+  exec chpst -u nobody:nogroup tee
+fi

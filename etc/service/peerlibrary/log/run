@@ -1,6 +1,0 @@
-#!/bin/bash -e
-
-mkdir -p /var/log/peerlibrary
-chown nobody:nogroup /var/log/peerlibrary
-
-exec chpst -u nobody:nogroup svlogd -tt /var/log/peerlibrary

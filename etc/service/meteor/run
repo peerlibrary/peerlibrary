@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+mkdir -p /storage
+
+# We don't do it recursively, because it could be a lot of files.
+chown -f meteor:meteor /storage /storage/publication /storage/publication/* /.meteorsession
+
+export PATH=/.meteor/tools/latest/bin:$PATH
+export NODE_PATH=/.meteor/tools/latest/lib/node_modules
+export NODE_ENV='production'
+export STORAGE_DIRECTORY='/storage'
+
+cd /bundle/programs/server/npm/mongo
+cat /etc/service/meteor/wait_db.js | node
+
+cd /bundle
+exec chpst -u meteor:meteor node --stack-trace-limit=1000 main.js 2>&1
