@@ -81,7 +81,7 @@ sleep 1
 docker rm "${NAME}_web" || true
 sleep 1
 docker run --detach=true --restart=always --name "${NAME}_web" --env WORKER_INSTANCES=0 --env PEERDB_INSTANCES=0 \
-  --env VIRTUAL_HOST=peerlibrary.org --env VIRTUAL_URL=/ --env ROOT_URL=https://peerlibrary.org \
+  --env VIRTUAL_HOST=peerlibrary.org --env VIRTUAL_URL=/ --env VIRTUAL_LETSENCRYPT=true --env ROOT_URL=https://peerlibrary.org \
   --env MAIL_URL=smtp://mail.tnode.com --volume "${CONFIG}:/etc/service/meteor/run.config" \
   --volume "${METEOR_LOG}:/var/log/meteor" --volume "${METEOR_STORAGE}:/storage" --link "${NAME}_mongodb:mongodb" \
   "peerlibrary/peerlibrary:$TAG"
