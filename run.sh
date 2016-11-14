@@ -14,8 +14,8 @@ MONGODB_LOG="${DATA_ROOT}/${NAME}/mongodb/log"
 METEOR_LOG="${DATA_ROOT}/${NAME}/meteor/log"
 METEOR_STORAGE="${DATA_ROOT}/${NAME}/meteor/storage"
 
-PEERDB_INSTANCES=2
-WORKER_INSTANCES=2
+export PEERDB_INSTANCES=2
+export WORKER_INSTANCES=2
 
 # This file is used by both peerlibrary/peerlibrary and tozd/meteor-mongodb images. The latter automatically
 # creates the database and accounts with provided passwords. The file should look like:
