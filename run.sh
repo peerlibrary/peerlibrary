@@ -45,7 +45,7 @@ sleep 1
 docker rm "${NAME}_mongodb" || true
 sleep 1
 docker run --detach=true --restart=always --name "${NAME}_mongodb" --volume "${CONFIG}:/etc/service/mongod/run.config" \
-  --volume "${MONGODB_LOG}:/var/log/mongod" --volume "${MONGODB_DATA}:/var/lib/mongodb" \
+  --volume "${MONGODB_LOG}:/var/log/mongodb" --volume "${MONGODB_DATA}:/var/lib/mongodb" \
   tozd/meteor-mongodb:2.4
 
 for I in $(seq 1 $PEERDB_INSTANCES); do
