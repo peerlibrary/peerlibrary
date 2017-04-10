@@ -18,9 +18,9 @@
 </template>
 
 <template name="highlightInlineItem">
-  <a class="inline-item highlight"{{#unless noLink}} href="{{path}}"{{/unless}}>
+  <a class="inline-item highlight" {{#if addLink}}href="{{path}}"{{/if}}>
     <i class="avatar only-icon icon-highlight" title="Highlight"></i>
-    <span class="name"{{#if reference.title}} title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
+    <span class="name" {{#if reference.title}}title="{{reference.title}}"{{/if}}>{{reference.text}}</span>
   </a>
 </template>
 

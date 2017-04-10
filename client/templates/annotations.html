@@ -18,9 +18,9 @@
 </template>
 
 <template name="annotationInlineItem">
-    <a class="inline-item annotation"{{#unless noLink}} href="{{path}}"{{/unless}}>
+    <a class="inline-item annotation" {{#if addLink}}href="{{path}}"{{/if}}>
       <i class="avatar only-icon icon-annotation" title="Annotation"></i>
-      <span class="name"{{#if title}} title="{{title}}"{{/if}}>{{text}}</span>
+      <span class="name" {{#if title}}title="{{title}}"{{/if}}>{{text}}</span>
     </a>
 </template>
 
