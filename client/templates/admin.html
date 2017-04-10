@@ -1,13 +1,147 @@
 <template name="admin">
-  {{> adminCheck}}
-  {{> adminDevelopment}}
-  {{> adminPublications}}
-  {{> adminDatabase}}
-  {{> adminErrors}}
-  {{> adminJobs}}
-  {{> adminSources}}
-  {{> adminBlog}}
-  {{> adminFacts}}
+  <h1>Administrator</h1>
+  <div class="row">
+    <div class="col12">
+      {{>catalog catalogSettings}}
+    </div>
+    {{> adminTabs}}
+  </div>
+</template>
+
+<template name="adminErrorsTabs">
+  <div class="col4 push12 sidebar">
+    <h2>My Dashboard</h2>
+    <h3>Actions:</h3>
+    <div class="admin-buttons">
+      <button class="dummy-error">Create a dummy error</button>
+    </div>
+      <ul class="item-list">
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Development</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDevelopmentPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Publications</h2>
+          </div>
+          <a class="full-item-link" href="{{adminPublicationsPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Database</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDatabasePath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Errors</h2>
+          </div>
+          <a class="full-item-link" href="{{adminErrorsPath}}"></a>
+        </li> 
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Jobs</h2>
+          </div>
+          <a class="full-item-link" href="{{adminJobsPath}}"></a>
+        </li>
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>External Sources</h2>
+          </div>
+        <a class="full-item-link" href="{{adminSourcesPath}}"></a>
+        </li>
+       
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Blog</h2>
+          </div>
+          <a class="full-item-link" href="{{adminBlogPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Facts</h2>
+          </div>
+          <a class="full-item-link" href="{{adminFactsPath}}"></a> 
+        </li>
+      
+      </ul>
+      {{> footer}}
+  </div>
+</template>
+
+<template name="adminTabs">
+  <div class="col4 push12 sidebar">
+    <h2>My Dashboard</h2>
+      <ul class="item-list">
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Development</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDevelopmentPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Publications</h2>
+          </div>
+          <a class="full-item-link" href="{{adminPublicationsPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Database</h2>
+          </div>
+          <a class="full-item-link" href="{{adminDatabasePath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Errors</h2>
+          </div>
+          <a class="full-item-link" href="{{adminErrorsPath}}"></a>
+        </li> 
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Jobs</h2>
+          </div>
+          <a class="full-item-link" href="{{adminJobsPath}}"></a>
+        </li>
+          
+        <li class="catalog-item">
+          <div class="details">
+            <h2>External Sources</h2>
+          </div>
+        <a class="full-item-link" href="{{adminSourcesPath}}"></a>
+        </li>
+       
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Blog</h2>
+          </div>
+          <a class="full-item-link" href="{{adminBlogPath}}"></a>
+        </li>
+        
+        <li class="catalog-item">
+          <div class="details">
+            <h2>Facts</h2>
+          </div>
+          <a class="full-item-link" href="{{adminFactsPath}}"></a> 
+        </li>
+      
+      </ul>
+      {{> footer}}
+  </div>
 </template>
 
 <template name="adminCheck">
@@ -17,58 +151,82 @@
 </template>
 
 <template name="adminDevelopment">
-  <h2>Development</h2>
-  <div class="admin-buttons">
-    <button class="sample-data">Initialize database with sample data</button>
+  <h1>Development</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sample-data">Initialize database with sample data</button>
+      </div>
+    </div>
+    {{> adminTabs}}
   </div>
 </template>
 
 <template name="adminPublications">
-  <h2>Publications</h2>
-  <div class="admin-buttons">
-    <button class="process-pdfs">Process pending PDFs</button>
-    <button class="reprocess-pdfs">Reprocess all PDFs</button>
+  <h1>Publications</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="process-pdfs">Process pending PDFs</button>
+        <button class="reprocess-pdfs">Reprocess all PDFs</button>
+      </div>
+    </div>
+    {{> adminTabs}}
   </div>
 </template>
 
 <template name="adminDatabase">
-  <h2>Database</h2>
-  <div class="admin-buttons">
-    <button class="update-all">Update all references in documents</button>
-  </div>
+  <h1>Database</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="update-all">Update all references in documents</button>
+      </div>
+    </div>
+    {{> adminTabs}}
+  </div>  
 </template>
 
 <template name="adminErrors">
-  <h2>Errors</h2>
-  <div class="admin-buttons">
-    <button class="dummy-error">Create a dummy error</button>
+  <h1>Errors</h1>
+  <div class="row">
+    <div class="col12">
+      <h3>Error Log</h3>
+      <ul class="item-list">
+        {{#each errors}}
+          {{> adminErrorsCatalogItem}}
+        {{/each}}
+      </ul>
+    </div>
+    {{> adminErrorsTabs}}
   </div>
-  <h3>Error Log</h3>
-  <ul class="admin-errors">
-    {{#each errors}}
-      {{> adminErrorsItem}}
-    {{/each}}
-  </ul>
 </template>
 
-<template name="adminErrorsItem">
-  <li>
+<template name="adminErrorsCatalogItem">
+  <li class="catalog-item adminErrors">
+    <div class="details">
     {{errorMsg}} | <a href="view-source:{{url}}">{{url}}</a>:{{lineNumber}} | {{userAgent}} | screen {{screenWidth}}x{{screenHeight}}
     | window {{windowWidth}}x{{windowHeight}}
+    </div>
   </li>
 </template>
 
 <template name="adminJobs">
-  <h2>Jobs</h2>
-  <div class="admin-buttons">
-    <button class="test-job">Create a test job</button>
+  <h1>Jobs</h1>
+  <div class="row">
+    <div class = "col12">
+      <div class="admin-buttons">
+        <button class="test-job">Create a test job</button>
+      </div>
+      <h2>Queue</h2>
+      <ul class="admin-job-queue item-list">
+        {{#each jobqueue}}
+          {{> adminJobQueueItem}}
+        {{/each}}
+      </ul>
+    </div>  
+    {{> adminTabs}}}
   </div>
-  <h3>Queue</h3>
-  <ul class="admin-job-queue item-list">
-    {{#each jobqueue}}
-      {{> adminJobQueueItem}}
-    {{/each}}
-  </ul>
 </template>
 
 <template name="adminJobQueueItem">
@@ -108,16 +266,21 @@
 </template>
 
 <template name="adminSources">
-  <h2>External Sources</h2>
-  <div class="admin-buttons">
-    <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+  <h1>External Sources</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sync-local-pdf-cache">Sync local PDF cache</button>
+        {{> adminArXiv}}
+        {{> adminFSM}}
+      </div>
+    </div>
+    {{> adminTabs}}
   </div>
-  {{> adminArXiv}}
-  {{> adminFSM}}
 </template>
 
 <template name="adminArXiv">
-  <h3>ArXiv</h3>
+  <h2>ArXiv</h2>
   <div class="admin-buttons">
     <button class="sync-arxiv-metadata">Sync arXiv metadata</button>
     <button class="sync-arxiv-pdf-cache">Sync arXiv PDF cache</button>
@@ -125,20 +288,30 @@
 </template>
 
 <template name="adminFSM">
-  <h3>Free Speech Movement</h3>
+  <h2>Free Speech Movement</h2>
   <div class="admin-buttons">
     <button class="sync-fsm-metadata">Sync FSM metadata</button>
   </div>
 </template>
 
 <template name="adminBlog">
-  <h2>Blog</h2>
-  <div class="admin-buttons">
-    <button class="sync-blog">Sync blog</button>
-  </div>
+  <h1>Blog</h1>
+  <div class="row">
+    <div class="col12">
+      <div class="admin-buttons">
+        <button class="sync-blog">Sync blog</button>
+      </div>
+     </div>
+  {{> adminTabs}}
+  </div>  
 </template>
 
 <template name="adminFacts">
-  <h2>Facts</h2>
-  {{> serverFacts}}
+  <h1>Facts</h1>
+  <div class="row">
+    <div class="col12">
+      {{> serverFacts}}
+    </div>
+    {{> adminTabs}}
+  </div>
 </template>
