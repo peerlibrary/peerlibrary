@@ -49,11 +49,16 @@ class @JobQueue extends Document
 
   @Meta
     name: 'JobQueue'
+
     collection: new JobCollection 'JobQueue',
       noCollectionSuffix: true
+
     fields: =>
       # Data can be arbitrary object, but we have one field which we can use
       # if job is referencing a publication. This is then used to allow
       # publications to link back to related jobs.
       data:
         publication: @ReferenceField Publication, [], false, 'jobs', ['status']
+
+  @verboseName: ->
+    'job'

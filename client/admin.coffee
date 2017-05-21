@@ -1,8 +1,12 @@
 Deps.autorun ->
-  if Session.equals 'adminActive', true
+  if Session.equals 'adminSources', true
     Meteor.subscribe 'arxiv-pdfs'
-    Meteor.subscribe 'logged-errors'
+  
+  if Session.equals 'adminJobs', true
     Meteor.subscribe 'job-queue'
+
+  if Session.equals 'adminErrors', true
+    Meteor.subscribe 'logged-errors'
 
 Template.adminCheck.isAdmin = ->
   Meteor.person(isAdmin: 1)?.isAdmin
@@ -46,6 +50,36 @@ Template.adminErrors.errors = ->
     sort: [
       ['serverTime', 'desc']
     ]
+
+Template.adminErrors.catalogSettings = -> 
+  subscription: 'logged-errors'
+  documentClass: LoggedError
+  variables: 
+    active: 'adminErrors'
+    ready: 'currentAdminErrorsReady'
+    loading: 'currentAdminErrorsLoading'
+    count: 'currentAdminErrorsCount'
+    filter: 'currentAdminErrorsFilter'
+    limit: 'currentAdminErrorsLimit'
+    limitIncreasing: 'currentAdminErrorsLimitIncreasing'
+    sort: 'currentAdminErrorsSort'
+
+EnableCatalogItemLink Template.adminErrorsCatalogItem
+
+Template.adminJobs.catalogSettings = -> 
+  subscription: 'job-queue'
+  documentClass: JobQueue
+  variables: 
+    active: 'adminJobs'
+    ready: 'currentAdminJobsReady'
+    loading: 'currentAdminJobsLoading'
+    count: 'currentAdminJobsCount'
+    filter: 'currentAdminJobsFilter'
+    limit: 'currentAdminJobsLimit'
+    limitIncreasing: 'currentAdminJobsLimitIncreasing'
+    sort: 'currentAdminJobsSort'
+
+EnableCatalogItemLink Template.adminJobQueueItem
 
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
