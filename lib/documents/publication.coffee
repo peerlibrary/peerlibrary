@@ -117,13 +117,22 @@ class @Publication extends BasicAccessDocument
   @_filenamePrefix: ->
     'publication' + Storage._path.sep
 
-  cachedFilename: =>
-    throw new Error "Cached filename not available" unless @cachedId and @mediaType
+  files: []
 
-    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + '.' + @mediaType
+  cachedFilename: (fileId) =>
+    throw new Error "Cached filename not available" unless @cachedId and @mediaType and @files.length
 
-  url: =>
-    Storage.url @cachedFilename()
+    fileId ?= @files[0].fileId
+    mediaType = _.find @files, (file) -> file.fileId is fileId
+    mediaType ?= ''
+
+    Publication._filenamePrefix() + 'cache' + Storage._path.sep + @cachedId + Storage._path.sep + fileId + '.' + mediaType
+
+  url: (fileId) =>
+    # To allow calling from template with no arguments (fileId would be options then)
+    fileId = null unless _.isString fileId
+
+    Storage.url @cachedFilename fileId
 
   thumbnail: (page) =>
     if page < 1 or page > @numberOfPages

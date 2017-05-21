@@ -542,6 +542,7 @@ class @Publication extends Publication
     fields:
       cachedId: 1
       mediaType: 1
+      files: 1
 
 Deps.autorun ->
   if Session.get 'currentPublicationId'

@@ -160,6 +160,7 @@ class @Publication extends Publication
       adminPersons: 1
       adminGroups: 1
       cached: 1
+      files: 1
       processed: 1
       jobs:
         $slice: -1 # To have the latest job status available on the client
@@ -252,6 +253,14 @@ Meteor.methods
         cachedId: Random.id()
         mediaType: 'pdf'
         sha256: sha256
+        files: [
+          fileId: Random.id()
+          createdAt: createdAt
+          updatedAt: createdAt
+          sha256: sha256
+          mediaType: 'pdf'
+          type: 'original'
+        ]
       verify = false
 
     samples = if verify then existingPublication._verificationSamples person._id else null
@@ -281,6 +290,7 @@ Meteor.methods
         sha256: 1
         cachedId: 1
         mediaType: 1
+        files: 1
 
     # File maybe finished by somebody else, or wrong publicationId, or something else.
     # If the file was maybe finished by somebody else, we do not want really to continue writing
