@@ -22,7 +22,7 @@ class @User extends BaseDocument
     name: 'User'
     collection: Meteor.users
     fields: =>
-      person: @ReferenceField Person
+      person: @ReferenceField Person, ['slug', 'displayName','gravatarHash', 'user.username']
     triggers: =>
       updatedAt: UpdatedAtTrigger ['username', 'emails', 'person._id']
       lastActivity: LastActivityTrigger ['services']
@@ -45,3 +45,8 @@ class @User extends BaseDocument
 
   @validatePassword = (password, argumentName='password') ->
     throw new ValidationError "Password must be at least 6 characters long.", argumentName unless password and password.length >= 6
+
+  #Check it
+  email: =>
+        # TODO: Return e-mail address only if verified, when we will support e-mail verification
+    @emails?[0]?.address
