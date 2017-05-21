@@ -214,6 +214,12 @@ Template.catalogItem.documentIsGroup = ->
 Template.catalogItem.documentIsCollection = ->
   @ instanceof Collection
 
+Template.catalogItem.documentIsLoggedError = ->
+  @ instanceof LoggedError
+
+Template.catalogItem.documentIsJobQueue = ->
+  @ instanceof JobQueue
+
 Template.catalogLoading.loading = ->
   Session.get @variables.loading
 

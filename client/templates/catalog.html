@@ -87,6 +87,8 @@
   {{#if documentIsAnnotation}}{{> annotationCatalogItem}}{{/if}}
   {{#if documentIsGroup}}{{> groupCatalogItem}}{{/if}}
   {{#if documentIsCollection}}{{> collectionCatalogItem}}{{/if}}
+  {{#if documentIsLoggedError}}{{> adminErrorsCatalogItem}}{{/if}}
+  {{#if documentIsJobQueue}}{{> adminJobsCatalogItem}}{{/if}}  
 </template>
 
 <template name="catalogLoading">

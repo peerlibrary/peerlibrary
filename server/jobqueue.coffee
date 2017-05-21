@@ -7,6 +7,10 @@ class @JobQueue extends JobQueue
   @PUBLISH_FIELDS: ->
     fields: {} # All
 
+  # A subset of public fields used for catalog results
+  @PUBLISH_CATALOG_FIELDS: ->
+    fields: {} # All
+
 Meteor.methods
   'admin-job-cancel': methodWrap (jobId, runId) ->
     validateArgument 'jobId', jobId, DocumentId
@@ -49,6 +53,38 @@ Meteor.methods
       job.restart()
     else
       throw new Meteor.Error 403, "Permission denied."
+
+
+new PublishEndpoint 'job-queues', (limit, filter, sortIndex) ->
+  validateArgument 'limit', limit, PositiveNumber
+  validateArgument 'filter', filter, OptionalOrNull String
+  validateArgument 'sortIndex', sortIndex, OptionalOrNull Number
+  validateArgument 'sortIndex', sortIndex, Match.Where (sortIndex) ->
+    not _.isNumber(sortIndex) or 0 <= sortIndex < JobQueue.PUBLISH_CATALOG_SORT.length
+
+  findQuery = {}
+  findQuery = createQueryCriteria(filter, 'updated') if filter
+
+  sort = if _.isNumber sortIndex then LoggedError.PUBLISH_CATALOG_SORT[sortIndex].sort else null
+
+  @related (person) ->
+    return unless person?.isAdmin
+
+  # We store related fields so that they are available in middlewares.
+    @set 'person', person
+
+    searchPublish @, 'job-queues', [filter, sortIndex],
+      cursor: JobQueue.documents.find findQuery,
+        limit: limit
+        fields: JobQueue.PUBLISH_CATALOG_FIELDS().fields
+        sort: sort
+  ,
+    Person.documents.find
+      _id: @personId
+    ,
+      fields:
+        # _id field is implicitly added
+        isAdmin: 1
 
 new PublishEndpoint 'job-queue', ->
   @related (person) ->

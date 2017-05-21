@@ -1,8 +1,12 @@
 Deps.autorun ->
-  if Session.equals 'adminActive', true
+  if Session.equals 'adminSources', true
     Meteor.subscribe 'arxiv-pdfs'
+
+  if Session.equals 'adminJobs', true
+    Meteor.subscribe 'job-queues'
+
+  if Session.equals 'adminErrors', true
     Meteor.subscribe 'logged-errors'
-    Meteor.subscribe 'job-queue'
 
 Template.adminCheck.isAdmin = ->
   Meteor.person(isAdmin: 1)?.isAdmin
@@ -47,6 +51,36 @@ Template.adminErrors.errors = ->
       ['serverTime', 'desc']
     ]
 
+Template.adminErrors.catalogSettings = ->
+  subscription: 'logged-errors'
+  documentClass: LoggedError
+  variables:
+    active: 'adminErrors'
+    ready: 'currentAdminErrorsReady'
+    loading: 'currentAdminErrorsLoading'
+    count: 'currentAdminErrorsCount'
+    filter: 'currentAdminErrorsFilter'
+    limit: 'currentAdminErrorsLimit'
+    limitIncreasing: 'currentAdminErrorsLimitIncreasing'
+    sort: 'currentAdminErrorsSort'
+
+EnableCatalogItemLink Template.adminErrorsCatalogItem
+
+Template.adminJobs.catalogSettings = -> 
+  subscription: 'job-queues'
+  documentClass: JobQueue
+  variables: 
+    active: 'adminJobs'
+    ready: 'currentAdminJobsReady'
+    loading: 'currentAdminJobsLoading'
+    count: 'currentAdminJobsCount'
+    filter: 'currentAdminJobsFilter'
+    limit: 'currentAdminJobsLimit'
+    limitIncreasing: 'currentAdminJobsLimitIncreasing'
+    sort: 'currentAdminJobsSort'
+
+EnableCatalogItemLink Template.adminJobsCatalogItem
+
 Template.adminJobs.events
   'click button.test-job': (event, template) ->
     Meteor.call 'test-job', (error, result) ->
@@ -61,7 +95,7 @@ Template.adminJobs.jobqueue = ->
     ]
     transform: null # So that publication subdocument does not get client-only attributes like _pages and _highlighter
 
-Template.adminJobQueueItem.canManageJob = ->
+Template.adminJobsCatalogItem.canManageJob = ->
   person = Meteor.person _.extend Publication.maintainerAccessPersonFields(),
     isAdmin: 1
 
@@ -81,16 +115,16 @@ Template.adminJobQueueItem.canManageJob = ->
     # generic job queue page to non-admins anyway.
     return publication?.hasMaintainerAccess person
 
-Template.adminJobQueueItem.isRestartable = ->
+Template.adminJobsCatalogItem.isRestartable = ->
   @status in JobQueue.Meta.collection.jobStatusRestartable
 
-Template.adminJobQueueItem.isCancellable = ->
+Template.adminJobsCatalogItem.isCancellable = ->
   @status in JobQueue.Meta.collection.jobStatusCancellable
 
-Template.adminJobQueueItem.inFuture = ->
+Template.adminJobsCatalogItem.inFuture = ->
   @after and @after > moment.utc().toDate()
 
-Template.adminJobQueueItem.events
+Template.adminJobsCatalogItem.events
   'click .admin-job-cancel': (event, template) ->
     event.preventDefault()
 

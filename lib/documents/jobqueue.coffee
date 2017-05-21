@@ -1,5 +1,5 @@
 if Meteor.isServer
-  class @JobCollection extends JobCollection
+  class @JobCollection extends BaseDocument
     scrub: (job) ->
       # We have to make a plain object (our documents go through PeerDB transform)
       # and without _schema field which is added to all PeerDB documents
@@ -49,6 +49,7 @@ class @JobQueue extends Document
 
   @Meta
     name: 'JobQueue'
+    replaceParent: true
     collection: new JobCollection 'JobQueue',
       noCollectionSuffix: true
     fields: =>
@@ -57,3 +58,11 @@ class @JobQueue extends Document
       # publications to link back to related jobs.
       data:
         publication: @ReferenceField Publication, [], false, 'jobs', ['status']
+
+  PUBLISH_CATALOG_SORT:
+   [
+      name: "updated"
+      sort: [
+        ['updated', 'desc']
+      ]
+    ]
