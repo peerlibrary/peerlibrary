@@ -46,20 +46,284 @@ class CanvasTextHighlight extends Annotator.Highlight
         @_box.height = segment.top + segment.height - @_box.top
 
   _precomputeHover: (segments) =>
-    # For now reuse simply a bounding box
-    # TODO: Compute a better polygon around all segments
+    #merge the row
+    #first, creat an array named temp whose entries are of the form [segment, logical], where each segment corresponds to each entry of the input array <segments>. The logicals are initially set to true.
+    l = segments.length
+    temp = []
+    for segment in segments
+      temp.push([_.clone(segment),true])
+    #each segment is a rectangle, now begin to merge the rectangles in the same row into one rectangle
+    i = l-1 #begins at the rectangle located at the end
+    while i>=0
+      current = temp[i][0]
+      currentleft = current.left
+      currentright = current.left+current.width
+      currenttop = current.top
+      currentbottom = current.top+current.height
+      j = i-1
+      while j>=0 and temp[i][1]
+        compare = temp[j][0]
+        compareleft = compare.left
+        compareright = compare.left+compare.width
+        comparetop = compare.top
+        comparebottom = compare.top+compare.height
+        if ((currentleft-compareright<=15) and (currentleft-compareright>=0)) or ((compareleft <= currentleft) and (currentleft <=compareright) and (compareright <=currentright)) #horizontal conditions to merge, need to try some numbers.  
+          if currenttop <= comparetop and comparetop <= currentbottom
+            temp[j][0].top = currenttop
+            temp[j][0].width = currentright-temp[j][0].left
+            if comparebottom <= currentbottom
+              temp[j][0].height = currentbottom-temp[j][0].top
+            else 
+              temp[j][0].height = comparebottom-temp[j][0].top
+            temp[i][1] = false
+          else if comparetop <= currenttop and currenttop <= comparebottom
+            temp[j][0].width = currentright-temp[j][0].left
+            if comparebottom <= currentbottom
+              temp[j][0].height = currentbottom-temp[j][0].top
+            temp[i][1] = false
+        j--
+      i--
+    #finish merging the row
+    #define temp2 to be the the merged row of the form (segment,true). Notice that now segment is a complete row (shape is rectangle)
+    temp2 = []
+    for segment in temp
+      temp2.push(segment) if segment[1]
 
-    @_hover = _.clone @_box
+    #This step may be redundant, but it checks if any box is contained in any other box
+    i = 0
+    while i < temp2.length and temp2[i][1]
+      current = temp2[i][0]
+      currentleft = current.left
+      currentright = current.left+current.width
+      currenttop = current.top
+      currentbottom = current.top+current.height      
+      j = 0
+      while j < temp2.length and temp2[i][1] and temp2[j][1]
+        if j isnt i
+          compare = temp2[j][0]
+          compareleft = compare.left
+          compareright = compare.left+compare.width
+          comparetop = compare.top
+          comparebottom = compare.top+compare.height
+          if (currentleft+1 >= compareleft) and (currentright<= compareright+1) and (currenttop+1>= comparetop) and (currentbottom <= comparebottom+1)
+            temp2[i][1] = false
+          if (currentleft <= compareleft+1) and (currentright+1>= compareright) and (currenttop<= comparetop+1) and (currentbottom+1 >= comparebottom)
+            temp2[j][1] = false
+        j++
+      i++
 
-    # Round to have integer coordinates on canvas
-    @_hover.width += @_hover.left - Math.round(@_hover.left)
-    @_hover.left = Math.round(@_hover.left)
-    @_hover.width = Math.round(@_hover.width)
-    @_hover.height += @_hover.top - Math.round(@_hover.top)
-    @_hover.top = Math.round(@_hover.top)
-    @_hover.height = Math.round(@_hover.height)
+    
+    #Now going to merge rows
+    temp2.sort (a,b) ->
+      return if (((a[0].left+a[0].width)<=b[0].left) or (((a[0].left+a[0].width)>b[0].left) and (a[0].top<=b[0].top))) then -1 else 1 
+    
+    #temp3 is going to group neighbour rows together as a block
+    temp3 = []
+    i = 0
+    while i < temp2.length 
+      temp3.push([_.clone(temp2[i][0]),i]) #(segment, group number)
+      i++
+    L = temp3.length
+    swap = 1 #count the number of swaps
+    while swap > 0
+      swap = 0
+      j = 0 #run over temp3
+      while j < L
+        k = j
+        while k < L
+          current = temp3[j][0]
+          currentleft = current.left
+          currentright = current.left+current.width
+          currenttop = current.top
+          currentbottom = current.top+current.height        
+          compare = temp3[k][0]
+          compareleft = compare.left
+          compareright = compare.left+compare.width
+          comparetop = compare.top
+          comparebottom = compare.top+compare.height
+          #group two rows if they are close to each other, set group number to be equal, i.e., change the group number for all elements in one group to the group number of the other group.
+          if (((comparetop-currenttop >=-1) and (comparetop-currentbottom <=7)) or ((currenttop-comparetop >=-1) and (currentbottom-comparetop <=7))) and ((not (currentleft-compareright>5)) and (not (compareleft-currentright>5)) and (temp3[k][1] isnt temp3[j][1])) #here the number 5 is the number of pixels that the horizontal distance between two rows should not exceeds, if they are to be grouped into the same block.  
+            t = _.clone(temp3[k][1])
+            temp3[k][1] = temp3[j][1]
+            m = 0
+            while m < L
+              temp3[m][1] = temp3[j][1] if (temp3[m][1] is t)
+              m++
+            swap++
+          k++
+        j++
 
-    return # Don't return the result of the for loop
+    #define temp4 to be grouped rows, e.g., [[row1,row3,row6],[row2,row4],[row5]]
+    temp4 = []
+    i = 0
+    while i < L #i is group number
+      temp5 = []
+      j = 0
+      while j < L
+        if temp3[j][1] is i
+          temp5.push(_.clone(temp3[j][0]))
+        j++
+      temp4.push(_.clone(temp5)) if temp5.length>0
+      i++
+
+    #for each group, find the vertices of the convex hull
+    @_hover = []
+    L = temp4.length
+    i = 0
+    while i < L #i is the group number, for each i, generate an element for drawing in hover
+      hoverelt = []
+      upperleft = []
+      upperright = []
+      lowerleft = []
+      lowerright = []
+      l = temp4[i].length
+      j = 0
+      while j < l #j is the number of element in the group
+        upperleft.push([temp4[i][j].left,temp4[i][j].top])
+        upperright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top])
+        lowerleft.push([temp4[i][j].left,temp4[i][j].top+temp4[i][j].height])
+        lowerright.push([temp4[i][j].left+temp4[i][j].width,temp4[i][j].top+temp4[i][j].height])
+        j++
+
+      #want to get hover = [[hoverelt1],..], number of hoverelt's are the same as the group number; [hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]], where [h_ur] = [[pt1_x,pt1_y],..,[ptn_x,ptn_x]] are the vertices in the upperright part of the convex hull, and similar for others.
+
+      upperright.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
+      hoverelt_ur = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (upperright[j][0]<= upperright[k][0])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (upperright[j][1] is upperright[k][1])
+          k++
+        hoverelt_ur.push(upperright[j]) if not witness
+        j++
+      #now hoverelt_ur is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the upperright part of the selected region, sorted from upperleft to lowerright. Always remember that the lower the point is in the region, the larger the y coordinate is; the righter the point is, the larger the x coordinate is.
+      #do smoothing
+      pixeldiff = 2 #when two points are 2 pixel close in horizontal or vertical direction, then make adjustments
+      counter1 = 0 #start with the upperleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ur.length-1
+          currentpt = hoverelt_ur[counter1]
+          nextpt = hoverelt_ur[counter1+1]
+          if (nextpt[0]-currentpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff) #lines no more than "pixeldiff" pixels wide will be smoothed
+            hoverelt_ur[counter1][0] = hoverelt_ur[counter1+1][0] #the upperlefter point has the x-coordinate of the lowerrighter point
+            hoverelt_ur = hoverelt_ur.filter (pt) -> pt isnt hoverelt_ur[counter1+1] #delete the lowerrighter point
+            nchange++
+          else
+            counter1++
+      hoverelt.push(hoverelt_ur) 
+
+      lowerright.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]>b[0])) then -1 else 1
+      hoverelt_lr = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (lowerright[j][1] is lowerright[k][1])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (lowerright[j][0] <= lowerright[k][0])
+          k++
+        hoverelt_lr.push(lowerright[j]) if not witness
+        j++
+      #now hoverelt_lr is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the lowerright part of the selected region, sorted from upperright to lowerleft
+      counter1 = 0 #start with the lowerleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_lr.length-1
+          currentpt = hoverelt_lr[counter1]
+          nextpt = hoverelt_lr[counter1+1]
+          if (currentpt[0]-nextpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff) 
+            hoverelt_lr[counter1][1] = hoverelt_lr[counter1+1][1] #the upperrighter point has the y-coordinate of the lowerlefter point
+            hoverelt_lr = hoverelt_lr.filter (pt) -> pt isnt hoverelt_lr[counter1+1] #delete the lowerlefter point
+            nchange++
+          else
+            counter1++
+      hoverelt.push(hoverelt_lr)
+
+      lowerleft.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]<b[0])) then -1 else 1
+      hoverelt_ll = [] 
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (lowerleft[j][1] is lowerleft[k][1])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (lowerleft[j][0] >= lowerleft[k][0])
+          k++
+        hoverelt_ll.push(lowerleft[j]) if not witness
+        j++
+      #now hoverelt_ll is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the lowerleft part of the selected region, sorted from upperleft to lowerright
+      counter1 = 0 #start with the upperleft most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ll.length-1
+          currentpt = hoverelt_ll[counter1]
+          nextpt = hoverelt_ll[counter1+1]
+          if (nextpt[0]-currentpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff)
+            hoverelt_ll[counter1][1] = hoverelt_ll[counter1+1][1] #the upperlefter point has the y-coordinate of the lowerrighter point
+            hoverelt_ll = hoverelt_ll.filter (pt) -> pt isnt hoverelt_ll[counter1+1] #delete the upperlefter point
+            nchange++
+          else
+            counter1++
+      hoverelt.push(hoverelt_ll) 
+
+      upperleft.sort (a,b) ->
+        return if (a[1]<b[1] or (a[1] is b[1] and a[0]>b[0])) then -1 else 1
+      hoverelt_ul = [] #it will have points [[ul1],[ul2],...], [ul1] = [left,top]
+      #begin fill in hoverelt_ul, need upper left most points
+      j = 0
+      while j < l #compare horizontally
+        witness = false #witness is false if j'th elt can fill in
+        k = 0
+        while k < j and not witness
+          witness = true if (upperleft[j][0]>= upperleft[k][0])
+          k++
+        k = j+1
+        while k < l and not witness
+          witness = true if (upperleft[j][1] is upperleft[k][1])
+          k++
+        hoverelt_ul.push(upperleft[j]) if not witness
+        j++
+      #now hoverelt_ul is an array of points [pt1_x,pt1_y],...,[ptn_x,ptn_y], the vertices in the upperleft part of the selected region, sorted from upperright to lowerleft
+      counter1 = 0 #start with the upperright most point
+      nchange = 1     #number of adjustments made, initially set > 0
+      while nchange > 0 #after some adjustments were made at counter1'th element, need to search again for adjustments starting at counter1'th element
+        nchange = 0   
+        while nchange is 0 and counter1<hoverelt_ul.length-1
+          currentpt = hoverelt_ul[counter1]
+          nextpt = hoverelt_ul[counter1+1]
+          if (currentpt[0]-nextpt[0]<=pixeldiff or nextpt[1]-currentpt[1]<=pixeldiff)
+            hoverelt_ul[counter1][0] = hoverelt_ul[counter1+1][0] #the upperrighter point has the y-coordinate of the lowerlefter point
+            hoverelt_ul = hoverelt_ul.filter (pt) -> pt isnt hoverelt_ul[counter1+1] #delete the upperrighter point
+            nchange++
+          else
+            counter1++
+      hoverelt.push(hoverelt_ul)  
+
+      @_hover.push(_.clone(hoverelt)) #hover[[hoverelt1],..],[hoverelt1] = [[h_ur],[h_lr],[h_ll],[h_ul]],[h_ur] = [[pt1_x,pt1_y],..,[ptn_x,ptn_y]]
+      i++
+
+
+
+    return  # Don't return the result of the for loop
 
   _drawHover: =>
     context = @_highlightsCanvas.getContext('2d')
@@ -71,20 +335,57 @@ class CanvasTextHighlight extends Annotator.Highlight
 
     context.lineWidth = 1
     # TODO: Colors do not really look the same if they are same as style in variables.styl, why?
-    context.strokeStyle = 'rgba(14,41,57,0.32)'
-    context.shadowColor = 'rgba(14,41,57,1.0)'
-    context.shadowBlur = 5
-    context.shadowOffsetX = 0
-    context.shadowOffsetY = 2
+    context.strokeStyle = 'rgba(180,170,0,9)'
 
+    #begin to draw
+    L = @_hover.length
     context.beginPath()
-    context.rect @_hover.left - 1, @_hover.top - 1, @_hover.width + 2, @_hover.height + 2
+    i = 0
+    while i< L #there are L different blocks to draw
+      hoverelt = _.clone(@_hover[i]) #it contains four elements, each element contains vertices in upperright corner or lowerright corner or lowerleft corner or upperleft cornner.
+      upperright = hoverelt[0] 
+      #console.log hoverelt
+      lowerright = hoverelt[1]
+      lowerleft = hoverelt[2]
+      upperleft = hoverelt[3]
+      #begin to draw vertices in upperright corner. these vertices are ordered from upperleft to lowerright
+      context.moveTo(upperright[0][0],upperright[0][1])
+      j = 0
+      while j < (upperright.length-1)
+        context.lineTo(upperright[j][0],upperright[j+1][1])
+        context.lineTo(upperright[j+1][0],upperright[j+1][1])
+        j++
+      #begin to draw vertices in lowerright corner. these vertices are ordered from upperright to lowerleft
+      j = 0
+      while j < (lowerright.length-1)
+        context.lineTo(lowerright[j][0],lowerright[j][1])
+        context.lineTo(lowerright[j+1][0],lowerright[j][1])
+        j++
+      context.lineTo(lowerright[j][0],lowerright[j][1])      
+      #begin to draw vertices in lowerleft corner. these vertices are ordered from upperleft to lowerright, so start from the last vertex
+      j = (lowerleft.length-1)
+      while j >0
+        context.lineTo(lowerleft[j][0],lowerleft[j][1])
+        context.lineTo(lowerleft[j][0],lowerleft[j-1][1])
+        j--
+      context.lineTo(lowerleft[j][0],lowerleft[j][1])
+      #begin to draw vertices in upperleft corner. these vertices are ordered from upperright to lowerleft, so start from the last vertex.
+      j = (upperleft.length-1)
+      while j > 0
+        context.lineTo(upperleft[j][0],upperleft[j][1])
+        context.lineTo(upperleft[j-1][0],upperleft[j][1])
+        j--
+      context.lineTo(upperleft[j][0],upperleft[j][1])
+      context.lineTo(upperright[0][0],upperright[0][1])
+      i++
     context.closePath()
+    #end drawing
+
 
     context.stroke()
 
     # As shadow is drawn both on inside and outside, we clear inside to give a nice 3D effect
-    context.clearRect @_hover.left, @_hover.top, @_hover.width, @_hover.height
+    # context.clearRect @_hover.left, @_hover.top, @_hover.width, @_hover.height
 
     context.restore()
 
@@ -258,7 +559,8 @@ class CanvasTextHighlight extends Annotator.Highlight
     @_computeArea segments
     @_boundingBox segments
     @_precomputeHover segments
-
+    for segment in segments
+      console.log segment
     @_$highlight = $('<div/>').addClass('highlights-layer-highlight').append(
       $('<div/>').addClass('highlights-layer-segment').css(segment) for segment in segments
     ).on
